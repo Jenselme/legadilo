@@ -1,5 +1,5 @@
 # define an alias for the specific python version used in this file.
-FROM python:3.11.7-slim-bullseye as python
+FROM python:3.12-slim-bullseye as python
 
 # Python build stage
 FROM python as python-build-stage
@@ -71,9 +71,5 @@ COPY ./compose/local/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
-
-
-# copy application code to WORKDIR
-COPY . ${APP_HOME}
 
 ENTRYPOINT ["/entrypoint"]

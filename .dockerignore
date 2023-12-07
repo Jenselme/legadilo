@@ -1,12 +1,13 @@
 .editorconfig
 .gitattributes
-.github
+.github/
 .gitignore
 .gitlab-ci.yml
-.idea
+.idea/
+.vscode/
 .pre-commit-config.yaml
 .readthedocs.yml
 .travis.yml
 venv
-.git
+.git/
 .envs/

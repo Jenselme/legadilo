@@ -14,22 +14,26 @@ omit = ["*/migrations/*", "*/tests/*"]
 plugins = ["django_coverage_plugin"]
 
 
-# ==== black ====
-[tool.black]
+# ==== Ruf ====
+[tool.ruff]
 line-length = 119
-target-version = ['py311']
+target-version = "py312"
 
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
 
-# ==== isort ====
-[tool.isort]
-profile = "black"
-line_length = 119
-known_first_party = [
+[tool.ruff.lint.isort]
+known-first-party = [
     "legado",
     "config",
 ]
-skip = ["venv/"]
-skip_glob = ["**/migrations/*.py"]
 
 
 # ==== mypy ====
@@ -53,36 +57,6 @@ ignore_errors = true
 django_settings_module = "config.settings.test"
 
 
-# ==== PyLint ====
-[tool.pylint.MASTER]
-load-plugins = [
-    "pylint_django",
-]
-django-settings-module = "config.settings.local"
-
-[tool.pylint.FORMAT]
-max-line-length = 119
-
-[tool.pylint."MESSAGES CONTROL"]
-disable = [
-    "missing-docstring",
-    "invalid-name",
-]
-
-[tool.pylint.DESIGN]
-max-parents = 13
-
-[tool.pylint.TYPECHECK]
-generated-members = [
-    "REQUEST",
-    "acl_users",
-    "aq_parent",
-    "[a-zA-Z]+_set{1,2}",
-    "save",
-    "delete",
-]
-
-
 # ==== djLint ====
 [tool.djlint]
 blank_line_after_tag = "load,extends"
@@ -92,12 +66,12 @@ format_js = true
 # TODO: remove T002 when fixed https://github.com/Riverside-Healthcare/djLint/issues/687
 ignore = "H006,H030,H031,T002"
 include = "H017,H035"
-indent = 2
+indent = 4
 max_line_length = 119
 profile = "django"
 
 [tool.djlint.css]
-indent_size = 2
+indent_size = 4
 
 [tool.djlint.js]
-indent_size = 2
+indent_size = 4

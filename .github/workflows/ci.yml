@@ -7,11 +7,11 @@ env:
 
 on:
   pull_request:
-    branches: ['master', 'main']
+    branches: ['main']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['master', 'main']
+    branches: ['main']
     paths-ignore: ['docs/**']
 
 concurrency:
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       # Consider using pre-commit.ci for open source project
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
