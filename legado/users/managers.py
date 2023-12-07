@@ -1,5 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import UserManager as DjangoUserManager
+from django.contrib.auth.models import AbstractUser
+from typing import cast
 
 
 class UserManager(DjangoUserManager):
@@ -12,17 +14,23 @@ class UserManager(DjangoUserManager):
         if not email:
             raise ValueError("The given email must be set")
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = cast(AbstractUser, self.model(email=email, **extra_fields))
         user.password = make_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email: str, password: str | None = None, **extra_fields):
+    def create_user(self, username: str, email: str | None = None, password: str | None = None, **extra_fields):
+        if email is not None:
+            raise ValueError("User must be created by username not email.")
+
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(username, password, **extra_fields)
 
-    def create_superuser(self, email: str, password: str | None = None, **extra_fields):
+    def create_superuser(self, username: str, email: str | None = None, password: str | None = None, **extra_fields):
+        if email is not None:
+            raise ValueError("User must be created by username not email.")
+
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -31,4 +39,4 @@ class UserManager(DjangoUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
 
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(username, password, **extra_fields)

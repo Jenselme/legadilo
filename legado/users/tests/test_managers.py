@@ -10,7 +10,7 @@ from legado.users.models import User
 class TestUserManager:
     def test_create_user(self):
         user = User.objects.create_user(
-            email="john@example.com",
+            username="john@example.com",
             password="something-r@nd0m!",
         )
         assert user.email == "john@example.com"
@@ -21,7 +21,7 @@ class TestUserManager:
 
     def test_create_superuser(self):
         user = User.objects.create_superuser(
-            email="admin@example.com",
+            username="admin@example.com",
             password="something-r@nd0m!",
         )
         assert user.email == "admin@example.com"
@@ -31,10 +31,14 @@ class TestUserManager:
 
     def test_create_superuser_username_ignored(self):
         user = User.objects.create_superuser(
-            email="test@example.com",
+            username="test@example.com",
             password="something-r@nd0m!",
         )
         assert user.username is None
+
+    def test_create_user_invalid_email(self):
+        with pytest.raises(ValueError):
+            User.objects.create_user(username="test", password="something-R@nd0m!")
 
 
 @pytest.mark.django_db

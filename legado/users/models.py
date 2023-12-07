@@ -23,7 +23,8 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    objects = UserManager()
+    # mypy false positive about overriding class variable.
+    objects = UserManager()  # type: ignore[misc]
 
     def get_absolute_url(self) -> str:
         """Get URL for user's detail view.
