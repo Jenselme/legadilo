@@ -49,6 +49,9 @@ USER django
 
 RUN DATABASE_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings.test" \
-  python manage.py compilemessages
+  python manage.py compilemessages && \
+  DATABASE_URL="" \
+  DJANGO_SETTINGS_MODULE="config.settings.test" \
+  python /app/manage.py collectstatic --noinput
 
 ENTRYPOINT ["/entrypoint"]
