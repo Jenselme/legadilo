@@ -4,7 +4,7 @@ How To - Project Documentation
 Get Started
 ----------------------------------------------------------------------
 
-Documentation can be written as rst files in `legado/docs`.
+Documentation can be written as rst files in `legadilo/docs`.
 
 
 To build and serve docs, use the commands::

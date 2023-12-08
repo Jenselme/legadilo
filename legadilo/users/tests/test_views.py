@@ -9,10 +9,10 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from legado.users.forms import UserAdminChangeForm
-from legado.users.models import User
-from legado.users.tests.factories import UserFactory
-from legado.users.views import (
+from legadilo.users.forms import UserAdminChangeForm
+from legadilo.users.models import User
+from legadilo.users.tests.factories import UserFactory
+from legadilo.users.views import (
     UserRedirectView,
     UserUpdateView,
     user_detail_view,

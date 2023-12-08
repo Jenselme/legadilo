@@ -6,8 +6,8 @@ from pathlib import Path
 import environ
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
-# legado/
-APPS_DIR = BASE_DIR / "legado"
+# legadilo/
+APPS_DIR = BASE_DIR / "legadilo"
 env = environ.Env()
 
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
@@ -80,7 +80,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "legado.users",
+    "legadilo.users",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -89,7 +89,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIGRATIONS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#migration-modules
-MIGRATION_MODULES = {"sites": "legado.contrib.sites.migrations"}
+MIGRATION_MODULES = {"sites": "legadilo.contrib.sites.migrations"}
 
 # AUTHENTICATION
 # ------------------------------------------------------------------------------
@@ -182,7 +182,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "legado.users.context_processors.allauth_settings",
+                "legadilo.users.context_processors.allauth_settings",
             ],
         },
     }
@@ -269,13 +269,13 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = "legado.users.adapters.AccountAdapter"
+ACCOUNT_ADAPTER = "legadilo.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
-ACCOUNT_FORMS = {"signup": "legado.users.forms.UserSignupForm"}
+ACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSignupForm"}
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-SOCIALACCOUNT_ADAPTER = "legado.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "legadilo.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
-SOCIALACCOUNT_FORMS = {"signup": "legado.users.forms.UserSocialSignupForm"}
+SOCIALACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSocialSignupForm"}
 
 
 # Your stuff...

@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from legado.users.models import User
+from legadilo.users.models import User
 
 
 class TestUserAdmin:

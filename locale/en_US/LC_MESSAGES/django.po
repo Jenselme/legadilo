@@ -1,4 +1,4 @@
-# Translations for the Legado project
+# Translations for the Legadilo project
 # Copyright (C) 2023 Julien Enselme
 # Julien Enselme <jujens@jujens.eu>, 2023.
 #

@@ -54,7 +54,7 @@ jobs:
         run: docker compose -f local.yml run django pytest
 
       - name: Run mypy
-        run: docker compose -f local.yml run django mypy legado
+        run: docker compose -f local.yml run django mypy legadilo
         env:
           DATABASE_URL: "sqlite:///mypy.db"
 

@@ -3,8 +3,8 @@ Module for all Form Tests.
 """
 from django.utils.translation import gettext_lazy as _
 
-from legado.users.forms import UserAdminCreationForm
-from legado.users.models import User
+from legadilo.users.forms import UserAdminCreationForm
+from legadilo.users.models import User
 
 
 class TestUserAdminCreationForm:

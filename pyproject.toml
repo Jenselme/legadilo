@@ -9,7 +9,7 @@ python_files = [
 
 # ==== Coverage ====
 [tool.coverage.run]
-include = ["legado/**"]
+include = ["legadilo/**"]
 omit = ["*/migrations/*", "*/tests/*"]
 plugins = ["django_coverage_plugin"]
 
@@ -31,7 +31,7 @@ line-ending = "auto"
 
 [tool.ruff.lint.isort]
 known-first-party = [
-    "legado",
+    "legadilo",
     "config",
 ]
 
@@ -77,7 +77,7 @@ indent_size = 4
 indent_size = 4
 
 [tool.poetry]
-name = "legado"
+name = "legadilo"
 version = "0.1.0"
 description = ""
 authors = ["Julien Enselme <jujens@jujens.eu>"]

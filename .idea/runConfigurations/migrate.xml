@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="migrate" type="Python.DjangoServer" factoryName="Django server" singleton="true">
-    <module name="legado" />
+    <module name="legadilo" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>

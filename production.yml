@@ -12,9 +12,9 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
 
-    image: legado_production_django
+    image: legadilo_production_django
     volumes:
-      - production_django_media:/app/legado/media
+      - production_django_media:/app/legadilo/media
     depends_on:
       - postgres
     env_file:
@@ -26,7 +26,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: legado_production_postgres
+    image: legadilo_production_postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
@@ -37,7 +37,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/traefik/Dockerfile
-    image: legado_production_traefik
+    image: legadilo_production_traefik
     depends_on:
       - django
     volumes:
@@ -50,7 +50,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/nginx/Dockerfile
-    image: legado_local_nginx
+    image: legadilo_local_nginx
     depends_on:
       - django
     volumes:

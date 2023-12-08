@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------------------
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
-POSTGRES_DB=legado
+POSTGRES_DB=legadilo
 # Let’s make these simple for easier local use.
 POSTGRES_USER=django
 POSTGRES_PASSWORD=django_passwd

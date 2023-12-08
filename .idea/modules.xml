@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/legado.iml" filepath="$PROJECT_DIR$/.idea/legado.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/legadilo.iml" filepath="$PROJECT_DIR$/.idea/legadilo.iml" />
     </modules>
   </component>
 </project>

@@ -3,7 +3,7 @@ import django.contrib.auth.validators
 from django.db import migrations, models
 import django.utils.timezone
 
-import legado.users.models
+import legadilo.users.models
 
 
 class Migration(migrations.Migration):
@@ -105,7 +105,7 @@ class Migration(migrations.Migration):
                 "abstract": False,
             },
             managers=[
-                ("objects", legado.users.models.UserManager()),
+                ("objects", legadilo.users.models.UserManager()),
             ],
         ),
     ]

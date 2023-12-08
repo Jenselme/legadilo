@@ -1,6 +1,6 @@
 from django.urls import resolve, reverse
 
-from legado.users.models import User
+from legadilo.users.models import User
 
 
 def test_detail(user: User):

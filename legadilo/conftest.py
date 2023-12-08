@@ -1,7 +1,7 @@
 import pytest
 
-from legado.users.models import User
-from legado.users.tests.factories import UserFactory
+from legadilo.users.models import User
+from legadilo.users.tests.factories import UserFactory
 
 
 @pytest.fixture(autouse=True)

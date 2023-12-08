@@ -1,6 +1,6 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
-    "name": "legado_dev",
+    "name": "legadilo_dev",
     "dockerComposeFile": [
         "../local.yml"
     ],
