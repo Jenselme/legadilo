@@ -6,7 +6,7 @@ from django.core.management import call_command
 from legadilo.users.models import User
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 class TestUserManager:
     def test_create_user(self):
         user = User.objects.create_user(
@@ -37,11 +37,11 @@ class TestUserManager:
         assert user.username is None
 
     def test_create_user_invalid_email(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=True):  # type: ignore[call-overload]
             User.objects.create_user(username="test", password="something-R@nd0m!")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_createsuperuser_command():
     """Ensure createsuperuser command works with our custom manager."""
     out = StringIO()

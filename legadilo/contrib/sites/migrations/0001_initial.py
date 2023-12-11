@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = []
 
     operations = [
@@ -38,5 +37,5 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
             managers=[("objects", django.contrib.sites.models.SiteManager())],
-        )
+        ),
     ]

@@ -1,4 +1,4 @@
-from .base import *  # noqa
+from .base import *  # noqa: F403
 from .base import env
 
 # GENERAL
@@ -18,7 +18,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "django_cache_table",
-    }
+    },
 }
 
 # SECURITY

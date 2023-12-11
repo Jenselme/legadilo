@@ -3,7 +3,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("sites", "0001_initial")]
 
     operations = [
@@ -16,5 +15,5 @@ class Migration(migrations.Migration):
                 validators=[django.contrib.sites.models._simple_domain_name_validator],
                 verbose_name="domain name",
             ),
-        )
+        ),
     ]

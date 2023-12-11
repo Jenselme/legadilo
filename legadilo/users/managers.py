@@ -1,7 +1,8 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager as DjangoUserManager
-from django.contrib.auth.models import AbstractUser
 from typing import cast
+
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import UserManager as DjangoUserManager
 
 
 class UserManager(DjangoUserManager):
