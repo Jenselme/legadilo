@@ -165,7 +165,7 @@ psycopg = { extras = ["binary"], version = "3.1.14" }  # https://github.com/psyc
 
 # Django
 # ------------------------------------------------------------------------------
-django = "4.2.8"  # pyup: < 5.0  # https://www.djangoproject.com/
+django = "5.0.0"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
 django-allauth = "0.58.2"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
@@ -198,7 +198,7 @@ sphinx-autobuild = "2021.3.14"  # https://github.com/GaretJax/sphinx-autobuild
 coverage = "7.3.2"  # https://github.com/nedbat/coveragepy
 ruff = "0.1.7"  # https://github.com/astral-sh/ruff
 djlint = "1.34.0"  # https://github.com/Riverside-Healthcare/djLint
-pre-commit = "3.5.0"  # https://github.com/pre-commit/pre-commit
+pre-commit = "3.6.0"  # https://github.com/pre-commit/pre-commit
 
 # Django
 # ------------------------------------------------------------------------------
