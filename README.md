@@ -50,6 +50,13 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
     $ pytest
 
+#### Create a new app
+
+    $ mkdir legadilo/<APP_NAME>
+    $ python manage.py startapp --template .app-template <APP_NAME> legadilo/<APP_NAME>
+
+Don’t forget to add it to `INSTALLED_APPS`!
+
 ### Live reloading and Sass CSS compilation
 
 Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally.html#sass-compilation-live-reloading).

@@ -82,6 +82,7 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount",
 ]
 LOCAL_APPS = [
+    "legadilo.core",
     "legadilo.users",
     # Your stuff: custom apps go here
 ]
