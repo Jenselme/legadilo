@@ -1,6 +1,7 @@
 from io import StringIO
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 
 from legadilo.users.models import User
@@ -10,7 +11,7 @@ from legadilo.users.models import User
 class TestUserManager:
     def test_create_user(self):
         user = User.objects.create_user(
-            username="john@example.com",
+            email="john@example.com",
             password="something-r@nd0m!",
         )
         assert user.email == "john@example.com"
@@ -21,7 +22,7 @@ class TestUserManager:
 
     def test_create_superuser(self):
         user = User.objects.create_superuser(
-            username="admin@example.com",
+            email="admin@example.com",
             password="something-r@nd0m!",
         )
         assert user.email == "admin@example.com"
@@ -31,14 +32,14 @@ class TestUserManager:
 
     def test_create_superuser_username_ignored(self):
         user = User.objects.create_superuser(
-            username="test@example.com",
+            email="test@example.com",
             password="something-r@nd0m!",
         )
         assert user.username is None
 
     def test_create_user_invalid_email(self):
-        with pytest.raises(ValueError, match=True):  # type: ignore[call-overload]
-            User.objects.create_user(username="test", password="something-R@nd0m!")
+        with pytest.raises(ValidationError):
+            User.objects.create_user(email="test", password="something-R@nd0m!")
 
 
 @pytest.mark.django_db()

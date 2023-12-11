@@ -41,6 +41,7 @@ USE_I18N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
+ASGI_APPLICATION = "config.asgi.application"
 
 # DATABASES
 # ------------------------------------------------------------------------------

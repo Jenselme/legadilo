@@ -14,6 +14,7 @@ To build and serve docs, use the commands::
 
 
 Changes to files in `docs/_source` will be picked up and reloaded automatically.
+You can access the documentation at http://localhost:9000/
 
 `Sphinx <https://www.sphinx-doc.org/>`_ is the tool used to build documentation.
 

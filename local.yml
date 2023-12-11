@@ -17,8 +17,8 @@ services:
     volumes:
       - .:/app:z
     env_file:
-      - ./.envs/.local/.django
       - ./.envs/.local/.postgres
+      - ./.envs/.local/.django
     ports:
       - '8000:8000'
     command: /start
@@ -34,6 +34,8 @@ services:
       - legadilo_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
+    ports:
+        - "5432:5432"
 
   docs:
     image: legadilo_local_docs

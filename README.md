@@ -11,7 +11,16 @@ License: GPLv3
 
 Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
 
+## Start the project
+
+1. Ensure you have [Docker](https://www.docker.com/) installed.
+2. Run `docker compose -f local.yml up`
+3. The site should be accessible at http://localhost:8000
+
 ## Basic Commands
+
+All commands must be run in the `django` container!
+Connect to it with ``
 
 ### Setting Up Your Users
 

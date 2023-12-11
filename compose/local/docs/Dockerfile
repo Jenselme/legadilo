@@ -23,6 +23,7 @@ COPY pyproject.toml .
 COPY poetry.lock .
 RUN pip install -U pip && \
     pip install poetry==1.7.1 && \
+    poetry config virtualenvs.create false && \
     poetry install --with dev
 
 COPY ./compose/local/docs/start /start-docs
