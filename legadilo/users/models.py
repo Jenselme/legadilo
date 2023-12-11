@@ -17,7 +17,7 @@ class User(AbstractUser):
     name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = None  # type: ignore[assignment]
     last_name = None  # type: ignore[assignment]
-    email = EmailField(_("email address"), unique=True)
+    email = EmailField(_("email address"), db_collation="case_insensitive", unique=True)
     username = None  # type: ignore[assignment]
 
     USERNAME_FIELD = "email"
