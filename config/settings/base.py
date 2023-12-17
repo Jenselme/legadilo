@@ -75,6 +75,8 @@ DJANGO_APPS = [
     "django.forms",
 ]
 THIRD_PARTY_APPS = [
+    "django_version_checks",
+    "extra_checks",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
@@ -288,6 +290,44 @@ ACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "legadilo.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSocialSignupForm"}
+
+
+# django-version-checks (https://pypi.org/project/django-version-checks/)
+# ------------------------------------------------------------------------------
+VERSION_CHECKS = {
+    "python": "==3.12.*",
+    "postgresql": "==15.*",
+}
+
+
+# django-extra-checks
+# ------------------------------------------------------------------------------
+EXTRA_CHECKS = {
+    "checks": [
+        # require non empty `upload_to` argument.
+        "field-file-upload-to",
+        # Use UniqueConstraint with the constraints option instead.
+        "no-unique-together",
+        # Use the indexes option instead.
+        "no-index-together",
+        # verbose_name must use gettext.
+        "field-verbose-name-gettext",
+        # help_text must use gettext.
+        "field-help-text-gettext",
+        # text fields shouldn't use null=True.
+        "field-text-null",
+        # don't pass null=False to model fields (this is django default).
+        "field-null",
+        # Related fields must specify related_name explicitly.
+        "field-related-name",
+        # If field nullable (null=True), then default=None argument is redundant and should be
+        # removed.
+        "field-default-null",
+        # Fields with choices must have companion CheckConstraint to enforce choices on database
+        # level, details.
+        "field-choices-constraint",
+    ]
+}
 
 
 # Your stuff...
