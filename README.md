@@ -17,6 +17,8 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 2. Run `docker compose -f local.yml up`
 3. The site should be accessible at http://localhost:8000
 
+You can also rely on the `devcontainer.json` file. It should be picked up automatically by VSCode. For Pycharm, please read [this](https://www.jetbrains.com/help/pycharm/connect-to-devcontainer.html).
+
 ## Basic Commands
 
 All commands must be run in the `django` container!
