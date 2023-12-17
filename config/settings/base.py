@@ -77,6 +77,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "django_version_checks",
     "extra_checks",
+    "anymail",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
@@ -223,6 +224,16 @@ EMAIL_BACKEND = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+
+
+# Anymail
+# ------------------------------------------------------------------------------
+# https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+# https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
+# https://anymail.readthedocs.io/en/stable/esps
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 
 # ADMIN
 # ------------------------------------------------------------------------------
