@@ -133,6 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
+    "csp.middleware.CSPMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -214,6 +215,38 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
+
+
+# CSP
+# ------------------------------------------------------------------------------
+# https://django-csp.readthedocs.io/en/latest/configuration.html
+# https://content-security-policy.com/
+# https://csp-evaluator.withgoogle.com/
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+CSP_SCRIPT_SRC_ATTR = None
+CSP_SCRIPT_SRC_ELEM = None
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_OBJECT_SRC = ("'none'",)
+CSP_MEDIA_SRC = ("'self'",)
+CSP_FRAME_SRC = ("'none'",)
+CSP_FONT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+CSP_STYLE_SRC_ATTR = None
+CSP_STYLE_SRC_ELEM = None
+CSP_BASE_URI = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_FORM_ACTION = ("'self'",)
+CSP_MANIFEST_SRC = ("'self'",)
+CSP_WORKER_SRC = ("'self'",)
+CSP_PLUGIN_TYPES = None
+CSP_REQUIRE_SRI_FOR = None
+CSP_INCLUDE_NONCE_IN = None
+# Those are forced to true in production
+CSP_UPGRADE_INSECURE_REQUESTS = False
+CSP_BLOCK_ALL_MIXED_CONTENT = False
+
 
 # EMAIL
 # ------------------------------------------------------------------------------
