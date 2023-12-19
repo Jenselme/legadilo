@@ -176,6 +176,7 @@ rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 django-version-checks = "1.11.0"
 django-extra-checks = "0.13.3"
 django-csp = "3.7"  # https://django-csp.readthedocs.io/en/latest/index.html
+django-axes = "6.2.0"  # https://github.com/jazzband/django-axes
 
 [tool.poetry.group.dev]
 optional = true

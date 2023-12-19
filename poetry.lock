@@ -676,6 +676,24 @@ postal = ["cryptography"]
 resend = ["svix"]
 
 [[package]]
+name = "django-axes"
+version = "6.2.0"
+description = "Keep track of failed login attempts in Django-powered sites."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django-axes-6.2.0.tar.gz", hash = "sha256:4307b34d06b037469a3930ca68bf3f9e8a7791af9c0f6f5ce599c5ce26b93190"},
+    {file = "django_axes-6.2.0-py3-none-any.whl", hash = "sha256:d32626e46fc178498e3f1955fe3e0f77130450bc1e60f322be5aae11d72e990f"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+setuptools = "*"
+
+[package.extras]
+ipware = ["django-ipware (>=3)"]
+
+[[package]]
 name = "django-browser-reload"
 version = "1.12.1"
 description = "Automatically reload your browser in development."
@@ -2959,4 +2977,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8935956d71bb90414896cabddeba34cf698d2f853b5cb3858380c41115f65ca1"
+content-hash = "3fe7a121f9bb76bc67c85e79e6f6754fec4491fae3eaca0e674c43d3c3aed8da"
