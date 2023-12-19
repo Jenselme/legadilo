@@ -161,13 +161,13 @@ python-slugify = "8.0.1"  # https://github.com/un33k/python-slugify
 Pillow = "10.1.0"  # https://github.com/python-pillow/Pillow
 argon2-cffi = "23.1.0"  # https://github.com/hynek/argon2_cffi
 whitenoise = "6.6.0"  # https://github.com/evansd/whitenoise
-psycopg = { extras = ["binary"], version = "3.1.14" }  # https://github.com/psycopg/psycopg
+psycopg = { extras = ["binary"], version = "3.1.16" }  # https://github.com/psycopg/psycopg
 
 # Django
 # ------------------------------------------------------------------------------
 django = "5.0.0"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.58.2"  # https://github.com/pennersr/django-allauth
+django-allauth = "0.59.0"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2023.10"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "10.2"  # https://github.com/anymail/django-anymail
@@ -200,8 +200,8 @@ sphinx-autobuild = "2021.3.14"  # https://github.com/GaretJax/sphinx-autobuild
 
 # Code quality
 # ------------------------------------------------------------------------------
-coverage = "7.3.2"  # https://github.com/nedbat/coveragepy
-ruff = "0.1.7"  # https://github.com/astral-sh/ruff
+coverage = "7.3.3"  # https://github.com/nedbat/coveragepy
+ruff = "0.1.8"  # https://github.com/astral-sh/ruff
 djlint = "1.34.0"  # https://github.com/Riverside-Healthcare/djLint
 pre-commit = "3.6.0"  # https://github.com/pre-commit/pre-commit
 

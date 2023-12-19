@@ -349,7 +349,7 @@ SOCIALACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSocialSignupForm"}
 # ------------------------------------------------------------------------------
 VERSION_CHECKS = {
     "python": "==3.12.*",
-    "postgresql": "==15.*",
+    "postgresql": "==16.*",
 }
 
 
