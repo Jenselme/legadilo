@@ -151,7 +151,7 @@ name = "legadilo"
 version = "0.1.0"
 description = ""
 authors = ["Julien Enselme <jujens@jujens.eu>"]
-license = "GPLv3"
+license = "AGPLv3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
