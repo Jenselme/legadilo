@@ -13,6 +13,7 @@ Welcome to Legadilo's documentation!
    howto
    pycharm/configuration
    users
+   adrs/index.rst
 
 
 
