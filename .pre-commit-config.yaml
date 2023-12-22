@@ -1,4 +1,4 @@
-exclude: '^docs/|devcontainer.json'
+exclude: "^docs/|devcontainer.json"
 default_stages: [commit]
 
 default_language_version:
@@ -18,6 +18,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-json
       - id: pretty-format-json
+        exclude: (\.vscode)
       - id: check-toml
       - id: check-xml
       - id: check-yaml
@@ -28,10 +29,10 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: '1.15.0'
+    rev: "1.15.0"
     hooks:
       - id: django-upgrade
-        args: ['--target-version', '5.0']
+        args: ["--target-version", "5.0"]
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.0
@@ -44,7 +45,7 @@ repos:
     rev: v0.1.7
     hooks:
       - id: ruff
-        args: [ --fix, --preview ]
+        args: [--fix, --preview]
       - id: ruff-format
         args: [--preview]
 
@@ -57,13 +58,13 @@ repos:
   - repo: https://github.com/thibaudcolas/curlylint
     rev: v0.13.1
     hooks:
-    - id: curlylint
+      - id: curlylint
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.8.0.3
     hooks:
-    - id: shellcheck
-      args: [-e, SC1091]
+      - id: shellcheck
+        args: [-e, SC1091]
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
