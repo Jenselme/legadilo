@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 volumes:
   legadilo_local_postgres_data: {}
@@ -20,7 +20,7 @@ services:
       - ./.envs/.local/.postgres
       - ./.envs/.local/.django
     ports:
-      - '8000:8000'
+      - "8000:8000"
     command: /start
 
   postgres:
@@ -35,7 +35,7 @@ services:
     env_file:
       - ./.envs/.local/.postgres
     ports:
-        - "5432:5432"
+      - "5432:5432"
 
   docs:
     image: legadilo_local_docs
@@ -50,7 +50,7 @@ services:
       - ./config:/app/config:z
       - ./legadilo:/app/legadilo:z
     ports:
-      - '9000:9000'
+      - "9000:9000"
     command: /start-docs
 
   mailpit:

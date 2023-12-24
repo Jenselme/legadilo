@@ -10,6 +10,11 @@
             "type": "bind"
         },
         {
+            "source": "./.devcontainer/zsh_history",
+            "target": "/home/dev-user/.zsh_history",
+            "type": "bind"
+        },
+        {
             "source": "~/.ssh",
             "target": "/home/dev-user/.ssh",
             "type": "bind"
@@ -17,7 +22,7 @@
     ],
     // Tells devcontainer.json supporting services / tools whether they should run
     // /bin/sh -c "while sleep 1000; do :; done" when starting the container instead of the container’s default command
-    "overrideCommand": false,
+    "overrideCommand": true,
     "service": "django",
     // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
     "remoteUser": "dev-user",
@@ -26,39 +31,43 @@
     "customizations": {
         "vscode": {
             "settings": {
+                "esbonio.server.pythonPath": "/usr/local/bin/python",
+                "esbonio.sphinx.confDir": "./docs",
+                "esbonio.sphinx.srcDir": "./docs",
                 "editor.formatOnSave": true,
+                "ruff.organizeImports": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": true,
+                    "source.fixAll": "explicit"
+                },
                 "[python]": {
                     "analysis.autoImportCompletions": true,
                     "analysis.typeCheckingMode": "basic",
                     "defaultInterpreterPath": "/usr/local/bin/python",
-                    "[python]": {
-                        "editor.formatOnSave": true,
-                        "editor.defaultFormatter": "charliermarsh.ruff",
-                        "editor.codeActionsOnSave": {
-                            "source.organizeImports": true
-                        }
-                    },
+                    "editor.formatOnSave": true,
+                    "editor.defaultFormatter": "charliermarsh.ruff",
                     "languageServer": "Pylance"
                 }
             },
             // https://code.visualstudio.com/docs/remote/devcontainerjson-reference#_vs-code-specific-properties
             // Add the IDs of extensions you want installed when the container is created.
             "extensions": [
-                "davidanson.vscode-markdownlint",
                 "visualstudioexptteam.vscodeintellicode",
                 "visualstudioexptteam.intellicode-api-usage-examples",
                 "EditorConfig.EditorConfig",
                 "eamodio.gitlens",
                 "mhutchie.git-graph",
-                "lextudio.restructuredtext",
-                "trond-snekvik.simple-rst",
                 "ms-azuretools.vscode-docker",
                 // python
                 "ms-python.python",
                 "ms-python.vscode-pylance",
                 "charliermarsh.ruff",
                 // django
-                "batisteo.vscode-django"
+                "batisteo.vscode-django",
+                // doc
+                "swyddfa.esbonio",
+                "trond-snekvik.simple-rst",
+                "davidanson.vscode-markdownlint"
             ]
         }
     },
@@ -67,5 +76,5 @@
     // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
     // "shutdownAction": "none",
     // Uncomment the next line to run commands after the container is created.
-    "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc"
+    "postCreateCommand": "./.devcontainer/complete-creation.sh"
 }
