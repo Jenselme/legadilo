@@ -1,4 +1,4 @@
-
+# shellcheck shell=bash
 #
 # .bashrc.override.sh
 #

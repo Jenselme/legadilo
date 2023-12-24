@@ -1,17 +1,28 @@
-# Legado
+# Legadilo
 
 Read your RSS feeds & other saved articles
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
-[![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Black code style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff/)
 
-License: GPLv3
+License: AGPLv3
 
 ## Settings
 
 Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
 
+## Start the project
+
+1. Ensure you have [Docker](https://www.docker.com/) installed.
+2. Run `docker compose -f local.yml up`
+3. The site should be accessible at http://localhost:8000
+
+You can also rely on the `devcontainer.json` file. It should be picked up automatically by VSCode. For Pycharm, please read [this](https://www.jetbrains.com/help/pycharm/connect-to-devcontainer.html).
+
 ## Basic Commands
+
+All commands must be run in the `django` container!
+Connect to it with ``
 
 ### Setting Up Your Users
 
@@ -27,7 +38,7 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 
 Running type checks with mypy:
 
-    $ mypy legado
+    $ mypy legadilo
 
 ### Test coverage
 
@@ -40,6 +51,13 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 #### Running tests with pytest
 
     $ pytest
+
+#### Create a new app
+
+    $ mkdir legadilo/<APP_NAME>
+    $ python manage.py startapp --template .app-template <APP_NAME> legadilo/<APP_NAME>
+
+Don’t forget to add it to `INSTALLED_APPS`!
 
 ### Live reloading and Sass CSS compilation
 

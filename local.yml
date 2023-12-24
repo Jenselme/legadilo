@@ -1,43 +1,45 @@
-version: '3'
+version: "3"
 
 volumes:
-  legado_local_postgres_data: {}
-  legado_local_postgres_data_backups: {}
+  legadilo_local_postgres_data: {}
+  legadilo_local_postgres_data_backups: {}
 
 services:
   django:
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
-    image: legado_local_django
-    container_name: legado_local_django
+    image: legadilo_local_django
+    container_name: legadilo_local_django
     depends_on:
       - postgres
       - mailpit
     volumes:
       - .:/app:z
     env_file:
-      - ./.envs/.local/.django
       - ./.envs/.local/.postgres
+      - ./.envs/.local/.django
     ports:
-      - '8000:8000'
+      - "8000:8000"
     command: /start
 
   postgres:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: legado_production_postgres
-    container_name: legado_local_postgres
+    image: legadilo_production_postgres
+    container_name: legadilo_local_postgres
     volumes:
-      - legado_local_postgres_data:/var/lib/postgresql/data
-      - legado_local_postgres_data_backups:/backups
+      - legadilo_local_postgres_data:/var/lib/postgresql/data
+      - legadilo_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
+    ports:
+      - "5432:5432"
 
   docs:
-    image: legado_local_docs
-    container_name: legado_local_docs
+    image: legadilo_local_docs
+    container_name: legadilo_local_docs
     build:
       context: .
       dockerfile: ./compose/local/docs/Dockerfile
@@ -46,13 +48,14 @@ services:
     volumes:
       - ./docs:/docs:z
       - ./config:/app/config:z
-      - ./legado:/app/legado:z
+      - ./legadilo:/app/legadilo:z
     ports:
-      - '9000:9000'
+      - "9000:9000"
     command: /start-docs
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: legado_local_mailpit
+    container_name: legadilo_local_mailpit
     ports:
       - "8025:8025"
+      - "1025:1025"

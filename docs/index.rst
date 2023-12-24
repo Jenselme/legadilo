@@ -1,9 +1,9 @@
-.. Legado documentation master file, created by
+.. Legadilo documentation master file, created by
    sphinx-quickstart.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Legado's documentation!
+Welcome to Legadilo's documentation!
 ======================================================================
 
 .. toctree::
@@ -13,6 +13,7 @@ Welcome to Legado's documentation!
    howto
    pycharm/configuration
    users
+   adrs/index.rst
 
 
 

@@ -48,13 +48,6 @@ updates:
       interval: 'daily'
 
   - package-ecosystem: 'docker'
-    # Look for a `Dockerfile` in the `compose/production/aws` directory
-    directory: 'compose/production/aws/'
-    # Every weekday
-    schedule:
-      interval: 'daily'
-
-  - package-ecosystem: 'docker'
     # Look for a `Dockerfile` in the `compose/production/django` directory
     directory: 'compose/production/django/'
     # Every weekday

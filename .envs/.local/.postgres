@@ -2,6 +2,7 @@
 # ------------------------------------------------------------------------------
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
-POSTGRES_DB=legado
-POSTGRES_USER=yOJSnGzcJEDSkkPYsnhYwBkANJuzeCRu
-POSTGRES_PASSWORD=rTNkrfp3ZXGC3c4mHytHe1o363WPMs7sKYER1z8nOZF8RYXqwrmUE9Wj6qo1Acus
+POSTGRES_DB=legadilo
+# Let’s make these simple for easier local use.
+POSTGRES_USER=django
+POSTGRES_PASSWORD=django_passwd

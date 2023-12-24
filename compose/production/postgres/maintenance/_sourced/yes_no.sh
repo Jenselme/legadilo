@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
-
+# shellcheck shell=bash
 
 yes_no() {
+    # shellcheck disable=2034
     declare desc="Prompt for confirmation. \$\"\{1\}\": confirmation message."
     local arg1="${1}"
 

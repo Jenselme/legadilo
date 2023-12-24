@@ -1,13 +1,14 @@
 """
 Base settings to build other settings files upon.
 """
+
 from pathlib import Path
 
 import environ
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
-# legado/
-APPS_DIR = BASE_DIR / "legado"
+# legadilo/
+APPS_DIR = BASE_DIR / "legadilo"
 env = environ.Env()
 
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
@@ -31,7 +32,6 @@ LANGUAGE_CODE = "en-us"
 # LANGUAGES = [
 #     ('en', _('English')),
 #     ('fr-fr', _('French')),
-#     ('pt-br', _('Portuguese')),
 # ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -41,12 +41,15 @@ USE_I18N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
+ASGI_APPLICATION = "config.asgi.application"
 
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
+# https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
+DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000"}
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -60,6 +63,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -71,15 +75,19 @@ DJANGO_APPS = [
     "django.forms",
 ]
 THIRD_PARTY_APPS = [
+    "django_version_checks",
+    "extra_checks",
+    "anymail",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "axes",
 ]
-
 LOCAL_APPS = [
-    "legado.users",
+    "legadilo.core",
+    "legadilo.users",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -88,12 +96,14 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIGRATIONS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#migration-modules
-MIGRATION_MODULES = {"sites": "legado.contrib.sites.migrations"}
+MIGRATION_MODULES = {"sites": "legadilo.contrib.sites.migrations"}
 
 # AUTHENTICATION
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    # AxesStandaloneBackend should be the first backend in the AUTHENTICATION_BACKENDS list.
+    "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -126,6 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
+    "csp.middleware.CSPMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -136,6 +147,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # AxesMiddleware should be the last middleware in the MIDDLEWARE list.
+    # It only formats user lockout messages and renders Axes lockout responses
+    # on failed user authentication attempts from login views.
+    # If you do not want Axes to override the authentication response
+    # you can skip installing the middleware and use your own views.
+    "axes.middleware.AxesMiddleware",
 ]
 
 # STATIC
@@ -181,10 +198,10 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "legado.users.context_processors.allauth_settings",
+                "legadilo.users.context_processors.allauth_settings",
             ],
         },
-    }
+    },
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
@@ -208,6 +225,38 @@ CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
 
+
+# CSP
+# ------------------------------------------------------------------------------
+# https://django-csp.readthedocs.io/en/latest/configuration.html
+# https://content-security-policy.com/
+# https://csp-evaluator.withgoogle.com/
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+CSP_SCRIPT_SRC_ATTR = None
+CSP_SCRIPT_SRC_ELEM = None
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_OBJECT_SRC = ("'none'",)
+CSP_MEDIA_SRC = ("'self'",)
+CSP_FRAME_SRC = ("'none'",)
+CSP_FONT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+CSP_STYLE_SRC_ATTR = None
+CSP_STYLE_SRC_ELEM = None
+CSP_BASE_URI = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_FORM_ACTION = ("'self'",)
+CSP_MANIFEST_SRC = ("'self'",)
+CSP_WORKER_SRC = ("'self'",)
+CSP_PLUGIN_TYPES = None
+CSP_REQUIRE_SRI_FOR = None
+CSP_INCLUDE_NONCE_IN = None
+# Those are forced to true in production
+CSP_UPGRADE_INSECURE_REQUESTS = False
+CSP_BLOCK_ALL_MIXED_CONTENT = False
+
+
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
@@ -217,6 +266,16 @@ EMAIL_BACKEND = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+
+
+# Anymail
+# ------------------------------------------------------------------------------
+# https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+# https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
+# https://anymail.readthedocs.io/en/stable/esps
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 
 # ADMIN
 # ------------------------------------------------------------------------------
@@ -242,13 +301,22 @@ LOGGING = {
         "verbose": {
             "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
         },
+        "rich": {"datefmt": "[%X]"},
+    },
+    "filters": {
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
     },
     "handlers": {
         "console": {
+            "class": "rich.logging.RichHandler",
+            "filters": ["require_debug_true"],
+            "formatter": "rich",
             "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        }
+            "rich_tracebacks": True,
+            "tracebacks_show_locals": True,
+        },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
 }
@@ -268,14 +336,61 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_ADAPTER = "legado.users.adapters.AccountAdapter"
+ACCOUNT_ADAPTER = "legadilo.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
-ACCOUNT_FORMS = {"signup": "legado.users.forms.UserSignupForm"}
+ACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSignupForm"}
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-SOCIALACCOUNT_ADAPTER = "legado.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "legadilo.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
-SOCIALACCOUNT_FORMS = {"signup": "legado.users.forms.UserSocialSignupForm"}
+SOCIALACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSocialSignupForm"}
 
+
+# django-version-checks (https://pypi.org/project/django-version-checks/)
+# ------------------------------------------------------------------------------
+VERSION_CHECKS = {
+    "python": "==3.12.*",
+    "postgresql": "==16.*",
+}
+
+
+# django-extra-checks
+# ------------------------------------------------------------------------------
+EXTRA_CHECKS = {
+    "checks": [
+        # require non empty `upload_to` argument.
+        "field-file-upload-to",
+        # Use UniqueConstraint with the constraints option instead.
+        "no-unique-together",
+        # Use the indexes option instead.
+        "no-index-together",
+        # verbose_name must use gettext.
+        "field-verbose-name-gettext",
+        # help_text must use gettext.
+        "field-help-text-gettext",
+        # text fields shouldn't use null=True.
+        "field-text-null",
+        # don't pass null=False to model fields (this is django default).
+        "field-null",
+        # Related fields must specify related_name explicitly.
+        "field-related-name",
+        # If field nullable (null=True), then default=None argument is redundant and should be
+        # removed.
+        "field-default-null",
+        # Fields with choices must have companion CheckConstraint to enforce choices on database
+        # level, details.
+        "field-choices-constraint",
+    ]
+}
+
+# Axes (https://django-axes.readthedocs.io/en/latest/4_configuration.html)
+# ------------------------------------------------------------------------------
+# Block by Username only (i.e.: Same user different IP is still blocked, but different user same
+# IP is not)
+AXES_LOCKOUT_PARAMETERS = ["username"]
+# Disable logging the IP-Address of failed login attempts by returning None for attempts to get the
+# IP.
+# Ignore assigning a lambda function to a variable for brevity
+AXES_CLIENT_IP_CALLABLE = lambda x: None  # noqa: E731
 
 # Your stuff...
 # ------------------------------------------------------------------------------

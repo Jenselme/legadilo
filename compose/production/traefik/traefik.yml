@@ -28,7 +28,7 @@ certificatesResolvers:
 http:
   routers:
     web-secure-router:
-      rule: 'Host(`legado.eu`) || Host(`www.legado.eu`)'
+      rule: 'Host(`legadilo.eu`) || Host(`www.legadilo.eu`)'
       entryPoints:
         - web-secure
       middlewares:
@@ -39,7 +39,7 @@ http:
         certResolver: letsencrypt
 
     web-media-router:
-      rule: '(Host(`legado.eu`) || Host(`www.legado.eu`)) && PathPrefix(`/media/`)'
+      rule: '(Host(`legadilo.eu`) || Host(`www.legadilo.eu`)) && PathPrefix(`/media/`)'
       entryPoints:
         - web-secure
       middlewares:

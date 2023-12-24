@@ -12,7 +12,11 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[*.{html,css,scss,json,yml,xml}]
+[*.{html,css,scss,json,xml}]
+indent_style = space
+indent_size = 4
+
+[*.yml]
 indent_style = space
 indent_size = 2
 
@@ -24,4 +28,4 @@ indent_style = tab
 
 [default.conf]
 indent_style = space
-indent_size = 2
+indent_size = 4
