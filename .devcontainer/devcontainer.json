@@ -58,6 +58,7 @@
                 "eamodio.gitlens",
                 "mhutchie.git-graph",
                 "ms-azuretools.vscode-docker",
+                "tamasfe.even-better-toml",
                 // python
                 "ms-python.python",
                 "ms-python.vscode-pylance",
