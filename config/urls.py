@@ -14,6 +14,7 @@ urlpatterns = [  # noqa: RUF005 concatenation
     path("users/", include("legadilo.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+    path("feeds/", include("legadilo.feeds.urls", namespace="feeds")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
