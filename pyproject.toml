@@ -1,7 +1,7 @@
 # ==== pytest ====
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--ds=config.settings.test --reuse-db"
+addopts = "--ds=config.settings.test --reuse-db --disable-socket --allow-unix-socket --allow-hosts=localhost"
 python_files = [
     "tests.py",
     "test_*.py",
@@ -157,6 +157,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 
+# General
+# ------------------------------------------------------------------------------
 python-slugify = "8.0.1"  # https://github.com/un33k/python-slugify
 Pillow = "10.1.0"  # https://github.com/python-pillow/Pillow
 argon2-cffi = "23.1.0"  # https://github.com/hynek/argon2_cffi
@@ -177,6 +179,14 @@ django-version-checks = "1.11.0"
 django-extra-checks = "0.13.3"
 django-csp = "3.7"  # https://django-csp.readthedocs.io/en/latest/index.html
 django-axes = "6.2.0"  # https://github.com/jazzband/django-axes
+
+# Project
+# ------------------------------------------------------------------------------
+feedparser = "^6.0.11"  # https://feedparser.readthedocs.io/en/latest/
+httpx = "^0.26.0"  # https://www.python-httpx.org/
+beautifulsoup4 = "^4.12.2"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+nh3 = "^0.2.15"  # https://nh3.readthedocs.io/en/latest/
+
 
 [tool.poetry.group.dev]
 optional = true
@@ -213,6 +223,10 @@ django-coverage-plugin = "3.1.0"  # https://github.com/nedbat/django_coverage_pl
 pytest-django = "4.7.0"  # https://github.com/pytest-dev/pytest-django
 django-browser-reload = "1.12.1"  # https://pypi.org/project/django-browser-reload/
 django-watchfiles = "0.1.0"  # https://github.com/adamchainz/django-watchfiles
+pytest-httpx = "^0.28.0"  # https://colin-b.github.io/pytest_httpx/
+pytest-asyncio = "^0.23.2"  # https://github.com/pytest-dev/pytest-asyncio/
+pytest-mock = "^3.12.0"    # https://pytest-mock.readthedocs.io/en/latest/
+pytest-socket = "0.5.1"  # https://github.com/miketheman/pytest-socket
 
 
 [build-system]
