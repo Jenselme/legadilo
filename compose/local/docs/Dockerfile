@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 ARG BUILD_ENVIRONMENT
 ENV PYTHONUNBUFFERED 1
