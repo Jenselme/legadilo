@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app
@@ -10,7 +10,7 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 WORKDIR ${APP_HOME}
 
 RUN addgroup --system django \
-    && adduser --system --ingroup django django
+  && adduser --system --ingroup django django
 
 
 # Install required system dependencies
@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 COPY pyproject.toml .
 COPY poetry.lock .
 RUN pip install -U pip && \
-    pip install poetry==1.7.1 && \
-    poetry install --no-cache
+  pip install poetry==1.7.1 && \
+  poetry install --no-cache
 
 
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint

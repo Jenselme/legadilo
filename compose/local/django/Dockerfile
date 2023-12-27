@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
@@ -34,9 +34,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 COPY pyproject.toml .
 COPY poetry.lock .
 RUN pip install -U pip && \
-    pip install poetry==1.7.1 && \
-    poetry config virtualenvs.create false && \
-    poetry install --with dev
+  pip install poetry==1.7.1 && \
+  poetry config virtualenvs.create false && \
+  poetry install --with dev
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
