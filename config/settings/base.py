@@ -310,6 +310,11 @@ LOGGING = {
     },
     "handlers": {
         "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+        },
+        "rich": {
             "class": "rich.logging.RichHandler",
             "filters": ["require_debug_true"],
             "formatter": "rich",
@@ -318,7 +323,7 @@ LOGGING = {
             "tracebacks_show_locals": True,
         },
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
+    "root": {"level": "INFO", "handlers": ["rich"]},
 }
 
 
