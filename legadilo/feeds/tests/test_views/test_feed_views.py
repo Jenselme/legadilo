@@ -3,7 +3,8 @@ from http import HTTPStatus
 import httpx
 import pytest
 from asgiref.sync import sync_to_async
-from django.contrib.messages import DEFAULT_LEVELS, Message, get_messages
+from django.contrib.messages import DEFAULT_LEVELS, get_messages
+from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
 from legadilo.feeds.models.feed import Feed

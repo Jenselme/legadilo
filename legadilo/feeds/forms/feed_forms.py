@@ -1,4 +1,5 @@
 import json
+from typing import cast
 
 from django import forms
 from django.utils.translation import gettext_lazy as _
@@ -6,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 class CreateFeedForm(forms.Form):
     url = forms.URLField(
-        assume_scheme="https",
+        assume_scheme="https",  # type: ignore[call-arg]
         help_text=_(
             "Enter the URL to the feed you want to subscribe to or of a site in which case we will "
             "try to find the URL of the feed."
@@ -26,9 +27,11 @@ class CreateFeedForm(forms.Form):
         super().__init__(data, **kwargs)
         if data and (proposed_feed_choices := data.get("proposed_feed_choices")):
             self.fields["url"].widget.attrs["readonly"] = "true"
-            self.initial["proposed_feed_choices"] = proposed_feed_choices
+            self.initial["proposed_feed_choices"] = proposed_feed_choices  # type: ignore[index]
             self.fields["feed_choices"].widget = forms.RadioSelect()
-            self.fields["feed_choices"].choices = self._load_proposed_feed_choices(proposed_feed_choices)
+            cast(forms.ChoiceField, self.fields["feed_choices"]).choices = self._load_proposed_feed_choices(
+                proposed_feed_choices
+            )
             self.fields["feed_choices"].required = True
 
     def _load_proposed_feed_choices(self, raw_choices):
