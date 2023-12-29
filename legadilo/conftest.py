@@ -12,3 +12,10 @@ def _media_storage(settings, tmpdir):
 @pytest.fixture()
 def user(db) -> User:
     return UserFactory()
+
+
+@pytest.fixture()
+def logged_in_async_client(user, async_client):
+    async_client.force_login(user)
+
+    return async_client
