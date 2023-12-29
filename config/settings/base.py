@@ -47,7 +47,6 @@ ASGI_APPLICATION = "config.asgi.application"
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {"default": env.db("DATABASE_URL")}
-DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
 DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000"}
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
