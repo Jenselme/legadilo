@@ -36,6 +36,8 @@
                 "esbonio.sphinx.srcDir": "./docs",
                 "editor.formatOnSave": true,
                 "ruff.organizeImports": true,
+                "ruff.format.args": ["--preview"],
+                "ruff.lint.args": ["--preview"],
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": true,
                     "source.fixAll": "explicit"
