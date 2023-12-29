@@ -323,6 +323,9 @@ LOGGING = {
         },
     },
     "root": {"level": "INFO", "handlers": ["rich"]},
+    "loggers": {
+        "legadilo": {"level": "DEBUG", "handlers": ["rich"], "propagate": False},
+    },
 }
 
 
