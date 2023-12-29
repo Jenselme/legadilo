@@ -92,7 +92,10 @@ class TestFindFeedUrl:
                     """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.rss.xml" type="application/rss+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
                 ),
-                {"https://www.jujens.eu/feeds/all.rss.xml", "https://www.jujens.eu/feeds/cat1.rss.xml"},
+                [
+                    ("https://www.jujens.eu/feeds/all.rss.xml", "Full feed"),
+                    ("https://www.jujens.eu/feeds/cat1.rss.xml", "Cat 1 feed"),
+                ],
                 id="multiple-rss-links",
             ),
             pytest.param(
@@ -101,7 +104,10 @@ class TestFindFeedUrl:
                     """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
                 ),
-                {"https://www.jujens.eu/feeds/all.atom.xml", "https://www.jujens.eu/feeds/cat1.atom.xml"},
+                [
+                    ("https://www.jujens.eu/feeds/all.atom.xml", "Full feed"),
+                    ("https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"),
+                ],
                 id="multiple-atom-links",
             ),
             pytest.param(
@@ -110,8 +116,23 @@ class TestFindFeedUrl:
                     """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
                 ),
-                {"https://www.jujens.eu/feeds/all.rss.xml", "https://www.jujens.eu/feeds/cat1.atom.xml"},
+                [
+                    ("https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"),
+                    ("https://www.jujens.eu/feeds/all.rss.xml", "Full feed"),
+                ],
                 id="various-types",
+            ),
+            pytest.param(
+                SAMPLE_HTML_TEMPLATE.replace(
+                    "{{PLACEHOLDER}}",
+                    """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate">
+                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="">""",  # noqa: E501
+                ),
+                [
+                    ("https://www.jujens.eu/feeds/cat1.atom.xml", "https://www.jujens.eu/feeds/cat1.atom.xml"),
+                    ("https://www.jujens.eu/feeds/all.rss.xml", "https://www.jujens.eu/feeds/all.rss.xml"),
+                ],
+                id="missing-titles",
             ),
         ],
     )

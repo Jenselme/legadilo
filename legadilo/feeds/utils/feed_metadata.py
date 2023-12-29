@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import chain
 
@@ -25,7 +24,7 @@ class NoFeedUrlFoundError(Exception):
 
 
 class MultipleFeedFoundError(Exception):
-    feed_urls: Iterable[str]
+    feed_urls: list[tuple[str, str]]
 
     def __init__(self, message, feed_urls):
         self.feed_urls = feed_urls
@@ -60,14 +59,25 @@ def find_feed_page_content(page_content: str) -> str:
     soup = BeautifulSoup(page_content, "html.parser")
     atom_feeds = soup.find_all("link", {"type": "application/atom+xml"})
     rss_feeds = soup.find_all("link", {"type": "application/rss+xml"})
-    feed_urls = {_normalize_found_link(feed["href"]) for feed in chain(atom_feeds, rss_feeds) if feed.get("href")}
+    feed_urls = []
+    seen_feed_urls = set()
+    for feed in chain(atom_feeds, rss_feeds):
+        if not (href := feed.get("href")):
+            continue
+
+        normalized_link = _normalize_found_link(href)
+        if normalized_link in seen_feed_urls:
+            continue
+
+        feed_urls.append((normalized_link, feed.get("title") or normalized_link))
+        seen_feed_urls.add(normalized_link)
 
     if len(feed_urls) == 0:
         raise NoFeedUrlFoundError
     if len(feed_urls) > 1:
         raise MultipleFeedFoundError("Found multiple feeds URLs", feed_urls=feed_urls)
 
-    return feed_urls.pop()
+    return feed_urls[0][0]
 
 
 def _normalize_found_link(link: str):

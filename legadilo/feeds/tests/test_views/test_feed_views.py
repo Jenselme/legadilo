@@ -50,6 +50,30 @@ class TestCreateFeedView:
         assert await Feed.objects.acount() == 1
 
     @pytest.mark.asyncio()
+    async def test_create_feed_from_feed_choices(self, logged_in_async_client, httpx_mock):
+        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+
+        response = await logged_in_async_client.post(
+            self.url,
+            {
+                "url": self.page_url,
+                "proposed_feed_choices": f'[["{self.feed_url}", "Cat 1 feed"], '
+                '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]',
+                "feed_choices": self.feed_url,
+            },
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        messages = list(get_messages(response.asgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["SUCCESS"],
+                message="Feed 'Sample Feed' added",
+            )
+        ]
+        assert await Feed.objects.acount() == 1
+
+    @pytest.mark.asyncio()
     async def test_invalid_form(self, logged_in_async_client):
         response = await logged_in_async_client.post(self.url, {"url": "toto"})
 
@@ -122,4 +146,15 @@ class TestCreateFeedView:
                 level=DEFAULT_LEVELS["WARNING"],
                 message="Multiple feeds were found at this location, please select the proper one.",
             )
+        ]
+        form = response.context_data["form"]
+        assert form.fields["url"].widget.attrs["readonly"] == "true"
+        assert form.initial == {
+            "proposed_feed_choices": '[["https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"], '
+            '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]'
+        }
+        assert form.fields["feed_choices"].required
+        assert form.fields["feed_choices"].choices == [
+            ("https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"),
+            ("https://www.jujens.eu/feeds/all.rss.xml", "Full feed"),
         ]
