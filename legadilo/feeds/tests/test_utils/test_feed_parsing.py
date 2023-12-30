@@ -1,7 +1,7 @@
 import pytest
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.utils.feed_metadata import (
+from legadilo.feeds.utils.feed_parsing import (
     FeedMetadata,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,

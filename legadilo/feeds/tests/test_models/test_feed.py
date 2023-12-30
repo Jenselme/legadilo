@@ -4,7 +4,7 @@ from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.tests.factories import FeedFactory
-from legadilo.feeds.utils.feed_metadata import FeedMetadata
+from legadilo.feeds.utils.feed_parsing import FeedMetadata
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.iterables import alist
 

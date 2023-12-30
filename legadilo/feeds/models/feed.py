@@ -3,7 +3,7 @@ from django.db import models
 from legadilo.users.models import User
 
 from ..constants import SupportedFeedType
-from ..utils.feed_metadata import get_feed_metadata
+from ..utils.feed_parsing import get_feed_metadata
 
 
 class FeedManager(models.Manager):
