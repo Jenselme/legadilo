@@ -52,12 +52,11 @@ class MultipleFeedFoundError(Exception):
 
 async def get_feed_metadata(url: str) -> FeedMetadata:
     """Find the feed medatadata from the supplied URL (either a feed or a page containing a link to a feed)."""
-    url_content = await _aget(url)
-    parsed_feed = parse_feed(url_content)
-    if not parsed_feed["version"]:
-        url = find_feed_page_content(url_content)
-        url_content = await _aget(url)
-        parsed_feed = parse_feed(url_content)
+    async with httpx.AsyncClient() as client:
+        parsed_feed, url_content = await _fetch_feed_and_raw_data(client, url)
+        if not parsed_feed["version"]:
+            url = find_feed_page_content(url_content)
+            parsed_feed = await fetch_feed(client, url)
 
     return FeedMetadata(
         feed_url=url,
@@ -69,10 +68,15 @@ async def get_feed_metadata(url: str) -> FeedMetadata:
     )
 
 
-async def _aget(url: str):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        return response.raise_for_status().text
+async def _fetch_feed_and_raw_data(client: httpx.AsyncClient, url: str) -> tuple[FeedParserDict, str]:
+    response = await client.get(url)
+    feed_content = response.raise_for_status().text
+    return parse_feed(feed_content), feed_content
+
+
+async def fetch_feed(client: httpx.AsyncClient, url: str) -> FeedParserDict:
+    parsed_feed, _ = await _fetch_feed_and_raw_data(client, url)
+    return parsed_feed
 
 
 def find_feed_page_content(page_content: str) -> str:
