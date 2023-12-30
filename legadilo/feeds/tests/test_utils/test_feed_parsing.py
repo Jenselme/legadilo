@@ -1,12 +1,18 @@
+from datetime import UTC, datetime
+from unittest.mock import ANY
+
 import pytest
 
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.utils.feed_parsing import (
+    FeedArticle,
     FeedMetadata,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
     find_feed_page_content,
     get_feed_metadata,
+    parse_articles_in_feed,
+    parse_feed,
 )
 
 from ..fixtures import SAMPLE_ATOM_FEED, SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
@@ -170,6 +176,7 @@ class TestGetFeedMetadata:
             title="Sample Feed",
             description="For documentation only",
             feed_type=feed_type,
+            articles=ANY,
         )
 
     @pytest.mark.asyncio()
@@ -191,4 +198,55 @@ class TestGetFeedMetadata:
             title="Sample Feed",
             description="For documentation only",
             feed_type=SupportedFeedType.atom10,
+            articles=ANY,
         )
+
+
+class TestParseArticlesInFeed:
+    @pytest.mark.parametrize(
+        ("feed_content", "expected_articles"),
+        [
+            pytest.param(
+                SAMPLE_RSS_FEED,
+                [
+                    FeedArticle(
+                        article_feed_id="http://example.org/entry/3",
+                        title="First entry title",
+                        summary="Watch out for <span>nasty\ntricks</span>",
+                        content="",
+                        authors=[],
+                        contributors=[],
+                        tags=[],
+                        link="http://example.org/entry/3",
+                        published_at=datetime(2002, 9, 5, 0, 0, 1, tzinfo=UTC),
+                        updated_at=datetime(2002, 9, 5, 0, 0, 1, tzinfo=UTC),
+                    )
+                ],
+                id="sample-rss-feed",
+            ),
+            pytest.param(
+                SAMPLE_ATOM_FEED,
+                [
+                    FeedArticle(
+                        article_feed_id="tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
+                        title="First entry title",
+                        summary="Watch out for nasty tricks",
+                        content="",
+                        authors=[],
+                        contributors=[],
+                        tags=[],
+                        link="http://example.org/entry/3",
+                        published_at=datetime(2005, 11, 9, 0, 23, 47, tzinfo=UTC),
+                        updated_at=datetime(2005, 11, 9, 11, 56, 34, tzinfo=UTC),
+                    )
+                ],
+                id="sample-atom-feed",
+            ),
+        ],
+    )
+    def test_parse_articles(self, feed_content, expected_articles):
+        feed_data = parse_feed(feed_content)
+
+        articles = parse_articles_in_feed("https://example.com/feeds/feed.xml", feed_data)
+
+        assert articles == expected_articles

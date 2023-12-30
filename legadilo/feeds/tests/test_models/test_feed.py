@@ -1,10 +1,12 @@
+from datetime import UTC, datetime
+
 import pytest
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.tests.factories import FeedFactory
-from legadilo.feeds.utils.feed_parsing import FeedMetadata
+from legadilo.feeds.utils.feed_parsing import FeedArticle, FeedMetadata
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.iterables import alist
 
@@ -23,19 +25,34 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                articles=[
+                    FeedArticle(
+                        article_feed_id="some-article-1",
+                        title="Article 1",
+                        summary="Summary 1",
+                        content="Description 1",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        link="https//example.com/article/1",
+                        published_at=datetime.now(tz=UTC),
+                        updated_at=datetime.now(tz=UTC),
+                    )
+                ],
             ),
             autospec=True,
         )
 
-        obj = await Feed.objects.create_from_url("https://example.com/feeds/atom.xml", user)
+        feed = await Feed.objects.create_from_url("https://example.com/feeds/atom.xml", user)
 
         assert await Feed.objects.all().acount() == 1
-        assert obj.id > 0
-        assert obj.feed_url == "https://example.com/feeds/atom.xml"
-        assert obj.site_url == "https://example.com"
-        assert obj.title == "Awesome website"
-        assert obj.description == "A description"
-        assert obj.feed_type == SupportedFeedType.atom
+        assert feed.id > 0
+        assert feed.feed_url == "https://example.com/feeds/atom.xml"
+        assert feed.site_url == "https://example.com"
+        assert feed.title == "Awesome website"
+        assert feed.description == "A description"
+        assert feed.feed_type == SupportedFeedType.atom
+        assert await feed.articles.acount() > 0
 
     @pytest.mark.asyncio()
     async def test_cannot_create_duplicated_feed_for_same_user(self, user, mocker):
@@ -47,6 +64,7 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                articles=[],
             ),
             autospec=True,
         )
@@ -67,6 +85,7 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                articles=[],
             ),
             autospec=True,
         )
