@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+    {% translate "Add a new feed" %}
+{% endblock title %}
+{% block content %}
+    <form method="post" action="{% url 'feeds:create_feed' %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>
+    </form>
+{% endblock content %}
