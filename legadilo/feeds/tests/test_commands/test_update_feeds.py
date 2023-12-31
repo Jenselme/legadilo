@@ -29,6 +29,7 @@ class TestUpdateFeedsCommand:
         assert Article.objects.count() == 1
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.first()
+        assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
         assert feed_update.success
         assert not feed_update.feed_etag
@@ -58,6 +59,7 @@ class TestUpdateFeedsCommand:
         assert Article.objects.count() == 0
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.select_related("feed").first()
+        assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
         assert not feed_update.success
         assert feed_update.error_message == "Some error"
@@ -82,6 +84,7 @@ class TestUpdateFeedsCommand:
         assert Article.objects.count() == 0
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.select_related("feed").first()
+        assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
         assert not feed_update.success
         assert feed_update.error_message == "Some error"

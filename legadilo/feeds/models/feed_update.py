@@ -14,7 +14,9 @@ class FeedUpdateQuerySet(models.QuerySet):
 
 
 class FeedUpdateManager(models.Manager):
-    def get_queryset(self):
+    _hints: dict
+
+    def get_queryset(self) -> FeedUpdateQuerySet:
         return FeedUpdateQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     async def get_latest_success_for_feed(self, feed):

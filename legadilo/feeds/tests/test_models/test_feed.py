@@ -22,12 +22,14 @@ class TestFeedQuerySet:
         feed1 = await sync_to_async(FeedFactory)(enabled=True)
         feed2 = await sync_to_async(FeedFactory)(enabled=True)
 
-        feed_ids_to_update = Feed.objects.all().only_feeds_to_update().values_list("id", flat=True).order_by("id")
+        feed_ids_to_update = (
+            Feed.objects.get_queryset().only_feeds_to_update().values_list("id", flat=True).order_by("id")
+        )
 
         assert await alist(feed_ids_to_update) == [feed1.id, feed2.id]
 
         feed_ids_to_update = (
-            Feed.objects.all().only_feeds_to_update([feed1.id]).values_list("id", flat=True).order_by("id")
+            Feed.objects.get_queryset().only_feeds_to_update([feed1.id]).values_list("id", flat=True).order_by("id")
         )
 
         assert await alist(feed_ids_to_update) == [feed1.id]

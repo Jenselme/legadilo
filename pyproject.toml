@@ -187,6 +187,7 @@ httpx = "^0.26.0"  # https://www.python-httpx.org/
 beautifulsoup4 = "^4.12.2"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 nh3 = "^0.2.15"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.20.0"  # https://github.com/python-jsonschema/jsonschema
+python-dateutil = "^2.8.2" # https://github.com/dateutil/dateutil
 
 
 [tool.poetry.group.dev]
@@ -229,6 +230,11 @@ pytest-asyncio = "^0.23.2"  # https://github.com/pytest-dev/pytest-asyncio/
 pytest-mock = "^3.12.0"    # https://pytest-mock.readthedocs.io/en/latest/
 pytest-socket = "0.5.1"  # https://github.com/miketheman/pytest-socket
 
+[tool.poetry.group.typing]
+optional = true
+
+[tool.poetry.group.typing.dependencies]
+types-python-dateutil = "^2.8.19.14"
 
 [build-system]
 requires = ["poetry-core"]

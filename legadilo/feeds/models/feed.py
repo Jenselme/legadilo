@@ -18,7 +18,9 @@ class FeedQuerySet(models.QuerySet):
 
 
 class FeedManager(models.Manager):
-    def get_queryset(self):
+    _hints: dict
+
+    def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     async def create_from_url(self, url: str, user: User):
@@ -31,7 +33,7 @@ class FeedManager(models.Manager):
             feed_type=feed_medata.feed_type,
             user=user,
         )
-        await Article.objects.update_or_create_from_articles_list(feed_medata.articles, feed.id)
+        await Article.objects.update_or_create_from_articles_list(feed_medata.articles, feed.pk)
         await FeedUpdate.objects.acreate(
             success=True,
             feed_etag=feed_medata.etag,
