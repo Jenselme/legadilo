@@ -4,6 +4,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from legadilo.feeds.constants import SupportedFeedType
+from legadilo.feeds.models import FeedUpdate
 from legadilo.users.tests.factories import UserFactory
 
 from ..models import Article, Feed
@@ -38,3 +39,14 @@ class ArticleFactory(DjangoModelFactory):
 
     class Meta:
         model = Article
+
+
+class FeedUpdateFactory(DjangoModelFactory):
+    success = True
+    feed_etag = ""
+    feed_last_modified = None
+
+    feed = factory.SubFactory(FeedFactory)
+
+    class Meta:
+        model = FeedUpdate

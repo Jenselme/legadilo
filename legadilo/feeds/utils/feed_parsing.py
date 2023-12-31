@@ -11,6 +11,7 @@ from feedparser import parse as parse_feed
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
+from ...utils.time import dt_to_http_date
 from ..constants import SupportedFeedType
 
 
@@ -35,6 +36,8 @@ class FeedMetadata:
     title: str
     description: str
     feed_type: SupportedFeedType
+    etag: str | None
+    last_modified: datetime | None
     articles: list[FeedArticle]
 
 
@@ -65,17 +68,29 @@ async def get_feed_metadata(url: str) -> FeedMetadata:
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=SupportedFeedType(parsed_feed.version),
         articles=parse_articles_in_feed(url, parsed_feed),
+        etag=parsed_feed.get("etag", ""),
+        last_modified=parse_feed_time(parsed_feed.get("modified_parsed")),
     )
 
 
-async def _fetch_feed_and_raw_data(client: httpx.AsyncClient, url: str) -> tuple[FeedParserDict, str]:
-    response = await client.get(url)
+async def _fetch_feed_and_raw_data(
+    client: httpx.AsyncClient, url: str, etag: str | None = None, last_modified: datetime | None = None
+) -> tuple[FeedParserDict, str]:
+    headers = {}
+    if etag:
+        headers["If-None-Match"] = etag
+    if last_modified:
+        headers["If-Modified-Since"] = dt_to_http_date(last_modified)
+
+    response = await client.get(url, headers=headers)
     feed_content = response.raise_for_status().text
     return parse_feed(feed_content), feed_content
 
 
-async def fetch_feed(client: httpx.AsyncClient, url: str) -> FeedParserDict:
-    parsed_feed, _ = await _fetch_feed_and_raw_data(client, url)
+async def fetch_feed(
+    client: httpx.AsyncClient, url: str, etag: str | None = None, last_modified: datetime | None = None
+) -> FeedParserDict:
+    parsed_feed, _ = await _fetch_feed_and_raw_data(client, url, etag=etag, last_modified=last_modified)
     return parsed_feed
 
 
@@ -122,8 +137,8 @@ def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[F
             contributors=_get_article_contributors(entry),
             tags=_get_articles_tags(entry),
             link=_normalize_article_link(feed_url, entry.link),
-            published_at=_get_article_datetime(entry.published_parsed),
-            updated_at=_get_article_datetime(entry.updated_parsed),
+            published_at=_feed_time_to_datetime(entry.published_parsed),
+            updated_at=_feed_time_to_datetime(entry.updated_parsed),
         )
         for entry in parsed_feed.entries
     ]
@@ -174,5 +189,12 @@ def _normalize_article_link(feed_url, article_link):
     return urljoin(f"{parsed_feed_url.scheme}://{parsed_feed_url.netloc}", article_link)
 
 
-def _get_article_datetime(time_value):
+def _feed_time_to_datetime(time_value: time.struct_time):
     return datetime.fromtimestamp(time.mktime(time_value), tz=UTC)
+
+
+def parse_feed_time(time_value: time.struct_time | None) -> datetime | None:
+    if not time_value:
+        return None
+
+    return _feed_time_to_datetime(time_value)

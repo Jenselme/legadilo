@@ -176,6 +176,8 @@ class TestGetFeedMetadata:
             title="Sample Feed",
             description="For documentation only",
             feed_type=feed_type,
+            etag="",
+            last_modified=None,
             articles=ANY,
         )
 
@@ -198,6 +200,8 @@ class TestGetFeedMetadata:
             title="Sample Feed",
             description="For documentation only",
             feed_type=SupportedFeedType.atom10,
+            etag="",
+            last_modified=None,
             articles=ANY,
         )
 

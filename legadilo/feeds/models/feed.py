@@ -5,6 +5,7 @@ from legadilo.users.models import User
 from ..constants import SupportedFeedType
 from ..utils.feed_parsing import get_feed_metadata
 from .article import Article
+from .feed_update import FeedUpdate
 
 
 class FeedManager(models.Manager):
@@ -19,6 +20,12 @@ class FeedManager(models.Manager):
             user=user,
         )
         await Article.objects.update_or_create_from_articles_list(feed_medata.articles, feed.id)
+        await FeedUpdate.objects.acreate(
+            success=True,
+            feed_etag=feed_medata.etag,
+            feed_last_modified=feed_medata.last_modified,
+            feed=feed,
+        )
         return feed
 
 

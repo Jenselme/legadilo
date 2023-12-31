@@ -5,6 +5,7 @@ from asgiref.sync import sync_to_async
 from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
+from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.feeds.utils.feed_parsing import FeedArticle, FeedMetadata
 from legadilo.users.tests.factories import UserFactory
@@ -25,6 +26,8 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
                 articles=[
                     FeedArticle(
                         article_feed_id="some-article-1",
@@ -53,6 +56,11 @@ class TestFeedManager:
         assert feed.description == "A description"
         assert feed.feed_type == SupportedFeedType.atom
         assert await feed.articles.acount() > 0
+        feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
+        assert feed_update.success
+        assert not feed_update.error_message
+        assert feed_update.feed_etag == "W/etag"
+        assert feed_update.feed_last_modified is None
 
     @pytest.mark.asyncio()
     async def test_cannot_create_duplicated_feed_for_same_user(self, user, mocker):
@@ -64,6 +72,8 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
                 articles=[],
             ),
             autospec=True,
@@ -85,6 +95,8 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
                 articles=[],
             ),
             autospec=True,
