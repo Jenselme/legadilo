@@ -26,3 +26,26 @@ class TestFeedUpdateManager:
 
         assert latest.pk == latest_feed_update.pk
         assert latest.created_at == datetime(2023, 12, 31, 11, tzinfo=UTC)
+
+    @pytest.mark.asyncio()
+    async def test_must_not_disable_feed_no_error(self):
+        feed = await sync_to_async(FeedFactory)()
+        await sync_to_async(FeedUpdateFactory)(feed=feed)
+
+        assert not await FeedUpdate.objects.must_disable_feed(feed)
+
+    @pytest.mark.asyncio()
+    async def test_must_disable_feed(self):
+        feed = await sync_to_async(FeedFactory)()
+        await sync_to_async(FeedUpdateFactory)(feed=feed, success=False)
+
+        assert await FeedUpdate.objects.must_disable_feed(feed)
+
+    @pytest.mark.asyncio()
+    async def test_must_not_disable_feed_an_update_succeeded(self):
+        feed = await sync_to_async(FeedFactory)()
+        await sync_to_async(FeedUpdateFactory)(feed=feed, success=False)
+        await sync_to_async(FeedUpdateFactory)(feed=feed, success=True)
+        await sync_to_async(FeedUpdateFactory)(feed=feed, success=False)
+
+        assert not await FeedUpdate.objects.must_disable_feed(feed)

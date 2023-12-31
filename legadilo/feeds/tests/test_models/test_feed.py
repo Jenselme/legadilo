@@ -15,6 +15,25 @@ from ...models import Feed
 
 
 @pytest.mark.django_db(transaction=True)
+class TestFeedQuerySet:
+    @pytest.mark.asyncio()
+    async def test_only_feeds_to_update(self):
+        await sync_to_async(FeedFactory)(enabled=False)
+        feed1 = await sync_to_async(FeedFactory)(enabled=True)
+        feed2 = await sync_to_async(FeedFactory)(enabled=True)
+
+        feed_ids_to_update = Feed.objects.all().only_feeds_to_update().values_list("id", flat=True).order_by("id")
+
+        assert await alist(feed_ids_to_update) == [feed1.id, feed2.id]
+
+        feed_ids_to_update = (
+            Feed.objects.all().only_feeds_to_update([feed1.id]).values_list("id", flat=True).order_by("id")
+        )
+
+        assert await alist(feed_ids_to_update) == [feed1.id]
+
+
+@pytest.mark.django_db(transaction=True)
 class TestFeedManager:
     @pytest.mark.asyncio()
     async def test_create_from_url(self, user, mocker):
@@ -110,3 +129,16 @@ class TestFeedManager:
             "https://example.com/feeds/atom.xml",
             "https://example.com/feeds/atom.xml",
         ]
+
+
+@pytest.mark.django_db(transaction=True)
+class TestFeed:
+    def test_disable(self):
+        feed = FeedFactory()
+
+        feed.disable("Broken!")
+
+        assert not feed.enabled
+        assert feed.disabled_reason == "Broken!"
+        # Check constraint allows save.
+        feed.save()

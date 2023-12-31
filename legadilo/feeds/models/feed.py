@@ -8,7 +8,19 @@ from .article import Article
 from .feed_update import FeedUpdate
 
 
+class FeedQuerySet(models.QuerySet):
+    def only_feeds_to_update(self, feed_ids: list[int] | None = None):
+        feeds_to_update = self.filter(enabled=True)
+        if feed_ids:
+            feeds_to_update = feeds_to_update.filter(id__in=feed_ids)
+
+        return feeds_to_update
+
+
 class FeedManager(models.Manager):
+    def get_queryset(self):
+        return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
+
     async def create_from_url(self, url: str, user: User):
         feed_medata = await get_feed_metadata(url)
         feed = await self.acreate(
@@ -33,6 +45,7 @@ class Feed(models.Model):
     feed_url = models.URLField()
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
+    disabled_reason = models.CharField()
 
     # We store some feeds metadata so we don't have to fetch when we need it.
     title = models.CharField()
@@ -55,7 +68,19 @@ class Feed(models.Model):
                     feed_type__in=SupportedFeedType.names,
                 ),
             ),
+            models.CheckConstraint(
+                name="feeds_Feed_disabled_reason_empty_when_enabled",
+                check=models.Q(
+                    disabled_reason="",
+                    enabled=True,
+                )
+                | models.Q(enabled=False),
+            ),
         )
 
     def __str__(self):
         return f"Feed(title={self.title})"
+
+    def disable(self, reason=""):
+        self.disabled_reason = reason
+        self.enabled = False

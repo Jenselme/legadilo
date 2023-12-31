@@ -3,6 +3,7 @@ from asyncio import TaskGroup
 from http import HTTPStatus
 
 from django.core.management.base import CommandParser
+from django.utils.translation import gettext_lazy as _
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Limits
 
 from legadilo.feeds.models import Article, Feed, FeedUpdate
@@ -24,14 +25,10 @@ class Command(AsyncCommand):
         )
 
     async def run(self, *args, **options):
-        feeds = Feed.objects.all()
-        if options["feed_ids"]:
-            feeds = feeds.filter(id__in=options["feed_ids"])
-
         async with AsyncClient(
             limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0)
         ) as client, TaskGroup() as tg:
-            async for feed in feeds:
+            async for feed in Feed.objects.all().only_feeds_to_update(options["feed_ids"]):
                 tg.create_task(self._update_feed(client, feed))
 
     async def _update_feed(self, client, feed):
@@ -70,3 +67,6 @@ class Command(AsyncCommand):
             error_message=error_message,
             feed=feed,
         )
+        if await FeedUpdate.objects.must_disable_feed(feed):
+            feed.disable(_("We failed too many times to fetch the feed"))
+            await feed.asave()
