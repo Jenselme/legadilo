@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from django.db.models import TextChoices
 
 
@@ -17,3 +18,6 @@ class SupportedFeedType(TextChoices):
     atom10 = "atom10", "Atom 1.0"
     atom = "atom", "Atom (unknown version)"
     cdf = "cdf", "CDF"
+
+
+FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)

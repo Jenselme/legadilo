@@ -24,7 +24,7 @@ COPY poetry.lock .
 RUN pip install -U pip && \
     pip install poetry==1.7.1 && \
     poetry config virtualenvs.create false && \
-    poetry install --with dev
+    poetry install --with dev --with typing
 
 COPY ./compose/local/docs/start /start-docs
 RUN sed -i 's/\r$//g' /start-docs

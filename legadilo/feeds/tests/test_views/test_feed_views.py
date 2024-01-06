@@ -7,7 +7,7 @@ from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
-from legadilo.feeds.models.feed import Feed
+from legadilo.feeds.models import Article, Feed, FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory
 
 from ..fixtures import SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
@@ -49,6 +49,8 @@ class TestCreateFeedView:
             )
         ]
         assert await Feed.objects.acount() == 1
+        assert await Article.objects.acount() > 0
+        assert await FeedUpdate.objects.acount() == 1
 
     @pytest.mark.asyncio()
     async def test_create_feed_from_feed_choices(self, logged_in_async_client, httpx_mock):
@@ -73,6 +75,7 @@ class TestCreateFeedView:
             )
         ]
         assert await Feed.objects.acount() == 1
+        assert await FeedUpdate.objects.acount() == 1
 
     @pytest.mark.asyncio()
     async def test_invalid_form(self, logged_in_async_client):

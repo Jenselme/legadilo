@@ -13,7 +13,7 @@ from legadilo.utils.decorators import alogin_required
 
 from ..forms import CreateFeedForm
 from ..models import Feed
-from ..utils.feed_metadata import MultipleFeedFoundError, NoFeedUrlFoundError
+from ..utils.feed_parsing import MultipleFeedFoundError, NoFeedUrlFoundError
 
 
 @require_http_methods(["GET", "POST"])

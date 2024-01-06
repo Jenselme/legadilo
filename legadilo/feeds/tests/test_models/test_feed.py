@@ -1,14 +1,38 @@
+from datetime import UTC, datetime
+
 import pytest
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
+from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory
-from legadilo.feeds.utils.feed_metadata import FeedMetadata
+from legadilo.feeds.utils.feed_parsing import FeedArticle, FeedMetadata
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.iterables import alist
 
 from ...models import Feed
+
+
+@pytest.mark.django_db(transaction=True)
+class TestFeedQuerySet:
+    @pytest.mark.asyncio()
+    async def test_only_feeds_to_update(self):
+        await sync_to_async(FeedFactory)(enabled=False)
+        feed1 = await sync_to_async(FeedFactory)(enabled=True)
+        feed2 = await sync_to_async(FeedFactory)(enabled=True)
+
+        feed_ids_to_update = (
+            Feed.objects.get_queryset().only_feeds_to_update().values_list("id", flat=True).order_by("id")
+        )
+
+        assert await alist(feed_ids_to_update) == [feed1.id, feed2.id]
+
+        feed_ids_to_update = (
+            Feed.objects.get_queryset().only_feeds_to_update([feed1.id]).values_list("id", flat=True).order_by("id")
+        )
+
+        assert await alist(feed_ids_to_update) == [feed1.id]
 
 
 @pytest.mark.django_db(transaction=True)
@@ -23,19 +47,41 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
+                articles=[
+                    FeedArticle(
+                        article_feed_id="some-article-1",
+                        title="Article 1",
+                        summary="Summary 1",
+                        content="Description 1",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        link="https//example.com/article/1",
+                        published_at=datetime.now(tz=UTC),
+                        updated_at=datetime.now(tz=UTC),
+                    )
+                ],
             ),
             autospec=True,
         )
 
-        obj = await Feed.objects.create_from_url("https://example.com/feeds/atom.xml", user)
+        feed = await Feed.objects.create_from_url("https://example.com/feeds/atom.xml", user)
 
         assert await Feed.objects.all().acount() == 1
-        assert obj.id > 0
-        assert obj.feed_url == "https://example.com/feeds/atom.xml"
-        assert obj.site_url == "https://example.com"
-        assert obj.title == "Awesome website"
-        assert obj.description == "A description"
-        assert obj.feed_type == SupportedFeedType.atom
+        assert feed.id > 0
+        assert feed.feed_url == "https://example.com/feeds/atom.xml"
+        assert feed.site_url == "https://example.com"
+        assert feed.title == "Awesome website"
+        assert feed.description == "A description"
+        assert feed.feed_type == SupportedFeedType.atom
+        assert await feed.articles.acount() > 0
+        feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
+        assert feed_update.success
+        assert not feed_update.error_message
+        assert feed_update.feed_etag == "W/etag"
+        assert feed_update.feed_last_modified is None
 
     @pytest.mark.asyncio()
     async def test_cannot_create_duplicated_feed_for_same_user(self, user, mocker):
@@ -47,6 +93,9 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
+                articles=[],
             ),
             autospec=True,
         )
@@ -67,6 +116,9 @@ class TestFeedManager:
                 title="Awesome website",
                 description="A description",
                 feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
+                articles=[],
             ),
             autospec=True,
         )
@@ -79,3 +131,16 @@ class TestFeedManager:
             "https://example.com/feeds/atom.xml",
             "https://example.com/feeds/atom.xml",
         ]
+
+
+@pytest.mark.django_db(transaction=True)
+class TestFeed:
+    def test_disable(self):
+        feed = FeedFactory()
+
+        feed.disable("Broken!")
+
+        assert not feed.enabled
+        assert feed.disabled_reason == "Broken!"
+        # Check constraint allows save.
+        feed.save()
