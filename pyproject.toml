@@ -178,7 +178,7 @@ daphne = "^4.0.0"  # https://github.com/django/daphne
 django-version-checks = "1.11.0"
 django-extra-checks = "0.13.3"
 django-csp = "3.7"  # https://django-csp.readthedocs.io/en/latest/index.html
-django-axes = "6.2.0"  # https://github.com/jazzband/django-axes
+django-axes = "6.3.0"  # https://github.com/jazzband/django-axes
 
 # Project
 # ------------------------------------------------------------------------------
