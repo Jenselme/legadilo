@@ -1784,19 +1784,19 @@ files = [
 
 [[package]]
 name = "pudb"
-version = "2023.1"
+version = "2024.1"
 description = "A full-screen, console-based Python debugger"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "pudb-2023.1.tar.gz", hash = "sha256:15df3c603aba87a918a666ef8e1bf63f764238cc3589db3c5b7a5f1b01ea2f03"},
+    {file = "pudb-2024.1.tar.gz", hash = "sha256:fc9d6a976a59b590764c8379ec200fecd47faa84259b64efd8cd86066a0af338"},
 ]
 
 [package.dependencies]
 jedi = ">=0.18,<1"
 packaging = ">=20.0"
 pygments = ">=2.7.4"
-urwid = ">=1.1.1"
+urwid = ">=2.4"
 urwid_readline = "*"
 
 [package.extras]
@@ -2914,53 +2914,66 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "urwid"
-version = "2.3.4"
+version = "2.4.4"
 description = "A full-featured console (xterm et al.) user interface library"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "urwid-2.3.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:232b64678248c489e0dddadccfc2483a54567b74fcf74d140f3f4b4e9d15ddba"},
-    {file = "urwid-2.3.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ce538f0e5c8ee2341f3e38239a1c65a5a042ee993577093067a4419c10615030"},
-    {file = "urwid-2.3.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:81a17afedc1f0ec7ee6af9ebae0c21f5caddf050831ffc5dfbd7e61a4966388a"},
-    {file = "urwid-2.3.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bbbb8c21920be76630d1ae03eb67dced3d362a56eabf05d619a0ce3f0488cb0d"},
-    {file = "urwid-2.3.4-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d1a0e6bbd4e70805519e843fa982ba322d819939eb7049e6ece5ed6aa132c96b"},
-    {file = "urwid-2.3.4-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8b0802494b1baaf691313cd24aaf5e4ec00bf8a6f4ba664bdf088119517db0d4"},
-    {file = "urwid-2.3.4-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:0be1a86fa279850bd167a031dd71aa401b26f7e9fdcc99360785f1a292938c10"},
-    {file = "urwid-2.3.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:de28459d08020a07fe4d918a9ca5ff069102fa5455356cc5a1695b55ebb5bafe"},
-    {file = "urwid-2.3.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:4dbeb404751341f354f7d7bf5857cacb7ba415335427c78ee00991cdcc1b5bb0"},
-    {file = "urwid-2.3.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:45e61a5be847ab36a5188aacd96554e0f354367dcae2f6cbc284de7fbbb3f075"},
-    {file = "urwid-2.3.4-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0d518d3cb428c9e0c03076dc6b83996bbfe0595d4612c3c2f572d8edbc260e9c"},
-    {file = "urwid-2.3.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:67bdc9c3f8a834b848e4400d91b5ab82620e1f963e4736600a304930433ea8fe"},
-    {file = "urwid-2.3.4-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:32d91a4f2abaa022d6bcd8f4d7b179a1bb03afcb83be4707e5599131f322dbce"},
-    {file = "urwid-2.3.4-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:278ffe0c8366c03da533a983eb85ac80e325eec09f78988fd37fc830dc563eb2"},
-    {file = "urwid-2.3.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:0080ad86d37792faeda2ddaf7eaab711861c34f19996876dde649e28139a741d"},
-    {file = "urwid-2.3.4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3c141f5e6a32e03e78ef28083691588d37f60fb5ffb2d96aecba3cda7fa38bb1"},
-    {file = "urwid-2.3.4-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:085b4b1ff4c0df96e2e82331a2353a56abbd5b7456e838baa995be4f12644347"},
-    {file = "urwid-2.3.4-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3ca3e5fbdddc3b4394cc93835a79358c56a54b05538edc7e8b66d2ff13c4689f"},
-    {file = "urwid-2.3.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:c79f55558dc50f8c19d1e1468e63942fc7577cbdb2ff948768931ef28548a5af"},
-    {file = "urwid-2.3.4-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c692bb9a314216c0cfe1fdd8787858e2e916e25f97c95e8411ba5933c0fe3c39"},
-    {file = "urwid-2.3.4-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:90440ef37b50ad5e947a095bfec7a048dfae938daa0d2355274accd886474932"},
-    {file = "urwid-2.3.4-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:205c7aa020c92797f65465e1a226fbf2122159b1565b936a5fd6ed6bd34b4440"},
-    {file = "urwid-2.3.4-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:0a263d8a90450166e0a195cf751b46d5081a48a3c00afa45a4ae582a34a6785e"},
-    {file = "urwid-2.3.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:5a6fc3651d5aff40d53b52cae1951d17c62126ffcc11c7f0d53583d28198b0a4"},
-    {file = "urwid-2.3.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:4e4a3500b7166f27ca830df8bcfb9969d97a98f340cd4b0f0299557dee8c39b3"},
-    {file = "urwid-2.3.4-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:963e89099b0438416b550161750a1e2fb52a328008732197d29e3675baacb150"},
-    {file = "urwid-2.3.4-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:448d248bd3cbe34f0422108db0cecb7d24336703677bce06b7ed67dc4892d925"},
-    {file = "urwid-2.3.4-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bae83944dc78bd178b0ad8cab9ff7d72b03ac01dcd0e1e01725142e241196f04"},
-    {file = "urwid-2.3.4-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:6cc8db27989f6166602a45f6382357827cba966e3bd607a9e409cf867f7b0ec6"},
-    {file = "urwid-2.3.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0c7e3f21b4427ecfffd6588fe5119eab7e12abd03576e8ba111fdfe2a78e3fdc"},
-    {file = "urwid-2.3.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9dae4dbccae166ee9ff03bda58c36369a566d03274c1fbf559cff11117539bc7"},
-    {file = "urwid-2.3.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2c4a213be475ae81b250e401e670d74d5d4ffb3b034ff6fc52e721759788eb05"},
-    {file = "urwid-2.3.4-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7d38afb5bbcbca365fbd86746990c22167fbeb7f85d756bad33892f364028975"},
-    {file = "urwid-2.3.4-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5fbb765783120d5dc835424f6870190b6d73c020b44ab650b682fd9ffbc41a85"},
-    {file = "urwid-2.3.4.tar.gz", hash = "sha256:18b9f84cc80a4fcda55ea29f0ea260d31f8c1c721ff6a0396a396020e6667738"},
+    {file = "urwid-2.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:9469f2ec010a22f5084fd16266d5b6121755949156ebeeb8ceff0c7df351bad2"},
+    {file = "urwid-2.4.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:37bd4fe73d89abbf43a7c8d3449f95d2a37e3a4a1fe65ca80126cd069173c586"},
+    {file = "urwid-2.4.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:9a0c31f39ea2942b97dda5c63339c63fd9140a6d192fbd0c3e8e3650c48be11f"},
+    {file = "urwid-2.4.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d1ae94e048a44ef02a3b89594941649bed753da45d8543a0bfc07e1bfad2cd90"},
+    {file = "urwid-2.4.4-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:761b0497438d4d3f28053a2a128505650da41f07348fe4fb377d48a45f05608d"},
+    {file = "urwid-2.4.4-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2920aa8e5de9933a0173c173ec13da1f2292b024206efdf2f9318a623fd9a054"},
+    {file = "urwid-2.4.4-cp310-cp310-win32.whl", hash = "sha256:deec71a4139d17f78b5fff6f5ba50d22d26dd9e896c3a6c877e1dc2a74448e13"},
+    {file = "urwid-2.4.4-cp310-cp310-win_amd64.whl", hash = "sha256:369decfcb6344187cec59e3d0b68566812571b0f00be7a4c8bd7145f8076af05"},
+    {file = "urwid-2.4.4-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:602a2dd59a3b7692ce4f6f036597641fbc9ed41361eb11a726225ee5ca6ca2b8"},
+    {file = "urwid-2.4.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:72038aef8a0c5b0861939dc6a630901659d0e71345e35c74ddd409b821348bae"},
+    {file = "urwid-2.4.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9022a4d1a8226e96e928c4a82bf299956467cf0ffc373c2432e956c4c915c9df"},
+    {file = "urwid-2.4.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f544e7158b9675300abae3b013a97e198cb3e418fed8035e7b14cbbf468c9cf0"},
+    {file = "urwid-2.4.4-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0a558796a413b8b761d5f7b4e64f10876bc403746b60423bd8279f408e460aec"},
+    {file = "urwid-2.4.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:76c76dec347a30c207efde45dd82da66501e57c8515281a8a345d43672f202b9"},
+    {file = "urwid-2.4.4-cp311-cp311-win32.whl", hash = "sha256:6e457c53b2c3fed9262ccb7f7e3176520c59fcd98c1536e446c96623ea4a221b"},
+    {file = "urwid-2.4.4-cp311-cp311-win_amd64.whl", hash = "sha256:f6c86ca6565013f7e860105e51c675d2dbb4bf5eb281323250f20053f71bcf76"},
+    {file = "urwid-2.4.4-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:ab3c261ea9b96734694369071ea660fff06c9f435efbcb1d0c8dbf8883c45995"},
+    {file = "urwid-2.4.4-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:aea00cbea62326c97b62b936b646aeecbb49369bdec7089e4ef3f4c61bc7bb31"},
+    {file = "urwid-2.4.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:af99f1b4f584464b3e71251f6efbf344c969acbff121d2c0ab7d952e82cf6c05"},
+    {file = "urwid-2.4.4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f0b36fb39555bea4364412ea29117433711d743e29e4e52799abe8eba8a61ef2"},
+    {file = "urwid-2.4.4-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e648f12b34094ffc3167e6e82a7bdbe171a46d41a3fd1c60baf93277dfb74c21"},
+    {file = "urwid-2.4.4-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8c3efca2bd024f299393450a1aa4cc6f76db483b3c6e752e071972e4da166c48"},
+    {file = "urwid-2.4.4-cp312-cp312-win32.whl", hash = "sha256:0cd1e6d8185cbb4aa05dd96443dd9c3f3b2ce2bd629b0b95bf4d18e275aed7ea"},
+    {file = "urwid-2.4.4-cp312-cp312-win_amd64.whl", hash = "sha256:8274037d3616bbf66c374045348c85c04fa79979b485ff308b52141d44f99214"},
+    {file = "urwid-2.4.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:18e4b2bf6b5d6330847e414c3b23756f3d8805010469e9ef9507d049b84830ff"},
+    {file = "urwid-2.4.4-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:450584c61eef1e61a21824ebdbddcad975536d6ff5600a03b436c698eb5602f9"},
+    {file = "urwid-2.4.4-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:de7202abe4d948cc597c2de299984991b11566065a8867c2d4e4971597dc43ed"},
+    {file = "urwid-2.4.4-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:603387c0bbaa59982003c5d9019da9d53268e00b7c2c9152c964a481286acfeb"},
+    {file = "urwid-2.4.4-cp37-cp37m-win32.whl", hash = "sha256:d9784885af1273b9eecbb79f755f3fb5db8c968d933a075d8e0dabb8bc9f407c"},
+    {file = "urwid-2.4.4-cp37-cp37m-win_amd64.whl", hash = "sha256:f7951ecc3e1b7e9a40c9dfa5de7e7de3601666f654a52dfcca07a1776a40fffc"},
+    {file = "urwid-2.4.4-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:812a8db1e26c2d8edfb4582dd9d2be92e114d18fe12522ad51dffb93a4f41d39"},
+    {file = "urwid-2.4.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:520197e7d21f87e391f0d7a18e04acb0879492142f26a7498818d551c7092deb"},
+    {file = "urwid-2.4.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:318082295d60f34347ebb5c0860af5bbbe2f6dcb64189d3a6459b94a27509ce5"},
+    {file = "urwid-2.4.4-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:167965857c4cd6958e8f74edfe1e99f566ead23876921ed466b1f9785da4d3bf"},
+    {file = "urwid-2.4.4-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:6afd358226bfa3d256df59d4b72b73ee8f6ae686f558c5d5590fb9faac12e026"},
+    {file = "urwid-2.4.4-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:01c188b3cd7e493dbcca294000b3896aff532c616cfea63fcfb16f8d3578772b"},
+    {file = "urwid-2.4.4-cp38-cp38-win32.whl", hash = "sha256:a30415354527e534f0dcc7a23ac962453aad373e1b44b6e75b4efae1ffae848c"},
+    {file = "urwid-2.4.4-cp38-cp38-win_amd64.whl", hash = "sha256:69447aa6c1155aab0173e0bb4e79d82c1ee73a63939626053140862484f218d3"},
+    {file = "urwid-2.4.4-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:12bb07624f0553bdde03e64325721f9e8e2e3498c663cff8c0012a4bf9f52bb0"},
+    {file = "urwid-2.4.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0cbff9874c6671dc611d06c85a0740f1eaa5d2ee59d2dd019d332ac6e78838f4"},
+    {file = "urwid-2.4.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:cc029fbfc1552ffd70614e78f99a7fdf4c987e016df3b6289e720a746d5cd4e3"},
+    {file = "urwid-2.4.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0147b753e57ebdd87998c5d4c63c900709d933d184088d09ef89383009adff38"},
+    {file = "urwid-2.4.4-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:402372713f231cab9b9dfb0851027586b5d9fd8764e75df9e3856176d9c8b75c"},
+    {file = "urwid-2.4.4-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1ce3f300dd762136aef728adde00afefa67dec74ac9e923e8cc446160417c4de"},
+    {file = "urwid-2.4.4-cp39-cp39-win32.whl", hash = "sha256:cae41346a9f94e72307ee2d8710bfafa54fa59cd8a14adc56ca4303cd2eeb3c0"},
+    {file = "urwid-2.4.4-cp39-cp39-win_amd64.whl", hash = "sha256:af6960c74ee4bfffaed0407209838dfad1703ecae1eff782745328981b83f355"},
+    {file = "urwid-2.4.4.tar.gz", hash = "sha256:7bf29d764dcd75e1876758ec1df50ed119f1c8b57ffe8961262525a48a305a80"},
 ]
 
 [package.extras]
+curses = ["windows-curses"]
 glib = ["PyGObject"]
 lcd = ["pyserial"]
 serial = ["pyserial"]
-tornado = ["tornado"]
+tornado = ["tornado (>=5.0)"]
 trio = ["exceptiongroup", "trio (>=0.22.0)"]
 twisted = ["twisted"]
 zmq = ["zmq"]
@@ -3169,4 +3182,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c6a7e8d2cbe0843022e783a6d617d050a1d92607e4a9909a306a7410a9d9271a"
+content-hash = "27dfe289d784aa9431b782bb429a371e19cf4516e46888df26ea9c73b701c27f"
