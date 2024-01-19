@@ -168,7 +168,7 @@ rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 
 # Django
 # ------------------------------------------------------------------------------
-django = "5.0.0"  # https://www.djangoproject.com/
+django = "5.0.1"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
 django-allauth = "0.60.1"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
