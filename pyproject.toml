@@ -214,7 +214,7 @@ myst-parser = "2.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 # Code quality
 # ------------------------------------------------------------------------------
 coverage = "7.4.0"  # https://github.com/nedbat/coveragepy
-ruff = "0.1.13"  # https://github.com/astral-sh/ruff
+ruff = "0.3.0"  # https://github.com/astral-sh/ruff
 pre-commit = "3.6.0"  # https://github.com/pre-commit/pre-commit
 
 # Django
