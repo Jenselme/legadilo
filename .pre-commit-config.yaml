@@ -30,20 +30,20 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: "1.15.0"
+    rev: "1.16.0"
     hooks:
       - id: django-upgrade
         args: ["--target-version", "5.0"]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+    rev: v3.15.1
     hooks:
       - id: pyupgrade
         args: [--py312-plus]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.1.7
+    rev: v0.3.0
     hooks:
       - id: ruff
         args: [--fix, --preview]
@@ -51,7 +51,7 @@ repos:
         args: [--preview]
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.34.0
+    rev: v1.34.1
     hooks:
       - id: djlint-reformat-django
       - id: djlint-django
@@ -62,7 +62,7 @@ repos:
       - id: curlylint
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.8.0.3
+    rev: v0.9.0.6
     hooks:
       - id: shellcheck
         args: [-e, SC1091]
