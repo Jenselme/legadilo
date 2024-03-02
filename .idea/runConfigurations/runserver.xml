@@ -6,7 +6,10 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="DATABASE_URL" value="postgres://django:django_passwd@localhost:5432/legadilo" />
       <env name="DJANGO_SETTINGS_MODULE" value="config.settings.local" />
+      <env name="EMAIL_HOST" value="localhost" />
+      <env name="PYTHONDEVMODE" value="1" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -14,7 +17,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.PycharmRunConfigurationExtension">
-      <option name="DIRENV_ENABLED" value="true" />
+      <option name="DIRENV_ENABLED" value="false" />
       <option name="DIRENV_TRUSTED" value="false" />
     </EXTENSION>
     <PathMappingSettings>
@@ -33,6 +36,8 @@
     <option name="runNoReload" value="false" />
     <option name="useCustomRunCommand" value="false" />
     <option name="customRunCommand" value="" />
-    <method v="2" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Start stack for local dev" run_configuration_type="docker-deploy" />
+    </method>
   </configuration>
 </component>
