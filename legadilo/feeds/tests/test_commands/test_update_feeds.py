@@ -12,7 +12,7 @@ from legadilo.feeds.tests.factories import FeedUpdateFactory
 from ..fixtures import SAMPLE_RSS_FEED
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db()
 class TestUpdateFeedsCommand:
     def test_update_feed_command_no_feed(self):
         call_command("update_feeds")

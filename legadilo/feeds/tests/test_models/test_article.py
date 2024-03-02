@@ -1,23 +1,20 @@
 from datetime import UTC, datetime
 
 import pytest
-from asgiref.sync import sync_to_async
+from asgiref.sync import async_to_sync
 
-from legadilo.feeds.models.article import Article
+from legadilo.feeds.models import Article
 from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory
 from legadilo.feeds.utils.feed_parsing import FeedArticle
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db()
 class TestArticleManager:
-    @pytest.mark.asyncio()
-    async def test_update_and_create_articles(self):
-        feed = await sync_to_async(FeedFactory)()
-        existing_article = await sync_to_async(ArticleFactory)(
-            feed=feed, article_feed_id=f"existing-article-feed-{feed.id}"
-        )
+    def test_update_and_create_articles(self):
+        feed = FeedFactory()
+        existing_article = ArticleFactory(feed=feed, article_feed_id=f"existing-article-feed-{feed.id}")
 
-        await Article.objects.update_or_create_from_articles_list(
+        async_to_sync(Article.objects.update_or_create_from_articles_list)(
             [
                 FeedArticle(
                     article_feed_id="some-article-1",
@@ -59,14 +56,13 @@ class TestArticleManager:
             feed.id,
         )
 
-        assert await Article.objects.acount() == 3
-        await existing_article.arefresh_from_db()
+        assert Article.objects.count() == 3
+        existing_article.refresh_from_db()
         assert existing_article.title == "Article updated"
 
-    @pytest.mark.asyncio()
-    async def test_update_and_create_articles_empty_list(self):
-        feed = await sync_to_async(FeedFactory)()
+    def test_update_and_create_articles_empty_list(self):
+        feed = FeedFactory()
 
-        await Article.objects.update_or_create_from_articles_list([], feed.id)
+        async_to_sync(Article.objects.update_or_create_from_articles_list)([], feed.id)
 
-        assert await Article.objects.acount() == 0
+        assert Article.objects.count() == 0

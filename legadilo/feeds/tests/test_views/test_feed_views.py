@@ -2,7 +2,6 @@ from http import HTTPStatus
 
 import httpx
 import pytest
-from asgiref.sync import sync_to_async
 from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
 from django.urls import reverse
@@ -13,7 +12,7 @@ from legadilo.feeds.tests.factories import FeedFactory
 from ..fixtures import SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db()
 class TestCreateFeedView:
     def setup_method(self):
         self.url = reverse("feeds:create_feed")
@@ -22,41 +21,37 @@ class TestCreateFeedView:
         self.page_url = "https://example.com"
         self.sample_page_payload = {"url": self.page_url}
 
-    @pytest.mark.asyncio()
-    async def test_not_logged_in(self, async_client):
-        response = await async_client.get(self.url)
+    def test_not_logged_in(self, client):
+        response = client.get(self.url)
 
         assert response.status_code == HTTPStatus.FORBIDDEN
 
-    @pytest.mark.asyncio()
-    async def test_get_form(self, logged_in_async_client):
-        response = await logged_in_async_client.get(self.url)
+    def test_get_form(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
 
-    @pytest.mark.asyncio()
-    async def test_create_feed(self, logged_in_async_client, httpx_mock):
+    def test_create_feed(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
-        response = await logged_in_async_client.post(self.url, self.sample_payload)
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
-        messages = list(get_messages(response.asgi_request))
+        messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
                 message="Feed 'Sample Feed' added",
             )
         ]
-        assert await Feed.objects.acount() == 1
-        assert await Article.objects.acount() > 0
-        assert await FeedUpdate.objects.acount() == 1
+        assert Feed.objects.count() == 1
+        assert Article.objects.count() > 0
+        assert FeedUpdate.objects.count() == 1
 
-    @pytest.mark.asyncio()
-    async def test_create_feed_from_feed_choices(self, logged_in_async_client, httpx_mock):
+    def test_create_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
-        response = await logged_in_async_client.post(
+        response = logged_in_sync_client.post(
             self.url,
             {
                 "url": self.page_url,
@@ -67,30 +62,28 @@ class TestCreateFeedView:
         )
 
         assert response.status_code == HTTPStatus.CREATED
-        messages = list(get_messages(response.asgi_request))
+        messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
                 message="Feed 'Sample Feed' added",
             )
         ]
-        assert await Feed.objects.acount() == 1
-        assert await FeedUpdate.objects.acount() == 1
+        assert Feed.objects.count() == 1
+        assert FeedUpdate.objects.count() == 1
 
-    @pytest.mark.asyncio()
-    async def test_invalid_form(self, logged_in_async_client):
-        response = await logged_in_async_client.post(self.url, {"url": "toto"})
+    def test_invalid_form(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {"url": "toto"})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
-    @pytest.mark.asyncio()
-    async def test_fetch_failure(self, logged_in_async_client, httpx_mock):
+    def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_exception(httpx.ReadTimeout("Unable to read within timeout"))
 
-        response = await logged_in_async_client.post(self.url, self.sample_payload)
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.NOT_ACCEPTABLE
-        messages = list(get_messages(response.asgi_request))
+        messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
@@ -99,15 +92,14 @@ class TestCreateFeedView:
             )
         ]
 
-    @pytest.mark.asyncio()
-    async def test_duplicated_feed(self, user, logged_in_async_client, httpx_mock):
-        await sync_to_async(FeedFactory)(feed_url=self.feed_url, user=user)
+    def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock):
+        FeedFactory(feed_url=self.feed_url, user=user)
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
-        response = await logged_in_async_client.post(self.url, self.sample_payload)
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CONFLICT
-        messages = list(get_messages(response.asgi_request))
+        messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
@@ -115,14 +107,13 @@ class TestCreateFeedView:
             )
         ]
 
-    @pytest.mark.asyncio()
-    async def test_cannot_find_feed_url(self, logged_in_async_client, httpx_mock):
+    def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), url=self.page_url)
 
-        response = await logged_in_async_client.post(self.url, self.sample_page_payload)
+        response = logged_in_sync_client.post(self.url, self.sample_page_payload)
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        messages = list(get_messages(response.asgi_request))
+        messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
@@ -130,8 +121,7 @@ class TestCreateFeedView:
             )
         ]
 
-    @pytest.mark.asyncio()
-    async def test_multiple_feed_urls_found(self, logged_in_async_client, httpx_mock):
+    def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(
             text=SAMPLE_HTML_TEMPLATE.replace(
                 "{{PLACEHOLDER}}",
@@ -141,10 +131,10 @@ class TestCreateFeedView:
             url=self.page_url,
         )
 
-        response = await logged_in_async_client.post(self.url, self.sample_page_payload)
+        response = logged_in_sync_client.post(self.url, self.sample_page_payload)
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        messages = list(get_messages(response.asgi_request))
+        messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["WARNING"],

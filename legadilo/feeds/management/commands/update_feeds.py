@@ -25,9 +25,12 @@ class Command(AsyncCommand):
         )
 
     async def run(self, *args, **options):
-        async with AsyncClient(
-            limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0)
-        ) as client, TaskGroup() as tg:
+        async with (
+            AsyncClient(
+                limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0)
+            ) as client,
+            TaskGroup() as tg,
+        ):
             async for feed in Feed.objects.get_queryset().only_feeds_to_update(options["feed_ids"]):
                 tg.create_task(self._update_feed(client, feed))
 

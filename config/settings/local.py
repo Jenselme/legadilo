@@ -23,6 +23,19 @@ CACHES = {
     },
 }
 
+
+# TEMPLATES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#templates
+TEMPLATES[0]["OPTIONS"].update({  # noqa: F405 `TEMPLATES` may be undefined, or defined from star imports
+    "debug": True,
+    "loaders": [
+        "django.template.loaders.filesystem.Loader",
+        "django.template.loaders.app_directories.Loader",
+    ],
+})
+
+
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host

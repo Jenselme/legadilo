@@ -49,7 +49,7 @@ class Feed(models.Model):
     enabled = models.BooleanField(default=True)
     disabled_reason = models.CharField()
 
-    # We store some feeds metadata so we don't have to fetch when we need it.
+    # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField()
     description = models.TextField()
     feed_type = models.CharField(choices=SupportedFeedType)

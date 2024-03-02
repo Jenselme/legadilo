@@ -1,6 +1,6 @@
-import asyncio
 from typing import Any
 
+from asgiref.sync import async_to_sync
 from django.core.management import BaseCommand
 
 
@@ -9,4 +9,4 @@ class AsyncCommand(BaseCommand):
         raise NotImplementedError
 
     def handle(self, *args: Any, **options: Any) -> str | None:
-        return asyncio.run(self.run(*args, **options))
+        return async_to_sync(self.run)(*args, **options)

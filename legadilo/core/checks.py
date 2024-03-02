@@ -5,9 +5,7 @@ from django.conf import settings
 from django.core.checks import Error
 from django.core.checks import Warning as CheckWarning
 
-SAFE_MODEL_NAMES = {
-    "PrintingPress",
-}
+SAFE_MODEL_NAMES: set[str] = set()
 
 
 def check_model_names(*, app_configs, **kwargs):
@@ -26,7 +24,7 @@ def check_model_names(*, app_configs, **kwargs):
                     "Model names should be singular.",
                     hint=(
                         "Rename to the singular form, e.g. "
-                        f"“{class_name.removesuffix('s')}”, or mark the "
+                        f"“{class_name.removesuffix("s")}”, or mark the "
                         f"name as allowed by adding {class_name!r} to "
                         f"{__name__}.SAFE_MODEL_NAMES."
                     ),
