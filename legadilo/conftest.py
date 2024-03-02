@@ -15,7 +15,6 @@ def user(db) -> User:
 
 
 @pytest.fixture()
-def logged_in_async_client(user, async_client):
-    async_client.force_login(user)
-
-    return async_client
+def logged_in_sync_client(user, client):
+    client.force_login(user)
+    return client

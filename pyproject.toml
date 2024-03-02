@@ -6,6 +6,10 @@ python_files = [
     "tests.py",
     "test_*.py",
 ]
+filterwarnings = [
+    # We know and aren’t impacted.
+    "ignore:To avoid breaking existing software while fixing issue 310",
+]
 
 # ==== Coverage ====
 [tool.coverage.run]

@@ -2,6 +2,7 @@
 Base settings to build other settings files upon.
 """
 
+import warnings
 from pathlib import Path
 
 import environ
@@ -184,8 +185,6 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
         "DIRS": [str(APPS_DIR / "templates")],
-        # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
-        "APP_DIRS": True,
         "OPTIONS": {
             # https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
             "context_processors": [
@@ -198,6 +197,15 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "legadilo.users.context_processors.allauth_settings",
+            ],
+            "loaders": [
+                (
+                    "django.template.loaders.cached.Loader",
+                    [
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                ),
             ],
         },
     },
@@ -256,17 +264,6 @@ CSP_UPGRADE_INSECURE_REQUESTS = False
 CSP_BLOCK_ALL_MIXED_CONTENT = False
 
 
-# EMAIL
-# ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env(
-    "DJANGO_EMAIL_BACKEND",
-    default="django.core.mail.backends.smtp.EmailBackend",
-)
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
-EMAIL_TIMEOUT = 5
-
-
 # Anymail
 # ------------------------------------------------------------------------------
 # https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
@@ -274,6 +271,8 @@ EMAIL_TIMEOUT = 5
 # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
 # https://anymail.readthedocs.io/en/stable/esps
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
+EMAIL_TIMEOUT = 5
 
 
 # ADMIN
@@ -327,6 +326,8 @@ LOGGING = {
         "legadilo": {"level": "DEBUG", "handlers": ["rich"], "propagate": False},
     },
 }
+# We know about this one and already handle is correctly.
+warnings.filterwarnings("ignore", message=r"To avoid breaking existing software while fixing issue 310.*")
 
 
 # django-allauth
@@ -368,8 +369,6 @@ EXTRA_CHECKS = {
         "field-file-upload-to",
         # Use UniqueConstraint with the constraints option instead.
         "no-unique-together",
-        # Use the indexes option instead.
-        "no-index-together",
         # verbose_name must use gettext.
         "field-verbose-name-gettext",
         # help_text must use gettext.

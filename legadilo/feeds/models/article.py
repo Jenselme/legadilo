@@ -35,7 +35,6 @@ class Article(models.Model):
     tags = models.JSONField(validators=[list_of_strings_json_schema_validator])
     link = models.URLField()
     published_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
     article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))
 
     is_read = models.BooleanField(default=False)
