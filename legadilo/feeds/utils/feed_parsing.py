@@ -13,7 +13,7 @@ from feedparser import parse as parse_feed
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 from ...utils.time import dt_to_http_date
-from ..constants import SupportedFeedType
+from .. import constants
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,7 @@ class FeedMetadata:
     site_url: str
     title: str
     description: str
-    feed_type: SupportedFeedType
+    feed_type: constants.SupportedFeedType
     etag: str | None
     last_modified: datetime | None
     articles: list[FeedArticle]
@@ -62,7 +62,7 @@ async def get_feed_metadata(
     last_modified: datetime | None = None,
 ) -> FeedMetadata:
     """Find the feed medatadata from the supplied URL (either a feed or a page containing a link to a feed)."""
-    client_ctx = nullcontext(client) if client is not None else httpx.AsyncClient()
+    client_ctx = nullcontext(client) if client is not None else httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT)
 
     async with client_ctx as http_client:
         parsed_feed, url_content = await _fetch_feed_and_raw_data(http_client, url)
@@ -75,7 +75,7 @@ async def get_feed_metadata(
         site_url=_normalize_found_link(parsed_feed.feed.link),
         title=full_sanitize(parsed_feed.feed.title),
         description=full_sanitize(parsed_feed.feed.get("description", "")),
-        feed_type=SupportedFeedType(parsed_feed.version),
+        feed_type=constants.SupportedFeedType(parsed_feed.version),
         articles=parse_articles_in_feed(url, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),

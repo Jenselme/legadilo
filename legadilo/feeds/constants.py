@@ -21,3 +21,5 @@ class SupportedFeedType(TextChoices):
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
+HTTP_TIMEOUT = 20
+HTTP_TIMEOUT_CMD_CTX = 300

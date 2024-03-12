@@ -6,6 +6,7 @@ from asgiref.sync import sync_to_async
 from django.core.management.base import CommandParser
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Limits
 
+from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.utils.feed_parsing import get_feed_metadata
 from legadilo.utils.command import AsyncCommand
@@ -27,7 +28,8 @@ class Command(AsyncCommand):
     async def run(self, *args, **options):
         async with (
             AsyncClient(
-                limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0)
+                limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0),
+                timeout=constants.HTTP_TIMEOUT_CMD_CTX,
             ) as client,
             TaskGroup() as tg,
         ):
