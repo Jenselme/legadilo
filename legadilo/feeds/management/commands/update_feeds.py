@@ -30,6 +30,7 @@ class Command(AsyncCommand):
             AsyncClient(
                 limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0),
                 timeout=constants.HTTP_TIMEOUT_CMD_CTX,
+                follow_redirects=True,
             ) as client,
             TaskGroup() as tg,
         ):

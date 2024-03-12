@@ -62,7 +62,11 @@ async def get_feed_metadata(
     last_modified: datetime | None = None,
 ) -> FeedMetadata:
     """Find the feed medatadata from the supplied URL (either a feed or a page containing a link to a feed)."""
-    client_ctx = nullcontext(client) if client is not None else httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT)
+    client_ctx = (
+        nullcontext(client)
+        if client is not None
+        else httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT, follow_redirects=True)
+    )
 
     async with client_ctx as http_client:
         parsed_feed, url_content = await _fetch_feed_and_raw_data(http_client, url)
