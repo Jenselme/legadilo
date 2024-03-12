@@ -69,13 +69,13 @@ async def get_feed_metadata(
     )
 
     async with client_ctx as http_client:
-        parsed_feed, url_content = await _fetch_feed_and_raw_data(http_client, url)
+        parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(http_client, url)
         if not parsed_feed["version"]:
             url = find_feed_page_content(url_content)
-            parsed_feed = await _fetch_feed(http_client, url, etag=etag, last_modified=last_modified)
+            parsed_feed, resolved_url = await _fetch_feed(http_client, url, etag=etag, last_modified=last_modified)
 
     return FeedMetadata(
-        feed_url=url,
+        feed_url=str(resolved_url),
         site_url=_normalize_found_link(parsed_feed.feed.link),
         title=full_sanitize(parsed_feed.feed.title),
         description=full_sanitize(parsed_feed.feed.get("description", "")),
@@ -88,7 +88,7 @@ async def get_feed_metadata(
 
 async def _fetch_feed_and_raw_data(
     client: httpx.AsyncClient, url: str, etag: str | None = None, last_modified: datetime | None = None
-) -> tuple[FeedParserDict, str]:
+) -> tuple[FeedParserDict, str, httpx.URL]:
     headers = {}
     if etag:
         headers["If-None-Match"] = etag
@@ -97,14 +97,14 @@ async def _fetch_feed_and_raw_data(
 
     response = await client.get(url, headers=headers)
     feed_content = response.raise_for_status().text
-    return parse_feed(feed_content), feed_content
+    return parse_feed(feed_content), feed_content, response.url
 
 
 async def _fetch_feed(
     client: httpx.AsyncClient, url: str, *, etag: str | None, last_modified: datetime | None
-) -> FeedParserDict:
-    parsed_feed, _ = await _fetch_feed_and_raw_data(client, url, etag=etag, last_modified=last_modified)
-    return parsed_feed
+) -> tuple[FeedParserDict, httpx.URL]:
+    parsed_feed, _, resolved_url = await _fetch_feed_and_raw_data(client, url, etag=etag, last_modified=last_modified)
+    return parsed_feed, resolved_url
 
 
 def find_feed_page_content(page_content: str) -> str:
