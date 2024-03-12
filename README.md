@@ -55,7 +55,7 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 #### Create a new app
 
     $ mkdir legadilo/<APP_NAME>
-    $ python manage.py startapp --template .app-template <APP_NAME> legadilo/<APP_NAME>
+    $ django-admin startapp --template .app-template <APP_NAME> legadilo/<APP_NAME>
 
 Don’t forget to add it to `INSTALLED_APPS`!
 
