@@ -2,6 +2,7 @@ import json
 from http import HTTPMethod, HTTPStatus
 
 import httpx
+from asgiref.sync import sync_to_async
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpRequest
@@ -13,7 +14,7 @@ from legadilo.utils.decorators import alogin_required
 
 from ..forms import CreateFeedForm
 from ..models import Feed
-from ..utils.feed_parsing import MultipleFeedFoundError, NoFeedUrlFoundError
+from ..utils.feed_parsing import MultipleFeedFoundError, NoFeedUrlFoundError, get_feed_metadata
 
 
 @require_http_methods(["GET", "POST"])
@@ -35,7 +36,8 @@ async def _handle_creation(request):
         return HTTPStatus.BAD_REQUEST, form
 
     try:
-        feed = await Feed.objects.create_from_url(form.feed_url, request.user)
+        feed_medata = await get_feed_metadata(form.feed_url)
+        feed = await sync_to_async(Feed.objects.create_from_metadata)(feed_medata, request.user)
     except httpx.HTTPError:
         messages.error(
             request,

@@ -1,4 +1,5 @@
 import time
+from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import chain
@@ -53,13 +54,21 @@ class MultipleFeedFoundError(Exception):
         super().__init__(message)
 
 
-async def get_feed_metadata(url: str) -> FeedMetadata:
+async def get_feed_metadata(
+    url: str,
+    *,
+    client: httpx.AsyncClient | None = None,
+    etag: str | None = None,
+    last_modified: datetime | None = None,
+) -> FeedMetadata:
     """Find the feed medatadata from the supplied URL (either a feed or a page containing a link to a feed)."""
-    async with httpx.AsyncClient() as client:
-        parsed_feed, url_content = await _fetch_feed_and_raw_data(client, url)
+    client_ctx = nullcontext(client) if client is not None else httpx.AsyncClient()
+
+    async with client_ctx as http_client:
+        parsed_feed, url_content = await _fetch_feed_and_raw_data(http_client, url)
         if not parsed_feed["version"]:
             url = find_feed_page_content(url_content)
-            parsed_feed = await fetch_feed(client, url)
+            parsed_feed = await _fetch_feed(http_client, url, etag=etag, last_modified=last_modified)
 
     return FeedMetadata(
         feed_url=url,
@@ -69,7 +78,7 @@ async def get_feed_metadata(url: str) -> FeedMetadata:
         feed_type=SupportedFeedType(parsed_feed.version),
         articles=parse_articles_in_feed(url, parsed_feed),
         etag=parsed_feed.get("etag", ""),
-        last_modified=parse_feed_time(parsed_feed.get("modified_parsed")),
+        last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
 
 
@@ -87,8 +96,8 @@ async def _fetch_feed_and_raw_data(
     return parse_feed(feed_content), feed_content
 
 
-async def fetch_feed(
-    client: httpx.AsyncClient, url: str, etag: str | None = None, last_modified: datetime | None = None
+async def _fetch_feed(
+    client: httpx.AsyncClient, url: str, *, etag: str | None, last_modified: datetime | None
 ) -> FeedParserDict:
     parsed_feed, _ = await _fetch_feed_and_raw_data(client, url, etag=etag, last_modified=last_modified)
     return parsed_feed
@@ -193,7 +202,7 @@ def _feed_time_to_datetime(time_value: time.struct_time):
     return datetime.fromtimestamp(time.mktime(time_value), tz=UTC)
 
 
-def parse_feed_time(time_value: time.struct_time | None) -> datetime | None:
+def _parse_feed_time(time_value: time.struct_time | None) -> datetime | None:
     if not time_value:
         return None
 

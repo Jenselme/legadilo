@@ -7,23 +7,42 @@ from ..utils.feed_parsing import FeedArticle
 
 
 class ArticleManager(models.Manager):
-    async def update_or_create_from_articles_list(self, articles: list[FeedArticle], feed_id: int):
-        for article_data in articles:
-            await self.aupdate_or_create(
+    def update_or_create_from_articles_list(self, articles_data: list[FeedArticle], feed_id: int):
+        if len(articles_data) == 0:
+            return
+
+        articles = [
+            self.model(
                 feed_id=feed_id,
                 article_feed_id=article_data.article_feed_id,
-                defaults={
-                    "title": article_data.title,
-                    "summary": article_data.summary,
-                    "content": article_data.content,
-                    "authors": article_data.authors,
-                    "contributors": article_data.contributors,
-                    "tags": article_data.tags,
-                    "link": article_data.link,
-                    "published_at": article_data.published_at,
-                    "updated_at": article_data.updated_at,
-                },
+                title=article_data.title,
+                summary=article_data.summary,
+                content=article_data.content,
+                authors=article_data.authors,
+                contributors=article_data.contributors,
+                tags=article_data.tags,
+                link=article_data.link,
+                published_at=article_data.published_at,
+                updated_at=article_data.updated_at,
             )
+            for article_data in articles_data
+        ]
+        self.bulk_create(
+            articles,
+            update_conflicts=True,
+            update_fields=[
+                "title",
+                "summary",
+                "content",
+                "authors",
+                "contributors",
+                "tags",
+                "link",
+                "published_at",
+                "updated_at",
+            ],
+            unique_fields=["feed_id", "article_feed_id"],
+        )
 
 
 class Article(models.Model):
