@@ -15,7 +15,7 @@ from ..fixtures import SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
 @pytest.mark.django_db()
 class TestCreateFeedView:
     def setup_method(self):
-        self.url = reverse("feeds:create_feed")
+        self.url = reverse("feeds:subscribe_to_feed")
         self.feed_url = "https://example.com/feeds/atom.xml"
         self.sample_payload = {"url": self.feed_url}
         self.page_url = "https://example.com"
@@ -31,7 +31,7 @@ class TestCreateFeedView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_create_feed(self, logged_in_sync_client, httpx_mock):
+    def test_subscribe_to_feed(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -48,7 +48,7 @@ class TestCreateFeedView:
         assert Article.objects.count() > 0
         assert FeedUpdate.objects.count() == 1
 
-    def test_create_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):
+    def test_subscribe_to_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
         response = logged_in_sync_client.post(
