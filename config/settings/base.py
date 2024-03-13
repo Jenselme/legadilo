@@ -320,7 +320,6 @@ LOGGING = {
         "rich": {
             "class": "rich.logging.RichHandler",
             "filters": ["require_debug_true"],
-            "formatter": "rich",
             "level": "DEBUG",
             "rich_tracebacks": True,
             "tracebacks_show_locals": True,
