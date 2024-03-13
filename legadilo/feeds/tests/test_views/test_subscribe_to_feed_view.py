@@ -92,6 +92,22 @@ class TestCreateFeedView:
             )
         ]
 
+    def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker):
+        mocker.patch("legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=2048 * 1024)
+        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message="The feed file is too big, we won't parse it. "
+                "Try to find a more lightweight feed.",
+            )
+        ]
+
     def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock):
         FeedFactory(feed_url=self.feed_url, user=user)
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)

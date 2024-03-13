@@ -1,3 +1,4 @@
+import sys
 import time
 from contextlib import nullcontext
 from dataclasses import dataclass
@@ -54,6 +55,10 @@ class MultipleFeedFoundError(Exception):
         super().__init__(message)
 
 
+class FeedFileTooBigError(Exception):
+    pass
+
+
 async def get_feed_metadata(
     url: str,
     *,
@@ -104,6 +109,9 @@ async def _fetch_feed_and_raw_data(
 
     response = await client.get(url, headers=headers)
     feed_content = response.raise_for_status().text
+    if sys.getsizeof(feed_content) > constants.MAX_FEED_FILE_SIZE:
+        raise FeedFileTooBigError
+
     return parse_feed(feed_content), feed_content, response.url
 
 

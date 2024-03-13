@@ -14,7 +14,12 @@ from legadilo.utils.decorators import alogin_required
 
 from ..forms import CreateFeedForm
 from ..models import Feed
-from ..utils.feed_parsing import MultipleFeedFoundError, NoFeedUrlFoundError, get_feed_metadata
+from ..utils.feed_parsing import (
+    FeedFileTooBigError,
+    MultipleFeedFoundError,
+    NoFeedUrlFoundError,
+    get_feed_metadata,
+)
 
 
 @require_http_methods(["GET", "POST"])
@@ -29,7 +34,7 @@ async def subscribe_to_feed(request: HttpRequest):
     return TemplateResponse(request, "feeds/create_feed.html", {"form": form}, status=status)
 
 
-async def _handle_creation(request):
+async def _handle_creation(request):  # noqa: PLR0911 Too many return statements
     form = CreateFeedForm(request.POST)
     if not form.is_valid():
         messages.error(request, _("Failed to create the feed"))
@@ -60,6 +65,12 @@ async def _handle_creation(request):
         })
         messages.warning(
             request, _("Multiple feeds were found at this location, please select the proper one.")
+        )
+        return HTTPStatus.BAD_REQUEST, form
+    except FeedFileTooBigError:
+        messages.error(
+            request,
+            _("The feed file is too big, we won't parse it. Try to find a more lightweight feed."),
         )
         return HTTPStatus.BAD_REQUEST, form
     else:

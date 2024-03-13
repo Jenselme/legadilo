@@ -6,6 +6,7 @@ import pytest
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.utils.feed_parsing import (
     FeedArticle,
+    FeedFileTooBigError,
     FeedMetadata,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
@@ -218,6 +219,14 @@ class TestGetFeedMetadata:
             last_modified=None,
             articles=ANY,
         )
+
+    @pytest.mark.asyncio()
+    async def test_feed_file_too_big(self, httpx_mock, mocker):
+        mocker.patch("legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=2048 * 1024)
+        httpx_mock.add_response(text=SAMPLE_ATOM_FEED, url="https://www.jujens.eu/feed/rss.xml")
+
+        with pytest.raises(FeedFileTooBigError):
+            await get_feed_metadata("https://www.jujens.eu/feed/rss.xml")
 
 
 class TestParseArticlesInFeed:
