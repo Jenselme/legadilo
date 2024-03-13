@@ -61,4 +61,7 @@ class FeedUpdate(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"FeedUpdate(feed__title={self.feed.title}, success={self.success}, created_at={self.created_at})"
+        return (
+            f"FeedUpdate(feed__title={self.feed.title}, success={self.success}, "
+            f"created_at={self.created_at})"
+        )

@@ -68,18 +68,21 @@ class TestFindFeedUrl:
             pytest.param("", id="empty-string"),
             pytest.param("<head></head", id="bad-html"),
             pytest.param(SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), id="no-links"),
-            pytest.param(SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", "invalid data"), id="invalid-data-in-head"),
+            pytest.param(
+                SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", "invalid data"),
+                id="invalid-data-in-head",
+            ),
             pytest.param(
                 SAMPLE_HTML_TEMPLATE.replace(
                     "{{PLACEHOLDER}}",
-                    """<link type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",
+                    """<link type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
                 ),
                 id="no-href",
             ),
             pytest.param(
                 SAMPLE_HTML_TEMPLATE.replace(
                     "{{PLACEHOLDER}}",
-                    """<link href="" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",
+                    """<link href="" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
                 ),
                 id="empty-href",
             ),
@@ -135,8 +138,14 @@ class TestFindFeedUrl:
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="">""",  # noqa: E501
                 ),
                 [
-                    ("https://www.jujens.eu/feeds/cat1.atom.xml", "https://www.jujens.eu/feeds/cat1.atom.xml"),
-                    ("https://www.jujens.eu/feeds/all.rss.xml", "https://www.jujens.eu/feeds/all.rss.xml"),
+                    (
+                        "https://www.jujens.eu/feeds/cat1.atom.xml",
+                        "https://www.jujens.eu/feeds/cat1.atom.xml",
+                    ),
+                    (
+                        "https://www.jujens.eu/feeds/all.rss.xml",
+                        "https://www.jujens.eu/feeds/all.rss.xml",
+                    ),
                 ],
                 id="missing-titles",
             ),
@@ -155,7 +164,10 @@ class TestGetFeedMetadata:
         ("feed_url", "feed_content", "feed_type"),
         [
             pytest.param(
-                "https://www.jujens.eu/feed/rss.xml", SAMPLE_RSS_FEED, SupportedFeedType.rss20, id="sample-rss-feed"
+                "https://www.jujens.eu/feed/rss.xml",
+                SAMPLE_RSS_FEED,
+                SupportedFeedType.rss20,
+                id="sample-rss-feed",
             ),
             pytest.param(
                 "https://www.jujens.eu/feed/atom.xml",
@@ -165,7 +177,9 @@ class TestGetFeedMetadata:
             ),
         ],
     )
-    async def test_get_feed_metadata_from_feed_url(self, feed_url, feed_content, feed_type, httpx_mock):
+    async def test_get_feed_metadata_from_feed_url(
+        self, feed_url, feed_content, feed_type, httpx_mock
+    ):
         httpx_mock.add_response(text=feed_content, url=feed_url)
 
         metadata = await get_feed_metadata(feed_url)

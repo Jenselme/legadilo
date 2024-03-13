@@ -11,7 +11,9 @@ from legadilo.feeds.utils.feed_parsing import FeedArticle
 class TestArticleManager:
     def test_update_and_create_articles(self):
         feed = FeedFactory()
-        existing_article = ArticleFactory(feed=feed, article_feed_id=f"existing-article-feed-{feed.id}")
+        existing_article = ArticleFactory(
+            feed=feed, article_feed_id=f"existing-article-feed-{feed.id}"
+        )
 
         Article.objects.update_or_create_from_articles_list(
             [

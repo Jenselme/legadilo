@@ -28,7 +28,9 @@ class Command(AsyncCommand):
     async def run(self, *args, **options):
         async with (
             AsyncClient(
-                limits=Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0),
+                limits=Limits(
+                    max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0
+                ),
                 timeout=constants.HTTP_TIMEOUT_CMD_CTX,
                 follow_redirects=True,
             ) as client,
@@ -42,7 +44,10 @@ class Command(AsyncCommand):
         feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
         try:
             feed_metadata = await get_feed_metadata(
-                feed.feed_url, client=client, etag=feed_update.feed_etag, last_modified=feed_update.feed_last_modified
+                feed.feed_url,
+                client=client,
+                etag=feed_update.feed_etag,
+                last_modified=feed_update.feed_last_modified,
             )
         except HTTPStatusError as e:
             if e.response.status_code == HTTPStatus.NOT_MODIFIED:

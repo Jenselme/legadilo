@@ -23,9 +23,13 @@ def test_full_sanitize(data, clean_data):
     [
         pytest.param("", "", id="empty-string"),
         pytest.param("<p>Test</p>", "<p>Test</p>", id="basic-html"),
-        pytest.param("<div>Test <p>complete</p></div>", "<div>Test <p>complete</p></div>", id="nested-html"),
+        pytest.param(
+            "<div>Test <p>complete</p></div>", "<div>Test <p>complete</p></div>", id="nested-html"
+        ),
         pytest.param("<div>Hello", "<div>Hello</div>", id="invalid-html"),
-        pytest.param("<script>alert('hell')</script><p>Coucou</p>", "<p>Coucou</p>", id="with-script"),
+        pytest.param(
+            "<script>alert('hell')</script><p>Coucou</p>", "<p>Coucou</p>", id="with-script"
+        ),
     ],
 )
 def test_sanitize_keep_safe_tags(data, clean_data):

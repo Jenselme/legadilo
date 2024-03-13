@@ -21,7 +21,9 @@ class Migration(migrations.Migration):
             model_name="feed",
             constraint=models.CheckConstraint(
                 check=models.Q(
-                    models.Q(("disabled_reason", ""), ("enabled", True)), ("enabled", False), _connector="OR"
+                    models.Q(("disabled_reason", ""), ("enabled", True)),
+                    ("enabled", False),
+                    _connector="OR",
                 ),
                 name="feeds_Feed_disabled_reason_empty_when_enabled",
             ),

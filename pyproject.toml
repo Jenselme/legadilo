@@ -20,7 +20,7 @@ plugins = ["django_coverage_plugin"]
 
 # ==== Ruf ====
 [tool.ruff]
-line-length = 119
+line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]

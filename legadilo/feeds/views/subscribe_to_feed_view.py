@@ -42,8 +42,8 @@ async def _handle_creation(request):
         messages.error(
             request,
             _(
-                "Failed to fetch the feed. Please check that the URL you entered is correct, that the feed exists "
-                "and is accessible."
+                "Failed to fetch the feed. Please check that the URL you entered is correct, that "
+                "the feed exists and is accessible."
             ),
         )
         return HTTPStatus.NOT_ACCEPTABLE, form
@@ -58,7 +58,9 @@ async def _handle_creation(request):
             "url": form.feed_url,
             "proposed_feed_choices": json.dumps(e.feed_urls),
         })
-        messages.warning(request, _("Multiple feeds were found at this location, please select the proper one."))
+        messages.warning(
+            request, _("Multiple feeds were found at this location, please select the proper one.")
+        )
         return HTTPStatus.BAD_REQUEST, form
     else:
         # Empty form after success.

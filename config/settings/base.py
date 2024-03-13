@@ -327,7 +327,9 @@ LOGGING = {
     },
 }
 # We know about this one and already handle is correctly.
-warnings.filterwarnings("ignore", message=r"To avoid breaking existing software while fixing issue 310.*")
+warnings.filterwarnings(
+    "ignore", message=r"To avoid breaking existing software while fixing issue 310.*"
+)
 
 
 # django-allauth

@@ -87,8 +87,8 @@ class TestCreateFeedView:
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
-                message="Failed to fetch the feed. Please check that the URL you entered is correct, that the feed "
-                "exists and is accessible.",
+                message="Failed to fetch the feed. Please check that the URL you entered is "
+                "correct, that the feed exists and is accessible.",
             )
         ]
 
@@ -108,7 +108,9 @@ class TestCreateFeedView:
         ]
 
     def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(text=SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), url=self.page_url)
+        httpx_mock.add_response(
+            text=SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), url=self.page_url
+        )
 
         response = logged_in_sync_client.post(self.url, self.sample_page_payload)
 
@@ -144,8 +146,8 @@ class TestCreateFeedView:
         form = response.context_data["form"]
         assert form.fields["url"].widget.attrs["readonly"] == "true"
         assert form.initial == {
-            "proposed_feed_choices": '[["https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"], '
-            '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]'
+            "proposed_feed_choices": '[["https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"],'
+            ' ["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]'
         }
         assert form.fields["feed_choices"].required
         assert form.fields["feed_choices"].choices == [

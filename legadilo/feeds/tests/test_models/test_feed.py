@@ -21,13 +21,19 @@ class TestFeedQuerySet:
         feed2 = FeedFactory(enabled=True)
 
         feed_ids_to_update = (
-            Feed.objects.get_queryset().only_feeds_to_update().values_list("id", flat=True).order_by("id")
+            Feed.objects.get_queryset()
+            .only_feeds_to_update()
+            .values_list("id", flat=True)
+            .order_by("id")
         )
 
         assert list(feed_ids_to_update) == [feed1.id, feed2.id]
 
         feed_ids_to_update = (
-            Feed.objects.get_queryset().only_feeds_to_update([feed1.id]).values_list("id", flat=True).order_by("id")
+            Feed.objects.get_queryset()
+            .only_feeds_to_update([feed1.id])
+            .values_list("id", flat=True)
+            .order_by("id")
         )
 
         assert list(feed_ids_to_update) == [feed1.id]
@@ -99,7 +105,9 @@ class TestFeedManager:
                 user,
             )
 
-        assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(execinfo.value)
+        assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(
+            execinfo.value
+        )
 
     def test_can_create_duplicated_feed_for_different_user(self, user):
         other_user = UserFactory()
@@ -118,7 +126,10 @@ class TestFeedManager:
             other_user,
         )
 
-        assert list(Feed.objects.values_list("feed_url", flat=True)) == [self.default_feed_url, self.default_feed_url]
+        assert list(Feed.objects.values_list("feed_url", flat=True)) == [
+            self.default_feed_url,
+            self.default_feed_url,
+        ]
 
     def test_disabled(self):
         Feed.objects.disable(self.feed, "Something went wrong")
