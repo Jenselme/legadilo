@@ -20,14 +20,14 @@ class FeedQuerySet(models.QuerySet):
         return feeds_to_update
 
 
-class FeedManager(models.Manager):
+class FeedManager(models.Manager["Feed"]):
     _hints: dict
 
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     @transaction.atomic()
-    def create_from_metadata(self, feed_metadata: FeedMetadata, user: User):
+    def create_from_metadata(self, feed_metadata: FeedMetadata, user: User) -> Feed:
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,

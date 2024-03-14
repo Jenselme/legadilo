@@ -38,7 +38,7 @@ class FeedMetadata:
     title: str
     description: str
     feed_type: constants.SupportedFeedType
-    etag: str | None
+    etag: str
     last_modified: datetime | None
     articles: list[FeedArticle]
 
