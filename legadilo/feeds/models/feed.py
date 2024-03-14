@@ -1,9 +1,12 @@
-from django.db import models
+from __future__ import annotations
+
+from django.db import models, transaction
+from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.models import User
 
 from ..constants import SupportedFeedType
-from ..utils.feed_parsing import get_feed_metadata
+from ..utils.feed_parsing import FeedMetadata
 from .article import Article
 from .feed_update import FeedUpdate
 
@@ -17,30 +20,51 @@ class FeedQuerySet(models.QuerySet):
         return feeds_to_update
 
 
-class FeedManager(models.Manager):
+class FeedManager(models.Manager["Feed"]):
     _hints: dict
 
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    async def create_from_url(self, url: str, user: User):
-        feed_medata = await get_feed_metadata(url)
-        feed = await self.acreate(
-            feed_url=feed_medata.feed_url,
-            site_url=feed_medata.site_url,
-            title=feed_medata.title,
-            description=feed_medata.description,
-            feed_type=feed_medata.feed_type,
+    @transaction.atomic()
+    def create_from_metadata(self, feed_metadata: FeedMetadata, user: User) -> Feed:
+        feed = self.create(
+            feed_url=feed_metadata.feed_url,
+            site_url=feed_metadata.site_url,
+            title=feed_metadata.title,
+            description=feed_metadata.description,
+            feed_type=feed_metadata.feed_type,
             user=user,
         )
-        await Article.objects.update_or_create_from_articles_list(feed_medata.articles, feed.pk)
-        await FeedUpdate.objects.acreate(
+        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed.pk)
+        FeedUpdate.objects.create(
             success=True,
-            feed_etag=feed_medata.etag,
-            feed_last_modified=feed_medata.last_modified,
+            feed_etag=feed_metadata.etag,
+            feed_last_modified=feed_metadata.last_modified,
             feed=feed,
         )
         return feed
+
+    @transaction.atomic()
+    def update_feed(self, feed: Feed, feed_metadata: FeedMetadata):
+        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed.id)
+        FeedUpdate.objects.create(
+            success=True,
+            feed_etag=feed_metadata.etag,
+            feed_last_modified=feed_metadata.last_modified,
+            feed=feed,
+        )
+
+    @transaction.atomic()
+    def disable(self, feed: Feed, error_message: str):
+        FeedUpdate.objects.create(
+            success=False,
+            error_message=error_message,
+            feed=feed,
+        )
+        if FeedUpdate.objects.must_disable_feed(feed):
+            feed.disable(_("We failed too many times to fetch the feed"))
+            feed.save()
 
 
 class Feed(models.Model):

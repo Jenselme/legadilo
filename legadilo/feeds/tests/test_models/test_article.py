@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 
 import pytest
-from asgiref.sync import async_to_sync
 
 from legadilo.feeds.models import Article
 from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory
@@ -12,9 +11,11 @@ from legadilo.feeds.utils.feed_parsing import FeedArticle
 class TestArticleManager:
     def test_update_and_create_articles(self):
         feed = FeedFactory()
-        existing_article = ArticleFactory(feed=feed, article_feed_id=f"existing-article-feed-{feed.id}")
+        existing_article = ArticleFactory(
+            feed=feed, article_feed_id=f"existing-article-feed-{feed.id}"
+        )
 
-        async_to_sync(Article.objects.update_or_create_from_articles_list)(
+        Article.objects.update_or_create_from_articles_list(
             [
                 FeedArticle(
                     article_feed_id="some-article-1",
@@ -63,6 +64,6 @@ class TestArticleManager:
     def test_update_and_create_articles_empty_list(self):
         feed = FeedFactory()
 
-        async_to_sync(Article.objects.update_or_create_from_articles_list)([], feed.id)
+        Article.objects.update_or_create_from_articles_list([], feed.id)
 
         assert Article.objects.count() == 0

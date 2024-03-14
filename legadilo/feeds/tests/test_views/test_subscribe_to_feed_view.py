@@ -15,7 +15,7 @@ from ..fixtures import SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
 @pytest.mark.django_db()
 class TestCreateFeedView:
     def setup_method(self):
-        self.url = reverse("feeds:create_feed")
+        self.url = reverse("feeds:subscribe_to_feed")
         self.feed_url = "https://example.com/feeds/atom.xml"
         self.sample_payload = {"url": self.feed_url}
         self.page_url = "https://example.com"
@@ -31,7 +31,7 @@ class TestCreateFeedView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_create_feed(self, logged_in_sync_client, httpx_mock):
+    def test_subscribe_to_feed(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -48,7 +48,7 @@ class TestCreateFeedView:
         assert Article.objects.count() > 0
         assert FeedUpdate.objects.count() == 1
 
-    def test_create_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):
+    def test_subscribe_to_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
         response = logged_in_sync_client.post(
@@ -87,8 +87,24 @@ class TestCreateFeedView:
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
-                message="Failed to fetch the feed. Please check that the URL you entered is correct, that the feed "
-                "exists and is accessible.",
+                message="Failed to fetch the feed. Please check that the URL you entered is "
+                "correct, that the feed exists and is accessible.",
+            )
+        ]
+
+    def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker):
+        mocker.patch("legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=2048 * 1024)
+        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message="The feed file is too big, we won't parse it. "
+                "Try to find a more lightweight feed.",
             )
         ]
 
@@ -108,7 +124,9 @@ class TestCreateFeedView:
         ]
 
     def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(text=SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), url=self.page_url)
+        httpx_mock.add_response(
+            text=SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), url=self.page_url
+        )
 
         response = logged_in_sync_client.post(self.url, self.sample_page_payload)
 
@@ -144,8 +162,8 @@ class TestCreateFeedView:
         form = response.context_data["form"]
         assert form.fields["url"].widget.attrs["readonly"] == "true"
         assert form.initial == {
-            "proposed_feed_choices": '[["https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"], '
-            '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]'
+            "proposed_feed_choices": '[["https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"],'
+            ' ["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]'
         }
         assert form.fields["feed_choices"].required
         assert form.fields["feed_choices"].choices == [

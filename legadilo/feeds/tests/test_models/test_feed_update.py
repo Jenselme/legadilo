@@ -30,13 +30,13 @@ class TestFeedUpdateManager:
         feed = FeedFactory()
         FeedUpdateFactory(feed=feed)
 
-        assert not async_to_sync(FeedUpdate.objects.must_disable_feed)(feed)
+        assert not FeedUpdate.objects.must_disable_feed(feed)
 
     def test_must_disable_feed(self):
         feed = FeedFactory()
         FeedUpdateFactory(feed=feed, success=False)
 
-        assert async_to_sync(FeedUpdate.objects.must_disable_feed)(feed)
+        assert FeedUpdate.objects.must_disable_feed(feed)
 
     def test_must_not_disable_feed_an_update_succeeded(self):
         feed = FeedFactory()
@@ -44,4 +44,4 @@ class TestFeedUpdateManager:
         FeedUpdateFactory(feed=feed, success=True)
         FeedUpdateFactory(feed=feed, success=False)
 
-        assert not async_to_sync(FeedUpdate.objects.must_disable_feed)(feed)
+        assert not FeedUpdate.objects.must_disable_feed(feed)

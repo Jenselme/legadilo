@@ -16,4 +16,7 @@ class JsonSchemaValidator:
             raise ValidationError(str(e)) from e
 
 
-list_of_strings_json_schema_validator = JsonSchemaValidator({"type": "array", "items": {"type": "string"}})
+list_of_strings_json_schema_validator = JsonSchemaValidator({
+    "type": "array",
+    "items": {"type": "string"},
+})

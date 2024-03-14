@@ -29,9 +29,9 @@ class CreateFeedForm(forms.Form):
             self.fields["url"].widget.attrs["readonly"] = "true"
             self.initial["proposed_feed_choices"] = proposed_feed_choices  # type: ignore[index]
             self.fields["feed_choices"].widget = forms.RadioSelect()
-            cast(forms.ChoiceField, self.fields["feed_choices"]).choices = self._load_proposed_feed_choices(
-                proposed_feed_choices
-            )
+            cast(
+                forms.ChoiceField, self.fields["feed_choices"]
+            ).choices = self._load_proposed_feed_choices(proposed_feed_choices)
             self.fields["feed_choices"].required = True
 
     def _load_proposed_feed_choices(self, raw_choices):

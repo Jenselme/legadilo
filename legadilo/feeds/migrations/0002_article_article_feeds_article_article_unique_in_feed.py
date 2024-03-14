@@ -15,7 +15,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Article",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("title", models.CharField()),
                 ("summary", models.TextField()),
                 ("content", models.TextField()),
@@ -54,14 +59,19 @@ class Migration(migrations.Migration):
                 ),
                 ("link", models.URLField()),
                 ("published_at", models.DateTimeField()),
-                ("article_feed_id", models.CharField(help_text="The id of the article in the feed.")),
+                (
+                    "article_feed_id",
+                    models.CharField(help_text="The id of the article in the feed."),
+                ),
                 ("is_read", models.BooleanField(default=False)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "feed",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="articles", to="feeds.feed"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="articles",
+                        to="feeds.feed",
                     ),
                 ),
             ],
@@ -69,7 +79,9 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="article",
             constraint=models.UniqueConstraint(
-                models.F("article_feed_id"), models.F("feed_id"), name="feeds_Article_article_unique_in_feed"
+                models.F("article_feed_id"),
+                models.F("feed_id"),
+                name="feeds_Article_article_unique_in_feed",
             ),
         ),
     ]

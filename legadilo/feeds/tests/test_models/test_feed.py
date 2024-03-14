@@ -21,13 +21,19 @@ class TestFeedQuerySet:
         feed2 = FeedFactory(enabled=True)
 
         feed_ids_to_update = (
-            Feed.objects.get_queryset().only_feeds_to_update().values_list("id", flat=True).order_by("id")
+            Feed.objects.get_queryset()
+            .only_feeds_to_update()
+            .values_list("id", flat=True)
+            .order_by("id")
         )
 
         assert list(feed_ids_to_update) == [feed1.id, feed2.id]
 
         feed_ids_to_update = (
-            Feed.objects.get_queryset().only_feeds_to_update([feed1.id]).values_list("id", flat=True).order_by("id")
+            Feed.objects.get_queryset()
+            .only_feeds_to_update([feed1.id])
+            .values_list("id", flat=True)
+            .order_by("id")
         )
 
         assert list(feed_ids_to_update) == [feed1.id]
@@ -35,10 +41,15 @@ class TestFeedQuerySet:
 
 @pytest.mark.django_db()
 class TestFeedManager:
-    def test_create_from_url(self, user, mocker):
-        mocker.patch(
-            "legadilo.feeds.models.feed.get_feed_metadata",
-            return_value=FeedMetadata(
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.default_feed_url = "https://example.com/feeds/atom.exsiting.xml"
+        self.feed = FeedFactory(feed_url=self.default_feed_url, user=user)
+        self.initial_feed_count = 1
+
+    def test_create_from_metadata(self, user):
+        feed = Feed.objects.create_from_metadata(
+            FeedMetadata(
                 feed_url="https://example.com/feeds/atom.xml",
                 site_url="https://example.com",
                 title="Awesome website",
@@ -61,12 +72,10 @@ class TestFeedManager:
                     )
                 ],
             ),
-            autospec=True,
+            user,
         )
 
-        feed = async_to_sync(Feed.objects.create_from_url)("https://example.com/feeds/atom.xml", user)
-
-        assert Feed.objects.all().count() == 1
+        assert Feed.objects.all().count() == self.initial_feed_count + 1
         assert feed.id > 0
         assert feed.feed_url == "https://example.com/feeds/atom.xml"
         assert feed.site_url == "https://example.com"
@@ -80,33 +89,32 @@ class TestFeedManager:
         assert feed_update.feed_etag == "W/etag"
         assert feed_update.feed_last_modified is None
 
-    def test_cannot_create_duplicated_feed_for_same_user(self, user, mocker):
-        mocker.patch(
-            "legadilo.feeds.models.feed.get_feed_metadata",
-            return_value=FeedMetadata(
-                feed_url="https://example.com/feeds/atom.xml",
-                site_url="https://example.com",
-                title="Awesome website",
-                description="A description",
-                feed_type=SupportedFeedType.atom,
-                etag="W/etag",
-                last_modified=None,
-                articles=[],
-            ),
-            autospec=True,
-        )
-        FeedFactory(feed_url="https://example.com/feeds/atom.xml", user=user)
-
+    def test_cannot_create_duplicated_feed_for_same_user(self, user):
         with pytest.raises(IntegrityError) as execinfo:
-            async_to_sync(Feed.objects.create_from_url)("https://example.com/feeds/atom.xml", user)
+            Feed.objects.create_from_metadata(
+                FeedMetadata(
+                    feed_url=self.default_feed_url,
+                    site_url="https://example.com",
+                    title="Awesome website",
+                    description="A description",
+                    feed_type=SupportedFeedType.atom,
+                    etag="W/etag",
+                    last_modified=None,
+                    articles=[],
+                ),
+                user,
+            )
 
-        assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(execinfo.value)
+        assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(
+            execinfo.value
+        )
 
-    def test_can_create_duplicated_feed_for_different_user(self, user, mocker):
-        mocker.patch(
-            "legadilo.feeds.models.feed.get_feed_metadata",
-            return_value=FeedMetadata(
-                feed_url="https://example.com/feeds/atom.xml",
+    def test_can_create_duplicated_feed_for_different_user(self, user):
+        other_user = UserFactory()
+
+        Feed.objects.create_from_metadata(
+            FeedMetadata(
+                feed_url=self.default_feed_url,
                 site_url="https://example.com",
                 title="Awesome website",
                 description="A description",
@@ -115,27 +123,51 @@ class TestFeedManager:
                 last_modified=None,
                 articles=[],
             ),
-            autospec=True,
+            other_user,
         )
-        other_user = UserFactory()
-        FeedFactory(feed_url="https://example.com/feeds/atom.xml", user=other_user)
-
-        async_to_sync(Feed.objects.create_from_url)("https://example.com/feeds/atom.xml", user)
 
         assert list(Feed.objects.values_list("feed_url", flat=True)) == [
-            "https://example.com/feeds/atom.xml",
-            "https://example.com/feeds/atom.xml",
+            self.default_feed_url,
+            self.default_feed_url,
         ]
 
+    def test_disabled(self):
+        Feed.objects.disable(self.feed, "Something went wrong")
 
-@pytest.mark.django_db()
-class TestFeed:
-    def test_disable(self):
-        feed = FeedFactory()
+        self.feed.refresh_from_db()
+        assert not self.feed.enabled
+        assert self.feed.disabled_reason == "We failed too many times to fetch the feed"
+        feed_update = self.feed.feed_updates.last()
+        assert not feed_update.success
+        assert feed_update.error_message == "Something went wrong"
 
-        feed.disable("Broken!")
+    def test_update_feed(self):
+        Feed.objects.update_feed(
+            self.feed,
+            FeedMetadata(
+                feed_url="https://example.com/feeds/atom.xml",
+                site_url="https://example.com",
+                title="Awesome website",
+                description="A description",
+                feed_type=SupportedFeedType.atom,
+                etag="W/etag",
+                last_modified=None,
+                articles=[
+                    FeedArticle(
+                        article_feed_id="some-article-1",
+                        title="Article 1",
+                        summary="Summary 1",
+                        content="Description 1",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        link="https//example.com/article/1",
+                        published_at=datetime.now(tz=UTC),
+                        updated_at=datetime.now(tz=UTC),
+                    )
+                ],
+            ),
+        )
 
-        assert not feed.enabled
-        assert feed.disabled_reason == "Broken!"
-        # Check constraint allows save.
-        feed.save()
+        assert self.feed.articles.count() == 1
+        assert self.feed.feed_updates.count() == 1

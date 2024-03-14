@@ -1,5 +1,5 @@
-from .feed_views import create_feed
+from .subscribe_to_feed_view import subscribe_to_feed
 
 __all__ = [
-    "create_feed",
+    "subscribe_to_feed",
 ]

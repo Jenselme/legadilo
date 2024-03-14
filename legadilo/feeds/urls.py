@@ -5,5 +5,5 @@ from . import views
 app_name = "feeds"
 
 urlpatterns = [
-    path("", views.create_feed, name="create_feed"),
+    path("", views.subscribe_to_feed, name="subscribe_to_feed"),
 ]

@@ -6,6 +6,7 @@ import warnings
 from pathlib import Path
 
 import environ
+from django.contrib.messages import constants as messages
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # legadilo/
@@ -211,6 +212,10 @@ TEMPLATES = [
     },
 ]
 
+MESSAGE_TAGS = {
+    messages.ERROR: "danger",
+}
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
@@ -315,7 +320,6 @@ LOGGING = {
         "rich": {
             "class": "rich.logging.RichHandler",
             "filters": ["require_debug_true"],
-            "formatter": "rich",
             "level": "DEBUG",
             "rich_tracebacks": True,
             "tracebacks_show_locals": True,
@@ -327,7 +331,9 @@ LOGGING = {
     },
 }
 # We know about this one and already handle is correctly.
-warnings.filterwarnings("ignore", message=r"To avoid breaking existing software while fixing issue 310.*")
+warnings.filterwarnings(
+    "ignore", message=r"To avoid breaking existing software while fixing issue 310.*"
+)
 
 
 # django-allauth

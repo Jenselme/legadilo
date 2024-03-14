@@ -13,7 +13,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="FeedUpdate",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("success", models.BooleanField()),
                 ("error_message", models.TextField(blank=True)),
                 ("feed_etag", models.CharField()),
@@ -22,7 +27,9 @@ class Migration(migrations.Migration):
                 (
                     "feed",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="feed_updates", to="feeds.feed"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="feed_updates",
+                        to="feeds.feed",
                     ),
                 ),
             ],

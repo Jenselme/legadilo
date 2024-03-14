@@ -1,0 +1,32 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Runserver (with rich logs)" type="PythonConfigurationType" factoryName="Python">
+    <module name="legadilo" />
+    <option name="ENV_FILES" value="$PROJECT_DIR$/.envs/.local/.django:$PROJECT_DIR$/.envs/.local/.pycharm" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
+    </envs>
+    <option name="SDK_HOME" value="" />
+    <option name="SDK_NAME" value="Poetry (legadilo)" />
+    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+    <option name="IS_MODULE_SDK" value="false" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <EXTENSION ID="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.PycharmRunConfigurationExtension">
+      <option name="DIRENV_ENABLED" value="true" />
+      <option name="DIRENV_TRUSTED" value="false" />
+    </EXTENSION>
+    <option name="SCRIPT_NAME" value="manage.py" />
+    <option name="PARAMETERS" value="runserver" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <option name="EMULATE_TERMINAL" value="true" />
+    <option name="MODULE_MODE" value="false" />
+    <option name="REDIRECT_INPUT" value="false" />
+    <option name="INPUT_FILE" value="" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Start stack for local dev" run_configuration_type="docker-deploy" />
+    </method>
+  </configuration>
+</component>

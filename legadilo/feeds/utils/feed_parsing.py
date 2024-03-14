@@ -1,3 +1,4 @@
+import sys
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -12,7 +13,7 @@ from feedparser import parse as parse_feed
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 from ...utils.time import dt_to_http_date
-from ..constants import SupportedFeedType
+from .. import constants
 
 
 @dataclass(frozen=True)
@@ -35,8 +36,8 @@ class FeedMetadata:
     site_url: str
     title: str
     description: str
-    feed_type: SupportedFeedType
-    etag: str | None
+    feed_type: constants.SupportedFeedType
+    etag: str
     last_modified: datetime | None
     articles: list[FeedArticle]
 
@@ -53,29 +54,46 @@ class MultipleFeedFoundError(Exception):
         super().__init__(message)
 
 
-async def get_feed_metadata(url: str) -> FeedMetadata:
-    """Find the feed medatadata from the supplied URL (either a feed or a page containing a link to a feed)."""
-    async with httpx.AsyncClient() as client:
-        parsed_feed, url_content = await _fetch_feed_and_raw_data(client, url)
-        if not parsed_feed["version"]:
-            url = find_feed_page_content(url_content)
-            parsed_feed = await fetch_feed(client, url)
+class FeedFileTooBigError(Exception):
+    pass
+
+
+async def get_feed_metadata(
+    url: str,
+    *,
+    client: httpx.AsyncClient,
+    etag: str | None = None,
+    last_modified: datetime | None = None,
+) -> FeedMetadata:
+    """Find the feed metadata from the supplied URL (either a feed or a page containing a link to
+    a feed).
+    """
+
+    parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
+    if not parsed_feed["version"]:
+        url = find_feed_page_content(url_content)
+        parsed_feed, resolved_url = await _fetch_feed(
+            client, url, etag=etag, last_modified=last_modified
+        )
 
     return FeedMetadata(
-        feed_url=url,
+        feed_url=str(resolved_url),
         site_url=_normalize_found_link(parsed_feed.feed.link),
         title=full_sanitize(parsed_feed.feed.title),
         description=full_sanitize(parsed_feed.feed.get("description", "")),
-        feed_type=SupportedFeedType(parsed_feed.version),
+        feed_type=constants.SupportedFeedType(parsed_feed.version),
         articles=parse_articles_in_feed(url, parsed_feed),
         etag=parsed_feed.get("etag", ""),
-        last_modified=parse_feed_time(parsed_feed.get("modified_parsed")),
+        last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
 
 
 async def _fetch_feed_and_raw_data(
-    client: httpx.AsyncClient, url: str, etag: str | None = None, last_modified: datetime | None = None
-) -> tuple[FeedParserDict, str]:
+    client: httpx.AsyncClient,
+    url: str,
+    etag: str | None = None,
+    last_modified: datetime | None = None,
+) -> tuple[FeedParserDict, str, httpx.URL]:
     headers = {}
     if etag:
         headers["If-None-Match"] = etag
@@ -84,14 +102,19 @@ async def _fetch_feed_and_raw_data(
 
     response = await client.get(url, headers=headers)
     feed_content = response.raise_for_status().text
-    return parse_feed(feed_content), feed_content
+    if sys.getsizeof(feed_content) > constants.MAX_FEED_FILE_SIZE:
+        raise FeedFileTooBigError
+
+    return parse_feed(feed_content), feed_content, response.url
 
 
-async def fetch_feed(
-    client: httpx.AsyncClient, url: str, etag: str | None = None, last_modified: datetime | None = None
-) -> FeedParserDict:
-    parsed_feed, _ = await _fetch_feed_and_raw_data(client, url, etag=etag, last_modified=last_modified)
-    return parsed_feed
+async def _fetch_feed(
+    client: httpx.AsyncClient, url: str, *, etag: str | None, last_modified: datetime | None
+) -> tuple[FeedParserDict, httpx.URL]:
+    parsed_feed, _, resolved_url = await _fetch_feed_and_raw_data(
+        client, url, etag=etag, last_modified=last_modified
+    )
+    return parsed_feed, resolved_url
 
 
 def find_feed_page_content(page_content: str) -> str:
@@ -193,7 +216,7 @@ def _feed_time_to_datetime(time_value: time.struct_time):
     return datetime.fromtimestamp(time.mktime(time_value), tz=UTC)
 
 
-def parse_feed_time(time_value: time.struct_time | None) -> datetime | None:
+def _parse_feed_time(time_value: time.struct_time | None) -> datetime | None:
     if not time_value:
         return None
 
