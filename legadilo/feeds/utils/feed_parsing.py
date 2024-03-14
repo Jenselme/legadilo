@@ -1,6 +1,5 @@
 import sys
 import time
-from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import chain
@@ -62,26 +61,20 @@ class FeedFileTooBigError(Exception):
 async def get_feed_metadata(
     url: str,
     *,
-    client: httpx.AsyncClient | None = None,
+    client: httpx.AsyncClient,
     etag: str | None = None,
     last_modified: datetime | None = None,
 ) -> FeedMetadata:
     """Find the feed metadata from the supplied URL (either a feed or a page containing a link to
     a feed).
     """
-    client_ctx = (
-        nullcontext(client)
-        if client is not None
-        else httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT, follow_redirects=True)
-    )
 
-    async with client_ctx as http_client:
-        parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(http_client, url)
-        if not parsed_feed["version"]:
-            url = find_feed_page_content(url_content)
-            parsed_feed, resolved_url = await _fetch_feed(
-                http_client, url, etag=etag, last_modified=last_modified
-            )
+    parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
+    if not parsed_feed["version"]:
+        url = find_feed_page_content(url_content)
+        parsed_feed, resolved_url = await _fetch_feed(
+            client, url, etag=etag, last_modified=last_modified
+        )
 
     return FeedMetadata(
         feed_url=str(resolved_url),

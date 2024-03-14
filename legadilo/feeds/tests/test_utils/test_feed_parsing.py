@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from unittest.mock import ANY
 
+import httpx
 import pytest
 
 from legadilo.feeds.constants import SupportedFeedType
@@ -183,7 +184,8 @@ class TestGetFeedMetadata:
     ):
         httpx_mock.add_response(text=feed_content, url=feed_url)
 
-        metadata = await get_feed_metadata(feed_url)
+        async with httpx.AsyncClient() as client:
+            metadata = await get_feed_metadata(feed_url, client=client)
 
         assert metadata == FeedMetadata(
             feed_url=feed_url,
@@ -207,7 +209,8 @@ class TestGetFeedMetadata:
         httpx_mock.add_response(text=page_content, url=page_url)
         httpx_mock.add_response(text=SAMPLE_ATOM_FEED, url=feed_url)
 
-        metadata = await get_feed_metadata(page_url)
+        async with httpx.AsyncClient() as client:
+            metadata = await get_feed_metadata(page_url, client=client)
 
         assert metadata == FeedMetadata(
             feed_url=feed_url,
@@ -226,7 +229,8 @@ class TestGetFeedMetadata:
         httpx_mock.add_response(text=SAMPLE_ATOM_FEED, url="https://www.jujens.eu/feed/rss.xml")
 
         with pytest.raises(FeedFileTooBigError):
-            await get_feed_metadata("https://www.jujens.eu/feed/rss.xml")
+            async with httpx.AsyncClient() as client:
+                await get_feed_metadata("https://www.jujens.eu/feed/rss.xml", client=client)
 
 
 class TestParseArticlesInFeed:

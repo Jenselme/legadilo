@@ -41,7 +41,8 @@ async def _handle_creation(request):  # noqa: PLR0911 Too many return statements
         return HTTPStatus.BAD_REQUEST, form
 
     try:
-        feed_medata = await get_feed_metadata(form.feed_url)
+        async with httpx.AsyncClient() as client:
+            feed_medata = await get_feed_metadata(form.feed_url, client=client)
         feed = await sync_to_async(Feed.objects.create_from_metadata)(feed_medata, request.user)
     except httpx.HTTPError:
         messages.error(
