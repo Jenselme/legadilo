@@ -150,6 +150,21 @@ indent_size = 4
 [tool.djlint.js]
 indent_size = 4
 
+
+[tool.importlinter]
+root_package = "legadilo"
+
+[[tool.importlinter.contracts]]
+name = "Enforce Django apps layering"
+type = "layers"
+layers = [
+    "legadilo.feeds",
+    "legadilo.users",
+    "legadilo.core",
+    "legadilo.utils",
+]
+
+
 [tool.poetry]
 name = "legadilo"
 version = "0.1.0"

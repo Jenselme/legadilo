@@ -50,6 +50,11 @@ repos:
       - id: ruff-format
         args: [--preview]
 
+  - repo: https://github.com/seddonym/import-linter
+    rev: v2.0
+    hooks:
+      - id: import-linter
+
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.34.1
     hooks:
