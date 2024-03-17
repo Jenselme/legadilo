@@ -218,8 +218,6 @@ ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
-mypy = "1.7.1"  # https://github.com/python/mypy
-django-stubs = { extras = ["compatible-mypy"], version = "4.2.7" }  # https://github.com/typeddjango/django-stubs
 pytest = "8.1.1"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
@@ -254,6 +252,8 @@ optional = true
 
 [tool.poetry.group.typing.dependencies]
 types-python-dateutil = "^2.8.19.20240106"
+mypy = "1.7.1"  # https://github.com/python/mypy
+django-stubs = { extras = ["compatible-mypy"], version = "4.2.7" }  # https://github.com/typeddjango/django-stubs
 
 [build-system]
 requires = ["poetry-core"]
