@@ -24,7 +24,7 @@ from ..utils.feed_parsing import (
 
 @require_http_methods(["GET", "POST"])
 @alogin_required
-async def subscribe_to_feed(request: HttpRequest):
+async def subscribe_to_feed_view(request: HttpRequest):
     if request.method == HTTPMethod.GET:
         status = HTTPStatus.OK
         form = CreateFeedForm()
