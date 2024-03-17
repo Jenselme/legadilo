@@ -68,7 +68,7 @@ class Article(models.Model):
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                "article_feed_id", "feed_id", name="feeds_Article_article_unique_in_feed"
+                "article_feed_id", "feed_id", name="%(app_label)s_%(class)s_article_unique_in_feed"
             ),
         )
 

@@ -89,13 +89,13 @@ class Feed(models.Model):
         constraints = (
             models.UniqueConstraint("feed_url", "user", name="feeds_Feed_feed_url_unique"),
             models.CheckConstraint(
-                name="feeds_Feed_feed_type_valid",
+                name="%(app_label)s_%(class)s_feed_type_valid",
                 check=models.Q(
                     feed_type__in=SupportedFeedType.names,
                 ),
             ),
             models.CheckConstraint(
-                name="feeds_Feed_disabled_reason_empty_when_enabled",
+                name="%(app_label)s_%(class)s_disabled_reason_empty_when_enabled",
                 check=models.Q(
                     disabled_reason="",
                     enabled=True,
