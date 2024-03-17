@@ -4,7 +4,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.models import FeedUpdate
+from legadilo.feeds.models import FeedUpdate, ReadingList
 from legadilo.users.tests.factories import UserFactory
 
 from ..models import Article, Feed
@@ -50,3 +50,13 @@ class FeedUpdateFactory(DjangoModelFactory):
 
     class Meta:
         model = FeedUpdate
+
+
+class ReadingListFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: f"Reading list {n}")
+    slug = factory.Sequence(lambda n: f"reading-list-{n}")
+
+    user = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = ReadingList

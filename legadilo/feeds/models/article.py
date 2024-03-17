@@ -57,6 +57,8 @@ class Article(models.Model):
     article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))
 
     is_read = models.BooleanField(default=False)
+    was_opened = models.BooleanField(default=False)
+    is_favorite = models.BooleanField(default=False)
 
     feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
 

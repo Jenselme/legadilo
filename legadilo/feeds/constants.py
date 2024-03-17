@@ -1,5 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.db.models import TextChoices
+from django.utils.translation import gettext_lazy as _
 
 
 class SupportedFeedType(TextChoices):
@@ -18,6 +19,26 @@ class SupportedFeedType(TextChoices):
     atom10 = "atom10", "Atom 1.0"
     atom = "atom", "Atom (unknown version)"
     cdf = "cdf", "CDF"
+
+
+class ReadStatus(TextChoices):
+    ALL = "ALL", _("All")
+    ONLY_UNREAD = "ONLY_UNREAD", _("Only unread")
+    ONLY_READ = "ONLY_READ", _("Only read")
+
+
+class FavoriteStatus(TextChoices):
+    ALL = "ALL", _("All")
+    ONLY_FAVORITE = "ONLY_FAVORITE", _("Only favorite")
+    ONLY_NON_FAVORITE = "ONLY_NON_FAVORITE", _("Only non favorite")
+
+
+class ArticlesMaxAgeUnit(TextChoices):
+    UNSET = "UNSET", _("Unset")
+    HOURS = "HOURS", _("Hour(s)")
+    DAYS = "DAYS", _("Day(s)")
+    WEEKS = "WEEKS", _("Week(s)")
+    MONTHS = "MONTHS", _("Month(s)")
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
