@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
@@ -7,40 +9,46 @@ from legadilo.feeds import constants
 from legadilo.users.models import User
 
 
-class ReadingListManager(models.Manager):
+class ReadingListManager(models.Manager["ReadingList"]):
     @transaction.atomic()
     def create_default_lists(self, user: User):
         self.create(
-            name=_("All articles"),
+            name=str(_("All articles")),
             slug=slugify(str(_("All articles"))),
             user=user,
         )
         self.create(
-            name=_("Unread"),
+            name=str(_("Unread")),
             slug=slugify(str(_("Unread"))),
             is_default=True,
             read_status=constants.ReadStatus.ONLY_UNREAD,
             user=user,
         )
         self.create(
-            name=_("Recent"),
+            name=str(_("Recent")),
             slug=slugify(str(_("Recent"))),
             articles_max_age_value=2,
             articles_max_age_unit=constants.ArticlesMaxAgeUnit.DAYS,
             user=user,
         )
         self.create(
-            name=_("Favorite"),
+            name=str(_("Favorite")),
             slug=slugify(str(_("Favorite"))),
             favorite_status=constants.FavoriteStatus.ONLY_FAVORITE,
             user=user,
         )
         self.create(
-            name=_("Archive"),
+            name=str(_("Archive")),
             slug=slugify(str(_("Archive"))),
             read_status=constants.ReadStatus.ONLY_READ,
             user=user,
         )
+
+    def get_reading_list(self, user: User, reading_list_slug: str | None) -> ReadingList:
+        if reading_list_slug is None:
+            return self.get(user=user, is_default=True)
+
+        return self.get(user=user, slug=reading_list_slug)
 
 
 class ReadingList(models.Model):

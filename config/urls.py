@@ -6,7 +6,6 @@ from django.views import defaults as default_views
 from django.views.generic import TemplateView
 
 urlpatterns = [  # noqa: RUF005 concatenation
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path("about/", TemplateView.as_view(template_name="pages/about.html"), name="about"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
@@ -14,7 +13,7 @@ urlpatterns = [  # noqa: RUF005 concatenation
     path("users/", include("legadilo.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    path("feeds/", include("legadilo.feeds.urls", namespace="feeds")),
+    path("", include("legadilo.feeds.urls", namespace="feeds")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

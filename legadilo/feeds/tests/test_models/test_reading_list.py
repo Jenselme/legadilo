@@ -13,6 +13,24 @@ class TestReadingListManager:
         assert ReadingList.objects.count() == 5
         assert user.reading_lists.count() == 5
 
+    def test_get_default_reading_list(self, user):
+        ReadingList.objects.create_default_lists(user)
+
+        default_reading_list = ReadingList.objects.get_reading_list(user, reading_list_slug=None)
+
+        assert default_reading_list.is_default
+        assert default_reading_list.name == "Unread"
+
+    def test_get_reading_list(self, user):
+        slug_to_get = "my-reading-list"
+        reading_list_to_get = ReadingListFactory(slug=slug_to_get, user=user)
+        ReadingListFactory(slug="other-reading-list", user=user)
+        ReadingListFactory(slug=slug_to_get)
+
+        reading_list = ReadingList.objects.get_reading_list(user, slug_to_get)
+
+        assert reading_list == reading_list_to_get
+
 
 @pytest.mark.django_db()
 class TestReadingListModel:

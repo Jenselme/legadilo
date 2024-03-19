@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+
+{% block title %}
+    {% blocktrans with list_name=reading_list.name %}
+        Articles from list '{{ list_name }}'
+    {% endblocktrans %}
+{% endblock title %}
+{% block content %}
+    <h1>{{ reading_list.name }}</h1>
+    {% for article in articles %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <h2 class="card-title">{{ article.title }}</h2>
+                <p class="card-text">{{ article.summary | safe }}</p>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock content %}
