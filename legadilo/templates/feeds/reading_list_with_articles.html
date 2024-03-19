@@ -3,18 +3,44 @@
 {% load i18n %}
 
 {% block title %}
-    {% blocktrans with list_name=reading_list.name %}
+    {% blocktrans with list_name=displayed_reading_list.name %}
         Articles from list '{{ list_name }}'
     {% endblocktrans %}
 {% endblock title %}
 {% block content %}
-    <h1>{{ reading_list.name }}</h1>
-    {% for article in articles %}
-        <div class="card mb-2">
-            <div class="card-body">
-                <h2 class="card-title">{{ article.title }}</h2>
-                <p class="card-text">{{ article.summary | safe }}</p>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-2"></div>
+            <div class="col col-8">
+                <h1>{{ displayed_reading_list.name }}</h1>
             </div>
         </div>
-    {% endfor %}
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-2">
+                <ul class="list-group">
+                    {% for reading_list in reading_lists %}
+                        <li class="p-0 list-group-item {% if displayed_reading_list.id == reading_list.id %}active{% endif %}">
+                            <a href="{% url 'feeds:reading_list' reading_list_slug=reading_list.slug %}"
+                               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                                <span>{{ reading_list.name }}</span>
+                                <span class="badge text-bg-info">&lt;COUNT&gt;</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col col-8">
+                {% for article in articles %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ article.title }}</h2>
+                            <p class="card-text">{{ article.summary | safe }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 {% endblock content %}

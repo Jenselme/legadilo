@@ -45,10 +45,14 @@ class ReadingListManager(models.Manager["ReadingList"]):
         )
 
     def get_reading_list(self, user: User, reading_list_slug: str | None) -> ReadingList:
+        qs = self.get_queryset().select_related("user")
         if reading_list_slug is None:
-            return self.get(user=user, is_default=True)
+            return qs.get(user=user, is_default=True)
 
-        return self.get(user=user, slug=reading_list_slug)
+        return qs.get(user=user, slug=reading_list_slug)
+
+    def get_all_for_user(self, user: User) -> list[ReadingList]:
+        return list(self.filter(user=user))
 
 
 class ReadingList(models.Model):
