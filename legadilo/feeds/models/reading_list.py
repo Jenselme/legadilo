@@ -15,6 +15,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
         self.create(
             name=str(_("All articles")),
             slug=slugify(str(_("All articles"))),
+            order=0,
             user=user,
         )
         self.create(
@@ -22,6 +23,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("Unread"))),
             is_default=True,
             read_status=constants.ReadStatus.ONLY_UNREAD,
+            order=10,
             user=user,
         )
         self.create(
@@ -29,18 +31,21 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("Recent"))),
             articles_max_age_value=2,
             articles_max_age_unit=constants.ArticlesMaxAgeUnit.DAYS,
+            order=20,
             user=user,
         )
         self.create(
             name=str(_("Favorite")),
             slug=slugify(str(_("Favorite"))),
             favorite_status=constants.FavoriteStatus.ONLY_FAVORITE,
+            order=30,
             user=user,
         )
         self.create(
             name=str(_("Archive")),
             slug=slugify(str(_("Archive"))),
             read_status=constants.ReadStatus.ONLY_READ,
+            order=40,
             user=user,
         )
 
@@ -59,6 +64,7 @@ class ReadingList(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField()
     is_default = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
 
     read_status = models.CharField(
         choices=constants.ReadStatus.choices, default=constants.ReadStatus.ALL
@@ -85,6 +91,7 @@ class ReadingList(models.Model):
     objects = ReadingListManager()
 
     class Meta:
+        ordering = ["order", "id"]
         constraints = [
             models.UniqueConstraint(
                 "is_default",
@@ -112,7 +119,7 @@ class ReadingList(models.Model):
         ]
 
     def __str__(self):
-        return f"ReadingList(id={self.id}, name={self.name}, user={self.user})"
+        return f"ReadingList(id={self.id}, name={self.name}, user={self.user}, order={self.order})"
 
     def delete(self, *args, **kwargs):
         if self.is_default:

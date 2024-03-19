@@ -13,9 +13,9 @@ class TestReadingListWithArticlesView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.default_reading_list = ReadingListFactory(
-            is_default=True, user=user, read_status=constants.ReadStatus.ONLY_UNREAD
+            is_default=True, user=user, read_status=constants.ReadStatus.ONLY_UNREAD, order=0
         )
-        self.reading_list = ReadingListFactory(user=user)
+        self.reading_list = ReadingListFactory(user=user, order=10)
         self.default_reading_list_url = reverse("feeds:default_reading_list")
         self.reading_list_url = reverse(
             "feeds:reading_list", kwargs={"reading_list_slug": self.reading_list.slug}
