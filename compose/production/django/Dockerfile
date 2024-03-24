@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 COPY pyproject.toml .
 COPY poetry.lock .
 RUN pip install -U pip && \
-  pip install poetry==1.7.1 && \
+  pip install poetry==1.8.2 && \
   poetry install --no-cache
 
 

@@ -1,4 +1,4 @@
-exclude: "^docs/|devcontainer.json"
+exclude: "^docs/|.idea|devcontainer.json"
 default_stages: [commit]
 
 default_language_version:
@@ -71,6 +71,21 @@ repos:
     hooks:
       - id: shellcheck
         args: [-e, SC1091]
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: env
+        args:
+          - DATABASE_URL=sqlite:///mypy.db
+          - poetry
+          - run
+          - mypy
+          - legadilo
+        language: system
+        types: [python]
+        pass_filenames: false
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
