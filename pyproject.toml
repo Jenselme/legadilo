@@ -1,7 +1,7 @@
 # ==== pytest ====
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--ds=config.settings.test --reuse-db --disable-socket --allow-unix-socket --allow-hosts=localhost"
+addopts = "--ds=config.settings.base --reuse-db --disable-socket --allow-unix-socket --allow-hosts=localhost"
 python_files = [
     "tests.py",
     "test_*.py",
@@ -128,7 +128,7 @@ module = "*.migrations.*"
 ignore_errors = true
 
 [tool.django-stubs]
-django_settings_module = "config.settings.test"
+django_settings_module = "config.settings.base"
 
 
 # ==== djLint ====

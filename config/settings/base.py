@@ -18,10 +18,22 @@ if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(BASE_DIR / ".env"))
 
+IS_PRODUCTION = env.bool("IS_PRODUCTION", default=True)
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool("DJANGO_DEBUG", False)
+DEBUG = not IS_PRODUCTION
+# https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default=env.NOTSET if IS_PRODUCTION else "local-secret-key",
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=["legadilo.eu"] if IS_PRODUCTION else ["localhost", "0.0.0.0", "127.0.0.1"],  # noqa: S104 binding to all interfaces
+)
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.
@@ -45,14 +57,32 @@ USE_TZ = True
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 ASGI_APPLICATION = "config.asgi.application"
 
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60 if IS_PRODUCTION else 0)
 # https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
 DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000"}
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# CACHES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#caches
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
+    }
+    if IS_PRODUCTION
+    else {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "",
+    },
+}
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -169,6 +199,15 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
+# https://docs.djangoproject.com/en/dev/ref/settings/#std-setting-STORAGES
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # MEDIA
 # ------------------------------------------------------------------------------
@@ -199,6 +238,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "legadilo.users.context_processors.allauth_settings",
             ],
+            "debug": DEBUG,
             "loaders": [
                 (
                     "django.template.loaders.cached.Loader",
@@ -207,6 +247,11 @@ TEMPLATES = [
                         "django.template.loaders.app_directories.Loader",
                     ],
                 ),
+            ]
+            if IS_PRODUCTION
+            else [
+                "django.template.loaders.filesystem.Loader",
+                "django.template.loaders.app_directories.Loader",
             ],
         },
     },
@@ -236,6 +281,24 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-ssl-redirect
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=IS_PRODUCTION)
+# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = IS_PRODUCTION
+# https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-secure
+CSRF_COOKIE_SECURE = IS_PRODUCTION
+# https://docs.djangoproject.com/en/dev/topics/security/#ssl-https
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
+# TODO: set this to 60 seconds first and then to 518400 once you prove the former works
+SECURE_HSTS_SECONDS = 60
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload
+SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
+# https://docs.djangoproject.com/en/dev/ref/middleware/#x-content-type-options-nosniff
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
 
 
 # CSP
@@ -265,12 +328,24 @@ CSP_PLUGIN_TYPES = None
 CSP_REQUIRE_SRI_FOR = None
 CSP_INCLUDE_NONCE_IN = None
 # Those are forced to true in production
-CSP_UPGRADE_INSECURE_REQUESTS = False
-CSP_BLOCK_ALL_MIXED_CONTENT = False
+CSP_UPGRADE_INSECURE_REQUESTS = IS_PRODUCTION
+CSP_BLOCK_ALL_MIXED_CONTENT = IS_PRODUCTION
 
 
-# Anymail
+# EMAIL
 # ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
+DEFAULT_FROM_EMAIL = env(
+    "DJANGO_DEFAULT_FROM_EMAIL",
+    default="Legadilo <noreply@legadilo.eu>",
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#server-email
+SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
+EMAIL_SUBJECT_PREFIX = env(
+    "DJANGO_EMAIL_SUBJECT_PREFIX",
+    default="[Legadilo] ",
+)
 # https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
@@ -278,14 +353,18 @@ CSP_BLOCK_ALL_MIXED_CONTENT = False
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-host
+EMAIL_HOST = env("EMAIL_HOST", default="mailpit")
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-port
+EMAIL_PORT = 1025
 
 
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL.
-ADMIN_URL = "admin/"
+ADMIN_URL = env("DJANGO_ADMIN_URL", default=env.NOTSET if IS_PRODUCTION else "admin/")
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("""Julien Enselme""", "jujens@jujens.eu")]
+ADMINS = env.list("DJANGO_ADMINS", default=[])
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
@@ -306,20 +385,16 @@ LOGGING = {
         },
         "rich": {"datefmt": "[%X]"},
     },
-    "filters": {
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
-        },
-    },
+    "filters": {},
     "handlers": {
         "console": {
             "level": "INFO",
-            "filters": ["require_debug_true"],
+            "filters": [],
             "class": "logging.StreamHandler",
         },
         "rich": {
             "class": "rich.logging.RichHandler",
-            "filters": ["require_debug_true"],
+            "filters": [],
             "level": "DEBUG",
             "rich_tracebacks": True,
             "tracebacks_show_locals": True,
@@ -327,7 +402,26 @@ LOGGING = {
     },
     "root": {"level": "INFO", "handlers": ["rich"]},
     "loggers": {
-        "legadilo": {"level": "DEBUG", "handlers": ["rich"], "propagate": False},
+        "django": {
+            "handlers": ["rich"],
+            "level": "WARNING" if IS_PRODUCTION else "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["rich"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+        "django.security.DisallowedHost": {
+            "level": "ERROR",
+            "handlers": ["rich"],
+            "propagate": True,
+        },
+        "legadilo": {
+            "level": "INFO" if IS_PRODUCTION else "DEBUG",
+            "handlers": ["rich"],
+            "propagate": False,
+        },
     },
 }
 # We know about this one and already handle is correctly.
@@ -403,6 +497,31 @@ AXES_LOCKOUT_PARAMETERS = ["username"]
 # IP.
 # Ignore assigning a lambda function to a variable for brevity
 AXES_CLIENT_IP_CALLABLE = lambda x: None  # noqa: E731
+
+
+# Set dev tooling
+# ---------------
+if DEBUG:
+    # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
+    INSTALLED_APPS = ["whitenoise.runserver_nostatic", *INSTALLED_APPS]
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#prerequisites
+    INSTALLED_APPS += ["debug_toolbar", "django_watchfiles", "django_browser_reload"]
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#middleware
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+    MIDDLEWARE.insert(0, "django_browser_reload.middleware.BrowserReloadMiddleware")
+    # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
+    DEBUG_TOOLBAR_CONFIG = {
+        "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
+        "SHOW_TEMPLATE_CONTEXT": True,
+    }
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#internal-ips
+    INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
+    if env("USE_DOCKER", default="no") == "yes":
+        import socket
+
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+
 
 # Your stuff...
 # ------------------------------------------------------------------------------
