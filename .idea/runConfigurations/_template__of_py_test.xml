@@ -8,6 +8,7 @@
       <env name="DATABASE_URL" value="postgres://django:django_passwd@localhost:5432/legadilo" />
       <env name="DJANGO_SETTINGS_MODULE" value="config.settings.test" />
       <env name="IPYTHONDIR" value=".ipython" />
+      <env name="IS_PRODUCTION" value="false" />
       <env name="PYTHONDEVMODE" value="1" />
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="USE_DOCKER" value="no" />

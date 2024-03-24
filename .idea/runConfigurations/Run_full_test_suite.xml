@@ -11,6 +11,7 @@
       <env name="PYTHONDEVMODE" value="1" />
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="USE_DOCKER" value="no" />
+      <env name="IS_PRODUCTION" value="false" />
     </envs>
     <option name="SDK_HOME" value="$USER_HOME$/.cache/pypoetry/virtualenvs/legadilo-7Fe2y2RD-py3.12/bin/python" />
     <option name="SDK_NAME" value="Poetry (legadilo)" />

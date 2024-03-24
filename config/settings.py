@@ -8,7 +8,7 @@ from pathlib import Path
 import environ
 from django.contrib.messages import constants as messages
 
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # legadilo/
 APPS_DIR = BASE_DIR / "legadilo"
 env = environ.Env()

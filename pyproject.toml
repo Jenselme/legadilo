@@ -1,7 +1,7 @@
 # ==== pytest ====
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--ds=config.settings.base --reuse-db --disable-socket --allow-unix-socket --allow-hosts=localhost"
+addopts = "--ds=config.settings --reuse-db --disable-socket --allow-unix-socket --allow-hosts=localhost"
 python_files = [
     "tests.py",
     "test_*.py",
@@ -61,7 +61,7 @@ ignore = [
 "config/asgi.py" = [
     "ERA001", # Found commented-out code
 ]
-"config/settings/*.py" = [
+"config/settings.py" = [
     "ERA001", # Found commented-out code
 ]
 
@@ -128,7 +128,7 @@ module = "*.migrations.*"
 ignore_errors = true
 
 [tool.django-stubs]
-django_settings_module = "config.settings.base"
+django_settings_module = "config.settings"
 
 
 # ==== djLint ====
