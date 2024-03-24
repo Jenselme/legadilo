@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from django.db import models
+from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.feeds.constants import FEED_ERRORS_TIME_WINDOW
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from .feed import Feed
 
 
-class FeedUpdateQuerySet(models.QuerySet):
+class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):
     def for_feed(self, feed: Feed):
         return self.filter(feed=feed)
 
@@ -19,7 +20,7 @@ class FeedUpdateQuerySet(models.QuerySet):
         return self.filter(success=True)
 
 
-class FeedUpdateManager(models.Manager):
+class FeedUpdateManager(models.Manager["FeedUpdate"]):
     _hints: dict
 
     def get_queryset(self) -> FeedUpdateQuerySet:
@@ -57,7 +58,7 @@ class FeedUpdate(models.Model):
 
     objects = FeedUpdateManager()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         ordering = ["-created_at"]
 
     def __str__(self):

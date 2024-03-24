@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
+from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from legadilo.feeds import constants
@@ -90,7 +91,7 @@ class ReadingList(models.Model):
 
     objects = ReadingListManager()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         ordering = ["order", "id"]
         constraints = [
             models.UniqueConstraint(

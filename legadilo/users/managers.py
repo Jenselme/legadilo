@@ -1,12 +1,19 @@
-from typing import cast
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.core.validators import validate_email
 
+if TYPE_CHECKING:
+    from .models import User
+else:
+    User = AbstractUser
 
-class UserManager(DjangoUserManager):
+
+class UserManager(DjangoUserManager[User]):
     """Custom manager for the User model."""
 
     def _create_user(self, email: str, password: str | None, **extra_fields):
@@ -17,7 +24,7 @@ class UserManager(DjangoUserManager):
             raise ValueError("The given email must be set")
         validate_email(email)
         email = self.normalize_email(email)
-        user = cast(AbstractUser, self.model(email=email, **extra_fields))
+        user = self.model(email=email, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
         return user

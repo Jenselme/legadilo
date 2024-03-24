@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Self
 from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
 
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
     from .reading_list import ReadingList
 
 
-class ArticleQuerySet(models.QuerySet):
+class ArticleQuerySet(models.QuerySet["Article"]):
     def build_filters_from_reading_list(self, reading_list: ReadingList) -> models.Q:
         filters = models.Q(feed__user=reading_list.user)
 
@@ -44,7 +45,7 @@ class ArticleQuerySet(models.QuerySet):
         return self.filter(self.build_filters_from_reading_list(reading_list))
 
 
-class ArticleManager(models.Manager):
+class ArticleManager(models.Manager["Article"]):
     _hints: dict
 
     def get_queryset(self) -> ArticleQuerySet:
@@ -113,12 +114,12 @@ class Article(models.Model):
 
     objects = ArticleManager()
 
-    class Meta:
-        constraints = (
+    class Meta(TypedModelMeta):
+        constraints = [
             models.UniqueConstraint(
                 "article_feed_id", "feed_id", name="%(app_label)s_%(class)s_article_unique_in_feed"
             ),
-        )
+        ]
 
     def __str__(self):
         return f"Article(feed_id={self.feed_id}, title={self.title})"
