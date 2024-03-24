@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 from legadilo.utils.decorators import alogin_required
 
+from .. import constants
 from ..forms import CreateFeedForm
 from ..models import Feed
 from ..utils.feed_parsing import (
@@ -41,7 +42,7 @@ async def _handle_creation(request):  # noqa: PLR0911 Too many return statements
         return HTTPStatus.BAD_REQUEST, form
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT) as client:
             feed_medata = await get_feed_metadata(form.feed_url, client=client)
         feed = await sync_to_async(Feed.objects.create_from_metadata)(feed_medata, request.user)
     except httpx.HTTPError:
