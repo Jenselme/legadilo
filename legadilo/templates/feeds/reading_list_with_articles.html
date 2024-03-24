@@ -33,7 +33,7 @@
             </div>
             <div class="col col-8">
                 {% for article in articles %}
-                    <div class="card mb-2">
+                    <div class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
                         <div class="card-body">
                             <h2 class="card-title">{{ article.title }}</h2>
                             <p class="card-text">{{ article.summary | safe }}</p>
