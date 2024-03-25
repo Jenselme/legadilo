@@ -36,6 +36,10 @@
                     <div class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
                         <div class="card-body">
                             <h2 class="card-title">{{ article.title }}</h2>
+                            <p class="card-subtitle">
+                                {{ article.authors | join:", " }} – {{ article.published_at|date:"SHORT_DATETIME_FORMAT" }}
+                                {% if article.feed %}– {{ article.feed.title }}{% endif %}
+                            </p>
                             <p class="card-text">{{ article.summary | safe }}</p>
                         </div>
                     </div>

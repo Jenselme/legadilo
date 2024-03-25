@@ -42,7 +42,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return filters
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
-        return self.filter(self.build_filters_from_reading_list(reading_list))
+        return self.filter(self.build_filters_from_reading_list(reading_list)).select_related(
+            "feed"
+        )
 
 
 class ArticleManager(models.Manager["Article"]):
