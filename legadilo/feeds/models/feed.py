@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
+from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.users.models import User
 
@@ -11,7 +12,7 @@ from .article import Article
 from .feed_update import FeedUpdate
 
 
-class FeedQuerySet(models.QuerySet):
+class FeedQuerySet(models.QuerySet["Feed"]):
     def only_feeds_to_update(self, feed_ids: list[int] | None = None):
         feeds_to_update = self.filter(enabled=True)
         if feed_ids:
@@ -85,8 +86,8 @@ class Feed(models.Model):
 
     objects = FeedManager()
 
-    class Meta:
-        constraints = (
+    class Meta(TypedModelMeta):
+        constraints = [
             models.UniqueConstraint("feed_url", "user", name="feeds_Feed_feed_url_unique"),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_feed_type_valid",
@@ -102,7 +103,7 @@ class Feed(models.Model):
                 )
                 | models.Q(enabled=False),
             ),
-        )
+        ]
 
     def __str__(self):
         return f"Feed(title={self.title})"

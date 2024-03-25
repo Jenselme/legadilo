@@ -1,4 +1,4 @@
 USE_DOCKER=no
 EMAIL_HOST=localhost
 DATABASE_URL="postgres://django:django_passwd@localhost:5432/legadilo"
-IPYTHONDIR=.ipython
+IPYTHONDIR=~/.ipython

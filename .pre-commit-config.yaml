@@ -79,6 +79,9 @@ repos:
         entry: env
         args:
           - DATABASE_URL=sqlite:///mypy.db
+          - IS_PRODUCTION=True
+          - DJANGO_SECRET_KEY=test-key
+          - DJANGO_ADMIN_URL=admin/
           - poetry
           - run
           - mypy
