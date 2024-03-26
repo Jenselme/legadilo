@@ -66,7 +66,7 @@ class ArticleManager(models.Manager["Article"]):
                 content=article_data.content,
                 authors=article_data.authors,
                 contributors=article_data.contributors,
-                tags=article_data.tags,
+                feed_tags=article_data.tags,
                 link=article_data.link,
                 published_at=article_data.published_at,
                 updated_at=article_data.updated_at,
@@ -82,7 +82,7 @@ class ArticleManager(models.Manager["Article"]):
                 "content",
                 "authors",
                 "contributors",
-                "tags",
+                "feed_tags",
                 "link",
                 "published_at",
                 "updated_at",
@@ -100,7 +100,7 @@ class Article(models.Model):
     content = models.TextField(blank=True)
     authors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
     contributors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
-    tags = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
+    feed_tags = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
     link = models.URLField()
     published_at = models.DateTimeField()
     article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))

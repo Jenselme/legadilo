@@ -29,7 +29,7 @@ class ArticleFactory(DjangoModelFactory):
     content = ""
     authors: list[str] = []
     contributors: list[str] = []
-    tags: list[str] = []
+    feed_tags: list[str] = []
     link = factory.Sequence(lambda n: f"https://example.com/article/{n}")
     published_at = datetime.now(tz=UTC)
     updated_at = datetime.now(tz=UTC)
