@@ -1,18 +1,33 @@
 from django.contrib import admin
 
-from legadilo.feeds.models.article import Article
-from legadilo.feeds.models.feed import Feed
-from legadilo.feeds.models.reading_list import ReadingList
+from legadilo.feeds.models import Article, ArticleTag, Feed, FeedTag, ReadingList, Tag
+
+
+class ArticleTagInline(admin.TabularInline):
+    model = ArticleTag
+
+
+class FeedTagInline(admin.TabularInline):
+    model = FeedTag
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        ArticleTagInline,
+    ]
 
 
 @admin.register(Feed)
 class FeedAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        FeedTagInline,
+    ]
 
 
 @admin.register(ReadingList)
