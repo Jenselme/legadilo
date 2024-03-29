@@ -126,4 +126,6 @@ class Article(models.Model):
         ]
 
     def __str__(self):
-        return f"Article(feed_id={self.feed_id}, title={self.title})"
+        return (
+            f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
+        )

@@ -72,11 +72,11 @@ class Feed(models.Model):
     feed_url = models.URLField()
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
-    disabled_reason = models.CharField()
+    disabled_reason = models.CharField(blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     feed_type = models.CharField(choices=SupportedFeedType)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
