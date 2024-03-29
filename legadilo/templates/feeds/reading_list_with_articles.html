@@ -41,9 +41,9 @@
                                     {{ article.authors | join:", " }} – {{ article.published_at|date:"SHORT_DATETIME_FORMAT" }}
                                     {% if article.feed %}– {{ article.feed.title }}{% endif %}
                                 </p>
-                                {% if article.tags.all %}
+                                {% if article.tags_to_display %}
                                     <p>
-                                        {% for tag in article.tags.all %}<span class="badge text-bg-primary me-1">{{ tag.name }}</span>{% endfor %}
+                                        {% for tag in article.tags_to_display %}<span class="badge text-bg-primary me-1">{{ tag.name }}</span>{% endfor %}
                                     </p>
                                 {% endif %}
                             </div>

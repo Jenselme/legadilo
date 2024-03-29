@@ -1,8 +1,16 @@
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from .. import constants
+
+if TYPE_CHECKING:
+    from .article import Article
 
 
 class Tag(models.Model):
@@ -31,6 +39,32 @@ class Tag(models.Model):
         return super().save(*args, **kwargs)
 
 
+class ArticleTagQuerySet(models.QuerySet["ArticleTag"]):
+    def for_reading_list(self):
+        return (
+            self.exclude(tagging_reason=constants.TaggingReason.DELETED)
+            .select_related("tag")
+            .annotate(name=models.F("tag__name"))
+        )
+
+
+class ArticleTagManager(models.Manager["ArticleTag"]):
+    _hints: dict
+
+    def get_queryset(self) -> ArticleTagQuerySet:
+        return ArticleTagQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    def associate_articles_with_tags(self, articles: Iterable[Article], tags: Iterable[Tag]):
+        article_tags = [
+            self.model(article=article, tag=tag, tagging_reason=constants.TaggingReason.FROM_FEED)
+            for article in articles
+            for tag in tags
+        ]
+        self.bulk_create(
+            article_tags, ignore_conflicts=True, unique_fields=["article_id", "tag_id"]
+        )
+
+
 class ArticleTag(models.Model):
     article = models.ForeignKey(
         "feeds.Article", related_name="article_tags", on_delete=models.CASCADE
@@ -41,6 +75,8 @@ class ArticleTag(models.Model):
         choices=constants.TaggingReason.choices, default=constants.TaggingReason.ADDED_MANUALLY
     )
 
+    objects = ArticleTagManager()
+
     class Meta(TypedModelMeta):
         constraints = [
             models.CheckConstraint(
@@ -48,6 +84,9 @@ class ArticleTag(models.Model):
                 check=models.Q(
                     tagging_reason__in=constants.TaggingReason.names,
                 ),
+            ),
+            models.UniqueConstraint(
+                "article", "tag", name="%(app_label)s_%(class)s_tagged_once_per_article"
             ),
         ]
 

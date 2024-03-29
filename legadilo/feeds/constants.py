@@ -44,6 +44,9 @@ class ArticlesMaxAgeUnit(TextChoices):
 class TaggingReason(TextChoices):
     ADDED_MANUALLY = "ADDED_MANUALLY", _("Added manually")
     FROM_FEED = "FROM_FEED", _("From feed")
+    # Used to mark a tag initially associated because of a feed but manually deleted by the user.
+    # We don't want it to come back when we update the article!
+    DELETED = "DELETED", _("Deleted")
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
