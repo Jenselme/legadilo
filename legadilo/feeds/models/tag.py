@@ -26,8 +26,7 @@ class Tag(models.Model):
         return f"Tag(name={self.name}, user={self.user})"
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
+        self.slug = slugify(self.name)
 
         return super().save(*args, **kwargs)
 
