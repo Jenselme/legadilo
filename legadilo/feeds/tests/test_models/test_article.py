@@ -3,11 +3,17 @@ from typing import Any
 
 import pytest
 import time_machine
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article
-from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory, ReadingListFactory
+from legadilo.feeds.tests.factories import (
+    ArticleFactory,
+    FeedFactory,
+    ReadingListFactory,
+    TagFactory,
+)
 from legadilo.feeds.utils.feed_parsing import FeedArticle
 
 
@@ -104,61 +110,71 @@ class TestArticleQuerySet:
 
 @pytest.mark.django_db()
 class TestArticleManager:
-    def test_update_and_create_articles(self):
+    def test_update_and_create_articles(self, django_assert_num_queries):
         feed = FeedFactory()
+        tag1 = TagFactory(user=feed.user)
+        tag2 = TagFactory(user=feed.user)
+        feed.tags.add(tag1, tag2)
         existing_article = ArticleFactory(
             feed=feed, article_feed_id=f"existing-article-feed-{feed.id}"
         )
 
-        Article.objects.update_or_create_from_articles_list(
-            [
-                FeedArticle(
-                    article_feed_id="some-article-1",
-                    title="Article 1",
-                    summary="Summary 1",
-                    content="Description 1",
-                    authors=["Author"],
-                    contributors=[],
-                    tags=[],
-                    link="https//example.com/article/1",
-                    published_at=datetime.now(tz=UTC),
-                    updated_at=datetime.now(tz=UTC),
-                ),
-                FeedArticle(
-                    article_feed_id=existing_article.article_feed_id,
-                    title="Article updated",
-                    summary="Summary updated",
-                    content="Description updated",
-                    authors=["Author"],
-                    contributors=[],
-                    tags=[],
-                    link="https//example.com/article/updated",
-                    published_at=datetime.now(tz=UTC),
-                    updated_at=datetime.now(tz=UTC),
-                ),
-                FeedArticle(
-                    article_feed_id="article-3",
-                    title="Article 3",
-                    summary="Summary 3",
-                    content="Description 3",
-                    authors=["Author"],
-                    contributors=["Contributor"],
-                    tags=["Some tag"],
-                    link="https//example.com/article/3",
-                    published_at=datetime.now(tz=UTC),
-                    updated_at=datetime.now(tz=UTC),
-                ),
-            ],
-            feed.id,
-        )
+        with django_assert_num_queries(3):
+            Article.objects.update_or_create_from_articles_list(
+                [
+                    FeedArticle(
+                        article_feed_id="some-article-1",
+                        title="Article 1",
+                        summary="Summary 1",
+                        content="Description 1",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        link="https//example.com/article/1",
+                        published_at=datetime.now(tz=UTC),
+                        updated_at=datetime.now(tz=UTC),
+                    ),
+                    FeedArticle(
+                        article_feed_id=existing_article.article_feed_id,
+                        title="Article updated",
+                        summary="Summary updated",
+                        content="Description updated",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        link="https//example.com/article/updated",
+                        published_at=datetime.now(tz=UTC),
+                        updated_at=datetime.now(tz=UTC),
+                    ),
+                    FeedArticle(
+                        article_feed_id="article-3",
+                        title="Article 3",
+                        summary="Summary 3",
+                        content="Description 3",
+                        authors=["Author"],
+                        contributors=["Contributor"],
+                        tags=["Some tag"],
+                        link="https//example.com/article/3",
+                        published_at=datetime.now(tz=UTC),
+                        updated_at=datetime.now(tz=UTC),
+                    ),
+                ],
+                feed,
+            )
 
         assert Article.objects.count() == 3
         existing_article.refresh_from_db()
         assert existing_article.title == "Article updated"
+        assert list(
+            Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
+                "tag_slugs", flat=True
+            )
+        ) == [[tag1.slug, tag2.slug], [tag1.slug, tag2.slug], [tag1.slug, tag2.slug]]
 
-    def test_update_and_create_articles_empty_list(self):
+    def test_update_and_create_articles_empty_list(self, django_assert_num_queries):
         feed = FeedFactory()
 
-        Article.objects.update_or_create_from_articles_list([], feed.id)
+        with django_assert_num_queries(0):
+            Article.objects.update_or_create_from_articles_list([], feed)
 
         assert Article.objects.count() == 0

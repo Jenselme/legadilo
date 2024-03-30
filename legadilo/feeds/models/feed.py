@@ -37,7 +37,7 @@ class FeedManager(models.Manager["Feed"]):
             feed_type=feed_metadata.feed_type,
             user=user,
         )
-        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed.pk)
+        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed)
         FeedUpdate.objects.create(
             success=True,
             feed_etag=feed_metadata.etag,
@@ -48,7 +48,7 @@ class FeedManager(models.Manager["Feed"]):
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_metadata: FeedMetadata):
-        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed.id)
+        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed)
         FeedUpdate.objects.create(
             success=True,
             feed_etag=feed_metadata.etag,
@@ -72,11 +72,11 @@ class Feed(models.Model):
     feed_url = models.URLField()
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
-    disabled_reason = models.CharField()
+    disabled_reason = models.CharField(blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     feed_type = models.CharField(choices=SupportedFeedType)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)

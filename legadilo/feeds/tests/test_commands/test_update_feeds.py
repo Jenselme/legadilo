@@ -17,13 +17,16 @@ class TestUpdateFeedsCommand:
     def test_update_feed_command_no_feed(self):
         call_command("update_feeds")
 
-    def test_update_feed_command(self, httpx_mock):
+    def test_update_feed_command(self, httpx_mock, django_assert_num_queries):
         feed_url = "http://example.com/feed/rss.xml"
         with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
             FeedUpdateFactory(feed__feed_url=feed_url)
         httpx_mock.add_response(url=feed_url, content=SAMPLE_RSS_FEED)
 
-        with time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False):
+        with (
+            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            django_assert_num_queries(7),
+        ):
             call_command("update_feeds")
 
         assert Article.objects.count() == 1
@@ -35,25 +38,31 @@ class TestUpdateFeedsCommand:
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
 
-    def test_update_feed_command_feed_not_modified(self, httpx_mock):
+    def test_update_feed_command_feed_not_modified(self, httpx_mock, django_assert_num_queries):
         feed_url = "http://example.com/feed/rss.xml"
         with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
             FeedUpdateFactory(feed__feed_url=feed_url)
         httpx_mock.add_response(status_code=HTTPStatus.NOT_MODIFIED, url=feed_url)
 
-        with time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False):
+        with (
+            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            django_assert_num_queries(2),
+        ):
             call_command("update_feeds")
 
         assert Article.objects.count() == 0
         assert FeedUpdate.objects.count() == 1
 
-    def test_update_feed_command_http_error(self, httpx_mock):
+    def test_update_feed_command_http_error(self, httpx_mock, django_assert_num_queries):
         feed_url = "http://example.com/feed/rss.xml"
         with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
             FeedUpdateFactory(feed__feed_url=feed_url)
         httpx_mock.add_exception(httpx.HTTPError("Some error"), url=feed_url)
 
-        with time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False):
+        with (
+            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            django_assert_num_queries(6),
+        ):
             call_command("update_feeds")
 
         assert Article.objects.count() == 0
@@ -67,7 +76,9 @@ class TestUpdateFeedsCommand:
         assert feed_update.feed_last_modified is None
         assert feed_update.feed.enabled
 
-    def test_update_feed_command_http_error_must_disable_feed(self, httpx_mock, mocker):
+    def test_update_feed_command_http_error_must_disable_feed(
+        self, httpx_mock, mocker, django_assert_num_queries
+    ):
         feed_url = "http://example.com/feed/rss.xml"
         with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
             FeedUpdateFactory(feed__feed_url=feed_url)
@@ -78,7 +89,10 @@ class TestUpdateFeedsCommand:
             return_value=True,
         )
 
-        with time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False):
+        with (
+            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            django_assert_num_queries(6),
+        ):
             call_command("update_feeds")
 
         assert Article.objects.count() == 0
