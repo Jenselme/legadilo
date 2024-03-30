@@ -7,7 +7,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
 from legadilo.feeds import constants
-from legadilo.feeds.models import Article
+from legadilo.feeds.models import Article, ArticleTag, ReadingListTag
 from legadilo.feeds.tests.factories import (
     ArticleFactory,
     FeedFactory,
@@ -97,15 +97,50 @@ class TestArticleQuerySet:
             ),
         ],
     )
-    def test_get_only_unread_articles(
+    def test_build_filters_from_reading_list(
         self, user, reading_list_kwargs: dict[str, Any], expected_filter: models.Q
     ):
-        reading_list = ReadingListFactory.build(**reading_list_kwargs, user=user)
+        reading_list = ReadingListFactory(**reading_list_kwargs, user=user)
 
         with time_machine.travel("2024-03-19 21:08:00"):
             filters = Article.objects.get_queryset().build_filters_from_reading_list(reading_list)
 
         assert filters == models.Q(feed__user=user) & expected_filter
+
+    def test_for_reading_list_with_tags(self, user, django_assert_num_queries):
+        reading_list = ReadingListFactory(user=user)
+        feed = FeedFactory(user=user)
+        tag1 = TagFactory(user=user)
+        tag2 = TagFactory(user=user)
+        ReadingListTag.objects.create(reading_list=reading_list, tag=tag1)
+        # Article 1 is linked to all tags.
+        article1 = ArticleFactory(feed=feed)
+        ArticleTag.objects.create(
+            article=article1, tag=tag1, tagging_reason=constants.TaggingReason.FROM_FEED
+        )
+        ArticleTag.objects.create(
+            article=article1, tag=tag2, tagging_reason=constants.TaggingReason.FROM_FEED
+        )
+        # Article 2 is linked only to the tag of the reading list.
+        article2 = ArticleFactory(feed=feed)
+        ArticleTag.objects.create(
+            article=article2, tag=tag1, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        )
+        # Article 3 is only linked to the other tag.
+        article3 = ArticleFactory(feed=feed)
+        ArticleTag.objects.create(
+            article=article3, tag=tag2, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        )
+        # Article 4 is linked to the tag of the reading list but the tag is marked as deleted.
+        article4 = ArticleFactory(feed=feed)
+        ArticleTag.objects.create(
+            article=article4, tag=tag1, tagging_reason=constants.TaggingReason.DELETED
+        )
+
+        with django_assert_num_queries(3):
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
+
+        assert articles == [article1, article2]
 
 
 @pytest.mark.django_db()

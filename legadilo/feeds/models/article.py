@@ -41,6 +41,11 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                 })
             )
 
+        if reading_list.tags.all():
+            filters &= models.Q(tags__in=reading_list.tags.all()) & ~models.Q(
+                article_tags__tagging_reason=constants.TaggingReason.DELETED
+            )
+
         return filters
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:

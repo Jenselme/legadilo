@@ -63,7 +63,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
 
 class ReadingList(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField()
+    slug = models.SlugField(blank=True)
     is_default = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
 
@@ -121,6 +121,11 @@ class ReadingList(models.Model):
 
     def __str__(self):
         return f"ReadingList(id={self.id}, name={self.name}, user={self.user}, order={self.order})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         if self.is_default:
