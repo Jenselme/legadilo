@@ -50,6 +50,8 @@
                             <p class="card-text">{{ article.summary | safe }}</p>
                         </div>
                     </div>
+                {% empty %}
+                    <p>{% translate "This reading list is empty." %}</p>
                 {% endfor %}
             </div>
         </div>
