@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from ..validators import list_of_strings_json_schema_validator
+from ..validators import get_page_number, list_of_strings_json_schema_validator
 
 
 class TestListOfStringsJsonSchemaValidator:
@@ -20,3 +20,18 @@ class TestListOfStringsJsonSchemaValidator:
     def test_list_of_string_json_schema_validator_with_invalid_data(self, value):
         with pytest.raises(ValidationError):
             list_of_strings_json_schema_validator(value)
+
+
+@pytest.mark.parametrize(
+    ("request_params", "expected_value"),
+    [
+        ({}, 1),
+        ({"page": "1"}, 1),
+        ({"page": "4"}, 4),
+        ({"page": "aaa"}, 1),
+    ],
+)
+def test_get_page_number(rf, request_params, expected_value):
+    request = rf.get("/", request_params)
+
+    assert get_page_number(request) == expected_value

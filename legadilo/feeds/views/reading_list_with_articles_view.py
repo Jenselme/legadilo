@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from legadilo.feeds.models import Article, ReadingList
 from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.utils.validators import get_page_number
 
 
 @login_required
@@ -18,7 +19,13 @@ def reading_list_with_articles_view(
     except ReadingList.DoesNotExist:
         return HttpResponseRedirect(reverse("feeds:default_reading_list"))
 
-    articles = Article.objects.get_articles_of_reading_list(displayed_reading_list)
+    articles_paginator = Article.objects.get_articles_of_reading_list(displayed_reading_list)
+    requested_page = get_page_number(request)
+    articles_page = (
+        articles_paginator.page(requested_page)
+        if 1 <= requested_page <= articles_paginator.num_pages
+        else articles_paginator.page(1)
+    )
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
     count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
 
@@ -30,6 +37,7 @@ def reading_list_with_articles_view(
             "reading_lists": reading_lists,
             "count_articles_of_reading_lists": count_articles_of_reading_lists,
             "displayed_reading_list": displayed_reading_list,
-            "articles": articles,
+            "articles_page": articles_page,
+            "articles_paginator": articles_paginator,
         },
     )

@@ -32,7 +32,7 @@
                 </ul>
             </div>
             <div class="col col-8">
-                {% for article in articles %}
+                {% for article in articles_page %}
                     <div class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
                         <div class="card-body">
                             <h2 class="card-title">{{ article.title }}</h2>
@@ -53,6 +53,30 @@
                 {% empty %}
                     <p>{% translate "This reading list is empty." %}</p>
                 {% endfor %}
+                {% if articles_paginator.num_pages > 1 %}
+                    <nav aria-label="{% translate 'Navigation between articles' %}">
+                        <ul class="pagination">
+                            <li class="page-item">
+                                <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
+                                   {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
+                                    {% translate "Previous" %}
+                                </a>
+                            </li>
+                            {% for page_number in articles_paginator.page_range %}
+                                <li class="page-item">
+                                    <a class="page-link {% if articles_page.number == page_number %}active{% endif %}"
+                                       href="?page={{ page_number }}">{{ page_number }}</a>
+                                </li>
+                            {% endfor %}
+                            <li class="page-item">
+                                <a class="page-link {% if not articles_page.has_next %}disabled{% endif %}"
+                                   {% if articles_page.has_next %}href="?page={{ articles_page.next_page_number }}"{% endif %}>
+                                    {% translate "Next" %}
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
             </div>
         </div>
     </div>

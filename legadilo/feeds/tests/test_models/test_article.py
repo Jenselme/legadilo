@@ -137,10 +137,13 @@ class TestArticleQuerySet:
             article=article4, tag=tag1, tagging_reason=constants.TaggingReason.DELETED
         )
 
-        with django_assert_num_queries(3):
-            articles = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(1):
+            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
 
-        assert articles == [article1, article2]
+        assert articles_paginator.num_pages == 1
+        assert articles_paginator.count == 2
+        articles_page = articles_paginator.page(1)
+        assert list(articles_page.object_list) == [article1, article2]
 
 
 @pytest.mark.django_db()

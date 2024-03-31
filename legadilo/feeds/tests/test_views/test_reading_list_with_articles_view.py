@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from http import HTTPStatus
 
 import pytest
+from django.core.paginator import Paginator
 from django.urls import reverse
 
 from legadilo.feeds import constants
@@ -43,19 +44,23 @@ class TestReadingListWithArticlesView:
         assert response["Location"] == reverse("account_login") + f"?next={self.reading_list_url}"
 
     def test_default_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.get(self.default_reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["displayed_reading_list"] == self.default_reading_list
-        assert response.context["articles"] == [self.unread_article]
+        assert isinstance(response.context["articles_paginator"], Paginator)
+        assert response.context["articles_page"].object_list == [self.unread_article]
 
     def test_reading_list_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
-        assert response.context["displayed_reading_list"] == self.reading_list
-        assert response.context["articles"] == [self.read_article, self.unread_article]
+        assert isinstance(response.context["articles_paginator"], Paginator)
+        assert response.context["articles_page"].object_list == [
+            self.read_article,
+            self.unread_article,
+        ]
