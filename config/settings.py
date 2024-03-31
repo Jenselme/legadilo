@@ -238,6 +238,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "legadilo.users.context_processors.allauth_settings",
             ],
+            "libraries": {
+                "util_tags": "legadilo.core.template_tags.util_tags",
+            },
             "debug": DEBUG,
             "loaders": [
                 (

@@ -43,7 +43,7 @@ class TestReadingListWithArticlesView:
         assert response["Location"] == reverse("account_login") + f"?next={self.reading_list_url}"
 
     def test_default_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.get(self.default_reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
@@ -52,7 +52,7 @@ class TestReadingListWithArticlesView:
         assert response.context["articles"] == [self.unread_article]
 
     def test_reading_list_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK

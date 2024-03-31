@@ -109,6 +109,15 @@ class ArticleManager(models.Manager["Article"]):
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> list[Article]:
         return list(self.get_queryset().for_reading_list(reading_list).order_by("-published_at"))
 
+    def count_articles_of_reading_lists(self, reading_lists: list[ReadingList]) -> dict[str, int]:
+        aggregation = {
+            reading_list.slug: models.Count(
+                "id", filter=self.get_queryset().build_filters_from_reading_list(reading_list)
+            )
+            for reading_list in reading_lists
+        }
+        return self.get_queryset().aggregate(**aggregation)
+
 
 class Article(models.Model):
     title = models.CharField()

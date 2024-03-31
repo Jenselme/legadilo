@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% load i18n %}
+{% load i18n util_tags %}
 
 {% block title %}
     {% blocktrans with list_name=displayed_reading_list.name %}
@@ -25,7 +25,7 @@
                             <a href="{% url 'feeds:reading_list' reading_list_slug=reading_list.slug %}"
                                class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
                                 <span>{{ reading_list.name }}</span>
-                                <span class="badge text-bg-info">&lt;COUNT&gt;</span>
+                                <span class="badge text-bg-info">{{ count_articles_of_reading_lists|get_item:reading_list.slug }}</span>
                             </a>
                         </li>
                     {% endfor %}

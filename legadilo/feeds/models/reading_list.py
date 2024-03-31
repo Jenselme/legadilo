@@ -58,7 +58,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
         return qs.get(user=user, slug=reading_list_slug)
 
     def get_all_for_user(self, user: User) -> list[ReadingList]:
-        return list(self.filter(user=user))
+        return list(self.filter(user=user).select_related("user").prefetch_related("tags"))
 
 
 class ReadingList(models.Model):

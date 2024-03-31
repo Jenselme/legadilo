@@ -7,7 +7,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
 from legadilo.feeds import constants
-from legadilo.feeds.models import Article, ArticleTag, ReadingListTag
+from legadilo.feeds.models import Article, ArticleTag, ReadingList, ReadingListTag
 from legadilo.feeds.tests.factories import (
     ArticleFactory,
     FeedFactory,
@@ -213,3 +213,27 @@ class TestArticleManager:
             Article.objects.update_or_create_from_articles_list([], feed)
 
         assert Article.objects.count() == 0
+
+    def test_count_articles_of_reading_lists(self, django_assert_num_queries):
+        feed = FeedFactory()
+        reading_list1 = ReadingListFactory(user=feed.user)
+        reading_list2 = ReadingListFactory(
+            user=feed.user, read_status=constants.ReadStatus.ONLY_READ
+        )
+        reading_list3 = ReadingListFactory(
+            user=feed.user, favorite_status=constants.FavoriteStatus.ONLY_FAVORITE
+        )
+        reading_lists_with_tags = list(
+            ReadingList.objects.select_related("user").prefetch_related("tags").all()
+        )
+        ArticleFactory(feed=feed)
+        ArticleFactory(feed=feed, is_read=True)
+
+        with django_assert_num_queries(1):
+            counts = Article.objects.count_articles_of_reading_lists(reading_lists_with_tags)
+
+        assert counts == {
+            reading_list1.slug: 2,
+            reading_list2.slug: 1,
+            reading_list3.slug: 0,
+        }

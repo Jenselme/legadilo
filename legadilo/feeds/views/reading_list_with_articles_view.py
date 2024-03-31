@@ -20,6 +20,7 @@ def reading_list_with_articles_view(
 
     articles = Article.objects.get_articles_of_reading_list(displayed_reading_list)
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
+    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
 
     return TemplateResponse(
         request,
@@ -27,6 +28,7 @@ def reading_list_with_articles_view(
         {
             "fluid_content": True,
             "reading_lists": reading_lists,
+            "count_articles_of_reading_lists": count_articles_of_reading_lists,
             "displayed_reading_list": displayed_reading_list,
             "articles": articles,
         },
