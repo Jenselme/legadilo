@@ -2,7 +2,7 @@ from .article import Article
 from .feed import Feed
 from .feed_update import FeedUpdate
 from .reading_list import ReadingList
-from .tag import ArticleTag, FeedTag, Tag
+from .tag import ArticleTag, FeedTag, ReadingListTag, Tag
 
 __all__ = [
     "Article",
@@ -11,5 +11,6 @@ __all__ = [
     "FeedTag",
     "FeedUpdate",
     "ReadingList",
+    "ReadingListTag",
     "Tag",
 ]

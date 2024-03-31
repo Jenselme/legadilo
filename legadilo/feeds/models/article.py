@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Self
 
 from dateutil.relativedelta import relativedelta
+from django.core.paginator import Paginator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
@@ -39,6 +40,11 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                 - relativedelta(**{  # type: ignore[arg-type]
                     reading_list.articles_max_age_unit.lower(): reading_list.articles_max_age_value
                 })
+            )
+
+        if reading_list.tags.all():
+            filters &= models.Q(tags__in=reading_list.tags.all()) & ~models.Q(
+                article_tags__tagging_reason=constants.TaggingReason.DELETED
             )
 
         return filters
@@ -101,8 +107,20 @@ class ArticleManager(models.Manager["Article"]):
         )
         ArticleTag.objects.associate_articles_with_tags(created_articles, feed.tags.all())
 
-    def get_articles_of_reading_list(self, reading_list: ReadingList) -> list[Article]:
-        return list(self.get_queryset().for_reading_list(reading_list).order_by("-published_at"))
+    def get_articles_of_reading_list(self, reading_list: ReadingList) -> Paginator[Article]:
+        return Paginator(
+            self.get_queryset().for_reading_list(reading_list).order_by("-published_at", "id"),
+            constants.MAX_ARTICLE_PER_PAGE,
+        )
+
+    def count_articles_of_reading_lists(self, reading_lists: list[ReadingList]) -> dict[str, int]:
+        aggregation = {
+            reading_list.slug: models.Count(
+                "id", filter=self.get_queryset().build_filters_from_reading_list(reading_list)
+            )
+            for reading_list in reading_lists
+        }
+        return self.get_queryset().aggregate(**aggregation)
 
 
 class Article(models.Model):

@@ -58,12 +58,12 @@ class ReadingListManager(models.Manager["ReadingList"]):
         return qs.get(user=user, slug=reading_list_slug)
 
     def get_all_for_user(self, user: User) -> list[ReadingList]:
-        return list(self.filter(user=user))
+        return list(self.filter(user=user).select_related("user").prefetch_related("tags"))
 
 
 class ReadingList(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField()
+    slug = models.SlugField(blank=True)
     is_default = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
 
@@ -121,6 +121,11 @@ class ReadingList(models.Model):
 
     def __str__(self):
         return f"ReadingList(id={self.id}, name={self.name}, user={self.user}, order={self.order})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         if self.is_default:

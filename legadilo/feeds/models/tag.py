@@ -22,6 +22,9 @@ class Tag(models.Model):
         "feeds.Article", related_name="tags", through="feeds.ArticleTag"
     )
     feed_tags = models.ManyToManyField("feeds.Feed", related_name="tags", through="feeds.FeedTag")
+    reading_list_tags = models.ManyToManyField(
+        "feeds.ReadingList", related_name="tags", through="feeds.ReadingListTag"
+    )
 
     class Meta(TypedModelMeta):
         constraints = [
@@ -101,5 +104,29 @@ class FeedTag(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_tags", on_delete=models.CASCADE)
     tag = models.ForeignKey("feeds.Tag", related_name="feeds", on_delete=models.CASCADE)
 
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                "feed", "tag", name="%(app_label)s_%(class)s_tagged_once_per_feed"
+            )
+        ]
+
     def __str__(self):
         return f"FeedTag(feed={self.feed}, tag={self.tag})"
+
+
+class ReadingListTag(models.Model):
+    reading_list = models.ForeignKey(
+        "feeds.ReadingList", related_name="reading_list_tags", on_delete=models.CASCADE
+    )
+    tag = models.ForeignKey("feeds.Tag", related_name="reading_lists", on_delete=models.CASCADE)
+
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                "reading_list", "tag", name="%(app_label)s_%(class)s_tagged_once_per_reading_list"
+            )
+        ]
+
+    def __str__(self):
+        return f"ReadingListTag(reading_list={self.reading_list}, tag={self.tag})"
