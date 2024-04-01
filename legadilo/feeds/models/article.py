@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -20,38 +21,67 @@ if TYPE_CHECKING:
     from .reading_list import ReadingList
 
 
+def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
+    filters = models.Q(feed__user=reading_list.user)
+
+    if reading_list.read_status == constants.ReadStatus.ONLY_READ:
+        filters &= models.Q(is_read=True)
+    elif reading_list.read_status == constants.ReadStatus.ONLY_UNREAD:
+        filters &= models.Q(is_read=False)
+
+    if reading_list.favorite_status == constants.FavoriteStatus.ONLY_FAVORITE:
+        filters &= models.Q(is_favorite=True)
+    elif reading_list.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
+        filters &= models.Q(is_favorite=False)
+
+    if reading_list.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
+        filters &= models.Q(
+            published_at__gt=utcnow()
+            - relativedelta(**{  # type: ignore[arg-type]
+                reading_list.articles_max_age_unit.lower(): reading_list.articles_max_age_value
+            })
+        )
+
+    filters &= _get_tags_filters(reading_list)
+
+    return filters
+
+
+def _get_tags_filters(reading_list: ReadingList) -> models.Q:
+    filters = models.Q()
+    tags_to_include = []
+    tags_to_exclude = []
+    for reading_list_tag in reading_list.reading_list_tags.all():
+        filter_type = cast(constants.ReadingListTagFilterType, reading_list_tag.filter_type)
+        match filter_type:
+            case constants.ReadingListTagFilterType.INCLUDE:
+                tags_to_include.append(reading_list_tag.tag_id)
+            case constants.ReadingListTagFilterType.EXCLUDE:
+                tags_to_exclude.append(reading_list_tag.tag_id)
+            case _:
+                assert_never(reading_list_tag.filter_type)
+
+    if tags_to_include:
+        filters &= models.Q(alias_tag_ids_for_article__contains=tags_to_include)
+    if tags_to_exclude:
+        filters &= ~models.Q(alias_tag_ids_for_article__overlap=tags_to_exclude)
+    return filters
+
+
 class ArticleQuerySet(models.QuerySet["Article"]):
-    def build_filters_from_reading_list(self, reading_list: ReadingList) -> models.Q:
-        filters = models.Q(feed__user=reading_list.user)
-
-        if reading_list.read_status == constants.ReadStatus.ONLY_READ:
-            filters &= models.Q(is_read=True)
-        elif reading_list.read_status == constants.ReadStatus.ONLY_UNREAD:
-            filters &= models.Q(is_read=False)
-
-        if reading_list.favorite_status == constants.FavoriteStatus.ONLY_FAVORITE:
-            filters &= models.Q(is_favorite=True)
-        elif reading_list.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
-            filters &= models.Q(is_favorite=False)
-
-        if reading_list.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
-            filters &= models.Q(
-                published_at__gt=utcnow()
-                - relativedelta(**{  # type: ignore[arg-type]
-                    reading_list.articles_max_age_unit.lower(): reading_list.articles_max_age_value
-                })
-            )
-
-        if reading_list.tags.all():
-            filters &= models.Q(tags__in=reading_list.tags.all()) & ~models.Q(
-                article_tags__tagging_reason=constants.TaggingReason.DELETED
-            )
-
-        return filters
+    def for_reading_list_filtering(self) -> Self:
+        return self.alias(
+            alias_tag_ids_for_article=ArrayAgg(
+                "article_tags__tag_id",
+                filter=~models.Q(article_tags__tagging_reason=constants.TaggingReason.DELETED),
+                default=models.Value([]),
+            ),
+        )
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
-            self.filter(self.build_filters_from_reading_list(reading_list))
+            self.for_reading_list_filtering()
+            .filter(_build_filters_from_reading_list(reading_list))
             .select_related("feed")
             .prefetch_related(
                 models.Prefetch(
@@ -116,11 +146,11 @@ class ArticleManager(models.Manager["Article"]):
     def count_articles_of_reading_lists(self, reading_lists: list[ReadingList]) -> dict[str, int]:
         aggregation = {
             reading_list.slug: models.Count(
-                "id", filter=self.get_queryset().build_filters_from_reading_list(reading_list)
+                "id", filter=_build_filters_from_reading_list(reading_list)
             )
             for reading_list in reading_lists
         }
-        return self.get_queryset().aggregate(**aggregation)
+        return self.get_queryset().for_reading_list_filtering().aggregate(**aggregation)
 
 
 class Article(models.Model):

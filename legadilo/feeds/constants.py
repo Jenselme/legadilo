@@ -49,6 +49,11 @@ class TaggingReason(TextChoices):
     DELETED = "DELETED", _("Deleted")
 
 
+class ReadingListTagFilterType(TextChoices):
+    INCLUDE = "INCLUDE", _("Include")
+    EXCLUDE = "EXCLUDE", _("Exclude")
+
+
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
 HTTP_TIMEOUT = 20  # In seconds.
 HTTP_TIMEOUT_CMD_CTX = 300  # In seconds.
