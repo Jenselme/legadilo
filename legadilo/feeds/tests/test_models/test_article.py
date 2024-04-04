@@ -167,10 +167,55 @@ class TestArticleQuerySet:
             article_to_include_one_tag,
         ]
 
-    def test_for_reading_list_with_tags_multiple_required_to_include(
-        self, user, django_assert_num_queries
-    ):
-        reading_list = ReadingListFactory(user=user)
+    def test_for_reading_list_include_all_tags(self, user, django_assert_num_queries):
+        reading_list = ReadingListFactory(
+            user=user, include_tag_operator=constants.ReadingListTagOperator.ALL
+        )
+        feed = FeedFactory(user=user)
+        tag1 = TagFactory(user=user)
+        tag2 = TagFactory(user=user)
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag1,
+            filter_type=constants.ReadingListTagFilterType.INCLUDE,
+        )
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag2,
+            filter_type=constants.ReadingListTagFilterType.INCLUDE,
+        )
+        article_linked_to_all_tags = ArticleFactory(feed=feed)
+        ArticleTag.objects.create(
+            article=article_linked_to_all_tags,
+            tag=tag1,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        ArticleTag.objects.create(
+            article=article_linked_to_all_tags,
+            tag=tag2,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        article_linked_to_one_tag = ArticleFactory(feed=feed)
+        ArticleTag.objects.create(
+            article=article_linked_to_one_tag,
+            tag=tag1,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+
+        with django_assert_num_queries(1):
+            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+
+        assert articles_paginator.num_pages == 1
+        assert articles_paginator.count == 1
+        articles_page = articles_paginator.page(1)
+        assert list(articles_page.object_list) == [
+            article_linked_to_all_tags,
+        ]
+
+    def test_for_reading_list_include_any_tags(self, user, django_assert_num_queries):
+        reading_list = ReadingListFactory(
+            user=user, include_tag_operator=constants.ReadingListTagOperator.ANY
+        )
         feed = FeedFactory(user=user)
         tag1 = TagFactory(user=user)
         tag2 = TagFactory(user=user)
@@ -206,10 +251,11 @@ class TestArticleQuerySet:
             articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
 
         assert articles_paginator.num_pages == 1
-        assert articles_paginator.count == 1
+        assert articles_paginator.count == 2
         articles_page = articles_paginator.page(1)
         assert list(articles_page.object_list) == [
             article_linked_to_all_tags,
+            article_to_include_one_tag,
         ]
 
     def test_for_reading_list_with_tags_basic_exclude(self, user, django_assert_num_queries):
@@ -272,10 +318,10 @@ class TestArticleQuerySet:
             article_linked_to_no_tag,
         ]
 
-    def test_for_reading_list_with_tags_exclude_multiple_tags(
-        self, user, django_assert_num_queries
-    ):
-        reading_list = ReadingListFactory(user=user)
+    def test_for_reading_list_exclude_any_tags(self, user, django_assert_num_queries):
+        reading_list = ReadingListFactory(
+            user=user, exclude_tag_operator=constants.ReadingListTagOperator.ANY
+        )
         feed = FeedFactory(user=user)
         tag1 = TagFactory(user=user)
         tag2 = TagFactory(user=user)
@@ -336,81 +382,175 @@ class TestArticleQuerySet:
             article_linked_to_no_tag,
         ]
 
-    def test_for_reading_list_with_tags(self, user, django_assert_num_queries):
-        reading_list = ReadingListFactory(user=user)
+    def test_for_reading_list_exclude_all_tags(self, user, django_assert_num_queries):
+        reading_list = ReadingListFactory(
+            user=user, exclude_tag_operator=constants.ReadingListTagOperator.ALL
+        )
         feed = FeedFactory(user=user)
-        tag_to_include = TagFactory(user=user)
-        other_tag = TagFactory(user=user)
-        tag_to_exclude = TagFactory(user=user)
+        tag1 = TagFactory(user=user)
+        tag2 = TagFactory(user=user)
         ReadingListTag.objects.create(
             reading_list=reading_list,
-            tag=tag_to_include,
+            tag=tag1,
+            filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+        )
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag2,
+            filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+        )
+        article_to_exclude_linked_to_all_tags = ArticleFactory(
+            title="Article to exclude linked to many tags", feed=feed
+        )
+        ArticleTag.objects.create(
+            article=article_to_exclude_linked_to_all_tags,
+            tag=tag1,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        ArticleTag.objects.create(
+            article=article_to_exclude_linked_to_all_tags,
+            tag=tag2,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        article_linked_to_one_tag = ArticleFactory(
+            title="Article to exclude linked to one tag", feed=feed
+        )
+        ArticleTag.objects.create(
+            article=article_linked_to_one_tag,
+            tag=tag1,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        article_would_be_excluded_if_tag_not_deleted = ArticleFactory(
+            title="Article would be excluded if tag not deleted", feed=feed
+        )
+        ArticleTag.objects.create(
+            article=article_would_be_excluded_if_tag_not_deleted,
+            tag=tag1,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
+        ArticleTag.objects.create(
+            article=article_would_be_excluded_if_tag_not_deleted,
+            tag=tag2,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", feed=feed)
+
+        with django_assert_num_queries(2):
+            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+            articles_page = articles_paginator.page(1)
+
+        assert articles_paginator.num_pages == 1
+        assert list(articles_page.object_list) == [
+            article_linked_to_one_tag,
+            article_would_be_excluded_if_tag_not_deleted,
+            article_linked_to_no_tag,
+        ]
+
+    def test_for_reading_list_with_tags(self, user, django_assert_num_queries):
+        reading_list = ReadingListFactory(
+            user=user,
+            include_tag_operator=constants.ReadingListTagOperator.ALL,
+            exclude_tag_operator=constants.ReadingListTagOperator.ANY,
+        )
+        feed = FeedFactory(user=user)
+        tag1_to_include = TagFactory(user=user)
+        tag2_to_include = TagFactory(user=user)
+        other_tag = TagFactory(user=user)
+        tag1_to_exclude = TagFactory(user=user)
+        tag2_to_exclude = TagFactory(user=user)
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag1_to_include,
             filter_type=constants.ReadingListTagFilterType.INCLUDE,
         )
         ReadingListTag.objects.create(
             reading_list=reading_list,
-            tag=tag_to_exclude,
+            tag=tag2_to_include,
+            filter_type=constants.ReadingListTagFilterType.INCLUDE,
+        )
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag1_to_exclude,
             filter_type=constants.ReadingListTagFilterType.EXCLUDE,
         )
-        article_to_include_linked_many_tags = ArticleFactory(
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag2_to_exclude,
+            filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+        )
+        article_to_include_linked_to_all_tags = ArticleFactory(
+            title="Article cannot be included", feed=feed
+        )
+        ArticleTag.objects.create(
+            article=article_to_include_linked_to_all_tags,
+            tag=tag1_to_include,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        ArticleTag.objects.create(
+            article=article_to_include_linked_to_all_tags,
+            tag=tag2_to_include,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        ArticleTag.objects.create(
+            article=article_to_include_linked_to_all_tags,
+            tag=other_tag,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        article_cannot_be_included_linked_to_tag_to_exclude = ArticleFactory(
+            title="Article cannot be included linked to tag to exclude", feed=feed
+        )
+        ArticleTag.objects.create(
+            article=article_cannot_be_included_linked_to_tag_to_exclude,
+            tag=tag1_to_include,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        ArticleTag.objects.create(
+            article=article_cannot_be_included_linked_to_tag_to_exclude,
+            tag=tag2_to_include,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        ArticleTag.objects.create(
+            article=article_cannot_be_included_linked_to_tag_to_exclude,
+            tag=tag1_to_exclude,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        article_cannot_be_included_linked_to_one_tag = ArticleFactory(
+            title="Article to include one tag", feed=feed
+        )
+        ArticleTag.objects.create(
+            article=article_cannot_be_included_linked_to_one_tag,
+            tag=tag1_to_include,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        article_cannot_be_included_linked_to_deleted_tag_to_include = ArticleFactory(
             title="Article to include linked many tags", feed=feed
         )
         ArticleTag.objects.create(
-            article=article_to_include_linked_many_tags,
-            tag=tag_to_include,
-            tagging_reason=constants.TaggingReason.FROM_FEED,
-        )
-        ArticleTag.objects.create(
-            article=article_to_include_linked_many_tags,
-            tag=other_tag,
-            tagging_reason=constants.TaggingReason.FROM_FEED,
-        )
-        article_to_include_one_tag = ArticleFactory(title="Article to include one tag", feed=feed)
-        ArticleTag.objects.create(
-            article=article_to_include_one_tag,
-            tag=tag_to_include,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
-        article_linked_only_to_other_tag = ArticleFactory(
-            title="Article linked only to other tag", feed=feed
-        )
-        ArticleTag.objects.create(
-            article=article_linked_only_to_other_tag,
-            tag=other_tag,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
-        article_linked_to_deleted_tag_to_include = ArticleFactory(
-            title="Article linked to deleted tag to include", feed=feed
-        )
-        ArticleTag.objects.create(
-            article=article_linked_to_deleted_tag_to_include,
-            tag=tag_to_include,
+            article=article_cannot_be_included_linked_to_deleted_tag_to_include,
+            tag=tag1_to_include,
             tagging_reason=constants.TaggingReason.DELETED,
         )
-        article_linked_to_tags_to_include_and_exclude = ArticleFactory(
-            title="Article linked to tags to include and exclude", feed=feed
+        ArticleTag.objects.create(
+            article=article_cannot_be_included_linked_to_deleted_tag_to_include,
+            tag=tag2_to_include,
+            tagging_reason=constants.TaggingReason.FROM_FEED,
+        )
+        article_to_include_linked_to_deleted_tag_to_exclude = ArticleFactory(
+            title="Article to include linked to deleted tag to exclude", feed=feed
         )
         ArticleTag.objects.create(
-            article=article_linked_to_tags_to_include_and_exclude,
-            tag=tag_to_include,
+            article=article_to_include_linked_to_deleted_tag_to_exclude,
+            tag=tag1_to_include,
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         ArticleTag.objects.create(
-            article=article_linked_to_tags_to_include_and_exclude,
-            tag=tag_to_exclude,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
-        article_linked_to_tag_to_include_and_deleted_tag_to_exclude = ArticleFactory(
-            title="Article linked to tag to include and deleted tag to exclude", feed=feed
-        )
-        ArticleTag.objects.create(
-            article=article_linked_to_tag_to_include_and_deleted_tag_to_exclude,
-            tag=tag_to_include,
+            article=article_to_include_linked_to_deleted_tag_to_exclude,
+            tag=tag2_to_include,
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         ArticleTag.objects.create(
-            article=article_linked_to_tag_to_include_and_deleted_tag_to_exclude,
-            tag=tag_to_exclude,
+            article=article_to_include_linked_to_deleted_tag_to_exclude,
+            tag=tag1_to_exclude,
             tagging_reason=constants.TaggingReason.DELETED,
         )
 
@@ -420,9 +560,8 @@ class TestArticleQuerySet:
 
         assert articles_paginator.num_pages == 1
         assert list(articles_page.object_list) == [
-            article_to_include_linked_many_tags,
-            article_to_include_one_tag,
-            article_linked_to_tag_to_include_and_deleted_tag_to_exclude,
+            article_to_include_linked_to_all_tags,
+            article_to_include_linked_to_deleted_tag_to_exclude,
         ]
 
 

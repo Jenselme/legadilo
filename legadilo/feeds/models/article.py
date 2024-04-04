@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self, assert_never, cast
+from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -17,6 +17,7 @@ from ..utils.feed_parsing import FeedArticle
 from .tag import ArticleTag
 
 if TYPE_CHECKING:
+    from ..constants import ReadingListTagOperator
     from .feed import Feed
     from .reading_list import ReadingList
 
@@ -62,10 +63,26 @@ def _get_tags_filters(reading_list: ReadingList) -> models.Q:
                 assert_never(reading_list_tag.filter_type)
 
     if tags_to_include:
-        filters &= models.Q(alias_tag_ids_for_article__contains=tags_to_include)
+        operator = _get_reading_list_tags_sql_operator(
+            constants.ReadingListTagOperator(reading_list.include_tag_operator)
+        )
+        filters &= models.Q(**{f"alias_tag_ids_for_article__{operator}": tags_to_include})
     if tags_to_exclude:
-        filters &= ~models.Q(alias_tag_ids_for_article__overlap=tags_to_exclude)
+        operator = _get_reading_list_tags_sql_operator(
+            constants.ReadingListTagOperator(reading_list.exclude_tag_operator)
+        )
+        filters &= ~models.Q(**{f"alias_tag_ids_for_article__{operator}": tags_to_exclude})
     return filters
+
+
+def _get_reading_list_tags_sql_operator(
+    reading_list_operator: ReadingListTagOperator,
+) -> Literal["contains", "overlap"]:
+    match reading_list_operator:
+        case constants.ReadingListTagOperator.ALL:
+            return "contains"
+        case constants.ReadingListTagOperator.ANY:
+            return "overlap"
 
 
 class ArticleQuerySet(models.QuerySet["Article"]):
