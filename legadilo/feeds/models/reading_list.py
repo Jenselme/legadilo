@@ -108,16 +108,16 @@ class ReadingList(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_articles_max_age_unit_valid",
                 check=models.Q(
-                    articles_max_age_unit__in=["UNSET", "HOURS", "DAYS", "WEEKS", "MONTHS"]
+                    articles_max_age_unit__in=constants.ArticlesMaxAgeUnit.names,
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_favorite_status_valid",
-                check=models.Q(favorite_status__in=["ALL", "ONLY_FAVORITE", "ONLY_NON_FAVORITE"]),
+                check=models.Q(favorite_status__in=constants.FavoriteStatus.names),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_read_status_valid",
-                check=models.Q(read_status__in=["ALL", "ONLY_UNREAD", "ONLY_READ"]),
+                check=models.Q(read_status__in=constants.ReadStatus.names),
             ),
         ]
 
