@@ -121,11 +121,22 @@ class ReadingListTag(models.Model):
     )
     tag = models.ForeignKey("feeds.Tag", related_name="reading_lists", on_delete=models.CASCADE)
 
+    filter_type = models.CharField(
+        choices=constants.ReadingListTagFilterType.choices,
+        default=constants.ReadingListTagFilterType.INCLUDE,
+    )
+
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
                 "reading_list", "tag", name="%(app_label)s_%(class)s_tagged_once_per_reading_list"
-            )
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_filter_type_valid",
+                check=models.Q(
+                    filter_type__in=constants.ReadingListTagFilterType.names,
+                ),
+            ),
         ]
 
     def __str__(self):

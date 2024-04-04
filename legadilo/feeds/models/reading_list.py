@@ -58,7 +58,9 @@ class ReadingListManager(models.Manager["ReadingList"]):
         return qs.get(user=user, slug=reading_list_slug)
 
     def get_all_for_user(self, user: User) -> list[ReadingList]:
-        return list(self.filter(user=user).select_related("user").prefetch_related("tags"))
+        return list(
+            self.filter(user=user).select_related("user").prefetch_related("reading_list_tags")
+        )
 
 
 class ReadingList(models.Model):
@@ -86,6 +88,20 @@ class ReadingList(models.Model):
             "Define the unit for the previous number. Leave to unset to not use this feature."
         ),
     )
+    include_tag_operator = models.CharField(
+        choices=constants.ReadingListTagOperator.choices,
+        default=constants.ReadingListTagOperator.ALL,
+        help_text=_(
+            "Defines whether the articles must have all or any of the tags to be included in the reading list."  # noqa: E501
+        ),
+    )
+    exclude_tag_operator = models.CharField(
+        choices=constants.ReadingListTagOperator.choices,
+        default=constants.ReadingListTagOperator.ALL,
+        help_text=_(
+            "Defines whether the articles must have all or any of the tags to be excluded from the reading list."  # noqa: E501
+        ),
+    )
 
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="reading_lists")
 
@@ -106,16 +122,24 @@ class ReadingList(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_articles_max_age_unit_valid",
                 check=models.Q(
-                    articles_max_age_unit__in=["UNSET", "HOURS", "DAYS", "WEEKS", "MONTHS"]
+                    articles_max_age_unit__in=constants.ArticlesMaxAgeUnit.names,
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_favorite_status_valid",
-                check=models.Q(favorite_status__in=["ALL", "ONLY_FAVORITE", "ONLY_NON_FAVORITE"]),
+                check=models.Q(favorite_status__in=constants.FavoriteStatus.names),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_read_status_valid",
-                check=models.Q(read_status__in=["ALL", "ONLY_UNREAD", "ONLY_READ"]),
+                check=models.Q(read_status__in=constants.ReadStatus.names),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_exclude_tag_operator_valid",
+                check=models.Q(exclude_tag_operator__in=constants.ReadingListTagOperator.names),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_include_tag_operator_valid",
+                check=models.Q(include_tag_operator__in=constants.ReadingListTagOperator.names),
             ),
         ]
 
