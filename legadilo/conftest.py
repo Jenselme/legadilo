@@ -25,6 +25,17 @@ def user(db) -> User:
 
 
 @pytest.fixture()
+def other_user(db) -> User:
+    return UserFactory()
+
+
+@pytest.fixture()
 def logged_in_sync_client(user, client):
     client.force_login(user)
+    return client
+
+
+@pytest.fixture()
+def logged_in_other_user_sync_client(other_user, client):
+    client.force_login(other_user)
     return client

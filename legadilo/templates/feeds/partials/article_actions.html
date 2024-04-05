@@ -1,11 +1,13 @@
-{% load i18n %}
+{% load i18n feeds %}
 
 <form class="btn-group"
       role="group"
       aria-label="{% translate 'Actions on the article' %}"
-      action=""
       method="post">
-    <button class="btn btn-outline-secondary" type="submit">
+    {% csrf_token %}
+    <button class="btn btn-outline-secondary"
+            type="submit"
+            formaction="{{ article|read_action_url }}">
         {% if article.is_read %}
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="16"
@@ -31,7 +33,9 @@
             {% translate 'Mark as read' %}
         {% endif %}
     </button>
-    <button class="btn btn-outline-secondary" type="submit">
+    <button class="btn btn-outline-secondary"
+            type="submit"
+            formaction="{{ article|favorite_action_url }}">
         {% if article.is_favorite %}
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="16"

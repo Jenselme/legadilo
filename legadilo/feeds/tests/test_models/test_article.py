@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from random import choice
 from typing import Any
 
 import pytest
@@ -659,3 +660,37 @@ class TestArticleManager:
             reading_list2.slug: 1,
             reading_list3.slug: 0,
         }
+
+
+class TestArticleModel:
+    @pytest.mark.parametrize(
+        ("action", "attr", "value"),
+        [
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_READ, "is_read", True, id="mark-as-read"
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_UNREAD, "is_read", False, id="mark-as-unread"
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FAVORITE,
+                "is_favorite",
+                True,
+                id="mark-as-favorite",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FAVORITE,
+                "is_favorite",
+                False,
+                id="unmark-as-favorite",
+            ),
+        ],
+    )
+    def test_update_article(self, action: constants.UpdateArticleActions, attr: str, value: bool):
+        article = ArticleFactory.build(
+            is_read=choice([True, False]), is_favorite=choice([True, False])
+        )
+
+        article.update_article(action)
+
+        assert getattr(article, attr) is value

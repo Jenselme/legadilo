@@ -59,6 +59,13 @@ class ReadingListTagOperator(TextChoices):
     ANY = "ANY", _("Any")
 
 
+class UpdateArticleActions(TextChoices):
+    MARK_AS_FAVORITE = "MARK_AS_FAVORITE", _("Mark as favorite")
+    UNMARK_AS_FAVORITE = "UNMARK_AS_FAVORITE", _("Unmark as favorite")
+    MARK_AS_READ = "MARK_AS_READ", _("Mark as read")
+    MARK_AS_UNREAD = "MARK_AS_UNREAD", _("Mark as unread")
+
+
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
 HTTP_TIMEOUT = 20  # In seconds.
 HTTP_TIMEOUT_CMD_CTX = 300  # In seconds.

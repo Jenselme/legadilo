@@ -202,3 +202,16 @@ class Article(models.Model):
         return (
             f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
         )
+
+    def update_article(self, action: constants.UpdateArticleActions):
+        match action:
+            case constants.UpdateArticleActions.MARK_AS_READ:
+                self.is_read = True
+            case constants.UpdateArticleActions.MARK_AS_UNREAD:
+                self.is_read = False
+            case constants.UpdateArticleActions.MARK_AS_FAVORITE:
+                self.is_favorite = True
+            case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
+                self.is_favorite = False
+            case _:
+                assert_never(action)
