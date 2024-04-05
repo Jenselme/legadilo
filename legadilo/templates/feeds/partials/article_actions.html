@@ -1,6 +1,8 @@
 {% load i18n feeds %}
 
-<form aria-label="{% translate 'Actions on the article' %}" method="post">
+<form aria-label="{% translate 'Actions on the article' %}"
+      method="post"
+      hx-boost="true">
     {% csrf_token %}
     <div class="btn-group" role="group">
         <button class="btn btn-outline-secondary"
