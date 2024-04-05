@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 
@@ -17,6 +17,8 @@ def reading_list_with_articles_view(
             request.user, reading_list_slug
         )
     except ReadingList.DoesNotExist:
+        if reading_list_slug is not None:
+            return HttpResponseNotFound()
         return HttpResponseRedirect(reverse("feeds:default_reading_list"))
 
     articles_paginator = Article.objects.get_articles_of_reading_list(displayed_reading_list)
