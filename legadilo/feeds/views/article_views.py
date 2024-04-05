@@ -3,12 +3,14 @@ from urllib.parse import urlparse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article
 from legadilo.users.typing import AuthenticatedHttpRequest
 
 
+@require_POST
 @login_required
 def update_article_view(
     request: AuthenticatedHttpRequest,

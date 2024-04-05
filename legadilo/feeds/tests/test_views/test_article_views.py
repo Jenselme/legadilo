@@ -21,12 +21,12 @@ class TestUpdateArticleView:
         )
 
     def test_cannot_access_if_not_logged_in(self, client):
-        response = client.get(self.url)
+        response = client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
 
     def test_cannot_update_article_as_other_user(self, logged_in_other_user_sync_client):
-        response = logged_in_other_user_sync_client.get(self.url)
+        response = logged_in_other_user_sync_client.post(self.url)
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
