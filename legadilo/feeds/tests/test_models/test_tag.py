@@ -26,7 +26,9 @@ class TestArticleTagQuerySet:
 
         assert len(article_tags) == 2
         assert article_tags[0].name == tag1.name
+        assert article_tags[0].slug == tag1.slug
         assert article_tags[1].name == tag3.name
+        assert article_tags[1].slug == tag3.slug
 
 
 @pytest.mark.django_db()

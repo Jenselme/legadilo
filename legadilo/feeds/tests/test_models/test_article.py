@@ -661,6 +661,37 @@ class TestArticleManager:
             reading_list3.slug: 0,
         }
 
+    def test_get_articles_of_tag(self):
+        feed = FeedFactory()
+        tag_to_display = TagFactory(user=feed.user)
+        other_tag = TagFactory(user=feed.user)
+        article_linked_only_to_tag_to_display = ArticleFactory(
+            title="Article linked only to tag to display", feed=feed
+        )
+        ArticleTag.objects.create(tag=tag_to_display, article=article_linked_only_to_tag_to_display)
+        article_linked_to_all_tags = ArticleFactory(title="Article linked to all tags", feed=feed)
+        ArticleTag.objects.create(tag=tag_to_display, article=article_linked_to_all_tags)
+        ArticleTag.objects.create(tag=other_tag, article=article_linked_to_all_tags)
+        article_linked_to_deleted_tag_to_display = ArticleFactory(
+            title="Article linked to deleted tag to display", feed=feed
+        )
+        ArticleTag.objects.create(
+            tag=tag_to_display,
+            article=article_linked_to_deleted_tag_to_display,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
+        article_linked_to_other_tag = ArticleFactory(title="Article linked to other tag", feed=feed)
+        ArticleTag.objects.create(tag=other_tag, article=article_linked_to_other_tag)
+
+        articles_paginator = Article.objects.get_articles_of_tag(tag_to_display)
+
+        assert articles_paginator.num_pages == 1
+        page = articles_paginator.page(1)
+        assert list(page.object_list) == [
+            article_linked_only_to_tag_to_display,
+            article_linked_to_all_tags,
+        ]
+
 
 class TestArticleModel:
     @pytest.mark.parametrize(

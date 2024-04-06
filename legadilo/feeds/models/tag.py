@@ -47,7 +47,7 @@ class ArticleTagQuerySet(models.QuerySet["ArticleTag"]):
         return (
             self.exclude(tagging_reason=constants.TaggingReason.DELETED)
             .select_related("tag")
-            .annotate(name=models.F("tag__name"))
+            .annotate(name=models.F("tag__name"), slug=models.F("tag__slug"))
         )
 
 

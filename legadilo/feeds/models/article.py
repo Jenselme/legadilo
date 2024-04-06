@@ -19,6 +19,7 @@ from .tag import ArticleTag
 if TYPE_CHECKING:
     from .feed import Feed
     from .reading_list import ReadingList
+    from .tag import Tag
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
@@ -108,6 +109,20 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             )
         )
 
+    def for_tag(self, tag: Tag) -> Self:
+        return (
+            self.filter(article_tags__tag=tag)
+            .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
+            .select_related("feed")
+            .prefetch_related(
+                models.Prefetch(
+                    "article_tags",
+                    queryset=ArticleTag.objects.get_queryset().for_reading_list(),
+                    to_attr="tags_to_display",
+                )
+            )
+        )
+
 
 class ArticleManager(models.Manager["Article"]):
     _hints: dict
@@ -167,6 +182,9 @@ class ArticleManager(models.Manager["Article"]):
             for reading_list in reading_lists
         }
         return self.get_queryset().for_reading_list_filtering().aggregate(**aggregation)
+
+    def get_articles_of_tag(self, tag: Tag) -> Paginator[Article]:
+        return Paginator(self.get_queryset().for_tag(tag), constants.MAX_ARTICLE_PER_PAGE)
 
 
 class Article(models.Model):

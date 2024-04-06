@@ -8,7 +8,10 @@
             </p>
             {% if article.tags_to_display %}
                 <p>
-                    {% for tag in article.tags_to_display %}<span class="badge text-bg-primary me-1">{{ tag.name }}</span>{% endfor %}
+                    {% for tag in article.tags_to_display %}
+                        <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1"
+                           href="{% url 'feeds:tag_with_articles' tag_slug=tag.slug %}">{{ tag.name }}</a>
+                    {% endfor %}
                 </p>
             {% endif %}
         </div>

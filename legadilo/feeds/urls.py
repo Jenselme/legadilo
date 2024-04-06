@@ -15,6 +15,7 @@ urlpatterns = [
         views.reading_list_with_articles_view,
         name="reading_list",
     ),
+    path("reading/tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
         "reading/articles/<int:article_id>/<article_update_action:update_action>/",
         views.update_article_view,
