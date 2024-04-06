@@ -63,6 +63,7 @@ class TestReadingListWithArticlesView:
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [
