@@ -65,7 +65,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
 
 class ReadingList(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(blank=True, max_length=255)
     is_default = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
 
