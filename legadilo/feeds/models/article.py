@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
+from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
 
@@ -138,7 +139,8 @@ class ArticleManager(models.Manager["Article"]):
             self.model(
                 feed_id=feed.id,
                 article_feed_id=article_data.article_feed_id,
-                title=article_data.title,
+                title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
+                slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
                 summary=article_data.summary,
                 content=article_data.content,
                 authors=article_data.authors,
@@ -155,6 +157,7 @@ class ArticleManager(models.Manager["Article"]):
             update_conflicts=True,
             update_fields=[
                 "title",
+                "slug",
                 "summary",
                 "content",
                 "authors",
@@ -188,7 +191,8 @@ class ArticleManager(models.Manager["Article"]):
 
 
 class Article(models.Model):
-    title = models.CharField()
+    title = models.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
+    slug = models.SlugField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
     summary = models.TextField()
     content = models.TextField(blank=True)
     authors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
@@ -220,6 +224,11 @@ class Article(models.Model):
         return (
             f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
         )
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+
+        return super().save(*args, **kwargs)
 
     def update_article(self, action: constants.UpdateArticleActions):
         match action:

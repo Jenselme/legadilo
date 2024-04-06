@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime
 from random import choice
 from typing import Any
@@ -623,6 +624,11 @@ class TestArticleManager:
         assert Article.objects.count() == 3
         existing_article.refresh_from_db()
         assert existing_article.title == "Article updated"
+        assert existing_article.slug == "article-updated"
+        other_article = Article.objects.exclude(id=existing_article.id).first()
+        assert other_article is not None
+        assert re.match(r"Article \d", other_article.title)
+        assert re.match(r"article-\d", other_article.slug)
         assert list(
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True
