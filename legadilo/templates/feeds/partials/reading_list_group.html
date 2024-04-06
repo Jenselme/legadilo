@@ -1,0 +1,13 @@
+{% load util_tags %}
+
+<ul class="list-group">
+    {% for reading_list in reading_lists %}
+        <li class="p-0 list-group-item {% if displayed_reading_list.id == reading_list.id %}active{% endif %}">
+            <a href="{% url 'feeds:reading_list' reading_list_slug=reading_list.slug %}"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>{{ reading_list.name }}</span>
+                <span class="badge text-bg-info">{{ count_articles_of_reading_lists|get_item:reading_list.slug }}</span>
+            </a>
+        </li>
+    {% endfor %}
+</ul>
