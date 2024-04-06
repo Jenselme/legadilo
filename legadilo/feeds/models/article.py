@@ -17,7 +17,6 @@ from ..utils.feed_parsing import FeedArticle
 from .tag import ArticleTag
 
 if TYPE_CHECKING:
-    from ..constants import ReadingListTagOperator
     from .feed import Feed
     from .reading_list import ReadingList
 
@@ -76,7 +75,7 @@ def _get_tags_filters(reading_list: ReadingList) -> models.Q:
 
 
 def _get_reading_list_tags_sql_operator(
-    reading_list_operator: ReadingListTagOperator,
+    reading_list_operator: constants.ReadingListTagOperator,
 ) -> Literal["contains", "overlap"]:
     match reading_list_operator:
         case constants.ReadingListTagOperator.ALL:
@@ -203,3 +202,16 @@ class Article(models.Model):
         return (
             f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
         )
+
+    def update_article(self, action: constants.UpdateArticleActions):
+        match action:
+            case constants.UpdateArticleActions.MARK_AS_READ:
+                self.is_read = True
+            case constants.UpdateArticleActions.MARK_AS_UNREAD:
+                self.is_read = False
+            case constants.UpdateArticleActions.MARK_AS_FAVORITE:
+                self.is_favorite = True
+            case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
+                self.is_favorite = False
+            case _:
+                assert_never(action)

@@ -49,6 +49,7 @@
                             </div>
                             <p class="card-text">{{ article.summary | safe }}</p>
                         </div>
+                        <div class="card-footer">{% include "feeds/partials/article_actions.html" %}</div>
                     </div>
                 {% empty %}
                     <p>{% translate "This reading list is empty." %}</p>

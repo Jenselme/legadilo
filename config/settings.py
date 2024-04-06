@@ -240,6 +240,7 @@ TEMPLATES = [
             ],
             "libraries": {
                 "util_tags": "legadilo.core.template_tags.util_tags",
+                "feeds": "legadilo.feeds.templatetags",
             },
             "debug": DEBUG,
             "loaders": [

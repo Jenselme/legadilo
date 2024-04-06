@@ -12,7 +12,7 @@ from legadilo.feeds.tests.factories import ArticleFactory, ReadingListFactory
 @pytest.mark.django_db()
 class TestReadingListWithArticlesView:
     @pytest.fixture(autouse=True)
-    def _setup_data(self, user):
+    def _setup_data(self, user, other_user):
         self.default_reading_list = ReadingListFactory(
             is_default=True, user=user, read_status=constants.ReadStatus.ONLY_UNREAD, order=0
         )
@@ -29,7 +29,7 @@ class TestReadingListWithArticlesView:
             is_read=False, published_at=datetime(2024, 3, 10, tzinfo=UTC), feed__user=user
         )
         # Article of some other user.
-        ArticleFactory()
+        ArticleFactory(feed__user=other_user)
 
     def test_not_logged_in(self, client):
         response = client.get(self.default_reading_list_url)
@@ -42,6 +42,11 @@ class TestReadingListWithArticlesView:
         response = client.get(self.reading_list_url)
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == reverse("account_login") + f"?next={self.reading_list_url}"
+
+    def test_cannot_access_as_other_user(self, logged_in_other_user_sync_client):
+        response = logged_in_other_user_sync_client.get(self.reading_list_url)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_default_view(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(10):
