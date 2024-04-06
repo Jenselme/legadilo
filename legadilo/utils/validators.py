@@ -23,7 +23,7 @@ list_of_strings_json_schema_validator = JsonSchemaValidator({
 })
 
 
-def get_page_number(request: HttpRequest) -> int:
+def get_page_number_from_request(request: HttpRequest) -> int:
     raw_page = request.GET.get("page", 1)
 
     try:

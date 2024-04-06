@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from ..validators import get_page_number, list_of_strings_json_schema_validator
+from ..validators import get_page_number_from_request, list_of_strings_json_schema_validator
 
 
 class TestListOfStringsJsonSchemaValidator:
@@ -34,4 +34,4 @@ class TestListOfStringsJsonSchemaValidator:
 def test_get_page_number(rf, request_params, expected_value):
     request = rf.get("/", request_params)
 
-    assert get_page_number(request) == expected_value
+    assert get_page_number_from_request(request) == expected_value
