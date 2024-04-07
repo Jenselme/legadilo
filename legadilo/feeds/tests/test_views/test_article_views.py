@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 
 from legadilo.feeds import constants
-from legadilo.feeds.tests.factories import ArticleFactory
+from legadilo.feeds.tests.factories import ArticleFactory, ReadingListFactory
 
 
 @pytest.mark.django_db()
@@ -50,6 +50,7 @@ class TestArticleView:
 class TestUpdateArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
+        self.reading_list = ReadingListFactory(user=user)
         self.article = ArticleFactory(is_read=False, feed__user=user)
         self.url = reverse(
             "feeds:update_article",
@@ -71,12 +72,29 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_article_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(4):
+        with django_assert_num_queries(5):
             response = logged_in_sync_client.post(
                 self.url, HTTP_REFERER="http://example.com/reading/"
             )
 
         assert response.status_code == HTTPStatus.FOUND
         assert response.headers["Location"] == "http://testserver/reading/"
+        self.article.refresh_from_db()
+        assert self.article.is_read
+
+    def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(8):
+            response = logged_in_sync_client.post(
+                self.url,
+                data={"displayed_reading_list_id": str(self.reading_list.id)},
+                HTTP_REFERER="http://example.com/reading/",
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.context["article"] == self.article
+        assert response.context["reading_lists"] == [self.reading_list]
+        assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 1}
+        assert response.context["displayed_reading_list_id"] == self.reading_list.id
         self.article.refresh_from_db()
         assert self.article.is_read

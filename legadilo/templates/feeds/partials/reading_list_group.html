@@ -2,7 +2,7 @@
 
 <ul class="sticky-top list-group">
     {% for reading_list in reading_lists %}
-        <li class="p-0 list-group-item {% if displayed_reading_list.id == reading_list.id %}active{% endif %}">
+        <li class="p-0 list-group-item {% if displayed_reading_list_id == reading_list.id %}active{% endif %}">
             <a href="{% url 'feeds:reading_list' reading_list_slug=reading_list.slug %}"
                class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
                 <span>{{ reading_list.name }}</span>

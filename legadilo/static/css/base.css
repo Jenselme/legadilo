@@ -13,16 +13,23 @@
     fill: currentColor;
 }
 
-.htmx-indicator {
+.htmx-indicator, .icon-indicator .indicator {
+    display: none;
     opacity: 0;
 }
 
-.htmx-request .htmx-indicator {
+.htmx-request.htmx-indicator, .htmx-request .icon-indicator .indicator {
+    display: inline;
     opacity: 1;
     transition: opacity 200ms ease-in;
 }
 
-.htmx-request.htmx-indicator {
+.htmx-request.icon-indicator .bi {
+    display: none;
+}
+
+.htmx-request.htmx-indicator, .htmx-request.icon-indicator .indicator {
+    display: inline;
     opacity: 1;
     transition: opacity 200ms ease-in;
 }

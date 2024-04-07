@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% load i18n %}
 
@@ -18,10 +18,12 @@
     </div>
     <div class="container-fluid scrollable-container">
         <div class="row scrollable">
-            <div class="col col-2">{% include 'feeds/partials/reading_list_group.html' %}</div>
+            <div id="reading-list-group" class="col col-2">
+                {% include 'feeds/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list.id %}
+            </div>
             <div class="col col-8">
                 {% for article in articles_page %}
-                    {% include 'feeds/partials/article_card.html' %}
+                    {% include 'feeds/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list.id %}
                 {% empty %}
                     <p>{% translate "This reading list is empty." %}</p>
                 {% endfor %}
