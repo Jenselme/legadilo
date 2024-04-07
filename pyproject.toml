@@ -197,10 +197,11 @@ django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-cri
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "10.3"  # https://github.com/anymail/django-anymail
 daphne = "^4.1.2"  # https://github.com/django/daphne
-django-version-checks = "1.11.0"
-django-extra-checks = "0.14.0"
+django-version-checks = "1.11.0"  # https://github.com/adamchainz/django-version-checks
+django-extra-checks = "0.14.0"  # https://github.com/kalekseev/django-extra-checks
 django-csp = "3.8"  # https://django-csp.readthedocs.io/en/latest/index.html
 django-axes = "6.4.0"  # https://github.com/jazzband/django-axes
+django-htmx = "1.17.3"  # https://django-htmx.readthedocs.io/en/latest/
 
 # Project
 # ------------------------------------------------------------------------------
