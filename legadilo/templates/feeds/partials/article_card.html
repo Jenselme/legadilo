@@ -1,10 +1,10 @@
 <div class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
     <div class="card-body">
-        <h2 class="card-title">{{ article.title }}</h2>
+        <h2 class="card-title">{{ article.title | safe }}</h2>
         <div class="card-subtitle">
             <p class="mb-0">
-                {{ article.authors | join:", " }} – {{ article.published_at|date:"SHORT_DATETIME_FORMAT" }}
-                {% if article.feed %}– {{ article.feed.title }}{% endif %}
+                {{ article.authors | join:", " | safe }} – {{ article.published_at|date:"SHORT_DATETIME_FORMAT" }}
+                {% if article.feed %}– {{ article.feed.title | safe }}{% endif %}
             </p>
             {% if article.tags_to_display %}
                 <p>
@@ -15,7 +15,7 @@
                 </p>
             {% endif %}
         </div>
-        <p class="card-text">{{ article.summary | safe }}</p>
+        <p class="card-text">{{ article.summary | truncatewords_html:100 | safe }}</p>
     </div>
     <div class="card-footer">{% include "feeds/partials/article_actions.html" %}</div>
 </div>
