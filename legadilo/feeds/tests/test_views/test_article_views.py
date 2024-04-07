@@ -38,8 +38,9 @@ class TestArticleView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_view_details(self, logged_in_sync_client):
-        response = logged_in_sync_client.get(self.url)
+    def test_view_details(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(4):
+            response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.context["article"] == self.article
@@ -69,8 +70,11 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_update_article_view(self, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, HTTP_REFERER="http://example.com/reading/")
+    def test_update_article_view(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(4):
+            response = logged_in_sync_client.post(
+                self.url, HTTP_REFERER="http://example.com/reading/"
+            )
 
         assert response.status_code == HTTPStatus.FOUND
         assert response.headers["Location"] == "http://testserver/reading/"

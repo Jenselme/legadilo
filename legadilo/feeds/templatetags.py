@@ -27,3 +27,11 @@ def favorite_action_url(article: Article) -> str:
     return reverse(
         "feeds:update_article", kwargs={"article_id": article.id, "update_action": action}
     )
+
+
+@register.filter
+def article_metadata(article: Article) -> str:
+    metadata = f"{", ".join(article.authors)} – {article.published_at}"  # noqa: RUF001 String contains ambiguous (EN DASH)
+    if article.feed:
+        metadata += f" – {article.feed.title}"  # noqa: RUF001 String contains ambiguous (EN DASH)
+    return metadata

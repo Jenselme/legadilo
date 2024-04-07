@@ -16,7 +16,12 @@ from legadilo.users.typing import AuthenticatedHttpRequest
 def article_details_view(
     request: AuthenticatedHttpRequest, article_id: int, article_slug: str
 ) -> TemplateResponse:
-    article = get_object_or_404(Article, id=article_id, slug=article_slug, feed__user=request.user)
+    article = get_object_or_404(
+        Article.objects.get_queryset().for_details(),
+        id=article_id,
+        slug=article_slug,
+        feed__user=request.user,
+    )
 
     return TemplateResponse(
         request,

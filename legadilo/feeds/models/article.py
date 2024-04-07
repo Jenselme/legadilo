@@ -86,6 +86,14 @@ def _get_reading_list_tags_sql_operator(
             return "overlap"
 
 
+def _build_prefetch_article_tags():
+    return models.Prefetch(
+        "article_tags",
+        queryset=ArticleTag.objects.get_queryset().for_reading_list(),
+        to_attr="tags_to_display",
+    )
+
+
 class ArticleQuerySet(models.QuerySet["Article"]):
     def for_reading_list_filtering(self) -> Self:
         return self.alias(
@@ -101,13 +109,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_reading_list_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .select_related("feed")
-            .prefetch_related(
-                models.Prefetch(
-                    "article_tags",
-                    queryset=ArticleTag.objects.get_queryset().for_reading_list(),
-                    to_attr="tags_to_display",
-                )
-            )
+            .prefetch_related(_build_prefetch_article_tags())
         )
 
     def for_tag(self, tag: Tag) -> Self:
@@ -115,14 +117,11 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.filter(article_tags__tag=tag)
             .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
             .select_related("feed")
-            .prefetch_related(
-                models.Prefetch(
-                    "article_tags",
-                    queryset=ArticleTag.objects.get_queryset().for_reading_list(),
-                    to_attr="tags_to_display",
-                )
-            )
+            .prefetch_related(_build_prefetch_article_tags())
         )
+
+    def for_details(self) -> Self:
+        return self.select_related("feed").prefetch_related(_build_prefetch_article_tags())
 
 
 class ArticleManager(models.Manager["Article"]):
