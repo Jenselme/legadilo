@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ article.title }}
+{% endblock title %}
+{% block content %}
+    <div class="row">
+        <div class="col col-2">
+            {% include "feeds/partials/article_actions.html" with vertical_actions=True hide_open_details=True %}
+        </div>
+        <div class="col col-10 container-xl">
+            <h1>{{ article.title }}</h1>
+            <div>{{ article.content | safe }}</div>
+            <div class="d-flex justify-content-center mt-2 mb-5">
+                {% include 'feeds/partials/article_actions.html' with hide_open_details=True %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}

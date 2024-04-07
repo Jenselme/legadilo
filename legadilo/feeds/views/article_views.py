@@ -3,11 +3,28 @@ from urllib.parse import urlparse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_POST
+from django.template.response import TemplateResponse
+from django.views.decorators.http import require_GET, require_POST
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article
 from legadilo.users.typing import AuthenticatedHttpRequest
+
+
+@require_GET
+@login_required
+def article_details_view(
+    request: AuthenticatedHttpRequest, article_id: int, article_slug: str
+) -> TemplateResponse:
+    article = get_object_or_404(Article, id=article_id, slug=article_slug, feed__user=request.user)
+
+    return TemplateResponse(
+        request,
+        "feeds/article_details.html",
+        {
+            "article": article,
+        },
+    )
 
 
 @require_POST
