@@ -11,9 +11,9 @@
     <input type="hidden"
            name="displayed_reading_list_id"
            value="{{ displayed_reading_list_id }}" />
-    <div class="{% if vertical_actions %}btn-group-vertical{% else %}btn-group{% endif %}"
+    <div class="{% if for_article_details %}btn-group-vertical{% else %}btn-group{% endif %}"
          role="group">
-        <button class="btn {% if hide_open_details %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        <button class="btn {% if for_article_details %}btn-primary{% else %}btn-outline-secondary{% endif %}"
                 type="submit"
                 formaction="{{ article|read_action_url }}">
             {% if article.is_read %}
@@ -91,7 +91,7 @@
             </svg>
             {% translate 'Open original' %}
         </a>
-        {% if not hide_open_details %}
+        {% if not for_article_details %}
             <a class="btn btn-primary {% if not article.content %}disabled{% endif %}"
                role="button"
                {% if article.content %}href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}"{% else %}aria-disabled="true"{% endif %}>
