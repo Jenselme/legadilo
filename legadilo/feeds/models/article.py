@@ -239,5 +239,7 @@ class Article(models.Model):
                 self.is_favorite = True
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
                 self.is_favorite = False
+            case constants.UpdateArticleActions.MARK_AS_OPENED:
+                self.was_opened = True
             case _:
                 assert_never(action)

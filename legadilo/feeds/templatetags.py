@@ -30,6 +30,17 @@ def favorite_action_url(article: Article) -> str:
 
 
 @register.filter
+def opened_action_url(article: Article) -> str:
+    return reverse(
+        "feeds:update_article",
+        kwargs={
+            "article_id": article.id,
+            "update_action": constants.UpdateArticleActions.MARK_AS_OPENED,
+        },
+    )
+
+
+@register.filter
 def article_metadata(article: Article) -> str:
     metadata = f"{", ".join(article.authors)} – {article.published_at}"  # noqa: RUF001 String contains ambiguous (EN DASH)
     if article.feed:

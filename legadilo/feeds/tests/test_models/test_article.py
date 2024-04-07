@@ -721,11 +721,19 @@ class TestArticleModel:
                 False,
                 id="unmark-as-favorite",
             ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_OPENED,
+                "was_opened",
+                True,
+                id="mark-as-opened",
+            ),
         ],
     )
     def test_update_article(self, action: constants.UpdateArticleActions, attr: str, value: bool):
         article = ArticleFactory.build(
-            is_read=choice([True, False]), is_favorite=choice([True, False])
+            is_read=choice([True, False]),
+            is_favorite=choice([True, False]),
+            was_opened=choice([True, False]),
         )
 
         article.update_article(action)

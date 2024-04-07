@@ -1,5 +1,14 @@
 {% extends 'base.html' %}
 
+{% block page_js %}
+    {% if not article.is_read and not article.was_opened %}
+        <script>
+            window.addEventListener("load", function() {
+                window.legadilo.runArticleUpdateAction('{{ article|opened_action_url }}');
+            });
+        </script>
+    {% endif %}
+{% endblock page_js %}
 {% block title %}
     {{ article.title|safe }}
 {% endblock title %}

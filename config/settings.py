@@ -313,7 +313,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", def
 # https://content-security-policy.com/
 # https://csp-evaluator.withgoogle.com/
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+# TODO: We must use nonce here, we have a few inline stuff.
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-eval'", "'unsafe-inline'", "https://cdnjs.cloudflare.com/")
 CSP_SCRIPT_SRC_ATTR = None
 CSP_SCRIPT_SRC_ELEM = None
 CSP_IMG_SRC = ("'self'", "data:")

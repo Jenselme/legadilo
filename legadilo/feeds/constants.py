@@ -64,6 +64,7 @@ class UpdateArticleActions(TextChoices):
     UNMARK_AS_FAVORITE = "UNMARK_AS_FAVORITE", _("Unmark as favorite")
     MARK_AS_READ = "MARK_AS_READ", _("Mark as read")
     MARK_AS_UNREAD = "MARK_AS_UNREAD", _("Mark as unread")
+    MARK_AS_OPENED = "MARK_AS_OPENED", _("Mark as opened")
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
