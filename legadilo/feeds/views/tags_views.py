@@ -27,7 +27,9 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         request,
         "feeds/tag_with_articles.html",
         {
-            "fluid_content": True,
+            "base": {
+                "fluid_content": True,
+            },
             "displayed_tag": displayed_tag,
             "reading_lists": reading_lists,
             "count_articles_of_reading_lists": count_articles_of_reading_lists,

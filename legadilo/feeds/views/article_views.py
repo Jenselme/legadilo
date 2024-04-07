@@ -27,6 +27,9 @@ def article_details_view(
         request,
         "feeds/article_details.html",
         {
+            "base": {
+                "hide_header": True,
+            },
             "article": article,
         },
     )

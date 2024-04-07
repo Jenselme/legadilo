@@ -34,7 +34,9 @@ def reading_list_with_articles_view(
         request,
         "feeds/reading_list_with_articles.html",
         {
-            "fluid_content": True,
+            "base": {
+                "fluid_content": True,
+            },
             "reading_lists": reading_lists,
             "count_articles_of_reading_lists": count_articles_of_reading_lists,
             "displayed_reading_list": displayed_reading_list,
