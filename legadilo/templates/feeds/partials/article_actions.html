@@ -1,14 +1,13 @@
 {% load static i18n feeds %}
 
-<form id="read-favorite-actions-article-{{ article.id }}"
+<form id="update-article-actions-form-{{ article.id }}"
       aria-label="{% translate 'Read and favorite actions on the article' %}"
       method="post"
       hx-indicator=".icon-indicator-{{ article.id }}"
       hx-boost="true"
       hx-swap="outerHTML show:none"
       hx-target="#article-card-{{ article.id }}"
-      hx-push-url="false"
->
+      hx-push-url="false">
     {% csrf_token %}
     <input type="hidden"
            name="displayed_reading_list_id"
@@ -18,7 +17,7 @@
      role="group">
     <button class="btn {% if for_article_details %}btn-primary{% else %}btn-outline-secondary{% endif %}"
             type="submit"
-            form="read-favorite-actions-article-{{ article.id }}"
+            form="update-article-actions-form-{{ article.id }}"
             formaction="{{ article|read_action_url }}">
         {% if article.is_read %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
@@ -50,7 +49,7 @@
     </button>
     <button class="btn btn-outline-secondary"
             type="submit"
-            form="read-favorite-actions-article-{{ article.id }}"
+            form="update-article-actions-form-{{ article.id }}"
             formaction="{{ article|favorite_action_url }}">
         {% if article.is_favorite %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
@@ -80,6 +79,38 @@
                 </svg>
             </span>
             {% translate 'Mark as favorite' %}
+        {% endif %}
+    </button>
+    <button class="btn btn-outline-secondary"
+            type="submit"
+            form="update-article-actions-form-{{ article.id }}"
+            formaction="{{ article|for_later_action_url }}">
+        {% if article.is_for_later %}
+            <span class="icon-indicator icon-indicator-{{ article.id }}">
+                {% include "core/partials/indicator_icon.html" %}
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="16"
+                     height="16"
+                     fill="currentColor"
+                     class="bi bi-bookmark-fill"
+                     viewBox="0 0 16 16">
+                    <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2" />
+                </svg>
+            </span>
+            {% translate 'Not for later' %}
+        {% else %}
+            <span class="icon-indicator icon-indicator-{{ article.id }}">
+                {% include "core/partials/indicator_icon.html" %}
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="16"
+                     height="16"
+                     fill="currentColor"
+                     class="bi bi-bookmark"
+                     viewBox="0 0 16 16">
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z" />
+                </svg>
+            </span>
+            {% translate 'For later' %}
         {% endif %}
     </button>
     <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %}"

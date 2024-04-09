@@ -204,6 +204,7 @@ class Article(models.Model):
     is_read = models.BooleanField(default=False)
     was_opened = models.BooleanField(default=False)
     is_favorite = models.BooleanField(default=False)
+    is_for_later = models.BooleanField(default=False)
 
     feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
 
@@ -239,6 +240,10 @@ class Article(models.Model):
                 self.is_favorite = True
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
                 self.is_favorite = False
+            case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
+                self.is_for_later = True
+            case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
+                self.is_for_later = False
             case constants.UpdateArticleActions.MARK_AS_OPENED:
                 self.was_opened = True
             case _:

@@ -65,6 +65,8 @@ class UpdateArticleActions(TextChoices):
     MARK_AS_READ = "MARK_AS_READ", _("Mark as read")
     MARK_AS_UNREAD = "MARK_AS_UNREAD", _("Mark as unread")
     MARK_AS_OPENED = "MARK_AS_OPENED", _("Mark as opened")
+    MARK_AS_FOR_LATER = "MARK_AS_FOR_LATER", _("Mark as for later")
+    UNMARK_AS_FOR_LATER = "UNMARK_AS_FOR_LATER", _("Unmark as for later")
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)

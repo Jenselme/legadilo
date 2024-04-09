@@ -722,6 +722,18 @@ class TestArticleModel:
                 id="unmark-as-favorite",
             ),
             pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FOR_LATER,
+                "is_for_later",
+                True,
+                id="mark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
+                "is_for_later",
+                False,
+                id="unmark-as-for-later",
+            ),
+            pytest.param(
                 constants.UpdateArticleActions.MARK_AS_OPENED,
                 "was_opened",
                 True,
@@ -733,6 +745,7 @@ class TestArticleModel:
         article = ArticleFactory.build(
             is_read=choice([True, False]),
             is_favorite=choice([True, False]),
+            is_for_later=choice([True, False]),
             was_opened=choice([True, False]),
         )
 
