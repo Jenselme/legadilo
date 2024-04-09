@@ -13,41 +13,51 @@ from legadilo.users.models import User
 class ReadingListManager(models.Manager["ReadingList"]):
     @transaction.atomic()
     def create_default_lists(self, user: User):
-        self.create(
-            name=str(_("All articles")),
+        self.update_or_create(
             slug=slugify(str(_("All articles"))),
-            order=0,
-            user=user,
+            create_defaults={
+                "name": str(_("All articles")),
+                "order": 0,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Unread")),
+        self.update_or_create(
             slug=slugify(str(_("Unread"))),
-            is_default=True,
-            read_status=constants.ReadStatus.ONLY_UNREAD,
-            order=10,
-            user=user,
+            create_defaults={
+                "name": str(_("Unread")),
+                "is_default": True,
+                "read_status": constants.ReadStatus.ONLY_UNREAD,
+                "order": 10,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Recent")),
+        self.update_or_create(
             slug=slugify(str(_("Recent"))),
-            articles_max_age_value=2,
-            articles_max_age_unit=constants.ArticlesMaxAgeUnit.DAYS,
-            order=20,
-            user=user,
+            create_defaults={
+                "name": str(_("Recent")),
+                "articles_max_age_value": 2,
+                "articles_max_age_unit": constants.ArticlesMaxAgeUnit.DAYS,
+                "order": 20,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Favorite")),
+        self.update_or_create(
             slug=slugify(str(_("Favorite"))),
-            favorite_status=constants.FavoriteStatus.ONLY_FAVORITE,
-            order=30,
-            user=user,
+            create_defaults={
+                "name": str(_("Favorite")),
+                "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
+                "order": 30,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Archive")),
+        self.update_or_create(
             slug=slugify(str(_("Archive"))),
-            read_status=constants.ReadStatus.ONLY_READ,
-            order=40,
-            user=user,
+            create_defaults={
+                "name": str(_("Archive")),
+                "read_status": constants.ReadStatus.ONLY_READ,
+                "order": 40,
+                "user": user,
+            },
         )
 
     def get_reading_list(self, user: User, reading_list_slug: str | None) -> ReadingList:
