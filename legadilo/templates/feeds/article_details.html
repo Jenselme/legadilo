@@ -16,7 +16,9 @@
     <div class="container-fluid scrollable-container">
         <div class="mt-5 row scrollable">
             <div class="col col-2">
-                <div class="sticky-top">{% include "feeds/partials/article_actions.html" with for_article_details=True %}</div>
+                <div class="sticky-top">
+                    {% include "feeds/partials/article_actions.html" with for_article_details=True vertical_group=True %}
+                </div>
             </div>
             <div class="col col-10 container-xl">
                 <h1>{{ article.title |safe }}</h1>
