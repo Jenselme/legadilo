@@ -33,6 +33,12 @@ class FavoriteStatus(TextChoices):
     ONLY_NON_FAVORITE = "ONLY_NON_FAVORITE", _("Only non favorite")
 
 
+class ForLaterStatus(TextChoices):
+    ALL = "ALL", _("All")
+    ONLY_FOR_LATER = "ONLY_FOR_LATER", _("Only for later")
+    ONLY_NOT_FOR_LATER = "ONLY_NOT_FOR_LATER", _("Only for not later")
+
+
 class ArticlesMaxAgeUnit(TextChoices):
     UNSET = "UNSET", _("Unset")
     HOURS = "HOURS", _("Hour(s)")

@@ -44,6 +44,16 @@ from legadilo.feeds.utils.feed_parsing import FeedArticle
             id="favorite_only",
         ),
         pytest.param(
+            {"for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER},
+            models.Q(is_for_later=True),
+            id="for_later_only",
+        ),
+        pytest.param(
+            {"for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER},
+            models.Q(is_for_later=False),
+            id="not_for_later_only",
+        ),
+        pytest.param(
             {
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.HOURS,
                 "articles_max_age_value": 1,

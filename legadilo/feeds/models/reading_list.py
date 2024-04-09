@@ -15,25 +15,30 @@ class ReadingListManager(models.Manager["ReadingList"]):
     def create_default_lists(self, user: User):
         self.update_or_create(
             slug=slugify(str(_("All articles"))),
-            create_defaults={
+            defaults={
                 "name": str(_("All articles")),
                 "order": 0,
                 "user": user,
             },
         )
+        base_default_list_values = {
+            "name": str(_("Unread")),
+            "read_status": constants.ReadStatus.ONLY_UNREAD,
+            "for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER,
+            "order": 10,
+            "user": user,
+        }
         self.update_or_create(
             slug=slugify(str(_("Unread"))),
             create_defaults={
-                "name": str(_("Unread")),
+                **base_default_list_values,
                 "is_default": True,
-                "read_status": constants.ReadStatus.ONLY_UNREAD,
-                "order": 10,
-                "user": user,
             },
+            defaults=base_default_list_values,
         )
         self.update_or_create(
             slug=slugify(str(_("Recent"))),
-            create_defaults={
+            defaults={
                 "name": str(_("Recent")),
                 "articles_max_age_value": 2,
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.DAYS,
@@ -43,7 +48,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
         )
         self.update_or_create(
             slug=slugify(str(_("Favorite"))),
-            create_defaults={
+            defaults={
                 "name": str(_("Favorite")),
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
                 "order": 30,
@@ -51,8 +56,17 @@ class ReadingListManager(models.Manager["ReadingList"]):
             },
         )
         self.update_or_create(
+            slug=slugify(str(_("For later"))),
+            defaults={
+                "name": str(_("For later")),
+                "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,
+                "order": 35,
+                "user": user,
+            },
+        )
+        self.update_or_create(
             slug=slugify(str(_("Archive"))),
-            create_defaults={
+            defaults={
                 "name": str(_("Archive")),
                 "read_status": constants.ReadStatus.ONLY_READ,
                 "order": 40,
@@ -84,6 +98,9 @@ class ReadingList(models.Model):
     )
     favorite_status = models.CharField(
         choices=constants.FavoriteStatus.choices, default=constants.FavoriteStatus.ALL
+    )
+    for_later_status = models.CharField(
+        choices=constants.ForLaterStatus.choices, default=constants.ForLaterStatus.ALL
     )
     articles_max_age_value = models.PositiveIntegerField(
         default=0,
@@ -142,6 +159,10 @@ class ReadingList(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_read_status_valid",
                 check=models.Q(read_status__in=constants.ReadStatus.names),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_for_later_status_valid",
+                check=models.Q(for_later_status__in=constants.ForLaterStatus.names),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_exclude_tag_operator_valid",

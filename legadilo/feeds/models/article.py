@@ -36,6 +36,11 @@ def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
     elif reading_list.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
         filters &= models.Q(is_favorite=False)
 
+    if reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER:
+        filters &= models.Q(is_for_later=True)
+    elif reading_list.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER:
+        filters &= models.Q(is_for_later=False)
+
     if reading_list.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
         filters &= models.Q(
             published_at__gt=utcnow()
