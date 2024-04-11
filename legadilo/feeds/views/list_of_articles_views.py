@@ -58,6 +58,7 @@ def _display_list_of_articles(
             "count_articles_of_reading_lists": count_articles_of_reading_lists,
             "articles_page": articles_page,
             "articles_paginator": articles_paginator,
+            "from_url": request.get_full_path(),
         },
     )
 

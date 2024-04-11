@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dateutil.relativedelta import relativedelta
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
@@ -73,6 +75,13 @@ class UpdateArticleActions(TextChoices):
     MARK_AS_OPENED = "MARK_AS_OPENED", _("Mark as opened")
     MARK_AS_FOR_LATER = "MARK_AS_FOR_LATER", _("Mark as for later")
     UNMARK_AS_FOR_LATER = "UNMARK_AS_FOR_LATER", _("Unmark as for later")
+
+    @classmethod
+    def is_read_status_update(cls, update_action: UpdateArticleActions) -> bool:
+        return update_action in {
+            cls.MARK_AS_READ,
+            cls.MARK_AS_UNREAD,
+        }
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)

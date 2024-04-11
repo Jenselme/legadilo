@@ -1,21 +1,35 @@
 {% load static i18n feeds %}
 
-<form id="update-article-actions-form-{{ article.id }}"
-      aria-label="{% translate 'Read and favorite actions on the article' %}"
-      method="post"
-      hx-indicator=".icon-indicator-{{ article.id }}"
-      hx-boost="true"
-      hx-swap="outerHTML show:none"
-      hx-target="#article-card-{{ article.id }}"
-      hx-push-url="false">
-    {% csrf_token %}
-    <input type="hidden"
-           name="displayed_reading_list_id"
-           value="{{ displayed_reading_list_id }}" />
-</form>
+{% if for_article_details %}
+    <form id="update-article-actions-form-{{ article.id }}"
+          aria-label="{% translate 'Read and favorite actions on the article' %}"
+          method="post"
+          hx-indicator=".icon-indicator-{{ article.id }}"
+          hx-boost="true"
+          hx-push-url="true">
+        {% csrf_token %}
+        <input type="hidden" name="for_article_details" value="true" />
+        <input type="hidden" name="from_url" value="{{ from_url }}" />
+    </form>
+{% else %}
+    <form id="update-article-actions-form-{{ article.id }}"
+          aria-label="{% translate 'Read and favorite actions on the article' %}"
+          method="post"
+          hx-indicator=".icon-indicator-{{ article.id }}"
+          hx-boost="true"
+          hx-swap="outerHTML show:none"
+          hx-target="#article-card-{{ article.id }}"
+          hx-push-url="false">
+        {% csrf_token %}
+        <input type="hidden"
+               name="displayed_reading_list_id"
+               value="{{ displayed_reading_list_id }}" />
+        <input type="hidden" name="from_url" value="{{ from_url }}" />
+    </form>
+{% endif %}
 <div class="{% if vertical_group %}btn-group-vertical{% else %}btn-group{% endif %}"
      role="group">
-    <button class="btn {% if for_article_details %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+    <button class="btn {% if for_article_details %}btn-primary{% else %}btn-outline-secondary{% endif %} text-start"
             type="submit"
             form="update-article-actions-form-{{ article.id }}"
             formaction="{{ article|read_action_url }}">
@@ -47,7 +61,7 @@
             {% translate 'Mark as read' %}
         {% endif %}
     </button>
-    <button class="btn btn-outline-secondary"
+    <button class="btn btn-outline-secondary text-start"
             type="submit"
             form="update-article-actions-form-{{ article.id }}"
             formaction="{{ article|favorite_action_url }}">
@@ -66,7 +80,7 @@
             </span>
             {% translate 'Unmark as favorite' %}
         {% else %}
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+            <span class="icon-indicator icon-indicator-{{ article.id }} text-start">
                 {% include "core/partials/indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
@@ -81,7 +95,7 @@
             {% translate 'Mark as favorite' %}
         {% endif %}
     </button>
-    <button class="btn btn-outline-secondary"
+    <button class="btn btn-outline-secondary text-start"
             type="submit"
             form="update-article-actions-form-{{ article.id }}"
             formaction="{{ article|for_later_action_url }}">
@@ -113,7 +127,7 @@
             {% translate 'For later' %}
         {% endif %}
     </button>
-    <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %}"
+    <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %} text-start"
        role="button"
        {% if not article.content %}target="_blank"{% endif %}
        href="{{ article.link }}"
@@ -129,9 +143,9 @@
         {% translate 'Open original' %}
     </a>
     {% if not for_article_details %}
-        <a class="btn btn-primary {% if not article.content %}disabled{% endif %}"
+        <a class="btn btn-primary {% if not article.content %}disabled{% endif %} text-start"
            role="button"
-           {% if article.content %}href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from={{ request.get_full_path|urlencode }}"{% else %}aria-disabled="true"{% endif %}>
+           {% if article.content %}href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}"{% else %}aria-disabled="true"{% endif %}>
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="16"
                  height="16"
@@ -143,6 +157,21 @@
                 <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
             </svg>
             {% translate 'Open details' %}
+        </a>
+    {% endif %}
+    {% if for_article_details and from_url %}
+        <a class="btn btn-outline-secondary text-start"
+           role="button"
+           href="{{ from_url }}">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="16"
+                 height="16"
+                 fill="currentColor"
+                 class="bi bi-arrow-left"
+                 viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+            </svg>
+            {% translate 'Back' %}
         </a>
     {% endif %}
 </div>

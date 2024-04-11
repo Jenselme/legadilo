@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
 from legadilo.feeds import constants
@@ -22,7 +23,6 @@ def article_details_view(
         slug=article_slug,
         feed__user=request.user,
     )
-
     return TemplateResponse(
         request,
         "feeds/article_details.html",
@@ -31,8 +31,13 @@ def article_details_view(
                 "hide_header": True,
             },
             "article": article,
+            "from_url": _get_from_url_for_article_details(request.GET),
         },
     )
+
+
+def _get_from_url_for_article_details(query_dict) -> str:
+    return query_dict.get("from_url", reverse("feeds:default_reading_list"))
 
 
 @require_POST
@@ -47,6 +52,15 @@ def update_article_view(
     )
     article.update_article(update_action)
     article.save()
+
+    is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)
+    from_url = _get_from_url_for_article_details(request.POST)
+    for_article_details = request.POST.get("for_article_details", "").lower() == "true"
+
+    if for_article_details:
+        if is_read_status_update:
+            return HttpResponseRedirect(from_url)
+        return _redirect_to_origin(request)
 
     if not request.htmx:
         return _redirect_to_origin(request)
@@ -66,6 +80,7 @@ def update_article_view(
             "reading_lists": reading_lists,
             "count_articles_of_reading_lists": count_articles_of_reading_lists,
             "displayed_reading_list_id": displayed_reading_list_id,
+            "from_url": from_url,
         },
     )
 
