@@ -91,7 +91,7 @@ class TestUpdateArticleView:
     def test_update_article_view(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(5):
             response = logged_in_sync_client.post(
-                self.mark_as_read_url, HTTP_REFERER="http://example.com/reading/"
+                self.mark_as_read_url, HTTP_REFERER="http://testserver/reading/"
             )
 
         assert response.status_code == HTTPStatus.FOUND
@@ -104,7 +104,7 @@ class TestUpdateArticleView:
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
-                HTTP_REFERER="http://example.com/reading/",
+                HTTP_REFERER="http://testserver/reading/",
                 HTTP_HX_Request="true",
             )
 
@@ -137,7 +137,7 @@ class TestUpdateArticleView:
             response = logged_in_sync_client.post(
                 self.mark_as_favorite_url,
                 data={"for_article_details": "True"},
-                HTTP_REFERER="http://example.com/reading/articles/1",
+                HTTP_REFERER="http://testserver/reading/articles/1",
                 HTTP_HX_Request="true",
             )
 

@@ -1,5 +1,3 @@
-from urllib.parse import urlparse
-
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -10,6 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article, ReadingList
 from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.utils.urls import validate_from_url, validate_referer_url
 
 
 @require_GET
@@ -31,13 +30,15 @@ def article_details_view(
                 "hide_header": True,
             },
             "article": article,
-            "from_url": _get_from_url_for_article_details(request.GET),
+            "from_url": _get_from_url_for_article_details(request, request.GET),
         },
     )
 
 
-def _get_from_url_for_article_details(query_dict) -> str:
-    return query_dict.get("from_url", reverse("feeds:default_reading_list"))
+def _get_from_url_for_article_details(request, query_dict) -> str:
+    return validate_from_url(
+        request, query_dict.get("from_url"), reverse("feeds:default_reading_list")
+    )
 
 
 @require_POST
@@ -54,16 +55,20 @@ def update_article_view(
     article.save()
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)
-    from_url = _get_from_url_for_article_details(request.POST)
+    from_url = _get_from_url_for_article_details(request, request.POST)
     for_article_details = request.POST.get("for_article_details", "").lower() == "true"
 
     if for_article_details:
         if is_read_status_update:
             return HttpResponseRedirect(from_url)
-        return _redirect_to_origin(request)
+        return HttpResponseRedirect(
+            validate_referer_url(request, reverse("feeds:default_reading_list"))
+        )
 
     if not request.htmx:
-        return _redirect_to_origin(request)
+        return HttpResponseRedirect(
+            validate_referer_url(request, reverse("feeds:default_reading_list"))
+        )
 
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
@@ -83,14 +88,3 @@ def update_article_view(
             "from_url": from_url,
         },
     )
-
-
-def _redirect_to_origin(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    referer = request.headers.get("Referer")
-    parsed_referer = urlparse(referer)
-    redirect_url = request.build_absolute_uri(str(parsed_referer.path))
-    if parsed_referer.query:
-        redirect_url += "?" + str(parsed_referer.query)
-    if parsed_referer.fragment:
-        redirect_url += "#" + str(parsed_referer.fragment)
-    return HttpResponseRedirect(redirect_url)
