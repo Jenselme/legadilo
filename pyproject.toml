@@ -207,7 +207,7 @@ django-axes = "6.4.0"  # https://github.com/jazzband/django-axes
 feedparser = "^6.0.11"  # https://feedparser.readthedocs.io/en/latest/
 httpx = "^0.27.0"  # https://www.python-httpx.org/
 beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-nh3 = "^0.2.15"  # https://nh3.readthedocs.io/en/latest/
+nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.21.1"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 
