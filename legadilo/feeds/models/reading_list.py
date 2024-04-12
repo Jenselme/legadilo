@@ -13,41 +13,65 @@ from legadilo.users.models import User
 class ReadingListManager(models.Manager["ReadingList"]):
     @transaction.atomic()
     def create_default_lists(self, user: User):
-        self.create(
-            name=str(_("All articles")),
+        self.update_or_create(
             slug=slugify(str(_("All articles"))),
-            order=0,
-            user=user,
+            defaults={
+                "name": str(_("All articles")),
+                "order": 0,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Unread")),
+        base_default_list_values = {
+            "name": str(_("Unread")),
+            "read_status": constants.ReadStatus.ONLY_UNREAD,
+            "for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER,
+            "order": 10,
+            "user": user,
+        }
+        self.update_or_create(
             slug=slugify(str(_("Unread"))),
-            is_default=True,
-            read_status=constants.ReadStatus.ONLY_UNREAD,
-            order=10,
-            user=user,
+            create_defaults={
+                **base_default_list_values,
+                "is_default": True,
+            },
+            defaults=base_default_list_values,
         )
-        self.create(
-            name=str(_("Recent")),
+        self.update_or_create(
             slug=slugify(str(_("Recent"))),
-            articles_max_age_value=2,
-            articles_max_age_unit=constants.ArticlesMaxAgeUnit.DAYS,
-            order=20,
-            user=user,
+            defaults={
+                "name": str(_("Recent")),
+                "articles_max_age_value": 2,
+                "articles_max_age_unit": constants.ArticlesMaxAgeUnit.DAYS,
+                "order": 20,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Favorite")),
+        self.update_or_create(
             slug=slugify(str(_("Favorite"))),
-            favorite_status=constants.FavoriteStatus.ONLY_FAVORITE,
-            order=30,
-            user=user,
+            defaults={
+                "name": str(_("Favorite")),
+                "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
+                "order": 30,
+                "user": user,
+            },
         )
-        self.create(
-            name=str(_("Archive")),
+        self.update_or_create(
+            slug=slugify(str(_("For later"))),
+            defaults={
+                "name": str(_("For later")),
+                "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,
+                "order": 35,
+                "user": user,
+            },
+        )
+        self.update_or_create(
             slug=slugify(str(_("Archive"))),
-            read_status=constants.ReadStatus.ONLY_READ,
-            order=40,
-            user=user,
+            defaults={
+                "name": str(_("Archive")),
+                "read_status": constants.ReadStatus.ONLY_READ,
+                "order": 40,
+                "user": user,
+            },
         )
 
     def get_reading_list(self, user: User, reading_list_slug: str | None) -> ReadingList:
@@ -65,7 +89,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
 
 class ReadingList(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(blank=True, max_length=255)
     is_default = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
 
@@ -74,6 +98,9 @@ class ReadingList(models.Model):
     )
     favorite_status = models.CharField(
         choices=constants.FavoriteStatus.choices, default=constants.FavoriteStatus.ALL
+    )
+    for_later_status = models.CharField(
+        choices=constants.ForLaterStatus.choices, default=constants.ForLaterStatus.ALL
     )
     articles_max_age_value = models.PositiveIntegerField(
         default=0,
@@ -132,6 +159,10 @@ class ReadingList(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_read_status_valid",
                 check=models.Q(read_status__in=constants.ReadStatus.names),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_for_later_status_valid",
+                check=models.Q(for_later_status__in=constants.ForLaterStatus.names),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_exclude_tag_operator_valid",

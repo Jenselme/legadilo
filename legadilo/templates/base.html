@@ -15,6 +15,7 @@
         <meta name="description"
               content="Read your RSS feeds & other saved articles" />
         <meta name="author" content="Julien Enselme" />
+        <meta name="htmx-config" content='{"includeIndicatorStyles":false}' />
         <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
         {% block css %}
             <link rel="stylesheet"
@@ -36,63 +37,66 @@
                     integrity="sha512-9KsixJxn00SQfLkrArzXRFi3QyqP4RyIzYgj2Ho4YJSLEOHS00uhDQdc7dv6N8PS5OsYZWKiY0/7DsZRlcv/DQ=="
                     crossorigin="anonymous"
                     referrerpolicy="no-referrer"></script>
+            <script src="{% static 'js/base.js' %}"></script>
             {% block page_js %}
             {% endblock page_js %}
         {% endblock javascript %}
     </head>
     <body>
-        <div class="mb-1">
-            <nav class="navbar navbar-expand-md navbar-light bg-light">
-                <div class="container-fluid">
-                    <button class="navbar-toggler navbar-toggler-right"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#navbarSupportedContent"
-                            aria-controls="navbarSupportedContent"
-                            aria-expanded="false"
-                            aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <a class="navbar-brand" href="{% url 'feeds:default_reading_list' %}">Legadilo</a>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto">
-                            <li class="nav-item active">
-                                <a class="nav-link" href="{% url 'feeds:default_reading_list' %}">Home <span class="visually-hidden">(current)</span></a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'about' %}">About</a>
-                            </li>
-                        </ul>
-                        <ul class="navbar-nav">
-                            {% if request.user.is_authenticated %}
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'feeds:subscribe_to_feed' %}">{% translate "Subscribe to a feed" %}</a>
+        {% if not base.hide_header %}
+            <div class="mb-1 sticky-top">
+                <nav class="navbar navbar-expand-md navbar-light bg-light">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler navbar-toggler-right"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#navbarSupportedContent"
+                                aria-controls="navbarSupportedContent"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <a class="navbar-brand" href="{% url 'feeds:default_reading_list' %}">Legadilo</a>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="{% url 'feeds:default_reading_list' %}">Home <span class="visually-hidden">(current)</span></a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
+                                    <a class="nav-link" href="{% url 'about' %}">About</a>
                                 </li>
-                                <li class="nav-item">
-                                    {# URL provided by django-allauth/account/urls.py #}
-                                    <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
-                                </li>
-                            {% else %}
-                                {% if ACCOUNT_ALLOW_REGISTRATION %}
+                            </ul>
+                            <ul class="navbar-nav">
+                                {% if request.user.is_authenticated %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'feeds:subscribe_to_feed' %}">{% translate "Subscribe to a feed" %}</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
+                                    </li>
                                     <li class="nav-item">
                                         {# URL provided by django-allauth/account/urls.py #}
-                                        <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+                                        <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+                                    </li>
+                                {% else %}
+                                    {% if ACCOUNT_ALLOW_REGISTRATION %}
+                                        <li class="nav-item">
+                                            {# URL provided by django-allauth/account/urls.py #}
+                                            <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+                                        </li>
+                                    {% endif %}
+                                    <li class="nav-item">
+                                        {# URL provided by django-allauth/account/urls.py #}
+                                        <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
                                     </li>
                                 {% endif %}
-                                <li class="nav-item">
-                                    {# URL provided by django-allauth/account/urls.py #}
-                                    <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            </nav>
-        </div>
-        <div class="{% if fluid_content %}container-fluid{% else %}container{% endif %}">
+                </nav>
+            </div>
+        {% endif %}
+        <div class="{% if base.fluid_content %}container-fluid{% else %}container{% endif %}">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">

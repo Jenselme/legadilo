@@ -106,7 +106,7 @@ class Feed(models.Model):
         ]
 
     def __str__(self):
-        return f"Feed(title={self.title})"
+        return f"Feed(title={self.title}, feed_type={self.feed_type})"
 
     def disable(self, reason=""):
         self.disabled_reason = reason

@@ -10,8 +10,8 @@ class TestReadingListManager:
     def test_create_default_lists(self, user):
         ReadingList.objects.create_default_lists(user)
 
-        assert ReadingList.objects.count() == 5
-        assert user.reading_lists.count() == 5
+        assert ReadingList.objects.count() == 6
+        assert user.reading_lists.count() == 6
 
     def test_get_default_reading_list(self, user):
         ReadingList.objects.create_default_lists(user)

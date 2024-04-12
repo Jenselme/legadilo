@@ -1,5 +1,35 @@
+.scrollable-container {
+    height: calc(100vh - 116px);
+}
+
+.scrollable {
+    max-height: 100%;
+    overflow: auto;
+}
+
 .bi {
     display: inline-block;
     vertical-align: -.125em;
     fill: currentColor;
+}
+
+.htmx-indicator, .icon-indicator .indicator {
+    display: none;
+    opacity: 0;
+}
+
+.htmx-request.htmx-indicator, .htmx-request .icon-indicator .indicator {
+    display: inline;
+    opacity: 1;
+    transition: opacity 200ms ease-in;
+}
+
+.htmx-request.icon-indicator .bi {
+    display: none;
+}
+
+.htmx-request.htmx-indicator, .htmx-request.icon-indicator .indicator {
+    display: inline;
+    opacity: 1;
+    transition: opacity 200ms ease-in;
 }

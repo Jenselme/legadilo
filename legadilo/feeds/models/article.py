@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
+from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
 
@@ -19,6 +20,7 @@ from .tag import ArticleTag
 if TYPE_CHECKING:
     from .feed import Feed
     from .reading_list import ReadingList
+    from .tag import Tag
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
@@ -33,6 +35,11 @@ def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
         filters &= models.Q(is_favorite=True)
     elif reading_list.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
         filters &= models.Q(is_favorite=False)
+
+    if reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER:
+        filters &= models.Q(is_for_later=True)
+    elif reading_list.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER:
+        filters &= models.Q(is_for_later=False)
 
     if reading_list.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
         filters &= models.Q(
@@ -84,6 +91,14 @@ def _get_reading_list_tags_sql_operator(
             return "overlap"
 
 
+def _build_prefetch_article_tags():
+    return models.Prefetch(
+        "article_tags",
+        queryset=ArticleTag.objects.get_queryset().for_reading_list(),
+        to_attr="tags_to_display",
+    )
+
+
 class ArticleQuerySet(models.QuerySet["Article"]):
     def for_reading_list_filtering(self) -> Self:
         return self.alias(
@@ -99,14 +114,19 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_reading_list_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .select_related("feed")
-            .prefetch_related(
-                models.Prefetch(
-                    "article_tags",
-                    queryset=ArticleTag.objects.get_queryset().for_reading_list(),
-                    to_attr="tags_to_display",
-                )
-            )
+            .prefetch_related(_build_prefetch_article_tags())
         )
+
+    def for_tag(self, tag: Tag) -> Self:
+        return (
+            self.filter(article_tags__tag=tag)
+            .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
+            .select_related("feed")
+            .prefetch_related(_build_prefetch_article_tags())
+        )
+
+    def for_details(self) -> Self:
+        return self.select_related("feed").prefetch_related(_build_prefetch_article_tags())
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -123,7 +143,8 @@ class ArticleManager(models.Manager["Article"]):
             self.model(
                 feed_id=feed.id,
                 article_feed_id=article_data.article_feed_id,
-                title=article_data.title,
+                title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
+                slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
                 summary=article_data.summary,
                 content=article_data.content,
                 authors=article_data.authors,
@@ -140,6 +161,7 @@ class ArticleManager(models.Manager["Article"]):
             update_conflicts=True,
             update_fields=[
                 "title",
+                "slug",
                 "summary",
                 "content",
                 "authors",
@@ -168,9 +190,13 @@ class ArticleManager(models.Manager["Article"]):
         }
         return self.get_queryset().for_reading_list_filtering().aggregate(**aggregation)
 
+    def get_articles_of_tag(self, tag: Tag) -> Paginator[Article]:
+        return Paginator(self.get_queryset().for_tag(tag), constants.MAX_ARTICLE_PER_PAGE)
+
 
 class Article(models.Model):
-    title = models.CharField()
+    title = models.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
+    slug = models.SlugField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
     summary = models.TextField()
     content = models.TextField(blank=True)
     authors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
@@ -183,6 +209,7 @@ class Article(models.Model):
     is_read = models.BooleanField(default=False)
     was_opened = models.BooleanField(default=False)
     is_favorite = models.BooleanField(default=False)
+    is_for_later = models.BooleanField(default=False)
 
     feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
 
@@ -203,6 +230,11 @@ class Article(models.Model):
             f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
         )
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+
+        return super().save(*args, **kwargs)
+
     def update_article(self, action: constants.UpdateArticleActions):
         match action:
             case constants.UpdateArticleActions.MARK_AS_READ:
@@ -213,5 +245,11 @@ class Article(models.Model):
                 self.is_favorite = True
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
                 self.is_favorite = False
+            case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
+                self.is_for_later = True
+            case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
+                self.is_for_later = False
+            case constants.UpdateArticleActions.MARK_AS_OPENED:
+                self.was_opened = True
             case _:
                 assert_never(action)

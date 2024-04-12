@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 
 from legadilo.feeds import constants
-from legadilo.feeds.templatetags import favorite_action_url, read_action_url
+from legadilo.feeds.templatetags import favorite_action_url, for_later_action_url, read_action_url
 from legadilo.feeds.tests.factories import ArticleFactory
 
 
@@ -44,6 +44,29 @@ def test_favorite_action_url(is_favorite, update_action):
     article = ArticleFactory.build(id=1, is_favorite=is_favorite)
 
     url = favorite_action_url(article)
+
+    assert url == reverse(
+        "feeds:update_article", kwargs={"article_id": 1, "update_action": update_action}
+    )
+
+
+@pytest.mark.parametrize(
+    ("is_for_later", "update_action"),
+    [
+        pytest.param(
+            True, constants.UpdateArticleActions.UNMARK_AS_FOR_LATER.name, id="article-is-favorite"
+        ),
+        pytest.param(
+            False,
+            constants.UpdateArticleActions.MARK_AS_FOR_LATER.name,
+            id="article-is-not-favorite",
+        ),
+    ],
+)
+def test_for_later_action_url(is_for_later, update_action):
+    article = ArticleFactory.build(id=1, is_for_later=is_for_later)
+
+    url = for_later_action_url(article)
 
     assert url == reverse(
         "feeds:update_article", kwargs={"article_id": 1, "update_action": update_action}

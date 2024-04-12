@@ -1,0 +1,21 @@
+{% load feeds %}
+
+<div id="article-card-{{ article.id }}"
+     class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
+    <div class="card-body">
+        <h2 class="card-title">{{ article.title | safe }}</h2>
+        <div class="card-subtitle">
+            <p class="mb-0 text-secondary">{{ article|article_metadata | safe }}</p>
+            {% if article.tags_to_display %}
+                <p>
+                    {% for tag in article.tags_to_display %}
+                        <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1"
+                           href="{% url 'feeds:tag_with_articles' tag_slug=tag.slug %}">{{ tag.name }}</a>
+                    {% endfor %}
+                </p>
+            {% endif %}
+        </div>
+        <div class="card-text mt-3">{{ article.summary | truncatewords_html:100 | safe }}</div>
+    </div>
+    <div class="card-footer">{% include "feeds/partials/article_actions.html" %}</div>
+</div>

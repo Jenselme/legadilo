@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime
 from random import choice
 from typing import Any
@@ -41,6 +42,16 @@ from legadilo.feeds.utils.feed_parsing import FeedArticle
             {"favorite_status": constants.FavoriteStatus.ONLY_FAVORITE},
             models.Q(is_favorite=True),
             id="favorite_only",
+        ),
+        pytest.param(
+            {"for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER},
+            models.Q(is_for_later=True),
+            id="for_later_only",
+        ),
+        pytest.param(
+            {"for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER},
+            models.Q(is_for_later=False),
+            id="not_for_later_only",
         ),
         pytest.param(
             {
@@ -623,6 +634,11 @@ class TestArticleManager:
         assert Article.objects.count() == 3
         existing_article.refresh_from_db()
         assert existing_article.title == "Article updated"
+        assert existing_article.slug == "article-updated"
+        other_article = Article.objects.exclude(id=existing_article.id).first()
+        assert other_article is not None
+        assert re.match(r"Article \d", other_article.title)
+        assert re.match(r"article-\d", other_article.slug)
         assert list(
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True
@@ -661,6 +677,37 @@ class TestArticleManager:
             reading_list3.slug: 0,
         }
 
+    def test_get_articles_of_tag(self):
+        feed = FeedFactory()
+        tag_to_display = TagFactory(user=feed.user)
+        other_tag = TagFactory(user=feed.user)
+        article_linked_only_to_tag_to_display = ArticleFactory(
+            title="Article linked only to tag to display", feed=feed
+        )
+        ArticleTag.objects.create(tag=tag_to_display, article=article_linked_only_to_tag_to_display)
+        article_linked_to_all_tags = ArticleFactory(title="Article linked to all tags", feed=feed)
+        ArticleTag.objects.create(tag=tag_to_display, article=article_linked_to_all_tags)
+        ArticleTag.objects.create(tag=other_tag, article=article_linked_to_all_tags)
+        article_linked_to_deleted_tag_to_display = ArticleFactory(
+            title="Article linked to deleted tag to display", feed=feed
+        )
+        ArticleTag.objects.create(
+            tag=tag_to_display,
+            article=article_linked_to_deleted_tag_to_display,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
+        article_linked_to_other_tag = ArticleFactory(title="Article linked to other tag", feed=feed)
+        ArticleTag.objects.create(tag=other_tag, article=article_linked_to_other_tag)
+
+        articles_paginator = Article.objects.get_articles_of_tag(tag_to_display)
+
+        assert articles_paginator.num_pages == 1
+        page = articles_paginator.page(1)
+        assert list(page.object_list) == [
+            article_linked_only_to_tag_to_display,
+            article_linked_to_all_tags,
+        ]
+
 
 class TestArticleModel:
     @pytest.mark.parametrize(
@@ -684,11 +731,32 @@ class TestArticleModel:
                 False,
                 id="unmark-as-favorite",
             ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FOR_LATER,
+                "is_for_later",
+                True,
+                id="mark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
+                "is_for_later",
+                False,
+                id="unmark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_OPENED,
+                "was_opened",
+                True,
+                id="mark-as-opened",
+            ),
         ],
     )
     def test_update_article(self, action: constants.UpdateArticleActions, attr: str, value: bool):
         article = ArticleFactory.build(
-            is_read=choice([True, False]), is_favorite=choice([True, False])
+            is_read=choice([True, False]),
+            is_favorite=choice([True, False]),
+            is_for_later=choice([True, False]),
+            was_opened=choice([True, False]),
         )
 
         article.update_article(action)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dateutil.relativedelta import relativedelta
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
@@ -33,6 +35,12 @@ class FavoriteStatus(TextChoices):
     ONLY_NON_FAVORITE = "ONLY_NON_FAVORITE", _("Only non favorite")
 
 
+class ForLaterStatus(TextChoices):
+    ALL = "ALL", _("All")
+    ONLY_FOR_LATER = "ONLY_FOR_LATER", _("Only for later")
+    ONLY_NOT_FOR_LATER = "ONLY_NOT_FOR_LATER", _("Only for not later")
+
+
 class ArticlesMaxAgeUnit(TextChoices):
     UNSET = "UNSET", _("Unset")
     HOURS = "HOURS", _("Hour(s)")
@@ -64,6 +72,16 @@ class UpdateArticleActions(TextChoices):
     UNMARK_AS_FAVORITE = "UNMARK_AS_FAVORITE", _("Unmark as favorite")
     MARK_AS_READ = "MARK_AS_READ", _("Mark as read")
     MARK_AS_UNREAD = "MARK_AS_UNREAD", _("Mark as unread")
+    MARK_AS_OPENED = "MARK_AS_OPENED", _("Mark as opened")
+    MARK_AS_FOR_LATER = "MARK_AS_FOR_LATER", _("Mark as for later")
+    UNMARK_AS_FOR_LATER = "UNMARK_AS_FOR_LATER", _("Unmark as for later")
+
+    @classmethod
+    def is_read_status_update(cls, update_action: UpdateArticleActions) -> bool:
+        return update_action in {
+            cls.MARK_AS_READ,
+            cls.MARK_AS_UNREAD,
+        }
 
 
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
@@ -71,3 +89,4 @@ HTTP_TIMEOUT = 20  # In seconds.
 HTTP_TIMEOUT_CMD_CTX = 300  # In seconds.
 MAX_FEED_FILE_SIZE = 1024 * 1024  # 1MiB in bytes.
 MAX_ARTICLE_PER_PAGE = 50
+ARTICLE_TITLE_MAX_LENGTH = 255

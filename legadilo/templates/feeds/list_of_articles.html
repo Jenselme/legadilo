@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% load i18n static %}
+
+{% block title %}
+    {{ page_title }}
+{% endblock title %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-2"></div>
+            <div class="col col-8">
+                <h1>{{ page_title }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid scrollable-container">
+        <div class="row scrollable">
+            <div id="reading-list-group" class="col col-2">
+                {% include 'feeds/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
+            </div>
+            <div class="col col-8">
+                {% for article in articles_page %}
+                    {% include 'feeds/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
+                {% empty %}
+                    <p>{% translate "No articles to display." %}</p>
+                {% endfor %}
+                {% include 'feeds/partials/articles_list_pagination.html' %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}

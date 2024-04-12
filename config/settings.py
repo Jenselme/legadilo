@@ -115,6 +115,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "axes",
+    "django_htmx",
 ]
 LOCAL_APPS = [
     "legadilo.core",
@@ -178,6 +179,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
     # AxesMiddleware should be the last middleware in the MIDDLEWARE list.
     # It only formats user lockout messages and renders Axes lockout responses
     # on failed user authentication attempts from login views.
@@ -311,7 +313,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", def
 # https://content-security-policy.com/
 # https://csp-evaluator.withgoogle.com/
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+# TODO: We must use nonce here, we have a few inline stuff.
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-eval'", "'unsafe-inline'", "https://cdnjs.cloudflare.com/")
 CSP_SCRIPT_SRC_ATTR = None
 CSP_SCRIPT_SRC_ELEM = None
 CSP_IMG_SRC = ("'self'", "data:")
