@@ -49,6 +49,19 @@ def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
             })
         )
 
+    articles_reading_time_operator = cast(
+        constants.ArticlesReadingTimeOperator, reading_list.articles_reading_time_operator
+    )
+    match articles_reading_time_operator:
+        case constants.ArticlesReadingTimeOperator.UNSET:
+            pass
+        case constants.ArticlesReadingTimeOperator.MORE_THAN:
+            filters &= models.Q(reading_time__gte=reading_list.articles_reading_time)
+        case constants.ArticlesReadingTimeOperator.LESS_THAN:
+            filters &= models.Q(reading_time__lte=reading_list.articles_reading_time)
+        case _:
+            assert_never(reading_list.articles_reading_time_operator)
+
     filters &= _get_tags_filters(reading_list)
 
     return filters

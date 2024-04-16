@@ -49,6 +49,12 @@ class ArticlesMaxAgeUnit(TextChoices):
     MONTHS = "MONTHS", _("Month(s)")
 
 
+class ArticlesReadingTimeOperator(TextChoices):
+    UNSET = "UNSET", _("Unset")
+    MORE_THAN = "MORE_THAN", _("More than than")
+    LESS_THAN = "LESS_THAN", _("Less than than")
+
+
 class TaggingReason(TextChoices):
     ADDED_MANUALLY = "ADDED_MANUALLY", _("Added manually")
     FROM_FEED = "FROM_FEED", _("From feed")

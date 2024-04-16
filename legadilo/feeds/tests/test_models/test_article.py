@@ -86,6 +86,22 @@ from legadilo.feeds.utils.feed_parsing import FeedArticle
         ),
         pytest.param(
             {
+                "articles_reading_time": 5,
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.MORE_THAN,
+            },
+            models.Q(reading_time__gte=5),
+            id="more-than-5-minutes-reading-time",
+        ),
+        pytest.param(
+            {
+                "articles_reading_time": 5,
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN,
+            },
+            models.Q(reading_time__lte=5),
+            id="less-than-5-minutes-reading-time",
+        ),
+        pytest.param(
+            {
                 "read_status": constants.ReadStatus.ONLY_UNREAD,
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
             },
@@ -98,12 +114,15 @@ from legadilo.feeds.utils.feed_parsing import FeedArticle
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.MONTHS,
                 "articles_max_age_value": 1,
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.MORE_THAN,
+                "articles_reading_time": 5,
             },
             models.Q(is_read=False)
             & models.Q(is_favorite=True)
             & models.Q(
                 published_at__gt=datetime(2024, 2, 19, 21, 8, 0, tzinfo=UTC),
-            ),
+            )
+            & models.Q(reading_time__gte=5),
             id="full-combination",
         ),
     ],
