@@ -1,4 +1,3 @@
-import re
 from datetime import UTC, datetime
 from random import choice
 from typing import Any
@@ -596,6 +595,7 @@ class TestArticleManager:
                         title="Article 1",
                         summary="Summary 1",
                         content="Description 1",
+                        nb_words=650,
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -608,6 +608,7 @@ class TestArticleManager:
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
+                        nb_words=2,
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -620,6 +621,7 @@ class TestArticleManager:
                         title="Article 3",
                         summary="Summary 3",
                         content="Description 3",
+                        nb_words=1,
                         authors=["Author"],
                         contributors=["Contributor"],
                         tags=["Some tag"],
@@ -637,8 +639,9 @@ class TestArticleManager:
         assert existing_article.slug == "article-updated"
         other_article = Article.objects.exclude(id=existing_article.id).first()
         assert other_article is not None
-        assert re.match(r"Article \d", other_article.title)
-        assert re.match(r"article-\d", other_article.slug)
+        assert other_article.title == "Article 1"
+        assert other_article.slug == "article-1"
+        assert other_article.reading_time == 3
         assert list(
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True

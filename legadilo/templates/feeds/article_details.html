@@ -22,7 +22,10 @@
             </div>
             <div class="col col-10 container-xl">
                 <h1>{{ article.title |safe }}</h1>
-                <div class="text-secondary">{{ article|article_metadata | safe }}</div>
+                <div class="text-secondary">
+                    {{ article|article_metadata | safe }}
+                    {% include 'feeds/partials/article_reading_time.html' with reading_time=article.reading_time %}
+                </div>
                 {% if article.tags_to_display %}
                     <p>
                         {% for tag in article.tags_to_display %}

@@ -5,7 +5,10 @@
     <div class="card-body">
         <h2 class="card-title">{{ article.title | safe }}</h2>
         <div class="card-subtitle">
-            <p class="mb-0 text-secondary">{{ article|article_metadata | safe }}</p>
+            <p class="mb-0 text-secondary">
+                {{ article|article_metadata | safe }}
+                {% include 'feeds/partials/article_reading_time.html' with reading_time=article.reading_time %}
+            </p>
             {% if article.tags_to_display %}
                 <p>
                     {% for tag in article.tags_to_display %}
