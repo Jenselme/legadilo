@@ -1,9 +1,16 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView, RedirectView, UpdateView
+
+from legadilo.users.forms import UserSettingsForm
+from legadilo.users.models import UserSettings
 
 User = get_user_model()
 
@@ -42,3 +49,26 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+def user_update_settings_view(request):
+    user_settings = UserSettings.objects.get(user=request.user)
+    form = UserSettingsForm(instance=user_settings)
+    if request.method == "POST":
+        form = UserSettingsForm(request.POST, instance=user_settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Settings correctly updated"))
+        else:
+            messages.error(request, _("Failed to update settings"))
+
+    return TemplateResponse(
+        request,
+        "users/user_settings.html",
+        {
+            "form": form,
+            "user": request.user,
+        },
+    )

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 from django.conf import settings
 from django.contrib import messages
@@ -98,3 +100,20 @@ class TestUserDetailView:
         assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == 302
         assert response.url == f"{login_url}?next=/fake-url/"
+
+
+class TestUserUpdateSettingsView:
+    def setup_method(self):
+        self.url = reverse("users:update_settings")
+
+    def test_get_for_current_user(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+
+    def test_update(self, user, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, data={"default_reading_time": 0})
+
+        assert response.status_code == HTTPStatus.OK
+        user.settings.refresh_from_db()
+        assert user.settings.default_reading_time == 0
