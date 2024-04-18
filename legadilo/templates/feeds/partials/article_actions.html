@@ -27,6 +27,24 @@
         <input type="hidden" name="from_url" value="{{ from_url }}" />
     </form>
 {% endif %}
+{% if not article.was_opened and not article.content and not for_article_details %}
+    <form id="mark-article-as-opened-form-{{ article.id }}"
+          class="visually-hidden"
+          aria-hidden="true"
+          method="post"
+          action="{{ article|opened_action_url }}"
+          hx-trigger="submit"
+          hx-boost="true"
+          hx-swap="outerHTML show:none"
+          hx-target="#article-card-{{ article.id }}"
+          hx-push-url="false">
+        {% csrf_token %}
+        <input type="hidden"
+               name="displayed_reading_list_id"
+               value="{{ displayed_reading_list_id }}" />
+        <input type="hidden" name="from_url" value="{{ from_url }}" />
+    </form>
+{% endif %}
 <div class="{% if vertical_group %}btn-group-vertical{% else %}btn-group{% endif %}"
      role="group">
     <button class="btn {% if for_article_details %}btn-primary{% else %}btn-outline-secondary{% endif %} text-start"
@@ -127,11 +145,11 @@
             {% translate 'For later' %}
         {% endif %}
     </button>
-    <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %} text-start"
+    <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %} text-start open-original"
        role="button"
+       data-article-id="{{ article.id }}"
        {% if not article.content %}target="_blank"{% endif %}
-       href="{{ article.link }}"
-       {% if not article.is_read and not article.was_opened and not article.content %} hx-on:click="window.legadilo.runArticleUpdateAction('{{ article|opened_action_url }}')" {% endif %}>
+       href="{{ article.link }}">
         <svg xmlns="http://www.w3.org/2000/svg"
              width="16"
              height="16"
