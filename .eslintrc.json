@@ -1,0 +1,18 @@
+{
+  "root": true,
+  "overrides": [
+    {
+      "files": ["*.js"],
+      "extends": ["eslint:recommended"],
+      "rules": {
+        "no-console": [
+          "error",
+          {
+            "allow": ["warn", "error"]
+          }
+        ]
+      }
+    }
+  ],
+  "env": { "es6": true, "browser": true }
+}

@@ -13,11 +13,11 @@ max_line_length = 100
 indent_style = space
 indent_size = 4
 
-[*.{html,css,scss,json,xml}]
+[*.{html,xml}]
 indent_style = space
 indent_size = 4
 
-[*.yml]
+[*.{css,scss,json,js,yml}]
 indent_style = space
 indent_size = 2
 
