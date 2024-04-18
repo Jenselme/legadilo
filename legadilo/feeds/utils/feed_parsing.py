@@ -1,4 +1,3 @@
-import string
 import sys
 import time
 from dataclasses import dataclass
@@ -13,6 +12,7 @@ from feedparser import parse as parse_feed
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
+from ...utils.text import get_nb_words_from_html
 from ...utils.time import dt_to_http_date
 from .. import constants
 
@@ -193,13 +193,7 @@ def _get_article_content(entry):
 
 
 def _get_nb_words(entry) -> int:
-    raw_content = full_sanitize(_get_article_content(entry))
-    nb_words = 0
-    for word in raw_content.split():
-        if word.strip(string.punctuation):
-            nb_words += 1
-
-    return nb_words
+    return get_nb_words_from_html(_get_article_content(entry))
 
 
 def _get_articles_tags(entry):
