@@ -115,6 +115,15 @@ class ReadingList(models.Model):
             "Define the unit for the previous number. Leave to unset to not use this feature."
         ),
     )
+    articles_reading_time = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Include only articles that take more or less than this time to read."),
+    )
+    articles_reading_time_operator = models.CharField(
+        choices=constants.ArticlesReadingTimeOperator.choices,
+        default=constants.ArticlesReadingTimeOperator.UNSET,
+        help_text=_("Whether the reading must be more or less that the supplied value."),
+    )
     include_tag_operator = models.CharField(
         choices=constants.ReadingListTagOperator.choices,
         default=constants.ReadingListTagOperator.ALL,
@@ -150,6 +159,12 @@ class ReadingList(models.Model):
                 name="%(app_label)s_%(class)s_articles_max_age_unit_valid",
                 check=models.Q(
                     articles_max_age_unit__in=constants.ArticlesMaxAgeUnit.names,
+                ),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_articles_reading_time_operator_valid",
+                check=models.Q(
+                    articles_reading_time_operator__in=constants.ArticlesReadingTimeOperator.names
                 ),
             ),
             models.CheckConstraint(

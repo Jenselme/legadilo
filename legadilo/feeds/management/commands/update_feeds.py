@@ -36,7 +36,11 @@ class Command(AsyncCommand):
             ) as client,
             TaskGroup() as tg,
         ):
-            async for feed in Feed.objects.get_queryset().only_feeds_to_update(options["feed_ids"]):
+            async for feed in (
+                Feed.objects.get_queryset()
+                .select_related("user", "user__settings")
+                .only_feeds_to_update(options["feed_ids"])
+            ):
                 tg.create_task(self._update_feed(client, feed))
 
     async def _update_feed(self, client, feed):

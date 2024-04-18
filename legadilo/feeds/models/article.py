@@ -49,6 +49,19 @@ def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
             })
         )
 
+    articles_reading_time_operator = cast(
+        constants.ArticlesReadingTimeOperator, reading_list.articles_reading_time_operator
+    )
+    match articles_reading_time_operator:
+        case constants.ArticlesReadingTimeOperator.UNSET:
+            pass
+        case constants.ArticlesReadingTimeOperator.MORE_THAN:
+            filters &= models.Q(reading_time__gte=reading_list.articles_reading_time)
+        case constants.ArticlesReadingTimeOperator.LESS_THAN:
+            filters &= models.Q(reading_time__lte=reading_list.articles_reading_time)
+        case _:
+            assert_never(reading_list.articles_reading_time_operator)
+
     filters &= _get_tags_filters(reading_list)
 
     return filters
@@ -147,6 +160,7 @@ class ArticleManager(models.Manager["Article"]):
                 slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
                 summary=article_data.summary,
                 content=article_data.content,
+                reading_time=article_data.nb_words // feed.user.settings.default_reading_time,
                 authors=article_data.authors,
                 contributors=article_data.contributors,
                 feed_tags=article_data.tags,
@@ -164,6 +178,7 @@ class ArticleManager(models.Manager["Article"]):
                 "slug",
                 "summary",
                 "content",
+                "reading_time",
                 "authors",
                 "contributors",
                 "feed_tags",
@@ -199,6 +214,14 @@ class Article(models.Model):
     slug = models.SlugField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
     summary = models.TextField()
     content = models.TextField(blank=True)
+    reading_time = models.PositiveIntegerField(
+        default=0,
+        help_text=_(
+            "How much time in minutes is needed to read this article. If not specified, "
+            "it will be calculated automatically from content length. If we don't  have content, "
+            "we will use 0."
+        ),
+    )
     authors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
     contributors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
     feed_tags = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)

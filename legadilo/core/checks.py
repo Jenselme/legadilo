@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.checks import Error
 from django.core.checks import Warning as CheckWarning
 
-SAFE_MODEL_NAMES: set[str] = set()
+SAFE_MODEL_NAMES: set[str] = {"UserSettings"}
 
 
 def check_model_names(*, app_configs, **kwargs):

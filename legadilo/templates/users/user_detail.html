@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load static %}
+{% load static i18n %}
 
 {% block title %}
     User:
@@ -17,11 +17,13 @@
             <!-- Action buttons -->
             <div class="row">
                 <div class="col-sm-12">
-                    <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
+                    <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">{% translate "My Info" %}</a>
                     <a class="btn btn-primary"
                        href="{% url 'account_email' %}"
-                       role="button">E-Mail</a>
-                    <!-- Your Stuff: Custom user template urls -->
+                       role="button">{% translate "E-Mail" %}</a>
+                    <a class="btn btn-primary"
+                       href="{% url 'users:update_settings' %}"
+                       role="button">{% translate "My settings" %}</a>
                 </div>
             </div>
             <!-- End Action buttons -->

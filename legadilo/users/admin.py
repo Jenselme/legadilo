@@ -5,6 +5,7 @@ from django.contrib.auth import decorators, get_user_model
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.forms import UserAdminChangeForm, UserAdminCreationForm
+from legadilo.users.models import UserSettings
 
 User = get_user_model()
 
@@ -12,6 +13,17 @@ if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
     # https://django-allauth.readthedocs.io/en/stable/advanced.html#admin
     admin.site.login = decorators.login_required(admin.site.login)  # type: ignore[method-assign]
+
+
+class UserSettingsInline(admin.TabularInline):
+    model = UserSettings
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(User)
@@ -47,3 +59,4 @@ class UserAdmin(auth_admin.UserAdmin):
             },
         ),
     )
+    inlines = [UserSettingsInline]
