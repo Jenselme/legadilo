@@ -46,21 +46,23 @@ def _display_list_of_articles(
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
     count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
 
-    return TemplateResponse(
-        request,
-        "feeds/list_of_articles.html",
-        {
-            **page_ctx,
-            "base": {
-                "fluid_content": True,
-            },
-            "reading_lists": reading_lists,
-            "count_articles_of_reading_lists": count_articles_of_reading_lists,
-            "articles_page": articles_page,
-            "articles_paginator": articles_paginator,
-            "from_url": request.get_full_path(),
+    response_ctx = {
+        **page_ctx,
+        "base": {
+            "fluid_content": True,
         },
-    )
+        "reading_lists": reading_lists,
+        "count_articles_of_reading_lists": count_articles_of_reading_lists,
+        "articles_page": articles_page,
+        "next_page_number": articles_page.next_page_number if articles_page.has_next() else None,
+        "articles_paginator": articles_paginator,
+        "from_url": request.get_full_path(),
+    }
+
+    if request.htmx:
+        return TemplateResponse(request, "feeds/partials/article_paginator_page.html", response_ctx)
+
+    return TemplateResponse(request, "feeds/list_of_articles.html", response_ctx)
 
 
 @require_GET

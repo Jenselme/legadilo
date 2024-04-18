@@ -33,3 +33,12 @@
     opacity: 1;
     transition: opacity 200ms ease-in;
 }
+
+.infinite-scrolling-icon-indicator {
+    height: 60px;
+    text-align: center;
+}
+
+.infinite-scrolling-icon-indicator img {
+    max-height: 100%;
+}

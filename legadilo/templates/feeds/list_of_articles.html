@@ -20,12 +20,10 @@
                 {% include 'feeds/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
             </div>
             <div class="col col-8">
-                {% for article in articles_page %}
-                    {% include 'feeds/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
-                {% empty %}
-                    <p>{% translate "No articles to display." %}</p>
-                {% endfor %}
-                {% include 'feeds/partials/articles_list_pagination.html' %}
+                {% include "feeds/partials/article_paginator_page.html" %}
+                <noscript>
+                    {% include 'feeds/partials/articles_list_pagination.html' %}
+                </noscript>
             </div>
         </div>
     </div>

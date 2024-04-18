@@ -35,7 +35,7 @@
             formaction="{{ article|read_action_url }}">
         {% if article.is_read %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
-                {% include "core/partials/indicator_icon.html" %}
+                {% include "core/partials/button_loading_indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
                      height="16"
@@ -48,7 +48,7 @@
             {% translate 'Mark as unread' %}
         {% else %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
-                {% include "core/partials/indicator_icon.html" %}
+                {% include "core/partials/button_loading_indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
                      height="16"
@@ -67,7 +67,7 @@
             formaction="{{ article|favorite_action_url }}">
         {% if article.is_favorite %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
-                {% include "core/partials/indicator_icon.html" %}
+                {% include "core/partials/button_loading_indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
                      height="16"
@@ -81,7 +81,7 @@
             {% translate 'Unmark as favorite' %}
         {% else %}
             <span class="icon-indicator icon-indicator-{{ article.id }} text-start">
-                {% include "core/partials/indicator_icon.html" %}
+                {% include "core/partials/button_loading_indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
                      height="16"
@@ -101,7 +101,7 @@
             formaction="{{ article|for_later_action_url }}">
         {% if article.is_for_later %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
-                {% include "core/partials/indicator_icon.html" %}
+                {% include "core/partials/button_loading_indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
                      height="16"
@@ -114,7 +114,7 @@
             {% translate 'Not for later' %}
         {% else %}
             <span class="icon-indicator icon-indicator-{{ article.id }}">
-                {% include "core/partials/indicator_icon.html" %}
+                {% include "core/partials/button_loading_indicator_icon.html" %}
                 <svg xmlns="http://www.w3.org/2000/svg"
                      width="16"
                      height="16"
