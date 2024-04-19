@@ -50,9 +50,34 @@
     }
   };
 
+  const setupRefresh = () => {
+    if (
+      !Number.isInteger(jsCfg.auto_refresh_interval) ||
+      jsCfg.auto_refresh_interval < jsCfg.articles_list_min_refresh_timeout
+    ) {
+      return;
+    }
+
+    const timeout = jsCfg.auto_refresh_interval * 1000;
+    let timeoutId = null;
+
+    const runRefresh = () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => location.reload(), timeout);
+    };
+
+    runRefresh();
+    // Reset after each scrollend: we want to avoid messing up with reading.
+    window.addEventListener("scrollend", runRefresh);
+  };
+
   window.addEventListener("DOMContentLoaded", () => {
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
     setupReadAction();
     setupReadOnScroll();
+    setupRefresh();
   });
 })();

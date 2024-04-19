@@ -113,7 +113,11 @@ class TestUpdateArticleView:
         assert response.context["reading_lists"] == [self.reading_list]
         assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 1}
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
-        assert response.context["js_cfg"] == {"is_reading_on_scroll_enabled": False}
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": False,
+            "auto_refresh_interval": 0,
+            "articles_list_min_refresh_timeout": 300,
+        }
         self.article.refresh_from_db()
         assert self.article.is_read
 
