@@ -33,6 +33,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             create_defaults={
                 **base_default_list_values,
                 "is_default": True,
+                "auto_refresh_interval": 60 * 60,
             },
             defaults=base_default_list_values,
         )
@@ -91,6 +92,15 @@ class ReadingList(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(blank=True, max_length=255)
     is_default = models.BooleanField(default=False)
+    enable_reading_on_scroll = models.BooleanField(default=False)
+    auto_refresh_interval = models.PositiveIntegerField(
+        default=0,
+        help_text=_(
+            "Time in seconds after which to refresh reading lists automatically. "
+            "It must be at least 5 minutes. Any values lower that that will disable the feature "
+            "for this reading list."
+        ),
+    )
     order = models.IntegerField(default=0)
 
     read_status = models.CharField(

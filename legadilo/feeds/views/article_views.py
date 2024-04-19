@@ -7,6 +7,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article, ReadingList
+from legadilo.feeds.views.feed_views_utils import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.urls import validate_from_url, validate_referer_url
 
@@ -72,8 +73,11 @@ def update_article_view(
 
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
-    except (ValueError, TypeError):
+        reading_list = ReadingList.objects.get(id=displayed_reading_list_id)
+        js_cfg = get_js_cfg_from_reading_list(reading_list)
+    except (ValueError, TypeError, ReadingList.DoesNotExist):
         displayed_reading_list_id = None
+        js_cfg = {}
 
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
     count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
@@ -85,6 +89,7 @@ def update_article_view(
             "reading_lists": reading_lists,
             "count_articles_of_reading_lists": count_articles_of_reading_lists,
             "displayed_reading_list_id": displayed_reading_list_id,
+            "js_cfg": js_cfg,
             "from_url": from_url,
         },
     )

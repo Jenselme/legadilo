@@ -2,6 +2,24 @@
 
 <div id="article-card-{{ article.id }}"
      class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
+    {% if js_cfg.is_reading_on_scroll_enabled and not article.is_read %}
+        <form class="visually-hidden readable-on-scroll"
+              aria-hidden="true"
+              method="post"
+              action="{{ article|read_action_url }}"
+              hx-indicator=".icon-indicator-{{ article.id }}"
+              hx-trigger="submit"
+              hx-boost="true"
+              hx-swap="outerHTML show:none"
+              hx-target="#article-card-{{ article.id }}"
+              hx-push-url="false">
+            {% csrf_token %}
+            <input type="hidden"
+                   name="displayed_reading_list_id"
+                   value="{{ displayed_reading_list_id }}" />
+            <input type="hidden" name="from_url" value="{{ from_url }}" />
+        </form>
+    {% endif %}
     <div class="card-body">
         <h2 class="card-title">{{ article.title | safe }}</h2>
         <div class="card-subtitle">
@@ -22,3 +40,13 @@
     </div>
     <div class="card-footer">{% include "feeds/partials/article_actions.html" %}</div>
 </div>
+{% if is_last and next_page_number %}
+    <p class="icon-indicator infinite-scrolling-icon-indicator"
+       hx-get="?page={{ next_page_number }}"
+       hx-trigger="intersect once"
+       hx-swap="outerHTML"
+       hx-indicator=".infinite-scrolling-icon-indicator">
+        {% include "core/partials/page_loading_indicator_icon.html" %}
+    </p>
+{% endif %}
+{% if js_cfg.is_reading_on_scroll_enabled %}<p class="read-on-scroll-even-bottom" aria-hidden="true"></p>{% endif %}

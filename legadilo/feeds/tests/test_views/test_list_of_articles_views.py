@@ -17,7 +17,9 @@ class TestReadingListWithArticlesView:
         self.default_reading_list = ReadingListFactory(
             is_default=True, user=user, read_status=constants.ReadStatus.ONLY_UNREAD, order=0
         )
-        self.reading_list = ReadingListFactory(user=user, order=10)
+        self.reading_list = ReadingListFactory(
+            user=user, order=10, enable_reading_on_scroll=True, auto_refresh_interval=60 * 60
+        )
         self.default_reading_list_url = reverse("feeds:default_reading_list")
         self.reading_list_url = reverse(
             "feeds:reading_list", kwargs={"reading_list_slug": self.reading_list.slug}
@@ -57,6 +59,11 @@ class TestReadingListWithArticlesView:
         assert response.context["page_title"] == self.default_reading_list.name
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["displayed_reading_list_id"] == self.default_reading_list.id
+        assert response.context["js_cfg"] == {
+            "articles_list_min_refresh_timeout": 300,
+            "auto_refresh_interval": 0,
+            "is_reading_on_scroll_enabled": False,
+        }
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [self.unread_article]
 
@@ -68,6 +75,11 @@ class TestReadingListWithArticlesView:
         assert response.context["page_title"] == self.reading_list.name
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": True,
+            "auto_refresh_interval": 60 * 60,
+            "articles_list_min_refresh_timeout": 300,
+        }
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [
             self.read_article,
@@ -106,6 +118,7 @@ class TestTagWithArticlesView:
         assert response.context["page_title"] == f"Articles with tag '{self.tag_to_display.name}'"
         assert response.context["displayed_reading_list_id"] is None
         assert response.context["reading_lists"] == []
+        assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [
             self.article_in_list,

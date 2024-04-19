@@ -100,7 +100,7 @@ class TestUpdateArticleView:
         assert self.article.is_read
 
     def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
@@ -113,6 +113,11 @@ class TestUpdateArticleView:
         assert response.context["reading_lists"] == [self.reading_list]
         assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 1}
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": False,
+            "auto_refresh_interval": 0,
+            "articles_list_min_refresh_timeout": 300,
+        }
         self.article.refresh_from_db()
         assert self.article.is_read
 

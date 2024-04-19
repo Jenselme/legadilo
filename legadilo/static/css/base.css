@@ -1,35 +1,51 @@
 .scrollable-container {
-    height: calc(100vh - 116px);
+  height: calc(100vh - 116px);
 }
 
 .scrollable {
-    max-height: 100%;
-    overflow: auto;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .bi {
-    display: inline-block;
-    vertical-align: -.125em;
-    fill: currentColor;
+  display: inline-block;
+  vertical-align: -0.125em;
+  fill: currentcolor;
 }
 
-.htmx-indicator, .icon-indicator .indicator {
-    display: none;
-    opacity: 0;
+.htmx-indicator,
+.icon-indicator .indicator {
+  display: none;
+  opacity: 0;
 }
 
-.htmx-request.htmx-indicator, .htmx-request .icon-indicator .indicator {
-    display: inline;
-    opacity: 1;
-    transition: opacity 200ms ease-in;
+.htmx-request.htmx-indicator,
+.htmx-request .icon-indicator .indicator {
+  display: inline;
+  opacity: 1;
+  transition: opacity 200ms ease-in;
 }
 
 .htmx-request.icon-indicator .bi {
-    display: none;
+  display: none;
 }
 
-.htmx-request.htmx-indicator, .htmx-request.icon-indicator .indicator {
-    display: inline;
-    opacity: 1;
-    transition: opacity 200ms ease-in;
+.htmx-request.htmx-indicator,
+.htmx-request.icon-indicator .indicator {
+  display: inline;
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+
+.infinite-scrolling-icon-indicator {
+  height: 60px;
+  text-align: center;
+}
+
+.infinite-scrolling-icon-indicator img {
+  max-height: 100%;
+}
+
+.read-on-scroll-even-bottom {
+  height: 100vh;
 }
