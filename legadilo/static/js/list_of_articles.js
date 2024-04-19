@@ -7,6 +7,17 @@
 
   let jsCfg = {};
 
+  const debounce = (fn, waitTime) => {
+    let timeout = null;
+    return () => {
+      if (timeout !== null) {
+        clearTimeout(timeout);
+      }
+
+      timeout = setTimeout(() => fn(), waitTime);
+    };
+  };
+
   const setupReadAction = () => {
     for (const openOriginalButton of document.querySelectorAll(".open-original")) {
       openOriginalButton.addEventListener("click", openAndMarkAsRead);
@@ -34,7 +45,8 @@
       return;
     }
 
-    scrollableContainer.addEventListener("scrollend", readOnScroll);
+    const readOnScrollDebounced = debounce(readOnScroll, 1000);
+    scrollableContainer.addEventListener("scrollend", readOnScrollDebounced);
   };
 
   const readOnScroll = () => {
