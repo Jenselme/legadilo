@@ -91,6 +91,7 @@ class ReadingList(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(blank=True, max_length=255)
     is_default = models.BooleanField(default=False)
+    enable_reading_on_scroll = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
 
     read_status = models.CharField(

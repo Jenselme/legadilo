@@ -7,6 +7,7 @@
 {% endblock title %}
 {% block page_js %}
     <script src="{% static 'js/list_of_articles.js' %}"></script>
+    {{ js_cfg|json_script:"js-cfg" }}
 {% endblock page_js %}
 {% block content %}
     <div class="container-fluid">
@@ -18,7 +19,7 @@
         </div>
     </div>
     <div class="container-fluid scrollable-container">
-        <div class="row scrollable">
+        <div id="scrollable-article-list" class="row scrollable">
             <div id="reading-list-group" class="col col-2">
                 {% include 'feeds/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
             </div>

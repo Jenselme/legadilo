@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 
 from legadilo.feeds.models import Article, ReadingList, Tag
+from legadilo.feeds.views.feed_views_utils import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
 from legadilo.utils.validators import get_page_number_from_request
@@ -34,6 +35,7 @@ def reading_list_with_articles_view(
         {
             "page_title": displayed_reading_list.name,
             "displayed_reading_list_id": displayed_reading_list.id,
+            "js_cfg": get_js_cfg_from_reading_list(displayed_reading_list),
         },
     )
 
@@ -80,5 +82,6 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         {
             "page_title": _("Articles with tag '%(tag_name)s'") % {"tag_name": displayed_tag.name},
             "displayed_reading_list_id": None,
+            "js_cfg": {},
         },
     )
