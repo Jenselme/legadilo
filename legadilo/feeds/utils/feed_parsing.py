@@ -103,10 +103,11 @@ async def _fetch_feed_and_raw_data(
         headers["If-Modified-Since"] = dt_to_http_date(last_modified)
 
     response = await client.get(url, headers=headers)
-    feed_content = response.raise_for_status().text
-    if sys.getsizeof(feed_content) > constants.MAX_FEED_FILE_SIZE:
+    raw_feed_content = response.raise_for_status().content
+    if sys.getsizeof(raw_feed_content) > constants.MAX_FEED_FILE_SIZE:
         raise FeedFileTooBigError
 
+    feed_content = raw_feed_content.decode(response.encoding or "utf-8")
     return parse_feed(feed_content), feed_content, response.url
 
 
