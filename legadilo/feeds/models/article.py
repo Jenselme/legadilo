@@ -218,7 +218,7 @@ class Article(models.Model):
         default=0,
         help_text=_(
             "How much time in minutes is needed to read this article. If not specified, "
-            "it will be calculated automatically from content length. If we don't  have content, "
+            "it will be calculated automatically from content length. If we don't have content, "
             "we will use 0."
         ),
     )
