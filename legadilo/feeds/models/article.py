@@ -310,8 +310,10 @@ class Article(models.Model):
         match action:
             case constants.UpdateArticleActions.MARK_AS_READ:
                 self.read_at = utcnow()
+                self.is_read = True
             case constants.UpdateArticleActions.MARK_AS_UNREAD:
                 self.read_at = None
+                self.is_read = False
             case constants.UpdateArticleActions.MARK_AS_FAVORITE:
                 self.is_favorite = True
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
@@ -322,5 +324,6 @@ class Article(models.Model):
                 self.is_for_later = False
             case constants.UpdateArticleActions.MARK_AS_OPENED:
                 self.opened_at = utcnow()
+                self.was_opened = True
             case _:
                 assert_never(action)

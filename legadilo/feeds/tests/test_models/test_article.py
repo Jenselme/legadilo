@@ -727,51 +727,47 @@ class TestArticleModel:
         assert article.was_opened
 
     @pytest.mark.parametrize(
-        ("action", "attr", "value"),
+        ("action", "attrs"),
         [
             pytest.param(
                 constants.UpdateArticleActions.MARK_AS_READ,
-                "read_at",
-                datetime(2024, 4, 20, 12, 0, tzinfo=UTC),
+                {"read_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "is_read": True},
                 id="mark-as-read",
             ),
             pytest.param(
-                constants.UpdateArticleActions.MARK_AS_UNREAD, "read_at", None, id="mark-as-unread"
+                constants.UpdateArticleActions.MARK_AS_UNREAD,
+                {"read_at": None, "is_read": False},
+                id="mark-as-unread",
             ),
             pytest.param(
                 constants.UpdateArticleActions.MARK_AS_FAVORITE,
-                "is_favorite",
-                True,
+                {"is_favorite": True},
                 id="mark-as-favorite",
             ),
             pytest.param(
                 constants.UpdateArticleActions.UNMARK_AS_FAVORITE,
-                "is_favorite",
-                False,
+                {"is_favorite": False},
                 id="unmark-as-favorite",
             ),
             pytest.param(
                 constants.UpdateArticleActions.MARK_AS_FOR_LATER,
-                "is_for_later",
-                True,
+                {"is_for_later": True},
                 id="mark-as-for-later",
             ),
             pytest.param(
                 constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
-                "is_for_later",
-                False,
+                {"is_for_later": False},
                 id="unmark-as-for-later",
             ),
             pytest.param(
                 constants.UpdateArticleActions.MARK_AS_OPENED,
-                "opened_at",
-                datetime(2024, 4, 20, 12, 0, tzinfo=UTC),
+                {"opened_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "was_opened": True},
                 id="mark-as-opened",
             ),
         ],
     )
     def test_update_article(
-        self, action: constants.UpdateArticleActions, attr: str, value: bool | str
+        self, action: constants.UpdateArticleActions, attrs: dict[str, bool | str]
     ):
         article = ArticleFactory.build(
             read_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
@@ -783,4 +779,5 @@ class TestArticleModel:
         with time_machine.travel("2024-04-20 12:00:00"):
             article.update_article(action)
 
-        assert getattr(article, attr) == value
+        for attr_name, attr_value in attrs.items():
+            assert getattr(article, attr_name) == attr_value
