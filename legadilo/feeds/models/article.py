@@ -226,7 +226,6 @@ class Article(models.Model):
     contributors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
     feed_tags = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
     link = models.URLField()
-    published_at = models.DateTimeField()
     article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))
 
     read_at = models.DateTimeField(null=True, blank=True)
@@ -246,8 +245,20 @@ class Article(models.Model):
 
     feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(
+        null=True, blank=True, help_text=_("The date of publication of the article.")
+    )
+    updated_at = models.DateTimeField(
+        null=True, blank=True, help_text=_("The last time the article was updated.")
+    )
+    obj_created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("Technical date for the creation of the article in our database."),
+    )
+    obj_updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text=_("Technical date for the last update of the article in our database."),
+    )
 
     objects = ArticleManager()
 
