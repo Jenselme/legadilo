@@ -29,13 +29,13 @@ class ArticleFactory(DjangoModelFactory):
     content = ""
     authors: list[str] = []
     contributors: list[str] = []
-    feed_tags: list[str] = []
+    external_tags: list[str] = []
     link = factory.Sequence(lambda n: f"https://example.com/article/{n}")
     published_at = datetime.now(tz=UTC)
     updated_at = datetime.now(tz=UTC)
-    article_feed_id = factory.Sequence(lambda n: f"article-{n}")
+    external_article_id = factory.Sequence(lambda n: f"article-{n}")
 
-    feed = factory.SubFactory(FeedFactory)
+    user = factory.SubFactory(UserFactory)
 
     class Meta:
         model = Article

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
@@ -14,17 +15,18 @@ from legadilo.utils.validators import list_of_strings_json_schema_validator
 
 from ...utils.time import utcnow
 from .. import constants
-from ..utils.feed_parsing import FeedArticle
 from .tag import ArticleTag
 
 if TYPE_CHECKING:
-    from .feed import Feed
+    from legadilo.users.models import User
+
+    from ..utils.feed_parsing import ArticleData
     from .reading_list import ReadingList
     from .tag import Tag
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
-    filters = models.Q(feed__user=reading_list.user)
+    filters = models.Q(user=reading_list.user)
 
     if reading_list.read_status == constants.ReadStatus.ONLY_READ:
         filters &= models.Q(is_read=True)
@@ -126,7 +128,6 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return (
             self.for_reading_list_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
-            .select_related("feed")
             .prefetch_related(_build_prefetch_article_tags())
         )
 
@@ -134,12 +135,11 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return (
             self.filter(article_tags__tag=tag)
             .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
-            .select_related("feed")
             .prefetch_related(_build_prefetch_article_tags())
         )
 
     def for_details(self) -> Self:
-        return self.select_related("feed").prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related(_build_prefetch_article_tags())
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -148,22 +148,24 @@ class ArticleManager(models.Manager["Article"]):
     def get_queryset(self) -> ArticleQuerySet:
         return ArticleQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def update_or_create_from_articles_list(self, articles_data: list[FeedArticle], feed: Feed):
+    def update_or_create_from_articles_list(
+        self, user: User, articles_data: list[ArticleData], tags: Iterable[Tag]
+    ) -> list[Article]:
         if len(articles_data) == 0:
-            return
+            return []
 
         articles = [
             self.model(
-                feed_id=feed.id,
-                article_feed_id=article_data.article_feed_id,
+                user=user,
+                external_article_id=article_data.external_article_id,
                 title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
                 slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
                 summary=article_data.summary,
                 content=article_data.content,
-                reading_time=article_data.nb_words // feed.user.settings.default_reading_time,
+                reading_time=article_data.nb_words // user.settings.default_reading_time,
                 authors=article_data.authors,
                 contributors=article_data.contributors,
-                feed_tags=article_data.tags,
+                external_tags=article_data.tags,
                 link=article_data.link,
                 published_at=article_data.published_at,
                 updated_at=article_data.updated_at,
@@ -181,14 +183,16 @@ class ArticleManager(models.Manager["Article"]):
                 "reading_time",
                 "authors",
                 "contributors",
-                "feed_tags",
+                "external_tags",
                 "link",
                 "published_at",
                 "updated_at",
             ],
-            unique_fields=["feed_id", "article_feed_id"],
+            unique_fields=["user", "link"],
         )
-        ArticleTag.objects.associate_articles_with_tags(created_articles, feed.tags.all())
+        ArticleTag.objects.associate_articles_with_tags(created_articles, tags)
+
+        return created_articles
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> Paginator[Article]:
         return Paginator(
@@ -222,11 +226,22 @@ class Article(models.Model):
             "we will use 0."
         ),
     )
-    authors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
-    contributors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
-    feed_tags = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
+    authors = models.JSONField(
+        validators=[list_of_strings_json_schema_validator], blank=True, default=list
+    )
+    contributors = models.JSONField(
+        validators=[list_of_strings_json_schema_validator], blank=True, default=list
+    )
     link = models.URLField()
-    article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))
+    external_tags = models.JSONField(
+        validators=[list_of_strings_json_schema_validator],
+        blank=True,
+        default=list,
+        help_text=_("Tags of the article from the its source"),
+    )
+    external_article_id = models.CharField(
+        default="", blank=True, help_text=_("The id of the article in the its source.")
+    )
 
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.GeneratedField(  # type: ignore[attr-defined]
@@ -243,7 +258,12 @@ class Article(models.Model):
     is_favorite = models.BooleanField(default=False)
     is_for_later = models.BooleanField(default=False)
 
-    feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", related_name="articles", on_delete=models.CASCADE)
+
+    initial_source_type = models.CharField(
+        default=constants.ArticleSourceType.FEED, choices=constants.ArticleSourceType.choices
+    )
+    initial_source_title = models.CharField()
 
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")
@@ -265,13 +285,20 @@ class Article(models.Model):
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
-                "article_feed_id", "feed_id", name="%(app_label)s_%(class)s_article_unique_in_feed"
+                "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_initial_source_type_valid",
+                check=models.Q(
+                    initial_source_type__in=constants.ArticleSourceType.names,
+                ),
             ),
         ]
 
     def __str__(self):
         return (
-            f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
+            f"Article(title={self.title}, initial_source_type={self.initial_source_type}, "
+            f"initial_source_title={self.initial_source_title}, published_at={self.published_at})"
         )
 
     def save(self, *args, **kwargs):

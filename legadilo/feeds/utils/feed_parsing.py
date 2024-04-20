@@ -18,8 +18,8 @@ from .. import constants
 
 
 @dataclass(frozen=True)
-class FeedArticle:
-    article_feed_id: str
+class ArticleData:
+    external_article_id: str
     title: str
     summary: str
     content: str
@@ -41,7 +41,7 @@ class FeedMetadata:
     feed_type: constants.SupportedFeedType
     etag: str
     last_modified: datetime | None
-    articles: list[FeedArticle]
+    articles: list[ArticleData]
 
 
 class NoFeedUrlFoundError(Exception):
@@ -151,10 +151,10 @@ def _normalize_found_link(link: str):
     return link
 
 
-def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[FeedArticle]:
+def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[ArticleData]:
     return [
-        FeedArticle(
-            article_feed_id=full_sanitize(entry.id),
+        ArticleData(
+            external_article_id=full_sanitize(entry.id),
             title=full_sanitize(entry.title),
             summary=sanitize_keep_safe_tags(entry.summary),
             content=_get_article_content(entry),

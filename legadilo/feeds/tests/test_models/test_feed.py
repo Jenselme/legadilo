@@ -5,9 +5,9 @@ from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.models import FeedUpdate
-from legadilo.feeds.tests.factories import FeedFactory
-from legadilo.feeds.utils.feed_parsing import FeedArticle, FeedMetadata
+from legadilo.feeds.models import FeedArticle, FeedUpdate
+from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory
+from legadilo.feeds.utils.feed_parsing import ArticleData, FeedMetadata
 from legadilo.users.tests.factories import UserFactory
 
 from ...models import Feed
@@ -48,7 +48,7 @@ class TestFeedManager:
         self.initial_feed_count = 1
 
     def test_create_from_metadata(self, user, django_assert_num_queries):
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(9):
             feed = Feed.objects.create_from_metadata(
                 FeedMetadata(
                     feed_url="https://example.com/feeds/atom.xml",
@@ -59,8 +59,8 @@ class TestFeedManager:
                     etag="W/etag",
                     last_modified=None,
                     articles=[
-                        FeedArticle(
-                            article_feed_id="some-article-1",
+                        ArticleData(
+                            external_article_id="some-article-1",
                             title="Article 1",
                             summary="Summary 1",
                             content="Description 1",
@@ -144,7 +144,13 @@ class TestFeedManager:
         assert feed_update.error_message == "Something went wrong"
 
     def test_update_feed(self, django_assert_num_queries):
-        with django_assert_num_queries(5):
+        existing_article = ArticleFactory(
+            link="https://example.com/article/existing",
+            user=self.feed.user,
+        )
+        FeedArticle.objects.create(feed=self.feed, article=existing_article)
+
+        with django_assert_num_queries(6):
             Feed.objects.update_feed(
                 self.feed,
                 FeedMetadata(
@@ -156,8 +162,8 @@ class TestFeedManager:
                     etag="W/etag",
                     last_modified=None,
                     articles=[
-                        FeedArticle(
-                            article_feed_id="some-article-1",
+                        ArticleData(
+                            external_article_id="some-article-1",
                             title="Article 1",
                             summary="Summary 1",
                             content="Description 1",
@@ -168,10 +174,23 @@ class TestFeedManager:
                             link="https//example.com/article/1",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
-                        )
+                        ),
+                        ArticleData(
+                            external_article_id="some-article-existing",
+                            title="Article 2",
+                            summary="Summary 2",
+                            content="Description existing updated",
+                            nb_words=1,
+                            authors=["Author"],
+                            contributors=[],
+                            tags=[],
+                            link=existing_article.link,
+                            published_at=datetime.now(tz=UTC),
+                            updated_at=datetime.now(tz=UTC),
+                        ),
                     ],
                 ),
             )
 
-        assert self.feed.articles.count() == 1
+        assert self.feed.articles.count() == 2
         assert self.feed.feed_updates.count() == 1

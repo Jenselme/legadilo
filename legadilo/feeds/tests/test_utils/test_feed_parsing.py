@@ -6,7 +6,7 @@ import pytest
 
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.utils.feed_parsing import (
-    FeedArticle,
+    ArticleData,
     FeedFileTooBigError,
     FeedMetadata,
     MultipleFeedFoundError,
@@ -240,8 +240,8 @@ class TestParseArticlesInFeed:
             pytest.param(
                 SAMPLE_RSS_FEED,
                 [
-                    FeedArticle(
-                        article_feed_id="http://example.org/entry/3",
+                    ArticleData(
+                        external_article_id="http://example.org/entry/3",
                         title="First entry title",
                         summary="Watch out for <span>nasty\ntricks</span>",
                         content="",
@@ -259,8 +259,8 @@ class TestParseArticlesInFeed:
             pytest.param(
                 SAMPLE_ATOM_FEED,
                 [
-                    FeedArticle(
-                        article_feed_id="tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
+                    ArticleData(
+                        external_article_id="tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
                         title="First entry title",
                         summary="Watch out for nasty tricks",
                         content="",

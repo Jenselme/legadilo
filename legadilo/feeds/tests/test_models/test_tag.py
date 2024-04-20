@@ -2,16 +2,16 @@ import pytest
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import ArticleTag
-from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory, TagFactory
+from legadilo.feeds.tests.factories import ArticleFactory, TagFactory
 
 
 @pytest.mark.django_db()
 class TestArticleTagQuerySet:
     def test_for_reading_list(self):
         article = ArticleFactory()
-        tag1 = TagFactory(user=article.feed.user)
-        tag2 = TagFactory(user=article.feed.user)
-        tag3 = TagFactory(user=article.feed.user)
+        tag1 = TagFactory(user=article.user)
+        tag2 = TagFactory(user=article.user)
+        tag3 = TagFactory(user=article.user)
         ArticleTag.objects.create(
             tag=tag1, article=article, tagging_reason=constants.TaggingReason.FROM_FEED
         )
@@ -33,13 +33,12 @@ class TestArticleTagQuerySet:
 
 @pytest.mark.django_db()
 class TestArticleTagManager:
-    def test_associate_articles_with_tags(self, django_assert_num_queries):
-        feed = FeedFactory()
-        article1 = ArticleFactory(feed=feed)
-        article2 = ArticleFactory(feed=feed)
-        tag1 = TagFactory(user=feed.user)
-        tag2 = TagFactory(user=feed.user)
-        tag3 = TagFactory(user=feed.user)
+    def test_associate_articles_with_tags(self, user, django_assert_num_queries):
+        article1 = ArticleFactory(user=user)
+        article2 = ArticleFactory(user=user)
+        tag1 = TagFactory(user=user)
+        tag2 = TagFactory(user=user)
+        tag3 = TagFactory(user=user)
         articles = [article1, article2]
         # The article already has the tag, nothing must happen.
         ArticleTag.objects.create(

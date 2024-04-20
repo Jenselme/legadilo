@@ -27,13 +27,13 @@ class TestReadingListWithArticlesView:
         )
 
         self.read_article = ArticleFactory(
-            read_at=utcnow(), published_at=datetime(2024, 3, 19, tzinfo=UTC), feed__user=user
+            read_at=utcnow(), published_at=datetime(2024, 3, 19, tzinfo=UTC), user=user
         )
         self.unread_article = ArticleFactory(
-            read_at=None, published_at=datetime(2024, 3, 10, tzinfo=UTC), feed__user=user
+            read_at=None, published_at=datetime(2024, 3, 10, tzinfo=UTC), user=user
         )
         # Article of some other user.
-        ArticleFactory(feed__user=other_user)
+        ArticleFactory(user=other_user)
 
     def test_not_logged_in(self, client):
         response = client.get(self.default_reading_list_url)
@@ -95,9 +95,9 @@ class TestTagWithArticlesView:
         self.tag_to_display = TagFactory(user=user)
         other_tag = TagFactory(user=user)
         self.url = reverse("feeds:tag_with_articles", kwargs={"tag_slug": self.tag_to_display.slug})
-        self.article_in_list = ArticleFactory(feed__user=user)
+        self.article_in_list = ArticleFactory(user=user)
         ArticleTag.objects.create(tag=self.tag_to_display, article=self.article_in_list)
-        other_article = ArticleFactory(feed__user=user)
+        other_article = ArticleFactory(user=user)
         ArticleTag.objects.create(tag=other_tag, article=other_article)
 
     def test_not_logged_in(self, client):

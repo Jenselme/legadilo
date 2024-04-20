@@ -11,7 +11,7 @@ from legadilo.feeds.tests.factories import ArticleFactory, ReadingListFactory
 class TestArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
-        self.article = ArticleFactory(feed__user=user)
+        self.article = ArticleFactory(user=user)
         self.url = reverse(
             "feeds:article_details",
             kwargs={"article_id": self.article.id, "article_slug": self.article.slug},
@@ -61,7 +61,7 @@ class TestUpdateArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.reading_list = ReadingListFactory(user=user)
-        self.article = ArticleFactory(is_read=False, feed__user=user)
+        self.article = ArticleFactory(is_read=False, user=user)
         self.mark_as_read_url = reverse(
             "feeds:update_article",
             kwargs={

@@ -90,6 +90,11 @@ class UpdateArticleActions(TextChoices):
         }
 
 
+class ArticleSourceType(TextChoices):
+    FEED = "FEED", _("Feed")
+    MANUAL = "MANUAL", _("Manual")
+
+
 FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
 HTTP_TIMEOUT = 20  # In seconds.
 HTTP_TIMEOUT_CMD_CTX = 300  # In seconds.
