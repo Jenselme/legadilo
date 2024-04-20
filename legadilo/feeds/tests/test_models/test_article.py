@@ -17,6 +17,7 @@ from legadilo.feeds.tests.factories import (
     TagFactory,
 )
 from legadilo.feeds.utils.feed_parsing import FeedArticle
+from legadilo.utils.time import utcnow
 
 
 @pytest.mark.parametrize(
@@ -688,7 +689,7 @@ class TestArticleManager:
             ReadingList.objects.select_related("user").prefetch_related("reading_list_tags").all()
         )
         ArticleFactory(feed=feed)
-        ArticleFactory(feed=feed, is_read=True)
+        ArticleFactory(feed=feed, read_at=utcnow())
 
         with django_assert_num_queries(1):
             counts = Article.objects.count_articles_of_reading_lists(reading_lists_with_tags)
@@ -732,14 +733,27 @@ class TestArticleManager:
 
 
 class TestArticleModel:
+    @pytest.mark.django_db()
+    def test_generated_fields(self):
+        article = ArticleFactory(opened_at=None, read_at=None)
+        assert not article.is_read
+        assert not article.was_opened
+
+        article = ArticleFactory(opened_at=utcnow(), read_at=utcnow())
+        assert article.is_read
+        assert article.was_opened
+
     @pytest.mark.parametrize(
         ("action", "attr", "value"),
         [
             pytest.param(
-                constants.UpdateArticleActions.MARK_AS_READ, "is_read", True, id="mark-as-read"
+                constants.UpdateArticleActions.MARK_AS_READ,
+                "read_at",
+                datetime(2024, 4, 20, 12, 0, tzinfo=UTC),
+                id="mark-as-read",
             ),
             pytest.param(
-                constants.UpdateArticleActions.MARK_AS_UNREAD, "is_read", False, id="mark-as-unread"
+                constants.UpdateArticleActions.MARK_AS_UNREAD, "read_at", None, id="mark-as-unread"
             ),
             pytest.param(
                 constants.UpdateArticleActions.MARK_AS_FAVORITE,
@@ -767,20 +781,23 @@ class TestArticleModel:
             ),
             pytest.param(
                 constants.UpdateArticleActions.MARK_AS_OPENED,
-                "was_opened",
-                True,
+                "opened_at",
+                datetime(2024, 4, 20, 12, 0, tzinfo=UTC),
                 id="mark-as-opened",
             ),
         ],
     )
-    def test_update_article(self, action: constants.UpdateArticleActions, attr: str, value: bool):
+    def test_update_article(
+        self, action: constants.UpdateArticleActions, attr: str, value: bool | str
+    ):
         article = ArticleFactory.build(
-            is_read=choice([True, False]),
+            read_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
             is_favorite=choice([True, False]),
             is_for_later=choice([True, False]),
-            was_opened=choice([True, False]),
+            opened_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
         )
 
-        article.update_article(action)
+        with time_machine.travel("2024-04-20 12:00:00"):
+            article.update_article(action)
 
-        assert getattr(article, attr) is value
+        assert getattr(article, attr) == value

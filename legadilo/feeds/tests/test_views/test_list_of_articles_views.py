@@ -8,6 +8,7 @@ from django.urls import reverse
 from legadilo.feeds import constants
 from legadilo.feeds.models import ArticleTag
 from legadilo.feeds.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
+from legadilo.utils.time import utcnow
 
 
 @pytest.mark.django_db()
@@ -26,10 +27,10 @@ class TestReadingListWithArticlesView:
         )
 
         self.read_article = ArticleFactory(
-            is_read=True, published_at=datetime(2024, 3, 19, tzinfo=UTC), feed__user=user
+            read_at=utcnow(), published_at=datetime(2024, 3, 19, tzinfo=UTC), feed__user=user
         )
         self.unread_article = ArticleFactory(
-            is_read=False, published_at=datetime(2024, 3, 10, tzinfo=UTC), feed__user=user
+            read_at=None, published_at=datetime(2024, 3, 10, tzinfo=UTC), feed__user=user
         )
         # Article of some other user.
         ArticleFactory(feed__user=other_user)

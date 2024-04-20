@@ -229,8 +229,18 @@ class Article(models.Model):
     published_at = models.DateTimeField()
     article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))
 
-    is_read = models.BooleanField(default=False)
-    was_opened = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    is_read = models.GeneratedField(  # type: ignore[attr-defined]
+        expression=models.Q(read_at__isnull=False),
+        output_field=models.BooleanField(),
+        db_persist=True,
+    )
+    opened_at = models.DateTimeField(null=True, blank=True)
+    was_opened = models.GeneratedField(  # type: ignore[attr-defined]
+        expression=models.Q(opened_at__isnull=False),
+        output_field=models.BooleanField(),
+        db_persist=True,
+    )
     is_favorite = models.BooleanField(default=False)
     is_for_later = models.BooleanField(default=False)
 
@@ -261,9 +271,9 @@ class Article(models.Model):
     def update_article(self, action: constants.UpdateArticleActions):
         match action:
             case constants.UpdateArticleActions.MARK_AS_READ:
-                self.is_read = True
+                self.read_at = utcnow()
             case constants.UpdateArticleActions.MARK_AS_UNREAD:
-                self.is_read = False
+                self.read_at = None
             case constants.UpdateArticleActions.MARK_AS_FAVORITE:
                 self.is_favorite = True
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
@@ -273,6 +283,6 @@ class Article(models.Model):
             case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
                 self.is_for_later = False
             case constants.UpdateArticleActions.MARK_AS_OPENED:
-                self.was_opened = True
+                self.opened_at = utcnow()
             case _:
                 assert_never(action)
