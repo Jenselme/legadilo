@@ -16,7 +16,7 @@ from legadilo.feeds.tests.factories import (
     TagFactory,
 )
 from legadilo.feeds.utils.feed_parsing import ArticleData
-from legadilo.utils.time import utcnow
+from legadilo.utils.time import utcdt, utcnow
 
 
 @pytest.mark.parametrize(
@@ -593,9 +593,27 @@ class TestArticleManager:
     def test_update_and_create_articles(self, user, django_assert_num_queries):
         tag1 = TagFactory(user=user)
         tag2 = TagFactory(user=user)
-        existing_article = ArticleFactory(user=user, external_article_id="existing-article-feed")
+        existing_article_to_update = ArticleFactory(
+            title="Old title",
+            content="Old content",
+            user=user,
+            external_article_id="existing-article-feed",
+            updated_at=utcdt(2023, 4, 20),
+        )
+        existing_article_to_keep = ArticleFactory(
+            title="Title to keep",
+            content="Content to keep",
+            user=user,
+            updated_at=utcdt(2024, 4, 20),
+        )
+        ArticleTag.objects.create(
+            article=existing_article_to_keep,
+            tag=tag1,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        now_dt = utcnow()
 
-        with django_assert_num_queries(2):
+        with django_assert_num_queries(4):
             Article.objects.update_or_create_from_articles_list(
                 user,
                 [
@@ -608,20 +626,32 @@ class TestArticleManager:
                         contributors=[],
                         tags=[],
                         link="https//example.com/article/1",
-                        published_at=datetime.now(tz=UTC),
-                        updated_at=datetime.now(tz=UTC),
+                        published_at=now_dt,
+                        updated_at=now_dt,
                     ),
                     ArticleData(
-                        external_article_id=existing_article.external_article_id,
-                        link=existing_article.link,
+                        external_article_id=existing_article_to_update.external_article_id,
+                        link=existing_article_to_update.link,
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
                         authors=["Author"],
                         contributors=[],
                         tags=[],
-                        published_at=datetime.now(tz=UTC),
-                        updated_at=datetime.now(tz=UTC),
+                        published_at=now_dt,
+                        updated_at=now_dt,
+                    ),
+                    ArticleData(
+                        external_article_id=existing_article_to_keep.external_article_id,
+                        link=existing_article_to_keep.link,
+                        title="Updated article",
+                        summary="Summary updated",
+                        content="Description updated",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        published_at=utcdt(2024, 4, 19),
+                        updated_at=utcdt(2024, 4, 19),
                     ),
                     ArticleData(
                         external_article_id="article-3",
@@ -632,8 +662,8 @@ class TestArticleManager:
                         contributors=["Contributor"],
                         tags=["Some tag"],
                         link="https//example.com/article/3",
-                        published_at=datetime.now(tz=UTC),
-                        updated_at=datetime.now(tz=UTC),
+                        published_at=now_dt,
+                        updated_at=now_dt,
                     ),
                 ],
                 [tag1, tag2],
@@ -641,11 +671,19 @@ class TestArticleManager:
                 source_title="Not a feed",
             )
 
-        assert Article.objects.count() == 3
-        existing_article.refresh_from_db()
-        assert existing_article.title == "Article updated"
-        assert existing_article.slug == "article-updated"
-        other_article = Article.objects.exclude(id=existing_article.id).first()
+        assert Article.objects.count() == 4
+        existing_article_to_update.refresh_from_db()
+        assert existing_article_to_update.title == "Article updated"
+        assert existing_article_to_update.slug == "article-updated"
+        assert existing_article_to_update.updated_at == now_dt
+        existing_article_to_keep.refresh_from_db()
+        assert existing_article_to_keep.title == "Title to keep"
+        assert existing_article_to_keep.slug == "title-to-keep"
+        assert existing_article_to_keep.content == "Content to keep"
+        assert existing_article_to_keep.updated_at == utcdt(2024, 4, 20)
+        other_article = Article.objects.exclude(
+            id__in=[existing_article_to_update.id, existing_article_to_keep.id]
+        ).first()
         assert other_article is not None
         assert other_article.title == "Article 1"
         assert other_article.slug == "article-1"
@@ -654,7 +692,12 @@ class TestArticleManager:
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True
             )
-        ) == [[tag1.slug, tag2.slug], [tag1.slug, tag2.slug], [tag1.slug, tag2.slug]]
+        ) == [
+            [tag1.slug, tag2.slug],
+            [tag1.slug, tag2.slug],
+            [tag1.slug, tag2.slug],
+            [tag1.slug, tag2.slug],
+        ]
 
     def test_update_and_create_articles_empty_list(self, user, django_assert_num_queries):
         with django_assert_num_queries(0):
@@ -730,6 +773,121 @@ class TestArticleModel:
         article = ArticleFactory(opened_at=utcnow(), read_at=utcnow())
         assert article.is_read
         assert article.was_opened
+
+    @pytest.mark.parametrize(
+        ("initial_data", "expected_data", "expected_was_updated"),
+        [
+            pytest.param(
+                {
+                    "title": "Initial title",
+                    "content": "Initial content",
+                    "updated_at": utcdt(2024, 4, 21),
+                },
+                {
+                    "title": "Initial title",
+                    "content": "Initial content",
+                    "updated_at": utcdt(2024, 4, 21),
+                },
+                False,
+                id="initial-data-more-recent-than-update-proposal",
+            ),
+            pytest.param(
+                {
+                    "title": "Initial title",
+                    "content": "",
+                    "updated_at": utcdt(2024, 4, 21),
+                },
+                {
+                    "title": "Initial title",
+                    "content": "Updated content",
+                    "updated_at": utcdt(2024, 4, 21),
+                },
+                True,
+                id="initial-data-more-recent-than-update-proposal-but-update-has-content",
+            ),
+            pytest.param(
+                {
+                    "title": "Initial title",
+                    "summary": "Initial summary",
+                    "content": "Initial content",
+                    "updated_at": utcdt(2024, 4, 19),
+                    "external_tags": ["Initial tag", "Some tag"],
+                    "authors": ["Author 1", "Author 2"],
+                    "contributors": ["Contributor 1", "Contributor 2"],
+                },
+                {
+                    "title": "Updated title",
+                    "summary": "Updated summary",
+                    "content": "Updated content",
+                    "updated_at": utcdt(2024, 4, 20),
+                    "external_tags": ["Initial tag", "Some tag", "Updated tag"],
+                    "authors": ["Author 1", "Author 2", "Author 3"],
+                    "contributors": ["Contributor 1", "Contributor 2", "Contributor 3"],
+                },
+                True,
+                id="initial-data-less-recent-than-update-proposal",
+            ),
+        ],
+    )
+    def test_update_article_from_data(
+        self, user, initial_data: dict, expected_data: dict, expected_was_updated: bool
+    ):
+        article = ArticleFactory.build(**initial_data, user=user)
+
+        was_updated = article.update_article_from_data(
+            ArticleData(
+                external_article_id="some-article-1",
+                title="Updated title",
+                summary="Updated summary",
+                content="Updated content",
+                authors=["Author 2", "Author 3"],
+                contributors=["Contributor 2", "Contributor 3"],
+                tags=["Some tag", "Updated tag"],
+                link="https//example.com/article/1",
+                published_at=utcdt(2024, 4, 20),
+                updated_at=utcdt(2024, 4, 20),
+            )
+        )
+
+        assert was_updated == expected_was_updated
+        for attr, value in expected_data.items():
+            assert getattr(article, attr) == value
+
+    def test_update_article_from_data_article_data_is_missing_some_data(self, user):
+        initial_data = {
+            "title": "Initial title",
+            "summary": "Initial summary",
+            "content": "Initial content",
+            "updated_at": utcdt(2024, 4, 19),
+            "reading_time": 3,
+        }
+        expected_data = {
+            "title": "Updated title",
+            "summary": "Initial summary",
+            "content": "Initial content",
+            "updated_at": utcdt(2024, 4, 20),
+            "reading_time": 3,
+        }
+        article = ArticleFactory.build(**initial_data, user=user)
+
+        was_updated = article.update_article_from_data(
+            ArticleData(
+                external_article_id="some-article-1",
+                title="Updated title",
+                summary="",
+                content="",
+                authors=["Author"],
+                contributors=[],
+                tags=[],
+                link="https//example.com/article/1",
+                published_at=utcdt(2024, 4, 20),
+                updated_at=utcdt(2024, 4, 20),
+            )
+        )
+
+        assert was_updated
+        for attr, value in expected_data.items():
+            assert getattr(article, attr) == value
 
     @pytest.mark.parametrize(
         ("action", "attrs"),

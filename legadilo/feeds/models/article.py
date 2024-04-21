@@ -161,48 +161,65 @@ class ArticleManager(models.Manager["Article"]):
         if len(articles_data) == 0:
             return []
 
-        articles = [
-            self.model(
-                user=user,
-                external_article_id=article_data.external_article_id,
-                title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
-                slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
-                summary=article_data.summary,
-                content=article_data.content,
-                reading_time=get_nb_words_from_html(article_data.content)
-                // user.settings.default_reading_time,
-                authors=article_data.authors,
-                contributors=article_data.contributors,
-                external_tags=article_data.tags,
-                link=article_data.link,
-                published_at=article_data.published_at,
-                updated_at=article_data.updated_at,
-                initial_source_type=source_type,
-                initial_source_title=source_title,
-            )
-            for article_data in articles_data
-        ]
-        created_articles = self.bulk_create(
-            articles,
-            update_conflicts=True,
-            update_fields=[
-                "title",
-                "slug",
-                "summary",
-                "content",
-                "reading_time",
-                "authors",
-                "contributors",
-                "external_tags",
-                "link",
-                "published_at",
-                "updated_at",
-            ],
-            unique_fields=["user", "link"],
-        )
-        ArticleTag.objects.associate_articles_with_tags(created_articles, tags)
+        existing_links_to_articles = {
+            article.link: article
+            for article in self.get_queryset()
+            .filter(user=user, link__in=[article_data.link for article_data in articles_data])
+            .select_related("user", "user__settings")
+        }
+        articles_to_create = []
+        articles_to_update = []
+        for article_data in articles_data:
+            if article_data.link in existing_links_to_articles:
+                article_to_update = existing_links_to_articles[article_data.link]
+                was_updated = article_to_update.update_article_from_data(article_data)
+                if was_updated:
+                    articles_to_update.append(article_to_update)
+            else:
+                articles_to_create.append(
+                    self.model(
+                        user=user,
+                        external_article_id=article_data.external_article_id,
+                        title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
+                        slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
+                        summary=article_data.summary,
+                        content=article_data.content,
+                        reading_time=get_nb_words_from_html(article_data.content)
+                        // user.settings.default_reading_time,
+                        authors=article_data.authors,
+                        contributors=article_data.contributors,
+                        external_tags=article_data.tags,
+                        link=article_data.link,
+                        published_at=article_data.published_at,
+                        updated_at=article_data.updated_at,
+                        initial_source_type=source_type,
+                        initial_source_title=source_title,
+                    )
+                )
 
-        return created_articles
+        if articles_to_create:
+            self.bulk_create(articles_to_create, unique_fields=["user", "link"])
+
+        if articles_to_update:
+            self.bulk_update(
+                articles_to_update,
+                fields=[
+                    "title",
+                    "slug",
+                    "summary",
+                    "content",
+                    "reading_time",
+                    "authors",
+                    "contributors",
+                    "external_tags",
+                    "updated_at",
+                ],
+            )
+
+        all_articles = [*articles_to_create, *existing_links_to_articles.values()]
+        ArticleTag.objects.associate_articles_with_tags(all_articles, tags)
+
+        return all_articles
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> Paginator[Article]:
         return Paginator(
@@ -315,6 +332,29 @@ class Article(models.Model):
         self.slug = slugify(self.title)
 
         return super().save(*args, **kwargs)
+
+    def update_article_from_data(self, article_data: ArticleData) -> bool:
+        is_more_recent = self.updated_at is None or article_data.updated_at > self.updated_at
+        has_content_unlike_saved = bool(article_data.content) and not bool(self.content)
+        if not is_more_recent and not has_content_unlike_saved:
+            return False
+
+        if is_more_recent:
+            self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]
+            self.slug = slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH])
+            self.summary = article_data.summary or self.summary
+            self.content = article_data.content or self.content
+            self.reading_time = (
+                get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
+            ) or self.reading_time
+            self.authors = list(dict.fromkeys(self.authors + article_data.authors))
+            self.contributors = list(dict.fromkeys(self.contributors + article_data.contributors))
+            self.external_tags = list(dict.fromkeys(self.external_tags + article_data.tags))
+            self.updated_at = article_data.updated_at
+        elif has_content_unlike_saved:
+            self.content = article_data.content
+
+        return True
 
     def update_article_from_action(self, action: constants.UpdateArticleActions):
         match action:

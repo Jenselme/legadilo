@@ -8,3 +8,15 @@ def dt_to_http_date(dt: datetime) -> str:
 
 def utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+def utcdt(  # noqa: PLR0913,PLR0917 (too many arguments)
+    year: int,
+    month: int,
+    day: int,
+    hour: int = 0,
+    minute: int = 0,
+    second: int = 0,
+    microsecond: int = 0,
+) -> datetime:
+    return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=UTC)

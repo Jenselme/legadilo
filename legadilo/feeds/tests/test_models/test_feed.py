@@ -49,7 +49,7 @@ class TestFeedManager:
         self.initial_feed_count = 1
 
     def test_create_from_metadata(self, user, django_assert_num_queries):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             feed = Feed.objects.create_from_metadata(
                 FeedMetadata(
                     feed_url="https://example.com/feeds/atom.xml",
@@ -152,7 +152,7 @@ class TestFeedManager:
         )
         FeedArticle.objects.create(feed=self.feed, article=existing_article)
 
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(8):
             Feed.objects.update_feed(
                 self.feed,
                 FeedMetadata(

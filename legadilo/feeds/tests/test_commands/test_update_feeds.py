@@ -25,7 +25,7 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
-            django_assert_num_queries(8),
+            django_assert_num_queries(9),
         ):
             call_command("update_feeds")
 
