@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
@@ -149,6 +149,7 @@ class ArticleManager(models.Manager["Article"]):
     def get_queryset(self) -> ArticleQuerySet:
         return ArticleQuerySet(model=self.model, using=self._db, hints=self._hints)
 
+    @transaction.atomic()
     def update_or_create_from_articles_list(
         self,
         user: User,
@@ -156,7 +157,6 @@ class ArticleManager(models.Manager["Article"]):
         tags: Iterable[Tag],
         *,
         source_type: constants.ArticleSourceType,
-        source_title: str,
     ) -> list[Article]:
         if len(articles_data) == 0:
             return []
@@ -173,6 +173,8 @@ class ArticleManager(models.Manager["Article"]):
             if article_data.link in existing_links_to_articles:
                 article_to_update = existing_links_to_articles[article_data.link]
                 was_updated = article_to_update.update_article_from_data(article_data)
+                if source_type == constants.ArticleSourceType.MANUAL:
+                    article_to_update.read_at = None
                 if was_updated:
                     articles_to_update.append(article_to_update)
             else:
@@ -193,7 +195,7 @@ class ArticleManager(models.Manager["Article"]):
                         published_at=article_data.published_at,
                         updated_at=article_data.updated_at,
                         initial_source_type=source_type,
-                        initial_source_title=source_title,
+                        initial_source_title=article_data.source_title,
                     )
                 )
 
@@ -213,6 +215,7 @@ class ArticleManager(models.Manager["Article"]):
                     "contributors",
                     "external_tags",
                     "updated_at",
+                    "read_at",
                 ],
             )
 
@@ -334,7 +337,11 @@ class Article(models.Model):
         return super().save(*args, **kwargs)
 
     def update_article_from_data(self, article_data: ArticleData) -> bool:
-        is_more_recent = self.updated_at is None or article_data.updated_at > self.updated_at
+        is_more_recent = (
+            self.updated_at is None
+            or article_data.updated_at is None
+            or article_data.updated_at > self.updated_at
+        )
         has_content_unlike_saved = bool(article_data.content) and not bool(self.content)
         if not is_more_recent and not has_content_unlike_saved:
             return False

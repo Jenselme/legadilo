@@ -613,7 +613,7 @@ class TestArticleManager:
         )
         now_dt = utcnow()
 
-        with django_assert_num_queries(4):
+        with django_assert_num_queries(6):
             Article.objects.update_or_create_from_articles_list(
                 user,
                 [
@@ -628,6 +628,7 @@ class TestArticleManager:
                         link="https//example.com/article/1",
                         published_at=now_dt,
                         updated_at=now_dt,
+                        source_title="Some site",
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_update.external_article_id,
@@ -640,6 +641,7 @@ class TestArticleManager:
                         tags=[],
                         published_at=now_dt,
                         updated_at=now_dt,
+                        source_title="Some site",
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_keep.external_article_id,
@@ -652,6 +654,7 @@ class TestArticleManager:
                         tags=[],
                         published_at=utcdt(2024, 4, 19),
                         updated_at=utcdt(2024, 4, 19),
+                        source_title="Some site",
                     ),
                     ArticleData(
                         external_article_id="article-3",
@@ -664,11 +667,11 @@ class TestArticleManager:
                         link="https//example.com/article/3",
                         published_at=now_dt,
                         updated_at=now_dt,
+                        source_title="Some site",
                     ),
                 ],
                 [tag1, tag2],
                 source_type=constants.ArticleSourceType.MANUAL,
-                source_title="Not a feed",
             )
 
         assert Article.objects.count() == 4
@@ -700,16 +703,76 @@ class TestArticleManager:
         ]
 
     def test_update_and_create_articles_empty_list(self, user, django_assert_num_queries):
-        with django_assert_num_queries(0):
+        with django_assert_num_queries(2):
             Article.objects.update_or_create_from_articles_list(
-                user,
-                [],
-                [],
-                source_type=constants.ArticleSourceType.MANUAL,
-                source_title="Not a feed",
+                user, [], [], source_type=constants.ArticleSourceType.MANUAL
             )
 
         assert Article.objects.count() == 0
+
+    def test_manually_readd_read_article(self, user, django_assert_num_queries):
+        now_dt = utcnow()
+        existing_article = ArticleFactory(
+            title="Old title",
+            content="Old content",
+            user=user,
+            external_article_id="existing-article-feed",
+            updated_at=utcdt(2023, 4, 20),
+            read_at=now_dt,
+        )
+        article_data = ArticleData(
+            external_article_id=existing_article.external_article_id,
+            link=existing_article.link,
+            title=existing_article.title,
+            summary=existing_article.summary,
+            content=existing_article.content,
+            authors=existing_article.authors,
+            contributors=existing_article.contributors,
+            tags=existing_article.external_tags,
+            published_at=now_dt,
+            updated_at=now_dt,
+            source_title="Some site",
+        )
+
+        with django_assert_num_queries(4):
+            Article.objects.update_or_create_from_articles_list(
+                user, [article_data], [], source_type=constants.ArticleSourceType.MANUAL
+            )
+
+        existing_article.refresh_from_db()
+        assert existing_article.read_at is None
+
+    def test_readd_read_article_from_a_feed(self, user, django_assert_num_queries):
+        now_dt = utcnow()
+        existing_article = ArticleFactory(
+            title="Old title",
+            content="Old content",
+            user=user,
+            external_article_id="existing-article-feed",
+            updated_at=utcdt(2023, 4, 20),
+            read_at=now_dt,
+        )
+        article_data = ArticleData(
+            external_article_id=existing_article.external_article_id,
+            link=existing_article.link,
+            title=existing_article.title,
+            summary=existing_article.summary,
+            content=existing_article.content,
+            authors=existing_article.authors,
+            contributors=existing_article.contributors,
+            tags=existing_article.external_tags,
+            published_at=now_dt,
+            updated_at=now_dt,
+            source_title="Some site",
+        )
+
+        with django_assert_num_queries(4):
+            Article.objects.update_or_create_from_articles_list(
+                user, [article_data], [], source_type=constants.ArticleSourceType.FEED
+            )
+
+        existing_article.refresh_from_db()
+        assert existing_article.read_at == now_dt
 
     def test_count_articles_of_reading_lists(self, user, django_assert_num_queries):
         reading_list1 = ReadingListFactory(user=user)
@@ -846,6 +909,7 @@ class TestArticleModel:
                 link="https//example.com/article/1",
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
+                source_title="Some site",
             )
         )
 
@@ -882,6 +946,7 @@ class TestArticleModel:
                 link="https//example.com/article/1",
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
+                source_title="Some site",
             )
         )
 

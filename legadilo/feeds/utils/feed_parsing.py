@@ -14,20 +14,7 @@ from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from ...utils.time import dt_to_http_date
 from ...utils.validators import normalize_url
 from .. import constants
-
-
-@dataclass(frozen=True)
-class ArticleData:
-    external_article_id: str
-    title: str
-    summary: str
-    content: str
-    authors: list[str]
-    contributors: list[str]
-    tags: list[str]
-    link: str
-    published_at: datetime
-    updated_at: datetime
+from .article_fetching import ArticleData
 
 
 @dataclass(frozen=True)
@@ -84,13 +71,14 @@ async def get_feed_metadata(
             client, url, etag=etag, last_modified=last_modified
         )
 
+    feed_title = full_sanitize(parsed_feed.feed.title)
     return FeedMetadata(
         feed_url=str(resolved_url),
         site_url=_normalize_found_link(parsed_feed.feed.link),
-        title=full_sanitize(parsed_feed.feed.title),
+        title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
-        articles=parse_articles_in_feed(url, parsed_feed),
+        articles=parse_articles_in_feed(url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
@@ -158,7 +146,9 @@ def _normalize_found_link(link: str):
     return link
 
 
-def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[ArticleData]:
+def parse_articles_in_feed(
+    feed_url: str, feed_title: str, parsed_feed: FeedParserDict
+) -> list[ArticleData]:
     return [
         ArticleData(
             external_article_id=full_sanitize(entry.id),
@@ -171,6 +161,7 @@ def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[A
             link=_get_article_link(feed_url, entry),
             published_at=_feed_time_to_datetime(entry.published_parsed),
             updated_at=_feed_time_to_datetime(entry.updated_parsed),
+            source_title=feed_title,
         )
         for entry in parsed_feed.entries
     ]

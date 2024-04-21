@@ -68,6 +68,9 @@
                             <ul class="navbar-nav">
                                 {% if request.user.is_authenticated %}
                                     <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'feeds:add_article' %}">{% translate "Add an article" %}</a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link" href="{% url 'feeds:subscribe_to_feed' %}">{% translate "Subscribe to a feed" %}</a>
                                     </li>
                                     <li class="nav-item">

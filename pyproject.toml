@@ -49,6 +49,10 @@ ignore = [
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
     "S106", # Possible hardcoded password
 ]
+"legadilo/feeds/tests/test_utils/test_article_fetching.py" = [
+    "E501",
+    "RUF001",  # String contains ambiguous `’`
+]
 "legadilo/**/factories.py" = [
     "FBT001", # Boolean-typed positional argument in function definition
     "ARG002", #  Unused method argument

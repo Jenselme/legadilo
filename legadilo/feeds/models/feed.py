@@ -49,7 +49,6 @@ class FeedManager(models.Manager["Feed"]):
             feed_metadata.articles,
             feed.tags.all(),
             source_type=constants.ArticleSourceType.FEED,
-            source_title=feed.title,
         )
         FeedUpdate.objects.create(
             status=constants.FeedUpdateStatus.SUCCESS,
