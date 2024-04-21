@@ -32,7 +32,15 @@ def test_full_sanitize(data, clean_data):
         ),
     ],
 )
-def test_sanitize_keep_safe_tags(data, clean_data):
+def test_sanitize_keep_safe_tags(data: str, clean_data: str):
     cleaned_data = sanitize_keep_safe_tags(data)
 
     assert cleaned_data == clean_data
+
+
+def test_sanitize_keep_safe_tags_empty_with_extra_cleanup():
+    cleaned_data = sanitize_keep_safe_tags(
+        """<p>Hello world to <a href="/toto">you</a&""", extra_tags_to_cleanup={"a"}
+    )
+
+    assert cleaned_data == """<p>Hello world to you</p>"""
