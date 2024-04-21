@@ -147,7 +147,7 @@
             {% translate 'For later' %}
         {% endif %}
     </button>
-    <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %} text-start open-original"
+    <a class="btn btn-outline-secondary text-start open-original"
        role="button"
        data-article-id="{{ article.id }}"
        target="_blank"
@@ -163,9 +163,9 @@
         {% translate 'Open original' %}
     </a>
     {% if not for_article_details %}
-        <a class="btn btn-primary {% if not article.content %}disabled{% endif %} text-start"
+        <a class="btn btn-primary text-start"
            role="button"
-           {% if article.content %}href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}"{% else %}aria-disabled="true"{% endif %}>
+           href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}">
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="16"
                  height="16"
