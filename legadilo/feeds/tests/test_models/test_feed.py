@@ -10,6 +10,7 @@ from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory
 from legadilo.feeds.utils.feed_parsing import ArticleData, FeedMetadata
 from legadilo.users.tests.factories import UserFactory
 
+from ... import constants
 from ...models import Feed
 
 
@@ -146,6 +147,8 @@ class TestFeedManager:
     def test_update_feed(self, django_assert_num_queries):
         existing_article = ArticleFactory(
             link="https://example.com/article/existing",
+            initial_source_type=constants.ArticleSourceType.MANUAL,
+            initial_source_title="Not a feed",
             user=self.feed.user,
         )
         FeedArticle.objects.create(feed=self.feed, article=existing_article)
@@ -194,3 +197,14 @@ class TestFeedManager:
 
         assert self.feed.articles.count() == 2
         assert self.feed.feed_updates.count() == 1
+        new_article = (
+            self.feed.articles.exclude(article__id=existing_article.id)
+            .select_related("article")
+            .get()
+        )
+        assert new_article.article.title == "Article 1"
+        assert new_article.article.initial_source_type == constants.ArticleSourceType.FEED
+        assert new_article.article.initial_source_title == self.feed.title
+        existing_article.refresh_from_db()
+        assert existing_article.initial_source_type == constants.ArticleSourceType.MANUAL
+        assert existing_article.initial_source_title != self.feed.title

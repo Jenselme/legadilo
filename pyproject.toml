@@ -84,6 +84,9 @@ known-first-party = [
     "config",
 ]
 
+[tool.ruff.lint.pylint]
+max-args = 6
+
 
 # ==== curlylint ====
 [tool.curlylint.rules]

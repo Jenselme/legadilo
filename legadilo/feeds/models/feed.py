@@ -6,6 +6,7 @@ from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.users.models import User
 
+from .. import constants
 from ..constants import SupportedFeedType
 from ..utils.feed_parsing import FeedMetadata
 from .article import Article
@@ -44,7 +45,11 @@ class FeedManager(models.Manager["Feed"]):
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_metadata: FeedMetadata):
         created_articles = Article.objects.update_or_create_from_articles_list(
-            feed.user, feed_metadata.articles, feed.tags.all()
+            feed.user,
+            feed_metadata.articles,
+            feed.tags.all(),
+            source_type=constants.ArticleSourceType.FEED,
+            source_title=feed.title,
         )
         FeedUpdate.objects.create(
             success=True,

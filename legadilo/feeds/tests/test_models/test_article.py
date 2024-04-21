@@ -640,6 +640,8 @@ class TestArticleManager:
                     ),
                 ],
                 [tag1, tag2],
+                source_type=constants.ArticleSourceType.MANUAL,
+                source_title="Not a feed",
             )
 
         assert Article.objects.count() == 3
@@ -659,7 +661,13 @@ class TestArticleManager:
 
     def test_update_and_create_articles_empty_list(self, user, django_assert_num_queries):
         with django_assert_num_queries(0):
-            Article.objects.update_or_create_from_articles_list(user, [], [])
+            Article.objects.update_or_create_from_articles_list(
+                user,
+                [],
+                [],
+                source_type=constants.ArticleSourceType.MANUAL,
+                source_title="Not a feed",
+            )
 
         assert Article.objects.count() == 0
 

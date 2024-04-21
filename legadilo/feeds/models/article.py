@@ -149,7 +149,13 @@ class ArticleManager(models.Manager["Article"]):
         return ArticleQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     def update_or_create_from_articles_list(
-        self, user: User, articles_data: list[ArticleData], tags: Iterable[Tag]
+        self,
+        user: User,
+        articles_data: list[ArticleData],
+        tags: Iterable[Tag],
+        *,
+        source_type: constants.ArticleSourceType,
+        source_title: str,
     ) -> list[Article]:
         if len(articles_data) == 0:
             return []
@@ -169,6 +175,8 @@ class ArticleManager(models.Manager["Article"]):
                 link=article_data.link,
                 published_at=article_data.published_at,
                 updated_at=article_data.updated_at,
+                initial_source_type=source_type,
+                initial_source_title=source_title,
             )
             for article_data in articles_data
         ]
