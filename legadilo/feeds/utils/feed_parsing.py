@@ -12,7 +12,7 @@ from feedparser import parse as parse_feed
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
-from ...utils.time import dt_to_http_date
+from ...utils.time import dt_to_http_date, utcnow
 from .. import constants
 
 
@@ -162,7 +162,7 @@ def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[A
             tags=_get_articles_tags(entry),
             link=_normalize_article_link(feed_url, entry.link),
             published_at=_feed_time_to_datetime(entry.published_parsed),
-            updated_at=_feed_time_to_datetime(entry.updated_parsed),
+            updated_at=_feed_time_to_datetime(entry.updated_parsed) or utcnow(),
         )
         for entry in parsed_feed.entries
     ]
