@@ -52,7 +52,7 @@ class FeedManager(models.Manager["Feed"]):
             source_title=feed.title,
         )
         FeedUpdate.objects.create(
-            success=True,
+            status=constants.FeedUpdateStatus.SUCCESS,
             feed_etag=feed_metadata.etag,
             feed_last_modified=feed_metadata.last_modified,
             feed=feed,
@@ -63,15 +63,21 @@ class FeedManager(models.Manager["Feed"]):
         )
 
     @transaction.atomic()
-    def disable(self, feed: Feed, error_message: str):
+    def log_error(self, feed: Feed, error_message: str):
         FeedUpdate.objects.create(
-            success=False,
+            status=constants.FeedUpdateStatus.FAILURE,
             error_message=error_message,
             feed=feed,
         )
         if FeedUpdate.objects.must_disable_feed(feed):
             feed.disable(_("We failed too many times to fetch the feed"))
             feed.save()
+
+    def log_not_modified(self, feed: Feed):
+        FeedUpdate.objects.create(
+            status=constants.FeedUpdateStatus.NOT_MODIFIED,
+            feed=feed,
+        )
 
 
 class Feed(models.Model):

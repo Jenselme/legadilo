@@ -7,6 +7,7 @@ from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.models import FeedUpdate, ReadingList, Tag
 from legadilo.users.tests.factories import UserFactory
 
+from .. import constants
 from ..models import Article, Feed
 
 
@@ -42,7 +43,7 @@ class ArticleFactory(DjangoModelFactory):
 
 
 class FeedUpdateFactory(DjangoModelFactory):
-    success = True
+    status = constants.FeedUpdateStatus.SUCCESS
     feed_etag = ""
     feed_last_modified = None
 

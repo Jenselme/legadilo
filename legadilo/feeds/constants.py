@@ -23,6 +23,12 @@ class SupportedFeedType(TextChoices):
     cdf = "cdf", "CDF"
 
 
+class FeedUpdateStatus(TextChoices):
+    SUCCESS = "SUCCESS", _("Success")
+    FAILURE = "FAILURE", _("Failure")
+    NOT_MODIFIED = "NOT_MODIFIED", _("Not Modified")
+
+
 class ReadStatus(TextChoices):
     ALL = "ALL", _("All")
     ONLY_UNREAD = "ONLY_UNREAD", _("Only unread")

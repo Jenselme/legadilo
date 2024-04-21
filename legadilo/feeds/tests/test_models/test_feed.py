@@ -86,7 +86,7 @@ class TestFeedManager:
         assert feed.feed_type == SupportedFeedType.atom
         assert feed.articles.count() > 0
         feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
-        assert feed_update.success
+        assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.error_message
         assert feed_update.feed_etag == "W/etag"
         assert feed_update.feed_last_modified is None
@@ -134,13 +134,13 @@ class TestFeedManager:
         ]
 
     def test_disabled(self):
-        Feed.objects.disable(self.feed, "Something went wrong")
+        Feed.objects.log_error(self.feed, "Something went wrong")
 
         self.feed.refresh_from_db()
         assert not self.feed.enabled
         assert self.feed.disabled_reason == "We failed too many times to fetch the feed"
         feed_update = self.feed.feed_updates.last()
-        assert not feed_update.success
+        assert feed_update.status == constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Something went wrong"
 
     def test_update_feed(self, django_assert_num_queries):
