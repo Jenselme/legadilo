@@ -150,7 +150,7 @@
     <a class="btn {% if article.content %}btn-outline-secondary{% else %}btn-primary{% endif %} text-start open-original"
        role="button"
        data-article-id="{{ article.id }}"
-       {% if not article.content %}target="_blank"{% endif %}
+       target="_blank"
        href="{{ article.link }}">
         <svg xmlns="http://www.w3.org/2000/svg"
              width="16"
