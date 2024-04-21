@@ -12,7 +12,6 @@ from feedparser import parse as parse_feed
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
-from ...utils.text import get_nb_words_from_html
 from ...utils.time import dt_to_http_date
 from .. import constants
 
@@ -23,7 +22,6 @@ class ArticleData:
     title: str
     summary: str
     content: str
-    nb_words: int
     authors: list[str]
     contributors: list[str]
     tags: list[str]
@@ -159,7 +157,6 @@ def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[A
             title=full_sanitize(entry.title),
             summary=sanitize_keep_safe_tags(entry.summary),
             content=_get_article_content(entry),
-            nb_words=_get_nb_words(entry),
             authors=_get_article_authors(entry),
             contributors=_get_article_contributors(entry),
             tags=_get_articles_tags(entry),
@@ -191,10 +188,6 @@ def _get_article_content(entry):
             return sanitize_keep_safe_tags(content_entry["value"])
 
     return ""
-
-
-def _get_nb_words(entry) -> int:
-    return get_nb_words_from_html(_get_article_content(entry))
 
 
 def _get_articles_tags(entry):

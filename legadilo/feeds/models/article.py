@@ -13,6 +13,7 @@ from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
 
+from ...utils.text import get_nb_words_from_html
 from ...utils.time import utcnow
 from .. import constants
 from .tag import ArticleTag
@@ -168,7 +169,8 @@ class ArticleManager(models.Manager["Article"]):
                 slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
                 summary=article_data.summary,
                 content=article_data.content,
-                reading_time=article_data.nb_words // user.settings.default_reading_time,
+                reading_time=get_nb_words_from_html(article_data.content)
+                // user.settings.default_reading_time,
                 authors=article_data.authors,
                 contributors=article_data.contributors,
                 external_tags=article_data.tags,
