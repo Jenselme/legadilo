@@ -52,7 +52,7 @@ def update_article_view(
     article = get_object_or_404(
         Article.objects.get_queryset().for_details(), id=article_id, user=request.user
     )
-    article.update_article(update_action)
+    article.update_article_from_action(update_action)
     article.save()
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)

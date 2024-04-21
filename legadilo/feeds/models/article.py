@@ -314,7 +314,7 @@ class Article(models.Model):
 
         return super().save(*args, **kwargs)
 
-    def update_article(self, action: constants.UpdateArticleActions):
+    def update_article_from_action(self, action: constants.UpdateArticleActions):
         match action:
             case constants.UpdateArticleActions.MARK_AS_READ:
                 self.read_at = utcnow()

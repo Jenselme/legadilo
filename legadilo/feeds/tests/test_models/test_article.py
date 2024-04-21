@@ -774,7 +774,7 @@ class TestArticleModel:
             ),
         ],
     )
-    def test_update_article(
+    def test_update_article_from_action(
         self, action: constants.UpdateArticleActions, attrs: dict[str, bool | str]
     ):
         article = ArticleFactory.build(
@@ -785,7 +785,7 @@ class TestArticleModel:
         )
 
         with time_machine.travel("2024-04-20 12:00:00"):
-            article.update_article(action)
+            article.update_article_from_action(action)
 
         for attr_name, attr_value in attrs.items():
             assert getattr(article, attr_name) == attr_value
