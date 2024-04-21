@@ -162,7 +162,7 @@ def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[A
             tags=_get_articles_tags(entry),
             link=_normalize_article_link(feed_url, entry.link),
             published_at=_feed_time_to_datetime(entry.published_parsed),
-            updated_at=_feed_time_to_datetime(entry.updated_parsed) or utcnow(),
+            updated_at=_feed_time_to_datetime(entry.updated_parsed),
         )
         for entry in parsed_feed.entries
     ]
@@ -214,6 +214,9 @@ def _normalize_article_link(feed_url, article_link):
 
 
 def _feed_time_to_datetime(time_value: time.struct_time):
+    if not time_value:
+        return None
+
     return datetime.fromtimestamp(time.mktime(time_value), tz=UTC)
 
 
