@@ -108,6 +108,26 @@ class TestCreateFeedView:
             )
         ]
 
+    def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx_mock, mocker):
+        httpx_mock.add_response(
+            text=SAMPLE_RSS_FEED.replace(
+                "<link>http://example.org/entry/3</link>", "<link>Just trash</link>"
+            ),
+            url=self.feed_url,
+        )
+
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message="We failed to parse the feed you supplied. Please check it is supported "
+                "and matches the sync of a feed file.",
+            )
+        ]
+
     def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock):
         FeedFactory(feed_url=self.feed_url, user=user)
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)

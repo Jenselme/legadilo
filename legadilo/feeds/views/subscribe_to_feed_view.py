@@ -17,6 +17,7 @@ from ..forms import CreateFeedForm
 from ..models import Feed
 from ..utils.feed_parsing import (
     FeedFileTooBigError,
+    InvalidFeedFileError,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
     get_feed_metadata,
@@ -73,6 +74,15 @@ async def _handle_creation(request):  # noqa: PLR0911 Too many return statements
         messages.error(
             request,
             _("The feed file is too big, we won't parse it. Try to find a more lightweight feed."),
+        )
+        return HTTPStatus.BAD_REQUEST, form
+    except InvalidFeedFileError:
+        messages.error(
+            request,
+            _(
+                "We failed to parse the feed you supplied. Please check it is supported and "
+                "matches the sync of a feed file."
+            ),
         )
         return HTTPStatus.BAD_REQUEST, form
     else:

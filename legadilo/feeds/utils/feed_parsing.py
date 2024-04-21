@@ -3,7 +3,6 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import chain
-from urllib.parse import urljoin, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -12,7 +11,8 @@ from feedparser import parse as parse_feed
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
-from ...utils.time import dt_to_http_date, utcnow
+from ...utils.time import dt_to_http_date
+from ...utils.validators import normalize_url
 from .. import constants
 
 
@@ -55,6 +55,14 @@ class MultipleFeedFoundError(Exception):
 
 
 class FeedFileTooBigError(Exception):
+    pass
+
+
+class InvalidFeedFileError(Exception):
+    pass
+
+
+class InvalidFeedArticleError(InvalidFeedFileError):
     pass
 
 
@@ -160,7 +168,7 @@ def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[A
             authors=_get_article_authors(entry),
             contributors=_get_article_contributors(entry),
             tags=_get_articles_tags(entry),
-            link=_normalize_article_link(feed_url, entry.link),
+            link=_get_article_link(feed_url, entry),
             published_at=_feed_time_to_datetime(entry.published_parsed),
             updated_at=_feed_time_to_datetime(entry.updated_parsed),
         )
@@ -200,17 +208,11 @@ def _get_articles_tags(entry):
     return []
 
 
-def _normalize_article_link(feed_url, article_link):
-    article_link = full_sanitize(article_link)
-
-    if article_link.startswith("http://") or article_link.startswith("https://"):
-        return article_link
-
-    if article_link.startswith("//"):
-        return f"https:{article_link}"
-
-    parsed_feed_url = urlparse(feed_url)
-    return urljoin(f"{parsed_feed_url.scheme}://{parsed_feed_url.netloc}", article_link)
+def _get_article_link(feed_url, entry):
+    try:
+        return normalize_url(feed_url, entry.link)
+    except ValueError as e:
+        raise InvalidFeedArticleError from e
 
 
 def _feed_time_to_datetime(time_value: time.struct_time):
