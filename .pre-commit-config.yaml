@@ -1,4 +1,4 @@
-exclude: "^docs/|.idea|devcontainer.json"
+exclude: "^docs/|.idea|devcontainer.json|tests/fixtures"
 default_stages: [commit]
 
 default_language_version:

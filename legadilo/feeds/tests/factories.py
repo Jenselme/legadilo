@@ -7,6 +7,7 @@ from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.models import FeedUpdate, ReadingList, Tag
 from legadilo.users.tests.factories import UserFactory
 
+from .. import constants
 from ..models import Article, Feed
 
 
@@ -29,20 +30,20 @@ class ArticleFactory(DjangoModelFactory):
     content = ""
     authors: list[str] = []
     contributors: list[str] = []
-    feed_tags: list[str] = []
+    external_tags: list[str] = []
     link = factory.Sequence(lambda n: f"https://example.com/article/{n}")
     published_at = datetime.now(tz=UTC)
     updated_at = datetime.now(tz=UTC)
-    article_feed_id = factory.Sequence(lambda n: f"article-{n}")
+    external_article_id = factory.Sequence(lambda n: f"article-{n}")
 
-    feed = factory.SubFactory(FeedFactory)
+    user = factory.SubFactory(UserFactory)
 
     class Meta:
         model = Article
 
 
 class FeedUpdateFactory(DjangoModelFactory):
-    success = True
+    status = constants.FeedUpdateStatus.SUCCESS
     feed_etag = ""
     feed_last_modified = None
 

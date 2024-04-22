@@ -55,14 +55,14 @@ class Command(AsyncCommand):
             )
         except HTTPStatusError as e:
             if e.response.status_code == HTTPStatus.NOT_MODIFIED:
-                logger.debug("Feed hasn't changed, nothing to do")
+                await sync_to_async(Feed.objects.log_not_modified)(feed)
             else:
                 logger.exception("Failed to fetch feed %s", feed)
-                await sync_to_async(Feed.objects.disable)(feed, str(e))
+                await sync_to_async(Feed.objects.log_error)(feed, str(e))
             return
         except HTTPError as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.disable)(feed, str(e))
+            await sync_to_async(Feed.objects.log_error)(feed, str(e))
             return
 
         await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)

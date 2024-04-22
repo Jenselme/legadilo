@@ -6,7 +6,7 @@ import pytest
 
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.utils.feed_parsing import (
-    FeedArticle,
+    ArticleData,
     FeedFileTooBigError,
     FeedMetadata,
     MultipleFeedFoundError,
@@ -240,18 +240,18 @@ class TestParseArticlesInFeed:
             pytest.param(
                 SAMPLE_RSS_FEED,
                 [
-                    FeedArticle(
-                        article_feed_id="http://example.org/entry/3",
+                    ArticleData(
+                        external_article_id="http://example.org/entry/3",
                         title="First entry title",
                         summary="Watch out for <span>nasty\ntricks</span>",
                         content="",
-                        nb_words=0,
                         authors=[],
                         contributors=[],
                         tags=[],
                         link="http://example.org/entry/3",
                         published_at=datetime(2002, 9, 5, 0, 0, 1, tzinfo=UTC),
                         updated_at=datetime(2002, 9, 5, 0, 0, 1, tzinfo=UTC),
+                        source_title="Some feed",
                     )
                 ],
                 id="sample-rss-feed",
@@ -259,18 +259,18 @@ class TestParseArticlesInFeed:
             pytest.param(
                 SAMPLE_ATOM_FEED,
                 [
-                    FeedArticle(
-                        article_feed_id="tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
+                    ArticleData(
+                        external_article_id="tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
                         title="First entry title",
                         summary="Watch out for nasty tricks",
                         content="",
-                        nb_words=0,
                         authors=[],
                         contributors=[],
                         tags=[],
                         link="http://example.org/entry/3",
                         published_at=datetime(2005, 11, 9, 0, 23, 47, tzinfo=UTC),
                         updated_at=datetime(2005, 11, 9, 11, 56, 34, tzinfo=UTC),
+                        source_title="Some feed",
                     )
                 ],
                 id="sample-atom-feed",
@@ -280,6 +280,8 @@ class TestParseArticlesInFeed:
     def test_parse_articles(self, feed_content, expected_articles):
         feed_data = parse_feed(feed_content)
 
-        articles = parse_articles_in_feed("https://example.com/feeds/feed.xml", feed_data)
+        articles = parse_articles_in_feed(
+            "https://example.com/feeds/feed.xml", "Some feed", feed_data
+        )
 
         assert articles == expected_articles

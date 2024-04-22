@@ -6,9 +6,11 @@ from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.users.models import User
 
+from .. import constants
 from ..constants import SupportedFeedType
 from ..utils.feed_parsing import FeedMetadata
 from .article import Article
+from .feed_article import FeedArticle
 from .feed_update import FeedUpdate
 
 
@@ -37,35 +39,44 @@ class FeedManager(models.Manager["Feed"]):
             feed_type=feed_metadata.feed_type,
             user=user,
         )
-        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed)
-        FeedUpdate.objects.create(
-            success=True,
-            feed_etag=feed_metadata.etag,
-            feed_last_modified=feed_metadata.last_modified,
-            feed=feed,
-        )
+        self.update_feed(feed, feed_metadata)
         return feed
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_metadata: FeedMetadata):
-        Article.objects.update_or_create_from_articles_list(feed_metadata.articles, feed)
+        created_articles = Article.objects.update_or_create_from_articles_list(
+            feed.user,
+            feed_metadata.articles,
+            feed.tags.all(),
+            source_type=constants.ArticleSourceType.FEED,
+        )
         FeedUpdate.objects.create(
-            success=True,
+            status=constants.FeedUpdateStatus.SUCCESS,
             feed_etag=feed_metadata.etag,
             feed_last_modified=feed_metadata.last_modified,
             feed=feed,
         )
+        FeedArticle.objects.bulk_create(
+            [FeedArticle(article=article, feed=feed) for article in created_articles],
+            ignore_conflicts=True,
+        )
 
     @transaction.atomic()
-    def disable(self, feed: Feed, error_message: str):
+    def log_error(self, feed: Feed, error_message: str):
         FeedUpdate.objects.create(
-            success=False,
+            status=constants.FeedUpdateStatus.FAILURE,
             error_message=error_message,
             feed=feed,
         )
         if FeedUpdate.objects.must_disable_feed(feed):
             feed.disable(_("We failed too many times to fetch the feed"))
             feed.save()
+
+    def log_not_modified(self, feed: Feed):
+        FeedUpdate.objects.create(
+            status=constants.FeedUpdateStatus.NOT_MODIFIED,
+            feed=feed,
+        )
 
 
 class Feed(models.Model):
@@ -80,6 +91,11 @@ class Feed(models.Model):
     feed_type = models.CharField(choices=SupportedFeedType)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
+    feed_articles = models.ManyToManyField(
+        "feeds.Article",
+        related_name="feeds",
+        through="feeds.FeedArticle",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)

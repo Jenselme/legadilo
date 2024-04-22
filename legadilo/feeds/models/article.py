@@ -1,30 +1,34 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
 
+from ...utils.collections import max_or_none, min_or_none
+from ...utils.text import get_nb_words_from_html
 from ...utils.time import utcnow
 from .. import constants
-from ..utils.feed_parsing import FeedArticle
 from .tag import ArticleTag
 
 if TYPE_CHECKING:
-    from .feed import Feed
+    from legadilo.users.models import User
+
+    from ..utils.feed_parsing import ArticleData
     from .reading_list import ReadingList
     from .tag import Tag
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
-    filters = models.Q(feed__user=reading_list.user)
+    filters = models.Q(user=reading_list.user)
 
     if reading_list.read_status == constants.ReadStatus.ONLY_READ:
         filters &= models.Q(is_read=True)
@@ -126,7 +130,6 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return (
             self.for_reading_list_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
-            .select_related("feed")
             .prefetch_related(_build_prefetch_article_tags())
         )
 
@@ -134,12 +137,11 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return (
             self.filter(article_tags__tag=tag)
             .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
-            .select_related("feed")
             .prefetch_related(_build_prefetch_article_tags())
         )
 
     def for_details(self) -> Self:
-        return self.select_related("feed").prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related(_build_prefetch_article_tags())
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -148,47 +150,80 @@ class ArticleManager(models.Manager["Article"]):
     def get_queryset(self) -> ArticleQuerySet:
         return ArticleQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def update_or_create_from_articles_list(self, articles_data: list[FeedArticle], feed: Feed):
+    @transaction.atomic()
+    def update_or_create_from_articles_list(
+        self,
+        user: User,
+        articles_data: list[ArticleData],
+        tags: Iterable[Tag],
+        *,
+        source_type: constants.ArticleSourceType,
+    ) -> list[Article]:
         if len(articles_data) == 0:
-            return
+            return []
 
-        articles = [
-            self.model(
-                feed_id=feed.id,
-                article_feed_id=article_data.article_feed_id,
-                title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
-                slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
-                summary=article_data.summary,
-                content=article_data.content,
-                reading_time=article_data.nb_words // feed.user.settings.default_reading_time,
-                authors=article_data.authors,
-                contributors=article_data.contributors,
-                feed_tags=article_data.tags,
-                link=article_data.link,
-                published_at=article_data.published_at,
-                updated_at=article_data.updated_at,
+        existing_links_to_articles = {
+            article.link: article
+            for article in self.get_queryset()
+            .filter(user=user, link__in=[article_data.link for article_data in articles_data])
+            .select_related("user", "user__settings")
+        }
+        articles_to_create = []
+        articles_to_update = []
+        for article_data in articles_data:
+            if article_data.link in existing_links_to_articles:
+                article_to_update = existing_links_to_articles[article_data.link]
+                was_updated = article_to_update.update_article_from_data(article_data)
+                if source_type == constants.ArticleSourceType.MANUAL:
+                    article_to_update.read_at = None
+                if was_updated:
+                    articles_to_update.append(article_to_update)
+            else:
+                articles_to_create.append(
+                    self.model(
+                        user=user,
+                        external_article_id=article_data.external_article_id,
+                        title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
+                        slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
+                        summary=article_data.summary,
+                        content=article_data.content,
+                        reading_time=get_nb_words_from_html(article_data.content)
+                        // user.settings.default_reading_time,
+                        authors=article_data.authors,
+                        contributors=article_data.contributors,
+                        external_tags=article_data.tags,
+                        link=article_data.link,
+                        published_at=article_data.published_at,
+                        updated_at=article_data.updated_at,
+                        initial_source_type=source_type,
+                        initial_source_title=article_data.source_title,
+                    )
+                )
+
+        if articles_to_create:
+            self.bulk_create(articles_to_create, unique_fields=["user", "link"])
+
+        if articles_to_update:
+            self.bulk_update(
+                articles_to_update,
+                fields=[
+                    "title",
+                    "slug",
+                    "summary",
+                    "content",
+                    "reading_time",
+                    "authors",
+                    "contributors",
+                    "external_tags",
+                    "updated_at",
+                    "read_at",
+                ],
             )
-            for article_data in articles_data
-        ]
-        created_articles = self.bulk_create(
-            articles,
-            update_conflicts=True,
-            update_fields=[
-                "title",
-                "slug",
-                "summary",
-                "content",
-                "reading_time",
-                "authors",
-                "contributors",
-                "feed_tags",
-                "link",
-                "published_at",
-                "updated_at",
-            ],
-            unique_fields=["feed_id", "article_feed_id"],
-        )
-        ArticleTag.objects.associate_articles_with_tags(created_articles, feed.tags.all())
+
+        all_articles = [*articles_to_create, *existing_links_to_articles.values()]
+        ArticleTag.objects.associate_articles_with_tags(all_articles, tags)
+
+        return all_articles
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> Paginator[Article]:
         return Paginator(
@@ -218,39 +253,83 @@ class Article(models.Model):
         default=0,
         help_text=_(
             "How much time in minutes is needed to read this article. If not specified, "
-            "it will be calculated automatically from content length. If we don't  have content, "
+            "it will be calculated automatically from content length. If we don't have content, "
             "we will use 0."
         ),
     )
-    authors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
-    contributors = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
-    feed_tags = models.JSONField(validators=[list_of_strings_json_schema_validator], blank=True)
+    authors = models.JSONField(
+        validators=[list_of_strings_json_schema_validator], blank=True, default=list
+    )
+    contributors = models.JSONField(
+        validators=[list_of_strings_json_schema_validator], blank=True, default=list
+    )
     link = models.URLField()
-    published_at = models.DateTimeField()
-    article_feed_id = models.CharField(help_text=_("The id of the article in the feed."))
+    external_tags = models.JSONField(
+        validators=[list_of_strings_json_schema_validator],
+        blank=True,
+        default=list,
+        help_text=_("Tags of the article from the its source"),
+    )
+    external_article_id = models.CharField(
+        default="", blank=True, help_text=_("The id of the article in the its source.")
+    )
 
-    is_read = models.BooleanField(default=False)
-    was_opened = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    is_read = models.GeneratedField(  # type: ignore[attr-defined]
+        expression=models.Q(read_at__isnull=False),
+        output_field=models.BooleanField(),
+        db_persist=True,
+    )
+    opened_at = models.DateTimeField(null=True, blank=True)
+    was_opened = models.GeneratedField(  # type: ignore[attr-defined]
+        expression=models.Q(opened_at__isnull=False),
+        output_field=models.BooleanField(),
+        db_persist=True,
+    )
     is_favorite = models.BooleanField(default=False)
     is_for_later = models.BooleanField(default=False)
 
-    feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", related_name="articles", on_delete=models.CASCADE)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    initial_source_type = models.CharField(
+        default=constants.ArticleSourceType.FEED, choices=constants.ArticleSourceType.choices
+    )
+    initial_source_title = models.CharField()
+
+    published_at = models.DateTimeField(
+        null=True, blank=True, help_text=_("The date of publication of the article.")
+    )
+    updated_at = models.DateTimeField(
+        null=True, blank=True, help_text=_("The last time the article was updated.")
+    )
+    obj_created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("Technical date for the creation of the article in our database."),
+    )
+    obj_updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text=_("Technical date for the last update of the article in our database."),
+    )
 
     objects = ArticleManager()
 
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
-                "article_feed_id", "feed_id", name="%(app_label)s_%(class)s_article_unique_in_feed"
+                "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_initial_source_type_valid",
+                check=models.Q(
+                    initial_source_type__in=constants.ArticleSourceType.names,
+                ),
             ),
         ]
 
     def __str__(self):
         return (
-            f"Article(feed_id={self.feed_id}, title={self.title}, published_at={self.published_at})"
+            f"Article(title={self.title}, initial_source_type={self.initial_source_type}, "
+            f"initial_source_title={self.initial_source_title}, published_at={self.published_at})"
         )
 
     def save(self, *args, **kwargs):
@@ -258,11 +337,43 @@ class Article(models.Model):
 
         return super().save(*args, **kwargs)
 
-    def update_article(self, action: constants.UpdateArticleActions):
+    def update_article_from_data(self, article_data: ArticleData) -> bool:
+        is_more_recent = (
+            self.updated_at is None
+            or article_data.updated_at is None
+            or article_data.updated_at > self.updated_at
+        )
+        has_content_unlike_saved = bool(article_data.content) and not bool(self.content)
+        if not is_more_recent and not has_content_unlike_saved:
+            return False
+
+        if is_more_recent:
+            self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH] or self.title
+            self.slug = (
+                slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]) or self.slug
+            )
+            self.summary = article_data.summary or self.summary
+            self.content = article_data.content or self.content
+            self.reading_time = (
+                get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
+            ) or self.reading_time
+            self.authors = list(dict.fromkeys(self.authors + article_data.authors))
+            self.contributors = list(dict.fromkeys(self.contributors + article_data.contributors))
+            self.external_tags = list(dict.fromkeys(self.external_tags + article_data.tags))
+            self.updated_at = max_or_none([article_data.updated_at, self.updated_at])
+            self.published_at = min_or_none([article_data.published_at, self.published_at])
+        elif has_content_unlike_saved:
+            self.content = article_data.content
+
+        return True
+
+    def update_article_from_action(self, action: constants.UpdateArticleActions):
         match action:
             case constants.UpdateArticleActions.MARK_AS_READ:
+                self.read_at = utcnow()
                 self.is_read = True
             case constants.UpdateArticleActions.MARK_AS_UNREAD:
+                self.read_at = None
                 self.is_read = False
             case constants.UpdateArticleActions.MARK_AS_FAVORITE:
                 self.is_favorite = True
@@ -273,6 +384,7 @@ class Article(models.Model):
             case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
                 self.is_for_later = False
             case constants.UpdateArticleActions.MARK_AS_OPENED:
+                self.opened_at = utcnow()
                 self.was_opened = True
             case _:
                 assert_never(action)

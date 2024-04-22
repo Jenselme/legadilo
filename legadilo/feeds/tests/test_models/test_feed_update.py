@@ -6,6 +6,7 @@ from asgiref.sync import async_to_sync
 
 from legadilo.feeds.models import FeedUpdate
 
+from ... import constants
 from ..factories import FeedFactory, FeedUpdateFactory
 
 
@@ -19,7 +20,7 @@ class TestFeedUpdateManager:
             latest_feed_update = FeedUpdateFactory(feed=feed)
         with time_machine.travel(datetime(2023, 12, 30, 12, tzinfo=UTC)):
             FeedUpdateFactory()
-            FeedUpdateFactory(feed=feed, success=False)
+            FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 
         latest = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
 
@@ -34,14 +35,14 @@ class TestFeedUpdateManager:
 
     def test_must_disable_feed(self):
         feed = FeedFactory()
-        FeedUpdateFactory(feed=feed, success=False)
+        FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 
         assert FeedUpdate.objects.must_disable_feed(feed)
 
     def test_must_not_disable_feed_an_update_succeeded(self):
         feed = FeedFactory()
-        FeedUpdateFactory(feed=feed, success=False)
-        FeedUpdateFactory(feed=feed, success=True)
-        FeedUpdateFactory(feed=feed, success=False)
+        FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
+        FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.SUCCESS)
+        FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 
         assert not FeedUpdate.objects.must_disable_feed(feed)

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 SAMPLE_HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -98,3 +100,8 @@ nasty tricks</span></div>
 </entry>
 </feed>
 """
+
+
+def get_fixture_file_content(name: str):
+    with open(settings.APPS_DIR / "feeds/tests/fixtures" / name) as f:
+        return f.read()

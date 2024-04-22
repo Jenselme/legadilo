@@ -27,7 +27,7 @@ class UserFactory(DjangoModelFactory):
     @post_generation
     def user_settings(self, create: bool, extracted: Sequence[Any]):
         if self.pk:
-            UserSettingsFactory(user=self)
+            self.settings = UserSettingsFactory(user=self)
 
     @classmethod
     def _after_postgeneration(cls, instance, create, results=None):

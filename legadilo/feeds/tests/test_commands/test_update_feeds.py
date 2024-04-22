@@ -9,6 +9,7 @@ from django.core.management import call_command
 from legadilo.feeds.models import Article, FeedUpdate
 from legadilo.feeds.tests.factories import FeedUpdateFactory
 
+from ... import constants
 from ..fixtures import SAMPLE_RSS_FEED
 
 
@@ -25,7 +26,7 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
-            django_assert_num_queries(7),
+            django_assert_num_queries(11),
         ):
             call_command("update_feeds")
 
@@ -34,7 +35,7 @@ class TestUpdateFeedsCommand:
         feed_update = FeedUpdate.objects.first()
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
-        assert feed_update.success
+        assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
 
@@ -46,12 +47,16 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
-            django_assert_num_queries(2),
+            django_assert_num_queries(3),
         ):
             call_command("update_feeds")
 
         assert Article.objects.count() == 0
-        assert FeedUpdate.objects.count() == 1
+        assert FeedUpdate.objects.count() == 2
+        feed_update = FeedUpdate.objects.first()
+        assert feed_update is not None
+        assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
+        assert feed_update.status == constants.FeedUpdateStatus.NOT_MODIFIED
 
     def test_update_feed_command_http_error(self, httpx_mock, django_assert_num_queries):
         feed_url = "http://example.com/feed/rss.xml"
@@ -70,7 +75,7 @@ class TestUpdateFeedsCommand:
         feed_update = FeedUpdate.objects.select_related("feed").first()
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
-        assert not feed_update.success
+        assert feed_update.status == constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Some error"
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
@@ -100,7 +105,7 @@ class TestUpdateFeedsCommand:
         feed_update = FeedUpdate.objects.select_related("feed").first()
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
-        assert not feed_update.success
+        assert feed_update.status == constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Some error"
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None

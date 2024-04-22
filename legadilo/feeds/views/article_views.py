@@ -21,15 +21,12 @@ def article_details_view(
         Article.objects.get_queryset().for_details(),
         id=article_id,
         slug=article_slug,
-        feed__user=request.user,
+        user=request.user,
     )
     return TemplateResponse(
         request,
         "feeds/article_details.html",
         {
-            "base": {
-                "hide_header": True,
-            },
             "article": article,
             "from_url": _get_from_url_for_article_details(request, request.GET),
         },
@@ -50,9 +47,9 @@ def update_article_view(
     update_action: constants.UpdateArticleActions,
 ) -> HttpResponse:
     article = get_object_or_404(
-        Article.objects.get_queryset().for_details(), id=article_id, feed__user=request.user
+        Article.objects.get_queryset().for_details(), id=article_id, user=request.user
     )
-    article.update_article(update_action)
+    article.update_article_from_action(update_action)
     article.save()
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)

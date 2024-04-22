@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
             name="reading_time",
             field=models.PositiveIntegerField(
                 default=0,
-                help_text="How much time in minutes is needed to read this article. If not specified, it will be calculated automatically from content length. If we don't  have content, we will use 0.",
+                help_text="How much time in minutes is needed to read this article. If not specified, it will be calculated automatically from content length. If we don't have content, we will use 0.",
             ),
         ),
         migrations.RunPython(set_initial_reading_time, reverse_code=migrations.RunPython.noop),

@@ -3,7 +3,6 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import chain
-from urllib.parse import urljoin, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -12,24 +11,10 @@ from feedparser import parse as parse_feed
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
-from ...utils.text import get_nb_words_from_html
 from ...utils.time import dt_to_http_date
+from ...utils.validators import normalize_url
 from .. import constants
-
-
-@dataclass(frozen=True)
-class FeedArticle:
-    article_feed_id: str
-    title: str
-    summary: str
-    content: str
-    nb_words: int
-    authors: list[str]
-    contributors: list[str]
-    tags: list[str]
-    link: str
-    published_at: datetime
-    updated_at: datetime
+from .article_fetching import ArticleData
 
 
 @dataclass(frozen=True)
@@ -41,7 +26,7 @@ class FeedMetadata:
     feed_type: constants.SupportedFeedType
     etag: str
     last_modified: datetime | None
-    articles: list[FeedArticle]
+    articles: list[ArticleData]
 
 
 class NoFeedUrlFoundError(Exception):
@@ -57,6 +42,14 @@ class MultipleFeedFoundError(Exception):
 
 
 class FeedFileTooBigError(Exception):
+    pass
+
+
+class InvalidFeedFileError(Exception):
+    pass
+
+
+class InvalidFeedArticleError(InvalidFeedFileError):
     pass
 
 
@@ -78,13 +71,14 @@ async def get_feed_metadata(
             client, url, etag=etag, last_modified=last_modified
         )
 
+    feed_title = full_sanitize(parsed_feed.feed.title)
     return FeedMetadata(
         feed_url=str(resolved_url),
         site_url=_normalize_found_link(parsed_feed.feed.link),
-        title=full_sanitize(parsed_feed.feed.title),
+        title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
-        articles=parse_articles_in_feed(url, parsed_feed),
+        articles=parse_articles_in_feed(url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
@@ -103,10 +97,11 @@ async def _fetch_feed_and_raw_data(
         headers["If-Modified-Since"] = dt_to_http_date(last_modified)
 
     response = await client.get(url, headers=headers)
-    feed_content = response.raise_for_status().text
-    if sys.getsizeof(feed_content) > constants.MAX_FEED_FILE_SIZE:
+    raw_feed_content = response.raise_for_status().content
+    if sys.getsizeof(raw_feed_content) > constants.MAX_FEED_FILE_SIZE:
         raise FeedFileTooBigError
 
+    feed_content = raw_feed_content.decode(response.encoding or "utf-8")
     return parse_feed(feed_content), feed_content, response.url
 
 
@@ -151,20 +146,22 @@ def _normalize_found_link(link: str):
     return link
 
 
-def parse_articles_in_feed(feed_url: str, parsed_feed: FeedParserDict) -> list[FeedArticle]:
+def parse_articles_in_feed(
+    feed_url: str, feed_title: str, parsed_feed: FeedParserDict
+) -> list[ArticleData]:
     return [
-        FeedArticle(
-            article_feed_id=full_sanitize(entry.id),
+        ArticleData(
+            external_article_id=full_sanitize(entry.id),
             title=full_sanitize(entry.title),
             summary=sanitize_keep_safe_tags(entry.summary),
             content=_get_article_content(entry),
-            nb_words=_get_nb_words(entry),
             authors=_get_article_authors(entry),
             contributors=_get_article_contributors(entry),
             tags=_get_articles_tags(entry),
-            link=_normalize_article_link(feed_url, entry.link),
+            link=_get_article_link(feed_url, entry),
             published_at=_feed_time_to_datetime(entry.published_parsed),
             updated_at=_feed_time_to_datetime(entry.updated_parsed),
+            source_title=feed_title,
         )
         for entry in parsed_feed.entries
     ]
@@ -192,10 +189,6 @@ def _get_article_content(entry):
     return ""
 
 
-def _get_nb_words(entry) -> int:
-    return get_nb_words_from_html(_get_article_content(entry))
-
-
 def _get_articles_tags(entry):
     if tags := entry.get("tags", []):
         return [full_sanitize(tag["term"]) for tag in tags]
@@ -206,20 +199,17 @@ def _get_articles_tags(entry):
     return []
 
 
-def _normalize_article_link(feed_url, article_link):
-    article_link = full_sanitize(article_link)
-
-    if article_link.startswith("http://") or article_link.startswith("https://"):
-        return article_link
-
-    if article_link.startswith("//"):
-        return f"https:{article_link}"
-
-    parsed_feed_url = urlparse(feed_url)
-    return urljoin(f"{parsed_feed_url.scheme}://{parsed_feed_url.netloc}", article_link)
+def _get_article_link(feed_url, entry):
+    try:
+        return normalize_url(feed_url, entry.link)
+    except ValueError as e:
+        raise InvalidFeedArticleError from e
 
 
 def _feed_time_to_datetime(time_value: time.struct_time):
+    if not time_value:
+        return None
+
     return datetime.fromtimestamp(time.mktime(time_value), tz=UTC)
 
 

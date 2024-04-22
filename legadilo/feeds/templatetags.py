@@ -1,4 +1,3 @@
-from django.template.defaultfilters import date
 from django.template.defaulttags import register
 from django.urls import reverse
 
@@ -52,13 +51,3 @@ def opened_action_url(article: Article) -> str:
             "update_action": constants.UpdateArticleActions.MARK_AS_OPENED,
         },
     )
-
-
-@register.filter
-def article_metadata(article: Article) -> str:
-    metadata = (
-        f"{", ".join(article.authors)} – {date(article.published_at, "SHORT_DATETIME_FORMAT")}"  # noqa: RUF001 String contains ambiguous (EN DASH)
-    )
-    if article.feed:
-        metadata += f" – {article.feed.title}"  # noqa: RUF001 String contains ambiguous (EN DASH)
-    return metadata
