@@ -21,7 +21,7 @@ from legadilo.utils.decorators import alogin_required
 from legadilo.utils.urls import validate_referer_url
 
 
-class AddArticleForm(forms.Form):
+class FetchArticleForm(forms.Form):
     url = forms.URLField(
         assume_scheme="https",  # type: ignore[call-arg]
         help_text=_("URL of the article to add."),
@@ -34,7 +34,7 @@ class AddArticleForm(forms.Form):
 @require_http_methods(["GET", "POST"])
 @alogin_required
 async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    form = AddArticleForm()
+    form = FetchArticleForm()
     status = HTTPStatus.OK
 
     if request.method == "POST":
@@ -54,7 +54,7 @@ async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpRespons
 
 
 async def _handle_save(request: AuthenticatedHttpRequest):
-    form = AddArticleForm(request.POST)
+    form = FetchArticleForm(request.POST)
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form
 
@@ -84,7 +84,7 @@ async def _handle_save(request: AuthenticatedHttpRequest):
         return HTTPStatus.BAD_REQUEST, form
 
     # Empty form after success
-    form = AddArticleForm()
+    form = FetchArticleForm()
     if not article.content:
         messages.warning(
             request,
