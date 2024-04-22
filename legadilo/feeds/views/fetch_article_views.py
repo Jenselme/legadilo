@@ -38,7 +38,14 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
     status = HTTPStatus.OK
 
     if request.method == "POST":
-        status, form = await _handle_save(request)
+        status, form = await _handle_save(
+            request,
+            success_message=_("Article '%s' successfully added!"),
+            no_content_message=_(
+                "The article '%s' was added but we failed to fetch its content. "
+                "Please check that it really points to an article."
+            ),
+        )
 
     return TemplateResponse(request, "feeds/add_article.html", {"form": form}, status=status)
 
@@ -46,14 +53,21 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
 @require_http_methods(["POST"])
 @alogin_required
 async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    await _handle_save(request)
+    await _handle_save(
+        request,
+        success_message=_("Article '%s' successfully re-fetched!"),
+        no_content_message=_(
+            "The article '%s' was re-fetched but we failed to fetch its content. "
+            "Please check that it really points to an article."
+        ),
+    )
 
     return HttpResponseRedirect(
         validate_referer_url(request, reverse("feeds:default_reading_list"))
     )
 
 
-async def _handle_save(request: AuthenticatedHttpRequest):
+async def _handle_save(request: AuthenticatedHttpRequest, *, success_message, no_content_message):
     form = FetchArticleForm(request.POST)
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form
@@ -79,7 +93,7 @@ async def _handle_save(request: AuthenticatedHttpRequest):
         return HTTPStatus.NOT_ACCEPTABLE, form
     except ArticleTooBigError:
         messages.error(
-            request, _("The article you are trying to add is too big and cannot be processed.")
+            request, _("The article you are trying to fetch is too big and cannot be processed.")
         )
         return HTTPStatus.BAD_REQUEST, form
 
@@ -88,12 +102,8 @@ async def _handle_save(request: AuthenticatedHttpRequest):
     if not article.content:
         messages.warning(
             request,
-            _(
-                "The article '%s' was added but we failed to fetch its content. "
-                "Please check that it really points to an article."
-            )
-            % article.title,
+            no_content_message % article.title,
         )
     else:
-        messages.success(request, _("Article '%s' successfully added!") % article.title)
+        messages.success(request, success_message % article.title)
     return HTTPStatus.CREATED, form
