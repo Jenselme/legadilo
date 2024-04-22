@@ -4,6 +4,7 @@ import pytest
 from django.urls import reverse
 
 from legadilo.feeds import constants
+from legadilo.feeds.models import Article
 from legadilo.feeds.tests.factories import ArticleFactory, ReadingListFactory
 
 
@@ -148,3 +149,47 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == "http://testserver/reading/articles/1"
+
+
+@pytest.mark.django_db()
+class TestDeleteArticleView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.reading_list = ReadingListFactory(user=user)
+        self.reading_list_url = reverse(
+            "feeds:reading_list", kwargs={"reading_list_slug": self.reading_list.slug}
+        )
+        self.article = ArticleFactory(user=user)
+        self.url = reverse(
+            "feeds:delete_article",
+            kwargs={
+                "article_id": self.article.id,
+            },
+        )
+
+    def test_cannot_access_if_not_logged_in(self, client):
+        response = client.post(self.url)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert reverse("account_login") in response["Location"]
+
+    def test_cannot_delete_article_as_other_user(self, logged_in_other_user_sync_client):
+        response = logged_in_other_user_sync_client.post(self.url)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_delete(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(6):
+            response = logged_in_sync_client.post(self.url)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("feeds:default_reading_list")
+        assert Article.objects.count() == 0
+
+    def test_delete_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(6):
+            response = logged_in_sync_client.post(self.url, {"from_url": self.reading_list_url})
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == self.reading_list_url
+        assert Article.objects.count() == 0

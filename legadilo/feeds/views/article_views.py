@@ -41,6 +41,16 @@ def _get_from_url_for_article_details(request, query_dict) -> str:
 
 @require_POST
 @login_required
+def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> HttpResponse:
+    article = get_object_or_404(Article, id=article_id, user=request.user)
+    article.delete()
+
+    from_url = _get_from_url_for_article_details(request, request.POST)
+    return HttpResponseRedirect(from_url)
+
+
+@require_POST
+@login_required
 def update_article_view(
     request: AuthenticatedHttpRequest,
     article_id: int,

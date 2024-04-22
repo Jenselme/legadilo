@@ -1009,3 +1009,15 @@ class TestArticleModel:
 
         for attr_name, attr_value in attrs.items():
             assert getattr(article, attr_name) == attr_value
+
+    @pytest.mark.parametrize(
+        ("source_type", "is_from_feed"),
+        [
+            pytest.param(constants.ArticleSourceType.FEED, True, id="feed"),
+            pytest.param(constants.ArticleSourceType.MANUAL, False, id="manual"),
+        ],
+    )
+    def test_is_from_feed(self, source_type, is_from_feed):
+        article = ArticleFactory.build(initial_source_type=source_type)
+
+        assert article.is_from_feed == is_from_feed
