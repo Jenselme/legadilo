@@ -13,6 +13,7 @@ from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
 
+from ...utils.collections import max_or_none, min_or_none
 from ...utils.text import get_nb_words_from_html
 from ...utils.time import utcnow
 from .. import constants
@@ -347,8 +348,10 @@ class Article(models.Model):
             return False
 
         if is_more_recent:
-            self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]
-            self.slug = slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH])
+            self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH] or self.title
+            self.slug = (
+                slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]) or self.slug
+            )
             self.summary = article_data.summary or self.summary
             self.content = article_data.content or self.content
             self.reading_time = (
@@ -357,7 +360,8 @@ class Article(models.Model):
             self.authors = list(dict.fromkeys(self.authors + article_data.authors))
             self.contributors = list(dict.fromkeys(self.contributors + article_data.contributors))
             self.external_tags = list(dict.fromkeys(self.external_tags + article_data.tags))
-            self.updated_at = article_data.updated_at
+            self.updated_at = max_or_none([article_data.updated_at, self.updated_at])
+            self.published_at = min_or_none([article_data.published_at, self.published_at])
         elif has_content_unlike_saved:
             self.content = article_data.content
 
