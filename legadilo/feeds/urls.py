@@ -28,4 +28,5 @@ urlpatterns = [
     ),
     path("feeds/", views.subscribe_to_feed_view, name="subscribe_to_feed"),
     path("articles/add/", views.add_article_view, name="add_article"),
+    path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
 ]

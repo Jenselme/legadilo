@@ -147,6 +147,35 @@
             {% translate 'For later' %}
         {% endif %}
     </button>
+    {% if allow_refetch %}
+        <form id="refetch-article-{{ article.id }}"
+              class="visually-hidden"
+              aria-hidden="true"
+              method="post"
+              action="{% url 'feeds:refetch_article' %}"
+              hx-boost="true"
+              hx-push-url="false"
+              hx-indicator=".icon-indicator-{{ article.id }}">
+            {% csrf_token %}
+            <input type="hidden" name="url" value="{{ article.link }}" />
+        </form>
+        <button class="btn btn-outline-secondary text-start"
+                form="refetch-article-{{ article.id }}">
+            <span class="icon-indicator icon-indicator-{{ article.id }}">
+                {% include "core/partials/button_loading_indicator_icon.html" %}
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="16"
+                     height="16"
+                     fill="currentColor"
+                     class="bi bi-arrow-clockwise"
+                     viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z" />
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+                </svg>
+            </span>
+            {% translate 'Re-fetch content' %}
+        </button>
+    {% endif %}
     <a class="btn btn-outline-secondary text-start open-original"
        role="button"
        data-article-id="{{ article.id }}"

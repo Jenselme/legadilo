@@ -4,7 +4,9 @@ import httpx
 from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
+from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
@@ -16,6 +18,7 @@ from legadilo.feeds.utils.article_fetching import (
 )
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
+from legadilo.utils.urls import validate_referer_url
 
 
 class AddArticleForm(forms.Form):
@@ -38,6 +41,16 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
         status, form = await _handle_save(request)
 
     return TemplateResponse(request, "feeds/add_article.html", {"form": form}, status=status)
+
+
+@require_http_methods(["POST"])
+@alogin_required
+async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
+    await _handle_save(request)
+
+    return HttpResponseRedirect(
+        validate_referer_url(request, reverse("feeds:default_reading_list"))
+    )
 
 
 async def _handle_save(request: AuthenticatedHttpRequest):
