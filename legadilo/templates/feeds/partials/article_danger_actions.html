@@ -1,22 +1,29 @@
 {% load i18n %}
 
+<form id="delete-article-{{ article.id }}"
+      class="visually-hidden"
+      aria-hidden="true"
+      method="post"
+      action="{{ article|delete_action_url }}"
+      data-modal-id="danger-modal"
+      data-modal-title="{% translate 'Confirm article deletion' %}"
+      data-modal-body="{% blocktranslate with article_title=article.title %}Are you sure you want to delete the article '{{ article_title }}'?{% endblocktranslate %}"
+      hx-indicator=".icon-indicator-{{ article.id }}"
+      hx-boost="true"
+      hx-push-url="false"
+      hx-confirm="Delete?">
+    {% csrf_token %}
+    <input type="hidden" name="from_url" value="{{ from_url }}" />
+    {% if for_article_details %}
+        <input type="hidden" name="for_article_details" value="true" />
+    {% else %}
+        <input type="hidden"
+               name="displayed_reading_list_id"
+               value="{{ displayed_reading_list_id }}" />
+    {% endif %}
+</form>
 <div class="{% if vertical_group %}btn-group-vertical w-100{% else %}btn-group{% endif %}"
      role="group">
-    <form id="delete-article-{{ article.id }}"
-          class="visually-hidden"
-          aria-hidden="true"
-          method="post"
-          action="{{ article|delete_action_url }}"
-          data-modal-id="danger-modal"
-          data-modal-title="{% translate 'Confirm article deletion' %}"
-          data-modal-body="{% blocktranslate with article_title=article.title %}Are you sure you want to delete the article '{{ article_title }}'?{% endblocktranslate %}"
-          hx-indicator=".icon-indicator-{{ article.id }}"
-          hx-boost="true"
-          hx-push-url="true"
-          hx-confirm="Delete?">
-        {% csrf_token %}
-        <input type="hidden" name="from_url" value="{{ from_url }}" />
-    </form>
     <button class="btn btn-danger"
             {% if article.is_from_feed %}disabled{% endif %}
             type="submit"

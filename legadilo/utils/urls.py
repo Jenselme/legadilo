@@ -1,4 +1,4 @@
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
 from django.db.models import TextChoices
 from django.http import HttpRequest
@@ -44,3 +44,19 @@ def validate_from_url(request: HttpRequest, from_url: str | None, fallback_url: 
         return from_url
 
     return fallback_url
+
+
+def add_query_params(url: str, params: dict[str, list[str]]) -> str:
+    url_fragments = list(urlsplit(url))
+    query = parse_qs(url_fragments[3])
+    query.update(params)
+    url_fragments[3] = urlencode(query, doseq=True)
+    return urlunsplit(url_fragments)
+
+
+def pop_query_param(url: str, param: str) -> tuple[str, str | None]:
+    url_fragments = list(urlsplit(url))
+    query = parse_qs(url_fragments[3])
+    read_param = query.pop(param, [])
+    url_fragments[3] = urlencode(query, doseq=True)
+    return urlunsplit(url_fragments), next(iter(read_param), None)

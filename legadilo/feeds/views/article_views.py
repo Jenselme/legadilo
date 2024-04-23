@@ -9,7 +9,7 @@ from legadilo.feeds import constants
 from legadilo.feeds.models import Article, ReadingList
 from legadilo.feeds.views.feed_views_utils import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
-from legadilo.utils.urls import validate_from_url, validate_referer_url
+from legadilo.utils.urls import add_query_params, validate_from_url, validate_referer_url
 
 
 @require_GET
@@ -45,8 +45,27 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
     article = get_object_or_404(Article, id=article_id, user=request.user)
     article.delete()
 
+    for_article_details = request.POST.get("for_article_details", "").lower() == "true"
+    if for_article_details:
+        return _redirect_to_reading_list(request)
+
+    if not request.htmx:
+        from_url = _get_from_url_for_article_details(request, request.POST)
+        return HttpResponseRedirect(from_url)
+
+    return _update_article_card(
+        request,
+        article,
+        hx_reswap="outerHTML show:none swap:1s",
+        hx_target=f"#article-card-{article_id}",
+    )
+
+
+def _redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
     from_url = _get_from_url_for_article_details(request, request.POST)
-    return HttpResponseRedirect(from_url)
+    return HttpResponseRedirect(
+        add_query_params(from_url, {"full_reload": ["true"]}),
+    )
 
 
 @require_POST
@@ -63,12 +82,11 @@ def update_article_view(
     article.save()
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)
-    from_url = _get_from_url_for_article_details(request, request.POST)
     for_article_details = request.POST.get("for_article_details", "").lower() == "true"
 
     if for_article_details:
         if is_read_status_update:
-            return HttpResponseRedirect(from_url)
+            return _redirect_to_reading_list(request)
         return HttpResponseRedirect(
             validate_referer_url(request, reverse("feeds:default_reading_list"))
         )
@@ -78,6 +96,15 @@ def update_article_view(
             validate_referer_url(request, reverse("feeds:default_reading_list"))
         )
 
+    return _update_article_card(
+        request, article, hx_reswap="outerHTML show:none", hx_target=f"#article-card-{article.id}"
+    )
+
+
+def _update_article_card(
+    request: AuthenticatedHttpRequest, article: Article, *, hx_reswap, hx_target
+) -> TemplateResponse:
+    from_url = _get_from_url_for_article_details(request, request.POST)
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
         reading_list = ReadingList.objects.get(id=displayed_reading_list_id)
@@ -98,5 +125,9 @@ def update_article_view(
             "displayed_reading_list_id": displayed_reading_list_id,
             "js_cfg": js_cfg,
             "from_url": from_url,
+        },
+        headers={
+            "HX-Reswap": hx_reswap,
+            "HX-Retarget": hx_target,
         },
     )

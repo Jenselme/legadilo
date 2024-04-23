@@ -119,6 +119,8 @@ class TestUpdateArticleView:
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,
         }
+        assert response["HX-Reswap"] == "outerHTML show:none"
+        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         self.article.refresh_from_db()
         assert self.article.is_read
 
@@ -134,7 +136,8 @@ class TestUpdateArticleView:
             )
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("feeds:default_reading_list")
+        location_url = reverse("feeds:default_reading_list")
+        assert response["Location"] == f"{location_url}?full_reload=true"
 
     def test_update_article_view_for_article_details_favorite_status_action(
         self, logged_in_sync_client, django_assert_num_queries
@@ -192,4 +195,41 @@ class TestDeleteArticleView:
 
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == self.reading_list_url
+        assert Article.objects.count() == 0
+
+    def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(10):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "from_url": self.reading_list_url,
+                    "displayed_reading_list_id": str(self.reading_list.id),
+                },
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.context["article"].pk is None
+        assert response.context["reading_lists"] == [self.reading_list]
+        assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 0}
+        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": False,
+            "auto_refresh_interval": 0,
+            "articles_list_min_refresh_timeout": 300,
+        }
+        assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
+        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
+        assert Article.objects.count() == 0
+
+    def test_delete_article_for_article_details(
+        self, logged_in_sync_client, django_assert_num_queries
+    ):
+        with django_assert_num_queries(6):
+            response = logged_in_sync_client.post(
+                self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == f"{self.reading_list_url}?full_reload=true"
         assert Article.objects.count() == 0

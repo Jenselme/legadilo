@@ -49,3 +49,15 @@
 .read-on-scroll-even-bottom {
   height: 100vh;
 }
+
+.card.htmx-swapping {
+  opacity: 0;
+  max-height: 0;
+  transition:
+    opacity 1s ease-out,
+    max-height 1s ease-out;
+}
+
+.card {
+  max-height: 500px;
+}

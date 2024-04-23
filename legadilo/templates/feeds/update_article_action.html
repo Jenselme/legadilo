@@ -1,2 +1,4 @@
 <div hx-swap-oob="innerHTML:#reading-list-group">{% include "feeds/partials/reading_list_group.html" %}</div>
-{% include "feeds/partials/article_card.html" %}
+{% if article.pk %}
+    {% include "feeds/partials/article_card.html" %}
+{% endif %}

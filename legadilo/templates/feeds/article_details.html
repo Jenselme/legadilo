@@ -20,7 +20,9 @@
                     <div>
                         {% include "feeds/partials/article_actions.html" with for_article_details=True vertical_group=True allow_refetch=True %}
                     </div>
-                    <div class="mt-5">{% include "feeds/partials/article_danger_actions.html" with vertical_group=True %}</div>
+                    <div class="mt-5">
+                        {% include "feeds/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
+                    </div>
                 </div>
             </div>
             <div class="col col-10 container-xl">
