@@ -195,7 +195,11 @@ STATIC_ROOT = str(BASE_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = [str(APPS_DIR / "static")]
+STATICFILES_DIRS = [
+    str(APPS_DIR / "static"),
+    str(BASE_DIR / "node_modules/bootstrap/dist/"),
+    str(BASE_DIR / "node_modules/htmx.org/dist"),
+]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -314,7 +318,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", def
 # https://csp-evaluator.withgoogle.com/
 CSP_DEFAULT_SRC = ("'self'",)
 # TODO: We must use nonce here, we have a few inline stuff.
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-eval'", "'unsafe-inline'", "https://cdnjs.cloudflare.com/")
+CSP_SCRIPT_SRC = ("'self'",)
 CSP_SCRIPT_SRC_ATTR = None
 CSP_SCRIPT_SRC_ELEM = None
 CSP_IMG_SRC = ("'self'", "data:")
@@ -323,7 +327,7 @@ CSP_MEDIA_SRC = ("'self'",)
 CSP_FRAME_SRC = ("'none'",)
 CSP_FONT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'", "https://cdnjs.cloudflare.com/")
+CSP_STYLE_SRC = ("'self'",)
 CSP_STYLE_SRC_ATTR = None
 CSP_STYLE_SRC_ELEM = None
 CSP_BASE_URI = ("'self'",)
