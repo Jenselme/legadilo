@@ -1,8 +1,46 @@
 import pytest
 
 from legadilo.feeds import constants
-from legadilo.feeds.models import ArticleTag
-from legadilo.feeds.tests.factories import ArticleFactory, TagFactory
+from legadilo.feeds.models import ArticleTag, FeedTag, Tag
+from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory, TagFactory
+
+
+@pytest.mark.django_db()
+class TestTagManager:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.tag1 = TagFactory(user=user)
+        self.tag2 = TagFactory(user=user)
+        self.other_user_tag = TagFactory()
+
+    def test_get_all_choices(self, user):
+        choices = list(Tag.objects.get_all_choices(user))
+
+        assert choices == [(self.tag1.slug, self.tag1.name), (self.tag2.slug, self.tag2.name)]
+
+    def test_get_or_create_from_list(self, django_assert_num_queries, user):
+        with django_assert_num_queries(4):
+            tags = Tag.objects.get_or_create_from_list(
+                user, [self.tag1.slug, self.other_user_tag.slug, "New tag"]
+            )
+
+        assert len(tags) == 3
+        assert Tag.objects.count() == 5
+        assert tags[0] == self.tag1
+        assert tags[1].name == self.other_user_tag.slug
+        assert tags[1].slug == self.other_user_tag.slug
+        assert tags[1].user == user
+        assert tags[2].name == "New tag"
+        assert tags[2].slug == "new-tag"
+        assert tags[2].user == user
+
+    def test_get_or_create_from_list_no_new(self, django_assert_num_queries, user):
+        with django_assert_num_queries(3):
+            tags = Tag.objects.get_or_create_from_list(user, [self.tag1.slug])
+
+        assert len(tags) == 1
+        assert Tag.objects.count() == 3
+        assert tags[0] == self.tag1
 
 
 @pytest.mark.django_db()
@@ -55,7 +93,9 @@ class TestArticleTagManager:
         tags = [tag1, tag2]
 
         with django_assert_num_queries(1):
-            ArticleTag.objects.associate_articles_with_tags(articles, tags)
+            ArticleTag.objects.associate_articles_with_tags(
+                articles, tags, tagging_reason=constants.TaggingReason.FROM_FEED
+            )
 
         created_article_tags = list(ArticleTag.objects.values("article", "tag", "tagging_reason"))
         assert created_article_tags == [
@@ -85,3 +125,16 @@ class TestArticleTagManager:
                 "tagging_reason": constants.TaggingReason.FROM_FEED,
             },
         ]
+
+
+@pytest.mark.django_db()
+class TestFeedTagManager:
+    def test_associate_feed_with_tags(self):
+        feed = FeedFactory()
+        tag1 = TagFactory(user=feed.user)
+        tag2 = TagFactory(user=feed.user)
+        FeedTag.objects.create(feed=feed, tag=tag1)
+
+        FeedTag.objects.associate_feed_with_tags(feed, [tag1, tag2])
+
+        assert FeedTag.objects.count() == 2

@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<select name="{{ widget.name }}"
+        {% include "bootstrap5/layout/attrs.html" %}
+        data-allow-new="true">
+    <option disabled hidden value="">{% translate "Choose tags" %}</option>
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+        <option value="{{ group_choices.0.value }}"
+                {% if group_choices.0.value in widget.value %}selected{% endif %}>{{ group_choices.0.label }}</option>
+    {% endfor %}
+</select>

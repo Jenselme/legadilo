@@ -198,6 +198,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     str(APPS_DIR / "static"),
     str(BASE_DIR / "node_modules/bootstrap/dist/"),
+    str(BASE_DIR / "node_modules/bootstrap5-tags/"),
     str(BASE_DIR / "node_modules/htmx.org/dist"),
 ]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders

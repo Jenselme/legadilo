@@ -5,8 +5,8 @@ from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.models import FeedArticle, FeedUpdate
-from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory
+from legadilo.feeds.models import Article, FeedArticle, FeedUpdate
+from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory, TagFactory
 from legadilo.feeds.utils.feed_parsing import ArticleData, FeedMetadata
 from legadilo.users.tests.factories import UserFactory
 
@@ -76,10 +76,12 @@ class TestFeedManager:
                     ],
                 ),
                 user,
+                [],
             )
 
         assert Feed.objects.all().count() == self.initial_feed_count + 1
         assert feed.id > 0
+        assert feed.tags.count() == 0
         assert feed.feed_url == "https://example.com/feeds/atom.xml"
         assert feed.site_url == "https://example.com"
         assert feed.title == "Awesome website"
@@ -91,6 +93,62 @@ class TestFeedManager:
         assert not feed_update.error_message
         assert feed_update.feed_etag == "W/etag"
         assert feed_update.feed_last_modified is None
+        assert Article.objects.count() > 0
+        article = Article.objects.first()
+        assert article is not None
+        assert article.tags.count() == 0
+
+    def test_create_from_metadata_with_tags(self, user, django_assert_num_queries):
+        tag = TagFactory()
+
+        with django_assert_num_queries(14):
+            feed = Feed.objects.create_from_metadata(
+                FeedMetadata(
+                    feed_url="https://example.com/feeds/atom.xml",
+                    site_url="https://example.com",
+                    title="Awesome website",
+                    description="A description",
+                    feed_type=SupportedFeedType.atom,
+                    etag="W/etag",
+                    last_modified=None,
+                    articles=[
+                        ArticleData(
+                            external_article_id="some-article-1",
+                            title="Article 1",
+                            summary="Summary 1",
+                            content="Description 1",
+                            authors=["Author"],
+                            contributors=[],
+                            tags=[],
+                            link="https//example.com/article/1",
+                            published_at=datetime.now(tz=UTC),
+                            updated_at=datetime.now(tz=UTC),
+                            source_title="Awesome website",
+                        )
+                    ],
+                ),
+                user,
+                [tag],
+            )
+
+        assert Feed.objects.all().count() == self.initial_feed_count + 1
+        assert feed.id > 0
+        assert list(feed.tags.all()) == [tag]
+        assert feed.feed_url == "https://example.com/feeds/atom.xml"
+        assert feed.site_url == "https://example.com"
+        assert feed.title == "Awesome website"
+        assert feed.description == "A description"
+        assert feed.feed_type == SupportedFeedType.atom
+        assert feed.articles.count() > 0
+        feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
+        assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
+        assert not feed_update.error_message
+        assert feed_update.feed_etag == "W/etag"
+        assert feed_update.feed_last_modified is None
+        assert Article.objects.count() > 0
+        article = Article.objects.first()
+        assert article is not None
+        assert list(article.tags.all()) == [tag]
 
     def test_cannot_create_duplicated_feed_for_same_user(self, user):
         with pytest.raises(IntegrityError) as execinfo:
@@ -106,6 +164,7 @@ class TestFeedManager:
                     articles=[],
                 ),
                 user,
+                [],
             )
 
         assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(
@@ -127,6 +186,7 @@ class TestFeedManager:
                 articles=[],
             ),
             other_user,
+            [],
         )
 
         assert list(Feed.objects.values_list("feed_url", flat=True)) == [

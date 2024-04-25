@@ -12,6 +12,7 @@ from ..utils.feed_parsing import FeedMetadata
 from .article import Article
 from .feed_article import FeedArticle
 from .feed_update import FeedUpdate
+from .tag import FeedTag, Tag
 
 
 class FeedQuerySet(models.QuerySet["Feed"]):
@@ -30,7 +31,9 @@ class FeedManager(models.Manager["Feed"]):
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     @transaction.atomic()
-    def create_from_metadata(self, feed_metadata: FeedMetadata, user: User) -> Feed:
+    def create_from_metadata(
+        self, feed_metadata: FeedMetadata, user: User, tags: list[Tag]
+    ) -> Feed:
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,
@@ -39,6 +42,7 @@ class FeedManager(models.Manager["Feed"]):
             feed_type=feed_metadata.feed_type,
             user=user,
         )
+        FeedTag.objects.associate_feed_with_tags(feed, tags)
         self.update_feed(feed, feed_metadata)
         return feed
 

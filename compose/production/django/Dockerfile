@@ -60,6 +60,8 @@ RUN DATABASE_URL="" \
     --ignore 'bootstrap.esm.*' \
     --ignore 'debug_toolbar' \
     --ignore 'django-browser-reload' \
+    --ignore '*.html' \
+    --ignore '*.scss' \
     --ignore 'ext' \
     --no-input
 

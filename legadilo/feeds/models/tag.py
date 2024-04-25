@@ -1,16 +1,50 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
-from django.db import models
+from django.db import models, transaction
 from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
+from ...users.models import User
 from .. import constants
 
 if TYPE_CHECKING:
     from .article import Article
+    from .feed import Feed
+
+
+class TagQuerySet(models.QuerySet["Tag"]):
+    def for_user(self, user: User) -> Self:
+        return self.filter(user=user)
+
+    def for_slugs(self, slugs: Iterable[str]) -> Self:
+        return self.filter(slug__in=slugs)
+
+
+class TagManager(models.Manager["Tag"]):
+    _hints: dict
+
+    def get_queryset(self) -> TagQuerySet:
+        return TagQuerySet(self.model, using=self._db, hints=self._hints)
+
+    def get_all_choices(self, user: User) -> list[tuple[str, str]]:
+        return list(self.get_queryset().for_user(user).values_list("slug", "name"))
+
+    @transaction.atomic()
+    def get_or_create_from_list(self, user: User, names_or_slugs: list[str]) -> list[Tag]:
+        existing_tags = list(Tag.objects.get_queryset().for_user(user).for_slugs(names_or_slugs))
+        existing_slugs = {tag.slug for tag in existing_tags}
+        tags_to_create = [
+            self.model(name=name, slug=slugify(name), user=user)
+            for name in names_or_slugs
+            if name not in existing_slugs
+        ]
+        if tags_to_create:
+            self.bulk_create(tags_to_create)
+
+        return [*existing_tags, *tags_to_create]
 
 
 class Tag(models.Model):
@@ -25,6 +59,8 @@ class Tag(models.Model):
     reading_list_tags = models.ManyToManyField(
         "feeds.ReadingList", related_name="tags", through="feeds.ReadingListTag"
     )
+
+    objects = TagManager()
 
     class Meta(TypedModelMeta):
         constraints = [
@@ -57,9 +93,14 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
     def get_queryset(self) -> ArticleTagQuerySet:
         return ArticleTagQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def associate_articles_with_tags(self, articles: Iterable[Article], tags: Iterable[Tag]):
+    def associate_articles_with_tags(
+        self,
+        articles: Iterable[Article],
+        tags: Iterable[Tag],
+        tagging_reason: constants.TaggingReason,
+    ):
         article_tags = [
-            self.model(article=article, tag=tag, tagging_reason=constants.TaggingReason.FROM_FEED)
+            self.model(article=article, tag=tag, tagging_reason=tagging_reason)
             for article in articles
             for tag in tags
         ]
@@ -100,9 +141,26 @@ class ArticleTag(models.Model):
         )
 
 
+class FeedTagQuerySet(models.QuerySet["FeedTag"]):
+    pass
+
+
+class FeedTagManager(models.Manager["FeedTag"]):
+    _hints: dict
+
+    def get_queryset(self) -> FeedTagQuerySet:
+        return FeedTagQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    def associate_feed_with_tags(self, feed: Feed, tags: Iterable[Tag]):
+        feed_tags = [self.model(feed=feed, tag=tag) for tag in tags]
+        self.bulk_create(feed_tags, ignore_conflicts=True, unique_fields=["feed_id", "tag_id"])
+
+
 class FeedTag(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_tags", on_delete=models.CASCADE)
     tag = models.ForeignKey("feeds.Tag", related_name="feeds", on_delete=models.CASCADE)
+
+    objects = FeedTagManager()
 
     class Meta(TypedModelMeta):
         constraints = [

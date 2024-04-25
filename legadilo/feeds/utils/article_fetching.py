@@ -110,6 +110,9 @@ def _get_content(soup: BeautifulSoup) -> str:
     if article_content is None:
         article_content = soup.find("body")
 
+    if not article_content:
+        return ""
+
     for tag_name in ["noscript", "h1", "footer", "header", "nav", "aside"]:
         _extract_tag_from_content(article_content, tag_name)
     return sanitize_keep_safe_tags(str(article_content))

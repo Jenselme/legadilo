@@ -66,6 +66,7 @@ class ReadingListFactory(DjangoModelFactory):
 class TagFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Tag {n}")
     slug = factory.Sequence(lambda n: f"tag-{n}")
+    user = factory.SubFactory(UserFactory)
 
     class Meta:
         model = Tag
