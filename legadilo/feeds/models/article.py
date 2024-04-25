@@ -388,3 +388,7 @@ class Article(models.Model):
                 self.was_opened = True
             case _:
                 assert_never(action)
+
+    @property
+    def is_from_feed(self):
+        return self.initial_source_type == constants.ArticleSourceType.FEED

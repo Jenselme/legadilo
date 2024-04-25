@@ -15,7 +15,8 @@
     }
   ],
   "globals": {
-    "htmx": true
+    "htmx": true,
+    "bootstrap": true
   },
   "env": { "es6": true, "browser": true }
 }

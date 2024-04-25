@@ -73,6 +73,7 @@ class TestReadingListWithArticlesView:
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/list_of_articles.html"
         assert response.context["page_title"] == self.reading_list.name
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
@@ -86,6 +87,58 @@ class TestReadingListWithArticlesView:
             self.read_article,
             self.unread_article,
         ]
+        assert response.context["from_url"] == self.reading_list_url
+
+    def test_reading_list_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(10):
+            response = logged_in_sync_client.get(
+                self.reading_list_url,
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/partials/article_paginator_page.html"
+        assert response.context["page_title"] == self.reading_list.name
+        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": True,
+            "auto_refresh_interval": 60 * 60,
+            "articles_list_min_refresh_timeout": 300,
+        }
+        assert isinstance(response.context["articles_paginator"], Paginator)
+        assert response.context["articles_page"].object_list == [
+            self.read_article,
+            self.unread_article,
+        ]
+        assert response.context["from_url"] == self.reading_list_url
+
+    def test_reading_list_view_with_htmx_full_reload(
+        self, logged_in_sync_client, django_assert_num_queries
+    ):
+        with django_assert_num_queries(10):
+            response = logged_in_sync_client.get(
+                f"{self.reading_list_url}?full_reload=true",
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/list_of_articles.html"
+        assert response.context["page_title"] == self.reading_list.name
+        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": True,
+            "auto_refresh_interval": 60 * 60,
+            "articles_list_min_refresh_timeout": 300,
+        }
+        assert isinstance(response.context["articles_paginator"], Paginator)
+        assert response.context["articles_page"].object_list == [
+            self.read_article,
+            self.unread_article,
+        ]
+        assert response.context["from_url"] == self.reading_list_url
+        assert response["HX-Push-Url"] == self.reading_list_url
 
 
 @pytest.mark.django_db()

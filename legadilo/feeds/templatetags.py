@@ -51,3 +51,8 @@ def opened_action_url(article: Article) -> str:
             "update_action": constants.UpdateArticleActions.MARK_AS_OPENED,
         },
     )
+
+
+@register.filter
+def delete_action_url(article: Article) -> str:
+    return reverse("feeds:delete_article", kwargs={"article_id": article.id})

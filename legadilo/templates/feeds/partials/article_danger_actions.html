@@ -1,0 +1,45 @@
+{% load i18n %}
+
+<form id="delete-article-{{ article.id }}"
+      class="visually-hidden"
+      aria-hidden="true"
+      method="post"
+      action="{{ article|delete_action_url }}"
+      data-modal-id="danger-modal"
+      data-modal-title="{% translate 'Confirm article deletion' %}"
+      data-modal-body="{% blocktranslate with article_title=article.title %}Are you sure you want to delete the article '{{ article_title }}'?{% endblocktranslate %}"
+      hx-indicator=".icon-indicator-{{ article.id }}"
+      hx-boost="true"
+      hx-push-url="false"
+      hx-confirm="Delete?">
+    {% csrf_token %}
+    <input type="hidden" name="from_url" value="{{ from_url }}" />
+    {% if for_article_details %}
+        <input type="hidden" name="for_article_details" value="true" />
+    {% else %}
+        <input type="hidden"
+               name="displayed_reading_list_id"
+               value="{{ displayed_reading_list_id }}" />
+    {% endif %}
+</form>
+<div class="{% if vertical_group %}btn-group-vertical w-100{% else %}btn-group{% endif %}"
+     role="group">
+    <button class="btn btn-danger"
+            {% if article.is_from_feed %}disabled{% endif %}
+            type="submit"
+            form="delete-article-{{ article.id }}">
+        <span class="icon-indicator icon-indicator-{{ article.id }}">
+            {% include "core/partials/button_loading_indicator_icon.html" %}
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="16"
+                 height="16"
+                 fill="currentColor"
+                 class="bi bi-trash"
+                 viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+            </svg>
+        </span>
+        {% translate "Delete" %}
+    </button>
+</div>

@@ -35,7 +35,10 @@
         </div>
         <div class="card-text mt-3">{{ article.summary | truncatewords_html:100 | safe }}</div>
     </div>
-    <div class="card-footer">{% include "feeds/partials/article_actions.html" %}</div>
+    <div class="card-footer d-flex justify-content-between">
+        <div>{% include "feeds/partials/article_actions.html" %}</div>
+        <div>{% include "feeds/partials/article_danger_actions.html" %}</div>
+    </div>
 </div>
 {% if is_last and next_page_number %}
     <p class="icon-indicator infinite-scrolling-icon-indicator"

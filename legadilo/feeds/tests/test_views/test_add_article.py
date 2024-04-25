@@ -94,6 +94,6 @@ class TestAddArticle:
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
-                message="The article you are trying to add is too big and cannot be processed.",
+                message="The article you are trying to fetch is too big and cannot be processed.",
             )
         ]

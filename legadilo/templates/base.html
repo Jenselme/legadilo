@@ -37,11 +37,34 @@
                     integrity="sha512-9KsixJxn00SQfLkrArzXRFi3QyqP4RyIzYgj2Ho4YJSLEOHS00uhDQdc7dv6N8PS5OsYZWKiY0/7DsZRlcv/DQ=="
                     crossorigin="anonymous"
                     referrerpolicy="no-referrer"></script>
+            <script src="{% static 'js/base.js' %}"></script>
             {% block page_js %}
             {% endblock page_js %}
         {% endblock javascript %}
     </head>
     <body>
+        <div id="danger-modal"
+             class="modal fade"
+             tabindex="-1"
+             aria-labelledby=""
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5"></h1>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% translate "No" %}</button>
+                        <button type="button" class="btn btn-danger proceed">{% translate "Yes" %}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% if not base.hide_header %}
             <div class="mb-1 sticky-top">
                 <nav class="navbar navbar-expand-md navbar-light bg-light">

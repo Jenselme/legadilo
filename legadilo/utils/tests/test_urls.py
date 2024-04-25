@@ -1,7 +1,12 @@
 import pytest
 from django.test import RequestFactory
 
-from legadilo.utils.urls import validate_from_url, validate_referer_url
+from legadilo.utils.urls import (
+    add_query_params,
+    pop_query_param,
+    validate_from_url,
+    validate_referer_url,
+)
 
 absolute_urls_params = [
     ("http://testserver", "http://testserver/fallback", "http://testserver"),
@@ -77,3 +82,66 @@ def test_validate_from_url(from_url, fallback_url, expected_url):
     validated_url = validate_from_url(request, from_url, fallback_url)
 
     assert validated_url == expected_url
+
+
+@pytest.mark.parametrize(
+    ("url", "expected_url"),
+    [
+        pytest.param(
+            "https://example.com", "https://example.com?my-param=my-value", id="scheme-domain"
+        ),
+        pytest.param("example.com", "example.com?my-param=my-value", id="domain-only"),
+        pytest.param("/path", "/path?my-param=my-value", id="path-only"),
+        pytest.param(
+            "https://example.com/test",
+            "https://example.com/test?my-param=my-value",
+            id="domain-and-path",
+        ),
+        pytest.param(
+            "https://example.com/test?my-param=wrong-value",
+            "https://example.com/test?my-param=my-value",
+            id="override-param",
+        ),
+        pytest.param(
+            "https://example.com/test?some-param=some-value",
+            "https://example.com/test?some-param=some-value&my-param=my-value",
+            id="other-param",
+        ),
+    ],
+)
+def test_add_query_params(url: str, expected_url: str):
+    built_url = add_query_params(url, {"my-param": ["my-value"]})
+
+    assert built_url == expected_url
+
+
+@pytest.mark.parametrize(
+    ("url", "expected_url"),
+    [
+        pytest.param(
+            "https://example.com?my-param=my-value", "https://example.com", id="scheme-domain"
+        ),
+        pytest.param("example.com?my-param=my-value", "example.com", id="domain-only"),
+        pytest.param("/path?my-param=my-value", "/path", id="path-only"),
+        pytest.param(
+            "https://example.com/test?my-param=my-value",
+            "https://example.com/test",
+            id="domain-and-path",
+        ),
+        pytest.param(
+            "https://example.com/test?some-param=some-value&my-param=my-value",
+            "https://example.com/test?some-param=some-value",
+            id="other-param",
+        ),
+    ],
+)
+def test_pop_query_param(url: str, expected_url: str):
+    built_url = pop_query_param(url, "my-param")
+
+    assert built_url == (expected_url, "my-value")
+
+
+def test_pop_query_param_missing_param():
+    built_url = pop_query_param("https://example.com/test", "my-param")
+
+    assert built_url == ("https://example.com/test", None)
