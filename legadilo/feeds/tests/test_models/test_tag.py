@@ -11,35 +11,44 @@ class TestTagManager:
     def _setup_data(self, user):
         self.tag1 = TagFactory(user=user)
         self.tag2 = TagFactory(user=user)
+        self.existing_tag_with_spaces = TagFactory(
+            user=user, name="Existing tag with spaces", slug="existing-tag-with-spaces"
+        )
         self.other_user_tag = TagFactory()
 
     def test_get_all_choices(self, user):
         choices = list(Tag.objects.get_all_choices(user))
 
-        assert choices == [(self.tag1.slug, self.tag1.name), (self.tag2.slug, self.tag2.name)]
+        assert choices == [
+            (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.name),
+            (self.tag1.slug, self.tag1.name),
+            (self.tag2.slug, self.tag2.name),
+        ]
 
     def test_get_or_create_from_list(self, django_assert_num_queries, user):
         with django_assert_num_queries(4):
             tags = Tag.objects.get_or_create_from_list(
-                user, [self.tag1.slug, self.other_user_tag.slug, "New tag"]
+                user,
+                [self.tag1.slug, self.other_user_tag.slug, "New tag", "Existing tag with spaces"],
             )
 
-        assert len(tags) == 3
-        assert Tag.objects.count() == 5
-        assert tags[0] == self.tag1
-        assert tags[1].name == self.other_user_tag.slug
-        assert tags[1].slug == self.other_user_tag.slug
-        assert tags[1].user == user
-        assert tags[2].name == "New tag"
-        assert tags[2].slug == "new-tag"
+        assert len(tags) == 4
+        assert Tag.objects.count() == 6
+        assert tags[0] == self.existing_tag_with_spaces
+        assert tags[1] == self.tag1
+        assert tags[2].name == self.other_user_tag.slug
+        assert tags[2].slug == self.other_user_tag.slug
         assert tags[2].user == user
+        assert tags[3].name == "New tag"
+        assert tags[3].slug == "new-tag"
+        assert tags[3].user == user
 
     def test_get_or_create_from_list_no_new(self, django_assert_num_queries, user):
         with django_assert_num_queries(3):
             tags = Tag.objects.get_or_create_from_list(user, [self.tag1.slug])
 
         assert len(tags) == 1
-        assert Tag.objects.count() == 3
+        assert Tag.objects.count() == 4
         assert tags[0] == self.tag1
 
 

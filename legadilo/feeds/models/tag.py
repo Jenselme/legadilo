@@ -34,12 +34,16 @@ class TagManager(models.Manager["Tag"]):
 
     @transaction.atomic()
     def get_or_create_from_list(self, user: User, names_or_slugs: list[str]) -> list[Tag]:
-        existing_tags = list(Tag.objects.get_queryset().for_user(user).for_slugs(names_or_slugs))
+        existing_tags = list(
+            Tag.objects.get_queryset()
+            .for_user(user)
+            .for_slugs([slugify(name_or_slug) for name_or_slug in names_or_slugs])
+        )
         existing_slugs = {tag.slug for tag in existing_tags}
         tags_to_create = [
-            self.model(name=name, slug=slugify(name), user=user)
-            for name in names_or_slugs
-            if name not in existing_slugs
+            self.model(name=name_or_slug, slug=slugify(name_or_slug), user=user)
+            for name_or_slug in names_or_slugs
+            if slugify(name_or_slug) not in existing_slugs
         ]
         if tags_to_create:
             self.bulk_create(tags_to_create)
