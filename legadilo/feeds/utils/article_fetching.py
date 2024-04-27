@@ -67,6 +67,10 @@ def _get_title(soup: BeautifulSoup) -> str:
     title = ""
     if (og_title := soup.find("meta", attrs={"property": "og:title"})) and og_title.get("content"):
         title = og_title.get("content")
+    elif (itemprop_name := soup.find("meta", attrs={"itemprop": "name"})) and itemprop_name.get(
+        "content"
+    ):
+        title = itemprop_name.get("content")
     elif (meta_title := soup.find("meta", attrs={"property": "title"})) and meta_title.get(
         "content"
     ):
@@ -99,6 +103,10 @@ def _get_summary(soup: BeautifulSoup) -> str:
         "content"
     ):
         summary = meta_desc.get("content")
+    elif (
+        itemprop_description := soup.find("meta", attrs={"itemprop": "description"})
+    ) and itemprop_description.get("content"):
+        summary = itemprop_description.get("content")
 
     return sanitize_keep_safe_tags(summary)
 
