@@ -12,7 +12,7 @@ from legadilo.utils.security import (
     sanitize_keep_safe_tags,
 )
 from legadilo.utils.time import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid
+from legadilo.utils.validators import is_url_valid, normalize_url
 
 
 @dataclass(frozen=True)
@@ -152,7 +152,7 @@ def _get_link(supplied_url: str, soup: BeautifulSoup) -> str:
         link = canonical_link.get("href")
 
     if is_url_valid(link):
-        return link
+        return normalize_url(supplied_url, link)
 
     return supplied_url
 
