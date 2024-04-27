@@ -56,3 +56,8 @@ def opened_action_url(article: Article) -> str:
 @register.filter
 def delete_action_url(article: Article) -> str:
     return reverse("feeds:delete_article", kwargs={"article_id": article.id})
+
+
+@register.filter
+def update_tags_action_url(article: Article) -> str:
+    return reverse("feeds:update_article_tags", kwargs={"article_id": article.id})

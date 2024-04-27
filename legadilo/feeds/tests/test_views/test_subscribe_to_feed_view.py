@@ -79,13 +79,13 @@ class TestCreateFeedView:
         ]
         assert Feed.objects.count() == 1
         feed = Feed.objects.get()
-        assert list(feed.tags.values_list("slug", flat=True)) == [self.existing_tag.slug, "new"]
+        assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            (self.existing_tag.slug, constants.TaggingReason.FROM_FEED),
             ("new", constants.TaggingReason.FROM_FEED),
+            (self.existing_tag.slug, constants.TaggingReason.FROM_FEED),
         ]
         assert FeedUpdate.objects.count() == 1
 

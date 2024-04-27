@@ -25,6 +25,11 @@ class TestTagManager:
             (self.tag2.slug, self.tag2.name),
         ]
 
+    def test_get_selected_values(self, user):
+        choices = list(Tag.objects.get_selected_values(user))
+
+        assert choices == [self.existing_tag_with_spaces.slug, self.tag1.slug, self.tag2.slug]
+
     def test_get_or_create_from_list(self, django_assert_num_queries, user):
         with django_assert_num_queries(4):
             tags = Tag.objects.get_or_create_from_list(
@@ -80,26 +85,31 @@ class TestArticleTagQuerySet:
 
 @pytest.mark.django_db()
 class TestArticleTagManager:
-    def test_associate_articles_with_tags(self, user, django_assert_num_queries):
-        article1 = ArticleFactory(user=user)
-        article2 = ArticleFactory(user=user)
-        tag1 = TagFactory(user=user)
-        tag2 = TagFactory(user=user)
-        tag3 = TagFactory(user=user)
-        articles = [article1, article2]
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.article1 = ArticleFactory(user=user)
+        self.article2 = ArticleFactory(user=user)
+        self.tag1 = TagFactory(user=user)
+        self.tag2 = TagFactory(user=user)
+        self.tag3 = TagFactory(user=user)
         # The article already has the tag, nothing must happen.
         ArticleTag.objects.create(
-            article=article1, tag=tag1, tagging_reason=constants.TaggingReason.FROM_FEED
+            article=self.article1, tag=self.tag1, tagging_reason=constants.TaggingReason.FROM_FEED
         )
         # The user deleted the tag, nothing must happen.
         ArticleTag.objects.create(
-            article=article1, tag=tag2, tagging_reason=constants.TaggingReason.DELETED
+            article=self.article1, tag=self.tag2, tagging_reason=constants.TaggingReason.DELETED
         )
         # The user added a tag manually, nothing must happen.
         ArticleTag.objects.create(
-            article=article1, tag=tag3, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+            article=self.article1,
+            tag=self.tag3,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
-        tags = [tag1, tag2]
+
+    def test_associate_articles_with_tags(self, user, django_assert_num_queries):
+        articles = [self.article1, self.article2]
+        tags = [self.tag1, self.tag2]
 
         with django_assert_num_queries(1):
             ArticleTag.objects.associate_articles_with_tags(
@@ -109,31 +119,39 @@ class TestArticleTagManager:
         created_article_tags = list(ArticleTag.objects.values("article", "tag", "tagging_reason"))
         assert created_article_tags == [
             {
-                "article": article1.id,
-                "tag": tag1.id,
+                "article": self.article1.id,
+                "tag": self.tag1.id,
                 "tagging_reason": constants.TaggingReason.FROM_FEED,
             },
             {
-                "article": article1.id,
-                "tag": tag2.id,
+                "article": self.article1.id,
+                "tag": self.tag2.id,
                 "tagging_reason": constants.TaggingReason.DELETED,
             },
             {
-                "article": article1.id,
-                "tag": tag3.id,
+                "article": self.article1.id,
+                "tag": self.tag3.id,
                 "tagging_reason": constants.TaggingReason.ADDED_MANUALLY,
             },
             {
-                "article": article2.id,
-                "tag": tag1.id,
+                "article": self.article2.id,
+                "tag": self.tag1.id,
                 "tagging_reason": constants.TaggingReason.FROM_FEED,
             },
             {
-                "article": article2.id,
-                "tag": tag2.id,
+                "article": self.article2.id,
+                "tag": self.tag2.id,
                 "tagging_reason": constants.TaggingReason.FROM_FEED,
             },
         ]
+
+    def test_dissociate_article_with_tags_not_in_list(self, user, django_assert_num_queries):
+        assert self.article1.tags.count() == 3
+
+        with django_assert_num_queries(2):
+            ArticleTag.objects.dissociate_article_with_tags_not_in_list(self.article1, [self.tag1])
+
+        assert list(self.article1.tags.all()) == [self.tag1]
 
 
 @pytest.mark.django_db()

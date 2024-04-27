@@ -32,6 +32,9 @@ class TagManager(models.Manager["Tag"]):
     def get_all_choices(self, user: User) -> list[tuple[str, str]]:
         return list(self.get_queryset().for_user(user).values_list("slug", "name"))
 
+    def get_selected_values(self, user: User) -> list[str]:
+        return [slug for slug, name in self.get_all_choices(user)]
+
     @transaction.atomic()
     def get_or_create_from_list(self, user: User, names_or_slugs: list[str]) -> list[Tag]:
         existing_tags = list(
@@ -112,6 +115,14 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
         self.bulk_create(
             article_tags, ignore_conflicts=True, unique_fields=["article_id", "tag_id"]
         )
+
+    def dissociate_article_with_tags_not_in_list(self, article: Article, tags: Iterable[Tag]):
+        existing_article_tag_slugs = set(article.tags.all().values_list("slug", flat=True))
+        tag_slugs_to_keep = {tag.slug for tag in tags}
+        article_tag_slugs_to_delete = existing_article_tag_slugs - tag_slugs_to_keep
+
+        if article_tag_slugs_to_delete:
+            article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).delete()
 
 
 class ArticleTag(models.Model):
