@@ -43,21 +43,21 @@ async def get_article_from_url(url: str) -> ArticleData:
     if sys.getsizeof(page_content) > constants.MAX_FEED_FILE_SIZE:
         raise ArticleTooBigError
 
-    return _build_article_data(url, page_content.decode(response.encoding or "utf-8"))
+    return _build_article_data(str(response.url), page_content.decode(response.encoding or "utf-8"))
 
 
-def _build_article_data(url: str, text: str) -> ArticleData:
+def _build_article_data(fetched_url: str, text: str) -> ArticleData:
     soup = BeautifulSoup(text, "html.parser")
     return ArticleData(
         external_article_id="",
-        source_title=_get_site_title(url, soup),
+        source_title=_get_site_title(fetched_url, soup),
         title=_get_title(soup),
         summary=_get_summary(soup),
         content=_get_content(soup),
         authors=_get_authors(soup),
         contributors=[],
         tags=_get_tags(soup),
-        link=_get_link(url, soup),
+        link=_get_link(fetched_url, soup),
         published_at=_get_published_at(soup),
         updated_at=_get_updated_at(soup),
     )
@@ -77,8 +77,8 @@ def _get_title(soup: BeautifulSoup) -> str:
     return full_sanitize(title)
 
 
-def _get_site_title(supplied_url: str, soup: BeautifulSoup) -> str:
-    site_title = urlparse(supplied_url).netloc
+def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
+    site_title = urlparse(fetched_url).netloc
     if (og_site_name := soup.find("meta", attrs={"property": "og:site_name"})) and og_site_name.get(
         "content"
     ):
@@ -146,15 +146,15 @@ def _get_tags(soup: BeautifulSoup) -> list[str]:
     return [tag for tag in cleaned_tags if tag]
 
 
-def _get_link(supplied_url: str, soup: BeautifulSoup) -> str:
-    link = supplied_url
+def _get_link(fetched_url: str, soup: BeautifulSoup) -> str:
+    link = fetched_url
     if (canonical_link := soup.find("link", {"rel": "canonical"})) and canonical_link.get("href"):
         link = canonical_link.get("href")
 
     if is_url_valid(link):
-        return normalize_url(supplied_url, link)
+        return normalize_url(fetched_url, link)
 
-    return supplied_url
+    return fetched_url
 
 
 def _get_published_at(soup: BeautifulSoup) -> datetime | None:
