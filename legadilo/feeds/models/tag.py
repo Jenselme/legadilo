@@ -68,6 +68,7 @@ class Tag(models.Model):
                 "slug", "user_id", name="%(app_label)s_%(class)s_tag_slug_unique_for_user"
             )
         ]
+        ordering = ["name", "id"]
 
     def __str__(self):
         return f"Tag(name={self.name}, user={self.user})"
@@ -133,6 +134,7 @@ class ArticleTag(models.Model):
                 "article", "tag", name="%(app_label)s_%(class)s_tagged_once_per_article"
             ),
         ]
+        ordering = ["article_id", "tag__name", "tag_id"]
 
     def __str__(self):
         return (
@@ -168,6 +170,7 @@ class FeedTag(models.Model):
                 "feed", "tag", name="%(app_label)s_%(class)s_tagged_once_per_feed"
             )
         ]
+        ordering = ["tag__name", "tag_id"]
 
     def __str__(self):
         return f"FeedTag(feed={self.feed}, tag={self.tag})"
@@ -196,6 +199,7 @@ class ReadingListTag(models.Model):
                 ),
             ),
         ]
+        ordering = ["tag__name", "tag_id"]
 
     def __str__(self):
         return f"ReadingListTag(reading_list={self.reading_list}, tag={self.tag})"
