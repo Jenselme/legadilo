@@ -66,7 +66,7 @@ class TestCreateFeedView:
     ):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(24):
             response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED, response.context["form"].errors

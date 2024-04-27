@@ -613,7 +613,7 @@ class TestArticleManager:
         )
         now_dt = utcnow()
 
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(7):
             Article.objects.update_or_create_from_articles_list(
                 user,
                 [

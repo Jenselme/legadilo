@@ -101,7 +101,7 @@ class TestFeedManager:
     def test_create_from_metadata_with_tags(self, user, django_assert_num_queries):
         tag = TagFactory()
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(15):
             feed = Feed.objects.create_from_metadata(
                 FeedMetadata(
                     feed_url="https://example.com/feeds/atom.xml",

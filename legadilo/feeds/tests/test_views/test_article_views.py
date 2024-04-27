@@ -250,11 +250,17 @@ class TestUpdateArticleTagsView:
             article=self.article,
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
-        tag_to_delete = TagFactory(user=user)
+        self.tag_to_delete = TagFactory(user=user)
         ArticleTag.objects.create(
-            tag=tag_to_delete,
+            tag=self.tag_to_delete,
             article=self.article,
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        self.deleted_tag_to_readd = TagFactory(user=user)
+        ArticleTag.objects.create(
+            tag=self.deleted_tag_to_readd,
+            article=self.article,
+            tagging_reason=constants.TaggingReason.DELETED,
         )
         self.existing_tag_to_add = TagFactory(user=user)
         self.some_other_tag = TagFactory(user=user)
@@ -268,7 +274,12 @@ class TestUpdateArticleTagsView:
             },
         )
         self.sample_payload = {
-            "tags": [self.tag_to_keep.slug, self.existing_tag_to_add.slug, "Some tag"]
+            "tags": [
+                self.tag_to_keep.slug,
+                self.existing_tag_to_add.slug,
+                self.deleted_tag_to_readd.slug,
+                "Some tag",
+            ]
         }
 
     def test_cannot_access_if_not_logged_in(self, client):
@@ -286,7 +297,7 @@ class TestUpdateArticleTagsView:
         self, logged_in_sync_client, django_assert_num_queries
     ):
         referer_url = urljoin("http://testserver/", self.reading_list_url)
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
@@ -295,8 +306,10 @@ class TestUpdateArticleTagsView:
 
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == referer_url
-        assert list(self.article.tags.values_list("slug", flat=True)) == [
-            "some-tag",
-            self.tag_to_keep.slug,
-            self.existing_tag_to_add.slug,
+        assert list(self.article.article_tags.values_list("tag__slug", "tagging_reason")) == [
+            ("some-tag", constants.TaggingReason.ADDED_MANUALLY),
+            (self.tag_to_keep.slug, constants.TaggingReason.ADDED_MANUALLY),
+            (self.tag_to_delete.slug, constants.TaggingReason.DELETED),
+            (self.deleted_tag_to_readd.slug, constants.TaggingReason.ADDED_MANUALLY),
+            (self.existing_tag_to_add.slug, constants.TaggingReason.ADDED_MANUALLY),
         ]

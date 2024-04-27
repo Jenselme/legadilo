@@ -46,7 +46,7 @@ def article_details_view(
     tag_choices = Tag.objects.get_all_choices(request.user)
     edit_tags_form = EditTagsForm(
         initial={
-            "tags": article.tags.get_selected_values(request.user),
+            "tags": article.article_tags.get_selected_values(),
         },
         tag_choices=tag_choices,
     )
@@ -169,14 +169,14 @@ def update_article_tags_view(request: AuthenticatedHttpRequest, article_id: int)
     form = EditTagsForm(
         request.POST,
         initial={
-            "tags": article.tags.get_selected_values(request.user),
+            "tags": article.article_tags.get_selected_values(),
         },
         tag_choices=tag_choices,
     )
     if form.is_valid():
         tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
         ArticleTag.objects.associate_articles_with_tags(
-            [article], tags, constants.TaggingReason.ADDED_MANUALLY
+            [article], tags, constants.TaggingReason.ADDED_MANUALLY, readd_deleted=True
         )
         ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
 

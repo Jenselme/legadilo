@@ -32,9 +32,6 @@ class TagManager(models.Manager["Tag"]):
     def get_all_choices(self, user: User) -> list[tuple[str, str]]:
         return list(self.get_queryset().for_user(user).values_list("slug", "name"))
 
-    def get_selected_values(self, user: User) -> list[str]:
-        return [slug for slug, name in self.get_all_choices(user)]
-
     @transaction.atomic()
     def get_or_create_from_list(self, user: User, names_or_slugs: list[str]) -> list[Tag]:
         existing_tags = list(
@@ -94,6 +91,21 @@ class ArticleTagQuerySet(models.QuerySet["ArticleTag"]):
             .annotate(name=models.F("tag__name"), slug=models.F("tag__slug"))
         )
 
+    def for_articles_and_tags(self, articles: Iterable[Article], tags: Iterable[Tag]) -> Self:
+        return self.filter(
+            article_id__in=[article.id for article in articles], tag_id__in=[tag.id for tag in tags]
+        )
+
+    def for_deleted_links(self, links: Iterable[tuple[int, int]]) -> Self:
+        article_ids = [link[0] for link in links]
+        tag_ids = [link[1] for link in links]
+
+        return self.filter(
+            article_id__in=article_ids,
+            tag_id__in=tag_ids,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
+
 
 class ArticleTagManager(models.Manager["ArticleTag"]):
     _hints: dict
@@ -101,20 +113,35 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
     def get_queryset(self) -> ArticleTagQuerySet:
         return ArticleTagQuerySet(model=self.model, using=self._db, hints=self._hints)
 
+    def get_selected_values(self) -> list[str]:
+        return list(self.get_queryset().for_reading_list().values_list("slug", flat=True))
+
     def associate_articles_with_tags(
         self,
         articles: Iterable[Article],
         tags: Iterable[Tag],
         tagging_reason: constants.TaggingReason,
+        *,
+        readd_deleted=False,
     ):
-        article_tags = [
+        existing_article_tag_links = list(
+            self.get_queryset()
+            .for_articles_and_tags(articles, tags)
+            .values_list("article_id", "tag_id")
+        )
+        article_tags_to_create = [
             self.model(article=article, tag=tag, tagging_reason=tagging_reason)
             for article in articles
             for tag in tags
+            if (article.id, tag.id) not in existing_article_tag_links
         ]
-        self.bulk_create(
-            article_tags, ignore_conflicts=True, unique_fields=["article_id", "tag_id"]
-        )
+        if article_tags_to_create:
+            self.bulk_create(article_tags_to_create)
+
+        if readd_deleted:
+            self.get_queryset().for_deleted_links(existing_article_tag_links).update(
+                tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+            )
 
     def dissociate_article_with_tags_not_in_list(self, article: Article, tags: Iterable[Tag]):
         existing_article_tag_slugs = set(article.tags.all().values_list("slug", flat=True))
@@ -122,7 +149,9 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
         article_tag_slugs_to_delete = existing_article_tag_slugs - tag_slugs_to_keep
 
         if article_tag_slugs_to_delete:
-            article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).delete()
+            article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).update(
+                tagging_reason=constants.TaggingReason.DELETED
+            )
 
 
 class ArticleTag(models.Model):
