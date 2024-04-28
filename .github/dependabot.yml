@@ -8,7 +8,7 @@ updates:
     directory: "/"
     # Every weekday
     schedule:
-      interval: "daily"
+      interval: "monthly"
 
   # Enable version updates for Docker
   # We need to specify each Dockerfile in a separate entry because Dependabot doesn't
@@ -19,7 +19,7 @@ updates:
     directory: "compose/local/django/"
     # Every weekday
     schedule:
-      interval: "daily"
+      interval: "monthly"
     # Ignore minor version updates (3.10 -> 3.11) but update patch versions
     ignore:
       - dependency-name: "*"
@@ -32,7 +32,7 @@ updates:
     directory: "compose/local/docs/"
     # Every weekday
     schedule:
-      interval: "daily"
+      interval: "monthly"
     # Ignore minor version updates (3.10 -> 3.11) but update patch versions
     ignore:
       - dependency-name: "*"
@@ -41,18 +41,11 @@ updates:
           - "version-update:semver-minor"
 
   - package-ecosystem: "docker"
-    # Look for a `Dockerfile` in the `compose/local/node` directory
-    directory: "compose/local/node/"
-    # Every weekday
-    schedule:
-      interval: "daily"
-
-  - package-ecosystem: "docker"
     # Look for a `Dockerfile` in the `compose/production/django` directory
     directory: "compose/production/django/"
     # Every weekday
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Ignore minor version updates (3.10 -> 3.11) but update patch versions
     ignore:
       - dependency-name: "*"
@@ -65,14 +58,7 @@ updates:
     directory: "compose/production/postgres/"
     # Every weekday
     schedule:
-      interval: "daily"
-
-  - package-ecosystem: "docker"
-    # Look for a `Dockerfile` in the `compose/production/traefik` directory
-    directory: "compose/production/traefik/"
-    # Every weekday
-    schedule:
-      interval: "daily"
+      interval: "weekly"
 
   # Enable version updates for Python/Pip - Production
   - package-ecosystem: "pip"
