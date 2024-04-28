@@ -142,7 +142,9 @@ class TestCreateFeedView:
         ]
 
     def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker, sample_rss_feed):
-        mocker.patch("legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=2048 * 1024)
+        mocker.patch(
+            "legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
+        )
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)

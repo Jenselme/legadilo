@@ -198,7 +198,9 @@ class TestGetFeedMetadata:
 
     @pytest.mark.asyncio()
     async def test_feed_file_too_big(self, httpx_mock, mocker):
-        mocker.patch("legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=2048 * 1024)
+        mocker.patch(
+            "legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
+        )
         httpx_mock.add_response(
             text=get_feed_fixture_content("sample_atom.xml"),
             url="https://www.jujens.eu/feed/rss.xml",
