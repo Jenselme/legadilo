@@ -8,7 +8,7 @@ from httpx import AsyncClient, HTTPError, HTTPStatusError, Limits
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedUpdate
-from legadilo.feeds.utils.feed_parsing import get_feed_metadata
+from legadilo.feeds.utils.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class Command(AsyncCommand):
         logger.debug("Updating feed %s", feed)
         feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
         try:
-            feed_metadata = await get_feed_metadata(
+            feed_metadata = await get_feed_data(
                 feed.feed_url,
                 client=client,
                 etag=feed_update.feed_etag,

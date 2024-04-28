@@ -18,7 +18,7 @@ from .article_fetching import ArticleData
 
 
 @dataclass(frozen=True)
-class FeedMetadata:
+class FeedData:
     feed_url: str
     site_url: str
     title: str
@@ -53,14 +53,14 @@ class InvalidFeedArticleError(InvalidFeedFileError):
     pass
 
 
-async def get_feed_metadata(
+async def get_feed_data(
     url: str,
     *,
     client: httpx.AsyncClient,
     etag: str | None = None,
     last_modified: datetime | None = None,
-) -> FeedMetadata:
-    """Find the feed metadata from the supplied URL (either a feed or a page containing a link to
+) -> FeedData:
+    """Find the feed data from the supplied URL (either a feed or a page containing a link to
     a feed).
     """
 
@@ -71,14 +71,18 @@ async def get_feed_metadata(
             client, url, etag=etag, last_modified=last_modified
         )
 
-    feed_title = full_sanitize(parsed_feed.feed.title)
-    return FeedMetadata(
-        feed_url=str(resolved_url),
-        site_url=_normalize_found_link(parsed_feed.feed.link),
+    return build_feed_data(parsed_feed, str(resolved_url))
+
+
+def build_feed_data(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
+    feed_title = full_sanitize(parsed_feed.feed.get("title", ""))
+    return FeedData(
+        feed_url=resolved_url,
+        site_url=_normalize_found_link(parsed_feed.feed.get("link", resolved_url)),
         title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
-        articles=parse_articles_in_feed(url, feed_title, parsed_feed),
+        articles=parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
@@ -102,7 +106,11 @@ async def _fetch_feed_and_raw_data(
         raise FeedFileTooBigError
 
     feed_content = raw_feed_content.decode(response.encoding or "utf-8")
-    return parse_feed(feed_content), feed_content, response.url
+    return (
+        parse_feed(feed_content, resolve_relative_uris=True, sanitize_html=False),
+        feed_content,
+        response.url,
+    )
 
 
 async def _fetch_feed(
@@ -151,7 +159,7 @@ def parse_articles_in_feed(
 ) -> list[ArticleData]:
     return [
         ArticleData(
-            external_article_id=full_sanitize(entry.id),
+            external_article_id=full_sanitize(entry.get("id", "")),
             title=full_sanitize(entry.title),
             summary=sanitize_keep_safe_tags(entry.summary),
             content=_get_article_content(entry),
@@ -159,8 +167,8 @@ def parse_articles_in_feed(
             contributors=_get_article_contributors(entry),
             tags=_get_articles_tags(entry),
             link=_get_article_link(feed_url, entry),
-            published_at=_feed_time_to_datetime(entry.published_parsed),
-            updated_at=_feed_time_to_datetime(entry.updated_parsed),
+            published_at=_feed_time_to_datetime(entry.get("published_parsed")),
+            updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
             source_title=feed_title,
         )
         for entry in parsed_feed.entries

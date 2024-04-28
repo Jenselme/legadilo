@@ -7,12 +7,12 @@ import pytest
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.utils.feed_parsing import (
     ArticleData,
+    FeedData,
     FeedFileTooBigError,
-    FeedMetadata,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
     find_feed_page_content,
-    get_feed_metadata,
+    get_feed_data,
     parse_articles_in_feed,
     parse_feed,
 )
@@ -185,9 +185,9 @@ class TestGetFeedMetadata:
         httpx_mock.add_response(text=feed_content, url=feed_url)
 
         async with httpx.AsyncClient() as client:
-            metadata = await get_feed_metadata(feed_url, client=client)
+            metadata = await get_feed_data(feed_url, client=client)
 
-        assert metadata == FeedMetadata(
+        assert metadata == FeedData(
             feed_url=feed_url,
             site_url="http://example.org/",
             title="Sample Feed",
@@ -210,9 +210,9 @@ class TestGetFeedMetadata:
         httpx_mock.add_response(text=SAMPLE_ATOM_FEED, url=feed_url)
 
         async with httpx.AsyncClient() as client:
-            metadata = await get_feed_metadata(page_url, client=client)
+            metadata = await get_feed_data(page_url, client=client)
 
-        assert metadata == FeedMetadata(
+        assert metadata == FeedData(
             feed_url=feed_url,
             site_url="http://example.org/",
             title="Sample Feed",
@@ -230,7 +230,7 @@ class TestGetFeedMetadata:
 
         with pytest.raises(FeedFileTooBigError):
             async with httpx.AsyncClient() as client:
-                await get_feed_metadata("https://www.jujens.eu/feed/rss.xml", client=client)
+                await get_feed_data("https://www.jujens.eu/feed/rss.xml", client=client)
 
 
 class TestParseArticlesInFeed:

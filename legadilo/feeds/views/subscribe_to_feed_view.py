@@ -20,7 +20,7 @@ from ..utils.feed_parsing import (
     InvalidFeedFileError,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
-    get_feed_metadata,
+    get_feed_data,
 )
 
 
@@ -45,7 +45,7 @@ async def _handle_creation(request, tag_choices: list[tuple[str, str]]):  # noqa
 
     try:
         async with httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT) as client:
-            feed_medata = await get_feed_metadata(form.feed_url, client=client)
+            feed_medata = await get_feed_data(form.feed_url, client=client)
         tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
             request.user, form.cleaned_data["tags"]
         )

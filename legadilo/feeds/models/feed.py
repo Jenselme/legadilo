@@ -8,7 +8,7 @@ from legadilo.users.models import User
 
 from .. import constants
 from ..constants import SupportedFeedType
-from ..utils.feed_parsing import FeedMetadata
+from ..utils.feed_parsing import FeedData
 from .article import Article
 from .feed_article import FeedArticle
 from .feed_update import FeedUpdate
@@ -31,9 +31,7 @@ class FeedManager(models.Manager["Feed"]):
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     @transaction.atomic()
-    def create_from_metadata(
-        self, feed_metadata: FeedMetadata, user: User, tags: list[Tag]
-    ) -> Feed:
+    def create_from_metadata(self, feed_metadata: FeedData, user: User, tags: list[Tag]) -> Feed:
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,
@@ -47,7 +45,7 @@ class FeedManager(models.Manager["Feed"]):
         return feed
 
     @transaction.atomic()
-    def update_feed(self, feed: Feed, feed_metadata: FeedMetadata):
+    def update_feed(self, feed: Feed, feed_metadata: FeedData):
         created_articles = Article.objects.update_or_create_from_articles_list(
             feed.user,
             feed_metadata.articles,
