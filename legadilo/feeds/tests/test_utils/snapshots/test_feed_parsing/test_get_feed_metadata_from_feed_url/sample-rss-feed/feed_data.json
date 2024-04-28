@@ -1,0 +1,26 @@
+{
+  "articles": [
+    {
+      "authors": [],
+      "content": "",
+      "contributors": [],
+      "external_article_id": "http://example.org/entry/3",
+      "link": "http://example.org/entry/3",
+      "preview_picture_alt": "",
+      "preview_picture_url": "",
+      "published_at": "2002-09-05T00:00:01+00:00",
+      "source_title": "Sample Feed",
+      "summary": "Watch out for <span>nasty\n                tricks</span>",
+      "tags": [],
+      "title": "First entry title",
+      "updated_at": "2002-09-05T00:00:01+00:00"
+    }
+  ],
+  "description": "For documentation only",
+  "etag": "",
+  "feed_type": "rss20",
+  "feed_url": "https://www.jujens.eu/feed/rss.xml",
+  "last_modified": null,
+  "site_url": "http://example.org/",
+  "title": "Sample Feed"
+}

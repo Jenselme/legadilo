@@ -6,9 +6,10 @@
     <script src="{% static 'js/tag_edition.js' %}" type="module"></script>
 {% endblock page_js %}
 {% block title %}
-    {% translate "Add a new feed" %}
+    {% translate "Subscribe to a new feed" %}
 {% endblock title %}
 {% block content %}
+    <h1>{% translate "Subscribe to a new feed" %}</h1>
     <form method="post" action="{% url 'feeds:subscribe_to_feed' %}">
         {% csrf_token %}
         {{ form|crispy }}

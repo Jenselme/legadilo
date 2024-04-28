@@ -1,8 +1,10 @@
+import re
 import sys
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import chain
+from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -18,7 +20,7 @@ from .article_fetching import ArticleData
 
 
 @dataclass(frozen=True)
-class FeedMetadata:
+class FeedData:
     feed_url: str
     site_url: str
     title: str
@@ -53,14 +55,14 @@ class InvalidFeedArticleError(InvalidFeedFileError):
     pass
 
 
-async def get_feed_metadata(
+async def get_feed_data(
     url: str,
     *,
     client: httpx.AsyncClient,
     etag: str | None = None,
     last_modified: datetime | None = None,
-) -> FeedMetadata:
-    """Find the feed metadata from the supplied URL (either a feed or a page containing a link to
+) -> FeedData:
+    """Find the feed data from the supplied URL (either a feed or a page containing a link to
     a feed).
     """
 
@@ -71,14 +73,18 @@ async def get_feed_metadata(
             client, url, etag=etag, last_modified=last_modified
         )
 
-    feed_title = full_sanitize(parsed_feed.feed.title)
-    return FeedMetadata(
-        feed_url=str(resolved_url),
-        site_url=_normalize_found_link(parsed_feed.feed.link),
+    return build_feed_data(parsed_feed, str(resolved_url))
+
+
+def build_feed_data(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
+    feed_title = full_sanitize(parsed_feed.feed.get("title", ""))
+    return FeedData(
+        feed_url=resolved_url,
+        site_url=_normalize_found_link(parsed_feed.feed.get("link", resolved_url)),
         title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
-        articles=parse_articles_in_feed(url, feed_title, parsed_feed),
+        articles=parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
@@ -102,7 +108,11 @@ async def _fetch_feed_and_raw_data(
         raise FeedFileTooBigError
 
     feed_content = raw_feed_content.decode(response.encoding or "utf-8")
-    return parse_feed(feed_content), feed_content, response.url
+    return (
+        parse_feed(feed_content, resolve_relative_uris=True, sanitize_html=False),
+        feed_content,
+        response.url,
+    )
 
 
 async def _fetch_feed(
@@ -151,20 +161,46 @@ def parse_articles_in_feed(
 ) -> list[ArticleData]:
     return [
         ArticleData(
-            external_article_id=full_sanitize(entry.id),
+            external_article_id=full_sanitize(entry.get("id", "")),
             title=full_sanitize(entry.title),
-            summary=sanitize_keep_safe_tags(entry.summary),
+            summary=_get_summary(_get_article_link(feed_url, entry), entry),
             content=_get_article_content(entry),
             authors=_get_article_authors(entry),
             contributors=_get_article_contributors(entry),
             tags=_get_articles_tags(entry),
             link=_get_article_link(feed_url, entry),
-            published_at=_feed_time_to_datetime(entry.published_parsed),
-            updated_at=_feed_time_to_datetime(entry.updated_parsed),
+            preview_picture_url=_get_preview_picture_url(_get_article_link(feed_url, entry), entry),
+            preview_picture_alt=_get_preview_picture_alt(entry),
+            published_at=_feed_time_to_datetime(entry.get("published_parsed")),
+            updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
             source_title=feed_title,
         )
         for entry in parsed_feed.entries
     ]
+
+
+def _get_summary(article_url: str, entry) -> str:
+    summary = ""
+    if proper_summary := entry.get("summary"):
+        summary = proper_summary
+
+    if not summary and _is_youtube_link(article_url):
+        summary = _get_preview_picture_alt(entry)
+
+    return sanitize_keep_safe_tags(summary, extra_tags_to_cleanup={"img"})
+
+
+def _is_youtube_link(link: str) -> bool:
+    youtube_domains = {
+        "youtube.com",
+        "www.youtube.com",
+        "youtu.be",
+        "youtube.googleapis.com",
+        "m.youtube.com",
+    }
+    parsed_link = urlparse(link)
+
+    return parsed_link.netloc in youtube_domains
 
 
 def _get_article_authors(entry):
@@ -183,7 +219,7 @@ def _get_article_contributors(entry):
 
 def _get_article_content(entry):
     for content_entry in entry.get("content", []):
-        if content_entry["type"] == "text/html":
+        if content_entry["type"] in {"text/html", "plain", "text/plain", "application/xhtml+xml"}:
             return sanitize_keep_safe_tags(content_entry["value"])
 
     return ""
@@ -204,6 +240,63 @@ def _get_article_link(feed_url, entry):
         return normalize_url(feed_url, entry.link)
     except ValueError as e:
         raise InvalidFeedArticleError from e
+
+
+def _get_preview_picture_url(article_url, entry) -> str:
+    preview_picture_url = ""
+    if (media_thumbnail := entry.get("media_thumbnail")) and (
+        media_thumbnail_url := media_thumbnail[0].get("url")
+    ):
+        try:
+            preview_picture_url = normalize_url(article_url, media_thumbnail_url)
+        except ValueError:
+            preview_picture_url = media_thumbnail_url
+
+    if (
+        not preview_picture_url
+        and (media_content := entry.get("media_content", []))
+        and (media_content_url := media_content[0].get("url"))
+    ):
+        try:
+            # It can be a video. Normally, if it's the case we expect to have a thumbnail.
+            # But we cannot be sure.
+            normalized_picture_url = normalize_url(article_url, media_content_url)
+            if media_content[0].get("medium") == "image" or _is_image_link(normalized_picture_url):
+                preview_picture_url = normalized_picture_url
+        except ValueError:
+            preview_picture_url = ""
+
+    return preview_picture_url
+
+
+def _is_image_link(link: str) -> bool:
+    parsed_link = urlparse(link)
+    return (
+        re.match(
+            r".*\.(png|apng|avif|gif|jpg|jpeg|jfif|pjpeg|pjp|svg|bmp|tiff|tif|webp)$",
+            parsed_link.path,
+        )
+        is not None
+    )
+
+
+def _get_preview_picture_alt(entry) -> str:
+    preview_picture_alt = ""
+    if (media_description := entry.get("media_description")) and (
+        media_description_content := media_description[0].get("content")
+    ):
+        preview_picture_alt = media_description_content
+    elif (media_title := entry.get("media_title")) and (
+        media_title_content := media_title[0].get("content")
+    ):
+        preview_picture_alt = media_title_content
+
+    if (media_credit := entry.get("media_credit")) and (
+        media_credit_content := media_credit[0].get("content")
+    ):
+        preview_picture_alt += f" {media_credit_content}"
+
+    return full_sanitize(preview_picture_alt.strip())
 
 
 def _feed_time_to_datetime(time_value: time.struct_time):

@@ -10,11 +10,15 @@ from legadilo.feeds.models import Article, Feed, FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory, TagFactory
 
 from ... import constants
-from ..fixtures import SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
+from ..fixtures import get_feed_fixture_content, get_page_for_feed_subscription_content
 
 
 @pytest.mark.django_db()
 class TestCreateFeedView:
+    @pytest.fixture()
+    def sample_rss_feed(self):
+        return get_feed_fixture_content("sample_rss.xml")
+
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.url = reverse("feeds:subscribe_to_feed")
@@ -38,8 +42,10 @@ class TestCreateFeedView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_subscribe_to_feed(self, logged_in_sync_client, httpx_mock, django_assert_num_queries):
-        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+    def test_subscribe_to_feed(
+        self, logged_in_sync_client, httpx_mock, django_assert_num_queries, sample_rss_feed
+    ):
+        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         with django_assert_num_queries(19):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -62,9 +68,9 @@ class TestCreateFeedView:
         assert FeedUpdate.objects.count() == 1
 
     def test_subscribe_to_feed_with_tags(
-        self, logged_in_sync_client, httpx_mock, django_assert_num_queries
+        self, logged_in_sync_client, httpx_mock, django_assert_num_queries, sample_rss_feed
     ):
-        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         with django_assert_num_queries(24):
             response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
@@ -89,8 +95,10 @@ class TestCreateFeedView:
         ]
         assert FeedUpdate.objects.count() == 1
 
-    def test_subscribe_to_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+    def test_subscribe_to_feed_from_feed_choices(
+        self, logged_in_sync_client, httpx_mock, sample_rss_feed
+    ):
+        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(
             self.url,
@@ -133,9 +141,9 @@ class TestCreateFeedView:
             )
         ]
 
-    def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker):
+    def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker, sample_rss_feed):
         mocker.patch("legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=2048 * 1024)
-        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -149,11 +157,12 @@ class TestCreateFeedView:
             )
         ]
 
-    def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx_mock, mocker):
+    def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx_mock):
+        sample_rss_feed = get_feed_fixture_content(
+            "sample_rss.xml", {"item_link": """<link>Just trash</link>"""}
+        )
         httpx_mock.add_response(
-            text=SAMPLE_RSS_FEED.replace(
-                "<link>http://example.org/entry/3</link>", "<link>Just trash</link>"
-            ),
+            text=sample_rss_feed,
             url=self.feed_url,
         )
 
@@ -169,9 +178,9 @@ class TestCreateFeedView:
             )
         ]
 
-    def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock):
+    def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock, sample_rss_feed):
         FeedFactory(feed_url=self.feed_url, user=user)
-        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -185,9 +194,8 @@ class TestCreateFeedView:
         ]
 
     def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(
-            text=SAMPLE_HTML_TEMPLATE.replace("{{PLACEHOLDER}}", ""), url=self.page_url
-        )
+        sample_html_template = get_page_for_feed_subscription_content({"feed_links": ""})
+        httpx_mock.add_response(text=sample_html_template, url=self.page_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_page_payload)
 
@@ -201,12 +209,12 @@ class TestCreateFeedView:
         ]
 
     def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx_mock):
+        sample_html_template = get_page_for_feed_subscription_content({
+            "feed_links": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
+                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">"""  # noqa: E501
+        })
         httpx_mock.add_response(
-            text=SAMPLE_HTML_TEMPLATE.replace(
-                "{{PLACEHOLDER}}",
-                """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
-                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
-            ),
+            text=sample_html_template,
             url=self.page_url,
         )
 

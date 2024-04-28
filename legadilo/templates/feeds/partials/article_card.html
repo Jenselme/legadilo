@@ -21,7 +21,9 @@
         </form>
     {% endif %}
     <div class="card-body">
-        <h2 class="card-title">{{ article.title | safe }}</h2>
+        <h2 class="card-title">
+            <a href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
+        </h2>
         <div class="card-subtitle">
             <p class="mb-0 text-secondary">{% include 'feeds/partials/article_metadata.html' %}</p>
             {% if article.tags_to_display %}
@@ -33,7 +35,17 @@
                 </p>
             {% endif %}
         </div>
-        <div class="card-text mt-3">{{ article.summary | truncatewords_html:100 | safe }}</div>
+        <div class="card-text mt-3 row">
+            {% if article.preview_picture_url %}
+                <img class="col-1 object-fit-contain"
+                     src="{{ article.preview_picture_url }}"
+                     alt="{{ article.preview_picture_alt }}"
+                     height="auto" />
+            {% else %}
+                <div class="col-1 p-0"></div>
+            {% endif %}
+            <div class="col-11 m-0 p-0">{{ article.summary | truncatewords_html:100 | safe }}</div>
+        </div>
     </div>
     <div class="card-footer d-flex justify-content-between">
         <div>{% include "feeds/partials/article_actions.html" %}</div>

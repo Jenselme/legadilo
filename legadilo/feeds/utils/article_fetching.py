@@ -26,6 +26,8 @@ class ArticleData:
     contributors: list[str]
     tags: list[str]
     link: str
+    preview_picture_url: str
+    preview_picture_alt: str
     published_at: datetime | None
     updated_at: datetime | None
 
@@ -58,6 +60,8 @@ def _build_article_data(fetched_url: str, text: str) -> ArticleData:
         contributors=[],
         tags=_get_tags(soup),
         link=_get_link(fetched_url, soup),
+        preview_picture_url=_get_preview_picture_url(fetched_url, soup),
+        preview_picture_alt="",
         published_at=_get_published_at(soup),
         updated_at=_get_updated_at(soup),
     )
@@ -67,6 +71,10 @@ def _get_title(soup: BeautifulSoup) -> str:
     title = ""
     if (og_title := soup.find("meta", attrs={"property": "og:title"})) and og_title.get("content"):
         title = og_title.get("content")
+    elif (itemprop_name := soup.find("meta", attrs={"itemprop": "name"})) and itemprop_name.get(
+        "content"
+    ):
+        title = itemprop_name.get("content")
     elif (meta_title := soup.find("meta", attrs={"property": "title"})) and meta_title.get(
         "content"
     ):
@@ -99,6 +107,10 @@ def _get_summary(soup: BeautifulSoup) -> str:
         "content"
     ):
         summary = meta_desc.get("content")
+    elif (
+        itemprop_description := soup.find("meta", attrs={"itemprop": "description"})
+    ) and itemprop_description.get("content"):
+        summary = itemprop_description.get("content")
 
     return sanitize_keep_safe_tags(summary)
 
@@ -155,6 +167,39 @@ def _get_link(fetched_url: str, soup: BeautifulSoup) -> str:
         return normalize_url(fetched_url, link)
 
     return fetched_url
+
+
+def _get_preview_picture_url(fetched_url, soup: BeautifulSoup) -> str:
+    preview_picture_url = ""
+
+    if (og_image := soup.find("meta", attrs={"property": "og:image"})) and (
+        og_image_link := og_image.get("content")
+    ):
+        try:
+            preview_picture_url = normalize_url(fetched_url, og_image_link)
+        except ValueError:
+            preview_picture_url = ""
+    if (
+        not preview_picture_url
+        and (itemprop_image := soup.find("meta", attrs={"itemprop": "image"}))
+        and (itemprop_link := itemprop_image.get("content"))
+    ):
+        try:
+            preview_picture_url = normalize_url(fetched_url, itemprop_link)
+        except ValueError:
+            preview_picture_url = ""
+    if (
+        not preview_picture_url
+        and (twitter_image := soup.find("meta", attrs={"property": "twitter:image"}))
+        and (twitter_image_link := twitter_image.get("content"))
+        and is_url_valid(twitter_image_link)
+    ):
+        try:
+            preview_picture_url = normalize_url(fetched_url, twitter_image_link)
+        except ValueError:
+            preview_picture_url = ""
+
+    return preview_picture_url
 
 
 def _get_published_at(soup: BeautifulSoup) -> datetime | None:

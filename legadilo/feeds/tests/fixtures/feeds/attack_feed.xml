@@ -1,0 +1,25 @@
+<!DOCTYPE xmlbomb [
+    <!ENTITY a "1234567890" >
+<!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;">
+<!ENTITY c "&b;&b;&b;&b;&b;&b;&b;&b;">
+<!ENTITY d "&c;&c;&c;&c;&c;&c;&c;&c;">
+]
+external [
+<!ENTITY ee SYSTEM "http://www.python.org/some.xml">
+]
+>
+<feed version="0.3" xmlns="http://purl.org/atom/ns#" xmlns:media="http://search.yahoo.com/mrss/">
+    <link rel="self" href="http://example.com/attack"/>
+    <id>Some id</id>
+    <title>Test attack</title>
+    <link rel="alternate" href="https://example.com/alternate"/>
+    <author>
+        <name>Attacker</name>
+    </author>
+    <published>2014-10-26T22:03:04+00:00</published>
+    <entry>
+        <link rel="alternate" href="https://example.com/attack"/>
+        <title>&d;</title>
+        <description>&ee;</description>
+    </entry>
+</feed>

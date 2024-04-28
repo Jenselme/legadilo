@@ -1,5 +1,6 @@
 from typing import Any
 
+from csp.decorators import csp_update
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -18,6 +19,7 @@ from legadilo.utils.validators import get_page_number_from_request
 
 @require_GET
 @login_required
+@csp_update(IMG_SRC="https:")
 def reading_list_with_articles_view(
     request: AuthenticatedHttpRequest, reading_list_slug: str | None = None
 ):
@@ -75,6 +77,7 @@ def _display_list_of_articles(
 
 @require_GET
 @login_required
+@csp_update(IMG_SRC="https:")
 def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> TemplateResponse:
     displayed_tag = get_object_or_404(
         Tag,

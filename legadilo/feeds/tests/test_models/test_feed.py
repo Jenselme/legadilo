@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.models import Article, FeedArticle, FeedUpdate
 from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory, TagFactory
-from legadilo.feeds.utils.feed_parsing import ArticleData, FeedMetadata
+from legadilo.feeds.utils.feed_parsing import ArticleData, FeedData
 from legadilo.users.tests.factories import UserFactory
 
 from ... import constants
@@ -48,10 +48,10 @@ class TestFeedManager:
         self.feed = FeedFactory(feed_url=self.default_feed_url, user=user)
         self.initial_feed_count = 1
 
-    def test_create_from_metadata(self, user, django_assert_num_queries):
+    def test_create_from_feed_data(self, user, django_assert_num_queries):
         with django_assert_num_queries(12):
             feed = Feed.objects.create_from_metadata(
-                FeedMetadata(
+                FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
                     site_url="https://example.com",
                     title="Awesome website",
@@ -69,6 +69,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title="Awesome website",
@@ -103,7 +105,7 @@ class TestFeedManager:
 
         with django_assert_num_queries(15):
             feed = Feed.objects.create_from_metadata(
-                FeedMetadata(
+                FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
                     site_url="https://example.com",
                     title="Awesome website",
@@ -121,6 +123,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title="Awesome website",
@@ -153,7 +157,7 @@ class TestFeedManager:
     def test_cannot_create_duplicated_feed_for_same_user(self, user):
         with pytest.raises(IntegrityError) as execinfo:
             Feed.objects.create_from_metadata(
-                FeedMetadata(
+                FeedData(
                     feed_url=self.default_feed_url,
                     site_url="https://example.com",
                     title="Awesome website",
@@ -175,7 +179,7 @@ class TestFeedManager:
         other_user = UserFactory()
 
         Feed.objects.create_from_metadata(
-            FeedMetadata(
+            FeedData(
                 feed_url=self.default_feed_url,
                 site_url="https://example.com",
                 title="Awesome website",
@@ -216,7 +220,7 @@ class TestFeedManager:
         with django_assert_num_queries(10):
             Feed.objects.update_feed(
                 self.feed,
-                FeedMetadata(
+                FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
                     site_url="https://example.com",
                     title="Awesome website",
@@ -234,6 +238,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title=self.feed.title,
@@ -247,6 +253,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link=existing_article.link,
+                            preview_picture_url="",
+                            preview_picture_alt="",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title=self.feed.title,
