@@ -1,6 +1,8 @@
 [
   {
-    "authors": ["Some youtuber"],
+    "authors": [
+      "Some youtuber"
+    ],
     "content": "",
     "contributors": [],
     "external_article_id": "yt:video:SOME_VIDEO_ID",
