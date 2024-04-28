@@ -1,3 +1,4 @@
+from csp.decorators import csp_update
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -34,6 +35,7 @@ class EditTagsForm(forms.Form):
 
 @require_GET
 @login_required
+@csp_update(IMG_SRC="https:")
 def article_details_view(
     request: AuthenticatedHttpRequest, article_id: int, article_slug: str
 ) -> TemplateResponse:
