@@ -244,7 +244,7 @@ time-machine = "2.14.1"  #  https://github.com/adamchainz/time-machine
 
 # Documentation
 # ------------------------------------------------------------------------------
-sphinx = "7.2.6"  # https://github.com/sphinx-doc/sphinx
+sphinx = "7.3.7"  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild = "2024.2.4"  # https://github.com/GaretJax/sphinx-autobuild
 myst-parser = "2.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
