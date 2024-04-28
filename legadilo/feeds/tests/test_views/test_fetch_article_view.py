@@ -9,7 +9,7 @@ from django.urls import reverse
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article, ArticleTag
 from legadilo.feeds.tests.factories import ArticleFactory, TagFactory
-from legadilo.feeds.tests.fixtures import get_fixture_file_content
+from legadilo.feeds.tests.fixtures import get_article_fixture_content
 
 
 @pytest.mark.django_db()
@@ -18,7 +18,7 @@ class TestAddArticle:
     def _setup_data(self, user):
         self.url = reverse("feeds:add_article")
         self.article_url = "https://www.example.com/posts/en/1-super-article/"
-        self.article_content = get_fixture_file_content("sample_blog_article.html")
+        self.article_content = get_article_fixture_content("sample_blog_article.html")
         self.existing_tag = TagFactory(name="Existing tag", user=user)
         self.sample_payload = {"url": self.article_url}
         self.payload_with_tags = {

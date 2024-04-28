@@ -10,7 +10,7 @@ from legadilo.feeds.models import Article, FeedUpdate
 from legadilo.feeds.tests.factories import FeedUpdateFactory
 
 from ... import constants
-from ..fixtures import SAMPLE_RSS_FEED
+from ..fixtures import get_feed_fixture_content
 
 
 @pytest.mark.django_db()
@@ -22,7 +22,7 @@ class TestUpdateFeedsCommand:
         feed_url = "http://example.com/feed/rss.xml"
         with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
             FeedUpdateFactory(feed__feed_url=feed_url)
-        httpx_mock.add_response(url=feed_url, content=SAMPLE_RSS_FEED)
+        httpx_mock.add_response(url=feed_url, content=get_feed_fixture_content("sample_rss.xml"))
 
         with (
             time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),

@@ -1,0 +1,24 @@
+{
+  "articles": [
+    {
+      "authors": [],
+      "content": "",
+      "contributors": [],
+      "external_article_id": "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
+      "link": "http://example.org/entry/3",
+      "published_at": "2005-11-09T00:23:47+00:00",
+      "source_title": "Sample Feed",
+      "summary": "Watch out for nasty tricks",
+      "tags": [],
+      "title": "First entry title",
+      "updated_at": "2005-11-09T11:56:34+00:00"
+    }
+  ],
+  "description": "For documentation only",
+  "etag": "",
+  "feed_type": "atom10",
+  "feed_url": "https://www.jujens.eu/feed/atom.xml",
+  "last_modified": null,
+  "site_url": "http://example.org/",
+  "title": "Sample Feed"
+}

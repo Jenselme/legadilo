@@ -1,0 +1,15 @@
+[
+  {
+    "authors": [],
+    "content": "",
+    "contributors": [],
+    "external_article_id": "http://example.org/entry/3",
+    "link": "http://example.org/entry/3",
+    "published_at": "2002-09-05T00:00:01+00:00",
+    "source_title": "Some feed",
+    "summary": "Watch out for <span>nasty\n                tricks</span>",
+    "tags": [],
+    "title": "First entry title",
+    "updated_at": "2002-09-05T00:00:01+00:00"
+  }
+]

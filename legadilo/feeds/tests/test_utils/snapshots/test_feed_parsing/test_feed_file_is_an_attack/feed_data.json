@@ -1,0 +1,24 @@
+{
+  "articles": [
+    {
+      "authors": [],
+      "content": "",
+      "contributors": [],
+      "external_article_id": "",
+      "link": "https://example.com/attack",
+      "published_at": null,
+      "source_title": "Test attack",
+      "summary": "&amp;ee",
+      "tags": [],
+      "title": "&amp;d;",
+      "updated_at": null
+    }
+  ],
+  "description": "",
+  "etag": "",
+  "feed_type": "atom03",
+  "feed_url": "https://example.com/feed.xml",
+  "last_modified": null,
+  "site_url": "https://example.com/alternate",
+  "title": "Test attack"
+}
