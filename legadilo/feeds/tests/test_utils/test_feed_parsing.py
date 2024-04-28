@@ -6,9 +6,9 @@ from legadilo.feeds.utils.feed_parsing import (
     FeedFileTooBigError,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
-    find_feed_page_content,
+    _find_feed_page_content,
+    _parse_articles_in_feed,
     get_feed_data,
-    parse_articles_in_feed,
     parse_feed,
 )
 from legadilo.utils.testing import serialize_for_snapshot
@@ -55,7 +55,7 @@ class TestFindFeedUrl:
         ],
     )
     def test_find_one_link(self, content: str, expected_link: str):
-        link = find_feed_page_content(content)
+        link = _find_feed_page_content(content)
 
         assert link == expected_link
 
@@ -85,7 +85,7 @@ class TestFindFeedUrl:
     )
     def test_cannot_find_feed_url(self, content):
         with pytest.raises(NoFeedUrlFoundError):
-            find_feed_page_content(content)
+            _find_feed_page_content(content)
 
     @pytest.mark.parametrize(
         ("content", "expected_urls"),
@@ -144,7 +144,7 @@ class TestFindFeedUrl:
     )
     def test_find_multiple_url(self, content, expected_urls):
         with pytest.raises(MultipleFeedFoundError) as excinfo:
-            find_feed_page_content(content)
+            _find_feed_page_content(content)
 
         assert excinfo.value.feed_urls == expected_urls
 
@@ -254,7 +254,7 @@ class TestParseArticlesInFeed:
     def test_parse_articles(self, feed_content, snapshot):
         feed_data = parse_feed(feed_content)
 
-        articles = parse_articles_in_feed(
+        articles = _parse_articles_in_feed(
             "https://example.com/feeds/feed.xml", "Some feed", feed_data
         )
 

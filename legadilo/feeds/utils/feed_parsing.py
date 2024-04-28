@@ -68,7 +68,7 @@ async def get_feed_data(
     """
     parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
     if not parsed_feed["version"]:
-        url = find_feed_page_content(url_content)
+        url = _find_feed_page_content(url_content)
         parsed_feed, resolved_url = await _fetch_feed(
             client, url, etag=etag, last_modified=last_modified
         )
@@ -84,7 +84,7 @@ def build_feed_data(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
         title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
-        articles=parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
+        articles=_parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
@@ -124,7 +124,7 @@ async def _fetch_feed(
     return parsed_feed, resolved_url
 
 
-def find_feed_page_content(page_content: str) -> str:
+def _find_feed_page_content(page_content: str) -> str:
     soup = BeautifulSoup(page_content, "html.parser")
     atom_feeds = soup.find_all("link", {"type": "application/atom+xml"})
     rss_feeds = soup.find_all("link", {"type": "application/rss+xml"})
@@ -156,7 +156,7 @@ def _normalize_found_link(link: str):
     return link
 
 
-def parse_articles_in_feed(
+def _parse_articles_in_feed(
     feed_url: str, feed_title: str, parsed_feed: FeedParserDict
 ) -> list[ArticleData]:
     articles_data = []
