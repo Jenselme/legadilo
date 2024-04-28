@@ -21,6 +21,7 @@ class SupportedFeedType(TextChoices):
     atom10 = "atom10", "Atom 1.0"
     atom = "atom", "Atom (unknown version)"
     cdf = "cdf", "CDF"
+    json1 = "json1", "JSON 1"
 
 
 class FeedUpdateStatus(TextChoices):

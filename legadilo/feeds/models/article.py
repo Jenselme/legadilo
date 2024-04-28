@@ -193,6 +193,8 @@ class ArticleManager(models.Manager["Article"]):
                         contributors=article_data.contributors,
                         external_tags=article_data.tags,
                         link=article_data.link,
+                        preview_picture_url=article_data.preview_picture_url,
+                        preview_picture_alt=article_data.preview_picture_alt,
                         published_at=article_data.published_at,
                         updated_at=article_data.updated_at,
                         initial_source_type=source_type,
@@ -213,6 +215,8 @@ class ArticleManager(models.Manager["Article"]):
                     "content",
                     "reading_time",
                     "authors",
+                    "preview_picture_url",
+                    "preview_picture_alt",
                     "contributors",
                     "external_tags",
                     "updated_at",
@@ -270,6 +274,8 @@ class Article(models.Model):
         validators=[list_of_strings_json_schema_validator], blank=True, default=list
     )
     link = models.URLField()
+    preview_picture_url = models.URLField(blank=True)
+    preview_picture_alt = models.TextField(blank=True)
     external_tags = models.JSONField(
         validators=[list_of_strings_json_schema_validator],
         blank=True,
@@ -363,6 +369,8 @@ class Article(models.Model):
             self.reading_time = (
                 get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
             ) or self.reading_time
+            self.preview_picture_url = article_data.preview_picture_url or self.preview_picture_alt
+            self.preview_picture_alt = article_data.preview_picture_alt or self.preview_picture_alt
             self.authors = list(dict.fromkeys(self.authors + article_data.authors))
             self.contributors = list(dict.fromkeys(self.contributors + article_data.contributors))
             self.external_tags = list(dict.fromkeys(self.external_tags + article_data.tags))

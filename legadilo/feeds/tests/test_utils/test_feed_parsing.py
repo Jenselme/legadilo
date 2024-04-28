@@ -231,6 +231,24 @@ class TestParseArticlesInFeed:
                 get_feed_fixture_content("sample_atom.xml"),
                 id="sample-atom-feed",
             ),
+            pytest.param(
+                get_feed_fixture_content(
+                    "sample_atom.xml",
+                    {"media_content_variant": "media_content_description"},  # type: ignore[arg-type]
+                ),
+                id="atom-with-media-description",
+            ),
+            pytest.param(
+                get_feed_fixture_content(
+                    "sample_atom.xml",
+                    {"media_content_variant": "media_content_title"},  # type: ignore[arg-type]
+                ),
+                id="atom-with-media-title",
+            ),
+            pytest.param(
+                get_feed_fixture_content("sample_youtube_atom.xml"),
+                id="atom-from-youtube",
+            ),
         ],
     )
     def test_parse_articles(self, feed_content, snapshot):

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/"
+      xmlns="http://www.w3.org/2005/Atom">
+    <link rel="self"
+          href="http://www.youtube.com/feeds/videos.xml?channel_id=SOME_CHANNEL_ID"/>
+    <id>yt:channel:SOME_CHANNEL_ID</id>
+    <yt:channelId>SOME_CHANNEL_ID</yt:channelId>
+    <title>Youtube channel</title>
+    <link rel="alternate" href="https://www.youtube.com/channel/SOME_CHANNEL_ID"/>
+    <author>
+        <name>Some youtuber</name>
+        <uri>https://www.youtube.com/channel/SOME_CHANNEL_ID</uri>
+    </author>
+    <published>2014-10-26T22:03:04+00:00</published>
+    <entry>
+        <id>yt:video:SOME_VIDEO_ID</id>
+        <yt:videoId>SOME_VIDEO_ID</yt:videoId>
+        <yt:channelId>UCSOME_CHANNEL_ID</yt:channelId>
+        <title>What a good video!</title>
+        <link rel="alternate" href="https://www.youtube.com/watch?v=SOME_VIDEO_ID"/>
+        <author>
+            <name>Some youtuber</name>
+            <uri>https://www.youtube.com/channel/SOME_CHANNEL_ID</uri>
+        </author>
+        <published>2024-03-08T17:00:00+00:00</published>
+        <updated>2024-03-14T18:49:15+00:00</updated>
+        <media:group>
+            <media:title>Super video</media:title>
+            <media:content url="https://www.youtube.com/v/SOME_VIDEO_ID?version=3"
+                           type="application/x-shockwave-flash" width="640" height="390"/>
+            <media:thumbnail url="https://i2.ytimg.com/vi/SOME_VIDEO_ID/hqdefault.jpg" width="480"
+                             height="360"/>
+            <media:description>The lengthy description of my video!
+            </media:description>
+            <media:community>
+                <media:starRating count="4646" average="5.00" min="1" max="5"/>
+                <media:statistics views="76771"/>
+            </media:community>
+        </media:group>
+    </entry>
+</feed>

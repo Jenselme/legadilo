@@ -44,5 +44,20 @@
                 <span style="background: url(javascript:window.location='http://example.org/')">
 nasty tricks</span></div>
         </content>
+        {% if media_content_variant == "media_content_description" %}
+            <media:content width="644" height="322"
+                           url="https://example.com/my-image.jpg">
+                <media:description type="plain">My image description
+                </media:description>
+                <media:credit scheme="urn:ebu">My image credit</media:credit>
+            </media:content>
+        {% elif media_content_variant == "media_content_title" %}
+            <media:content
+                url="https://example.com/my-image.jpg"
+                medium="image">
+                <media:title type="plain">My image title © Tester
+                </media:title>
+            </media:content>
+        {% endif %}
     </entry>
 </feed>

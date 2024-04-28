@@ -626,6 +626,8 @@ class TestArticleManager:
                         contributors=[],
                         tags=[],
                         link="https//example.com/article/1",
+                        preview_picture_url="https://example.com/preview.png",
+                        preview_picture_alt="Some image alt",
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
@@ -639,6 +641,8 @@ class TestArticleManager:
                         authors=["Author"],
                         contributors=[],
                         tags=[],
+                        preview_picture_url="",
+                        preview_picture_alt="",
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
@@ -652,6 +656,8 @@ class TestArticleManager:
                         authors=["Author"],
                         contributors=[],
                         tags=[],
+                        preview_picture_url="",
+                        preview_picture_alt="",
                         published_at=utcdt(2024, 4, 19),
                         updated_at=utcdt(2024, 4, 19),
                         source_title="Some site",
@@ -665,6 +671,8 @@ class TestArticleManager:
                         contributors=["Contributor"],
                         tags=["Some tag"],
                         link="https//example.com/article/3",
+                        preview_picture_url="",
+                        preview_picture_alt="",
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
@@ -732,6 +740,8 @@ class TestArticleManager:
             published_at=now_dt,
             updated_at=now_dt,
             source_title="Some site",
+            preview_picture_url="https://example.com/preview.png",
+            preview_picture_alt="Some image alt",
         )
 
         with django_assert_num_queries(4):
@@ -764,6 +774,8 @@ class TestArticleManager:
             published_at=now_dt,
             updated_at=now_dt,
             source_title="Some site",
+            preview_picture_url="https://example.com/preview.png",
+            preview_picture_alt="Some image alt",
         )
 
         with django_assert_num_queries(4):
@@ -907,6 +919,8 @@ class TestArticleModel:
                 contributors=["Contributor 2", "Contributor 3"],
                 tags=["Some tag", "Updated tag"],
                 link="https//example.com/article/1",
+                preview_picture_url="https://example.com/preview.png",
+                preview_picture_alt="Some image alt",
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",
@@ -944,6 +958,8 @@ class TestArticleModel:
                 contributors=[],
                 tags=[],
                 link="https//example.com/article/1",
+                preview_picture_url="",
+                preview_picture_alt="",
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",

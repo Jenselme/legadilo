@@ -48,7 +48,7 @@ class TestFeedManager:
         self.feed = FeedFactory(feed_url=self.default_feed_url, user=user)
         self.initial_feed_count = 1
 
-    def test_create_from_metadata(self, user, django_assert_num_queries):
+    def test_create_from_feed_data(self, user, django_assert_num_queries):
         with django_assert_num_queries(12):
             feed = Feed.objects.create_from_metadata(
                 FeedData(
@@ -69,6 +69,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title="Awesome website",
@@ -121,6 +123,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title="Awesome website",
@@ -234,6 +238,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title=self.feed.title,
@@ -247,6 +253,8 @@ class TestFeedManager:
                             contributors=[],
                             tags=[],
                             link=existing_article.link,
+                            preview_picture_url="",
+                            preview_picture_alt="",
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title=self.feed.title,

@@ -943,16 +943,21 @@ python-dateutil = ">=2.4"
 [[package]]
 name = "feedparser"
 version = "6.0.11"
-description = "Universal feed parser, handles RSS 0.9x, RSS 1.0, RSS 2.0, CDF, Atom 0.3, and Atom 1.0 feeds"
+description = "Parse Atom/RSS/JSON feeds in Python"
 optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "feedparser-6.0.11-py3-none-any.whl", hash = "sha256:0be7ee7b395572b19ebeb1d6aafb0028dee11169f1c934e0ed67d54992f4ad45"},
-    {file = "feedparser-6.0.11.tar.gz", hash = "sha256:c9d0407b64c6f2a065d0ebb292c2b35c01050cc0dc33757461aaabdc4c4184d5"},
-]
+python-versions = ">=3.8"
+files = []
+develop = false
 
 [package.dependencies]
-sgmllib3k = "*"
+requests = ">=2.20.0"
+sgmllib3k = "^1.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/Jenselme/feedparser.git"
+reference = "correct-media-parsing"
+resolved_reference = "edeea73dc93ccfb7c68ada4aa318d7939ef96efa"
 
 [[package]]
 name = "filelock"
@@ -3164,4 +3169,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "b3b9bb8dba468dcdaaf9e58c3858097efe0f59368ce6eaee2bf3eb542119e262"
+content-hash = "47daf0eb945462012991c6884c8e4751804c0ba2150fe03de666bacdcb0b7682"
