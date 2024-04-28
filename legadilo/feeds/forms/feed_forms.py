@@ -4,6 +4,8 @@ from typing import cast
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from legadilo.core.forms.fields import MultipleTagsField
+
 
 class CreateFeedForm(forms.Form):
     url = forms.URLField(
@@ -22,9 +24,17 @@ class CreateFeedForm(forms.Form):
         required=False,
         widget=forms.HiddenInput(),
     )
+    tags = MultipleTagsField(
+        required=False,
+        choices=[],
+        help_text=_(
+            "Tags to associate to articles of this feed. To create a new tag, type and press enter."
+        ),
+    )
 
-    def __init__(self, data=None, **kwargs):
+    def __init__(self, data=None, *, tag_choices: list[tuple[str, str]], **kwargs):
         super().__init__(data, **kwargs)
+        self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
         if data and (proposed_feed_choices := data.get("proposed_feed_choices")):
             self.fields["url"].widget.attrs["readonly"] = "true"
             self.initial["proposed_feed_choices"] = proposed_feed_choices  # type: ignore[index]
@@ -49,7 +59,7 @@ class CreateFeedForm(forms.Form):
         return choices
 
     class Meta:
-        fields = ("url",)
+        fields = ("url", "tags")
 
     @property
     def feed_url(self):

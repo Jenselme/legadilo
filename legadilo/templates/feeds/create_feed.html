@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 
-{% load i18n %}
-{% load crispy_forms_tags %}
-{% load static %}
+{% load i18n static crispy_forms_tags %}
 
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}" type="module"></script>
+{% endblock page_js %}
 {% block title %}
     {% translate "Add a new feed" %}
 {% endblock title %}

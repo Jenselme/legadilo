@@ -52,6 +52,17 @@ RUN DATABASE_URL="" \
   python manage.py compilemessages && \
   DATABASE_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings" \
-  python /app/manage.py collectstatic --noinput
+  python /app/manage.py collectstatic \
+    --clear \
+    --ignore 'bootstrap.rtl*' \
+    --ignore 'bootstrap-*' \
+    --ignore 'bootstrap.bundle.*' \
+    --ignore 'bootstrap.esm.*' \
+    --ignore 'debug_toolbar' \
+    --ignore 'django-browser-reload' \
+    --ignore '*.html' \
+    --ignore '*.scss' \
+    --ignore 'ext' \
+    --no-input
 
 ENTRYPOINT ["/entrypoint"]

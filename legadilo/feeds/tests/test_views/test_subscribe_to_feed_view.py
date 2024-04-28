@@ -7,17 +7,24 @@ from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
 from legadilo.feeds.models import Article, Feed, FeedUpdate
-from legadilo.feeds.tests.factories import FeedFactory
+from legadilo.feeds.tests.factories import FeedFactory, TagFactory
 
+from ... import constants
 from ..fixtures import SAMPLE_HTML_TEMPLATE, SAMPLE_RSS_FEED
 
 
 @pytest.mark.django_db()
 class TestCreateFeedView:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
         self.url = reverse("feeds:subscribe_to_feed")
         self.feed_url = "https://example.com/feeds/atom.xml"
         self.sample_payload = {"url": self.feed_url}
+        self.existing_tag = TagFactory(user=user)
+        self.sample_payload_with_tags = {
+            "url": self.feed_url,
+            "tags": [self.existing_tag.slug, "New"],
+        }
         self.page_url = "https://example.com"
         self.sample_page_payload = {"url": self.page_url}
 
@@ -31,10 +38,11 @@ class TestCreateFeedView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_subscribe_to_feed(self, logged_in_sync_client, httpx_mock):
+    def test_subscribe_to_feed(self, logged_in_sync_client, httpx_mock, django_assert_num_queries):
         httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
 
-        response = logged_in_sync_client.post(self.url, self.sample_payload)
+        with django_assert_num_queries(19):
+            response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
         messages = list(get_messages(response.wsgi_request))
@@ -45,7 +53,40 @@ class TestCreateFeedView:
             )
         ]
         assert Feed.objects.count() == 1
+        feed = Feed.objects.get()
+        assert feed.tags.count() == 0
         assert Article.objects.count() > 0
+        article = Article.objects.first()
+        assert article is not None
+        assert article.tags.count() == 0
+        assert FeedUpdate.objects.count() == 1
+
+    def test_subscribe_to_feed_with_tags(
+        self, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        httpx_mock.add_response(text=SAMPLE_RSS_FEED, url=self.feed_url)
+
+        with django_assert_num_queries(24):
+            response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
+
+        assert response.status_code == HTTPStatus.CREATED, response.context["form"].errors
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["SUCCESS"],
+                message="Feed 'Sample Feed' added",
+            )
+        ]
+        assert Feed.objects.count() == 1
+        feed = Feed.objects.get()
+        assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
+        assert Article.objects.count() > 0
+        article = Article.objects.first()
+        assert article is not None
+        assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
+            ("new", constants.TaggingReason.FROM_FEED),
+            (self.existing_tag.slug, constants.TaggingReason.FROM_FEED),
+        ]
         assert FeedUpdate.objects.count() == 1
 
     def test_subscribe_to_feed_from_feed_choices(self, logged_in_sync_client, httpx_mock):

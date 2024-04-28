@@ -221,7 +221,13 @@ class ArticleManager(models.Manager["Article"]):
             )
 
         all_articles = [*articles_to_create, *existing_links_to_articles.values()]
-        ArticleTag.objects.associate_articles_with_tags(all_articles, tags)
+        ArticleTag.objects.associate_articles_with_tags(
+            all_articles,
+            tags,
+            tagging_reason=constants.TaggingReason.FROM_FEED
+            if source_type == constants.ArticleSourceType.FEED
+            else constants.TaggingReason.ADDED_MANUALLY,
+        )
 
         return all_articles
 

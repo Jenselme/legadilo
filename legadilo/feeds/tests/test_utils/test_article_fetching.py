@@ -46,7 +46,7 @@ async def test_get_article_from_url(httpx_mock):
         authors=["Alexandre Dumas"],
         contributors=[],
         tags=["Musketeers"],
-        link="//www.example.com/posts/en/1-super-article/",
+        link="https://www.example.com/posts/en/1-super-article/",
         published_at=utcdt(2024, 2, 26, 23, 0),
         updated_at=utcdt(2024, 3, 8, 23, 0),
     )
@@ -79,7 +79,7 @@ async def test_get_article_from_url_process_fixture(process_fn: Callable[[str], 
         authors=["Alexandre Dumas"],
         contributors=[],
         tags=["Musketeers"],
-        link="//www.example.com/posts/en/1-super-article/",
+        link="https://www.example.com/posts/en/1-super-article/",
         published_at=utcdt(2024, 2, 26, 23, 0),
         updated_at=utcdt(2024, 3, 8, 23, 0),
     )
