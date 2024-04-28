@@ -161,7 +161,9 @@ class ArticleTag(models.Model):
     tag = models.ForeignKey("feeds.Tag", related_name="articles", on_delete=models.CASCADE)
 
     tagging_reason = models.CharField(
-        choices=constants.TaggingReason.choices, default=constants.TaggingReason.ADDED_MANUALLY
+        choices=constants.TaggingReason.choices,
+        default=constants.TaggingReason.ADDED_MANUALLY,
+        max_length=100,
     )
 
     objects = ArticleTagManager()
@@ -229,6 +231,7 @@ class ReadingListTag(models.Model):
     filter_type = models.CharField(
         choices=constants.ReadingListTagFilterType.choices,
         default=constants.ReadingListTagFilterType.INCLUDE,
+        max_length=100,
     )
 
     class Meta(TypedModelMeta):

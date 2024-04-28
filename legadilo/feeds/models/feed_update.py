@@ -53,9 +53,9 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
 
 
 class FeedUpdate(models.Model):
-    status = models.CharField(choices=constants.FeedUpdateStatus.choices)
+    status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)
     error_message = models.TextField(blank=True)
-    feed_etag = models.CharField()
+    feed_etag = models.CharField(max_length=100)
     feed_last_modified = models.DateTimeField(null=True, blank=True)
 
     feed = models.ForeignKey("feeds.Feed", on_delete=models.CASCADE, related_name="feed_updates")

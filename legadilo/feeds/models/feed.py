@@ -35,7 +35,7 @@ class FeedManager(models.Manager["Feed"]):
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,
-            title=feed_metadata.title,
+            title=feed_metadata.title[: constants.FEED_TITLE_MAX_LENGTH],
             description=feed_metadata.description,
             feed_type=feed_metadata.feed_type,
             user=user,
@@ -85,12 +85,12 @@ class Feed(models.Model):
     feed_url = models.URLField()
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
-    disabled_reason = models.CharField(blank=True)
+    disabled_reason = models.TextField(blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
-    title = models.CharField()
+    title = models.CharField(max_length=constants.FEED_TITLE_MAX_LENGTH)
     description = models.TextField(blank=True)
-    feed_type = models.CharField(choices=SupportedFeedType)
+    feed_type = models.CharField(choices=SupportedFeedType, max_length=100)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
     feed_articles = models.ManyToManyField(

@@ -104,13 +104,17 @@ class ReadingList(models.Model):
     order = models.IntegerField(default=0)
 
     read_status = models.CharField(
-        choices=constants.ReadStatus.choices, default=constants.ReadStatus.ALL
+        choices=constants.ReadStatus.choices, default=constants.ReadStatus.ALL, max_length=100
     )
     favorite_status = models.CharField(
-        choices=constants.FavoriteStatus.choices, default=constants.FavoriteStatus.ALL
+        choices=constants.FavoriteStatus.choices,
+        default=constants.FavoriteStatus.ALL,
+        max_length=100,
     )
     for_later_status = models.CharField(
-        choices=constants.ForLaterStatus.choices, default=constants.ForLaterStatus.ALL
+        choices=constants.ForLaterStatus.choices,
+        default=constants.ForLaterStatus.ALL,
+        max_length=100,
     )
     articles_max_age_value = models.PositiveIntegerField(
         default=0,
@@ -121,6 +125,7 @@ class ReadingList(models.Model):
     articles_max_age_unit = models.CharField(
         choices=constants.ArticlesMaxAgeUnit.choices,
         default=constants.ArticlesMaxAgeUnit.UNSET,
+        max_length=100,
         help_text=_(
             "Define the unit for the previous number. Leave to unset to not use this feature."
         ),
@@ -132,11 +137,13 @@ class ReadingList(models.Model):
     articles_reading_time_operator = models.CharField(
         choices=constants.ArticlesReadingTimeOperator.choices,
         default=constants.ArticlesReadingTimeOperator.UNSET,
+        max_length=100,
         help_text=_("Whether the reading must be more or less that the supplied value."),
     )
     include_tag_operator = models.CharField(
         choices=constants.ReadingListTagOperator.choices,
         default=constants.ReadingListTagOperator.ALL,
+        max_length=100,
         help_text=_(
             "Defines whether the articles must have all or any of the tags to be included in the reading list."  # noqa: E501
         ),
@@ -144,6 +151,7 @@ class ReadingList(models.Model):
     exclude_tag_operator = models.CharField(
         choices=constants.ReadingListTagOperator.choices,
         default=constants.ReadingListTagOperator.ALL,
+        max_length=100,
         help_text=_(
             "Defines whether the articles must have all or any of the tags to be excluded from the reading list."  # noqa: E501
         ),

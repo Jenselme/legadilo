@@ -198,7 +198,9 @@ class ArticleManager(models.Manager["Article"]):
                         published_at=article_data.published_at,
                         updated_at=article_data.updated_at,
                         initial_source_type=source_type,
-                        initial_source_title=article_data.source_title,
+                        initial_source_title=article_data.source_title[
+                            : constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH
+                        ],
                     )
                 )
 
@@ -283,7 +285,10 @@ class Article(models.Model):
         help_text=_("Tags of the article from the its source"),
     )
     external_article_id = models.CharField(
-        default="", blank=True, help_text=_("The id of the article in the its source.")
+        default="",
+        blank=True,
+        max_length=512,
+        help_text=_("The id of the article in the its source."),
     )
 
     read_at = models.DateTimeField(null=True, blank=True)
@@ -304,9 +309,11 @@ class Article(models.Model):
     user = models.ForeignKey("users.User", related_name="articles", on_delete=models.CASCADE)
 
     initial_source_type = models.CharField(
-        default=constants.ArticleSourceType.FEED, choices=constants.ArticleSourceType.choices
+        default=constants.ArticleSourceType.FEED,
+        choices=constants.ArticleSourceType.choices,
+        max_length=100,
     )
-    initial_source_title = models.CharField()
+    initial_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
 
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")
