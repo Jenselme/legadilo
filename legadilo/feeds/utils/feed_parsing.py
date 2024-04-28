@@ -219,7 +219,7 @@ def _get_article_contributors(entry):
 
 def _get_article_content(entry):
     for content_entry in entry.get("content", []):
-        if content_entry["type"] == "text/html":
+        if content_entry["type"] in {"text/html", "plain", "text/plain", "application/xhtml+xml"}:
             return sanitize_keep_safe_tags(content_entry["value"])
 
     return ""
