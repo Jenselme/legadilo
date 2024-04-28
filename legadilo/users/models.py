@@ -8,8 +8,8 @@ from legadilo.users.managers import UserManager
 
 
 class User(AbstractUser):
-    """
-    Default custom user model for Legadilo.
+    """Default custom user model for Legadilo.
+
     If adding fields that need to be filled at user signup,
     check forms.SignupForm and forms.SocialSignupForms accordingly.
     """

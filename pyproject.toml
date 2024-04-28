@@ -30,13 +30,22 @@ target-version = "py312"
 select = [
     "F", "E", "W", "C", "I", "N", "UP", "ASYNC", "S", "BLE", "FBT", "B", "A", "COM", "DTZ", "T",
     "DJ", "ICN", "RSE", "PT", "ISC", "RET", "SIM", "INT", "PTH", "ERA", "PGH", "PL", "FLY",
-    "FURB", "LOG", "RUF"
+    "FURB", "LOG", "RUF", "D"
 ]
 ignore = [
     "RUF012", # RUF012 Mutable class attributes should be annotated with `typing.ClassVar`
     "COM812", # missing-trailing-comma (the formatter will do this)
     "ISC001", # single-line-implicit-string-concatenation (the formatter will do this)
     "PLR6301", # Method XXX could be a function, class method, or static method
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D106", # Missing docstring in public nested class
+    "D107", # Missing docstring in __init__
+    "D415", # First line should end with a period, question mark, or exclamation point
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -90,6 +99,9 @@ known-first-party = [
 
 [tool.ruff.lint.pylint]
 max-args = 6
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 
 # ==== curlylint ====

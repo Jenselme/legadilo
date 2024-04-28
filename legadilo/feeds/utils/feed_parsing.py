@@ -62,10 +62,10 @@ async def get_feed_data(
     etag: str | None = None,
     last_modified: datetime | None = None,
 ) -> FeedData:
-    """Find the feed data from the supplied URL (either a feed or a page containing a link to
-    a feed).
-    """
+    """Find the feed data from the supplied URL.
 
+    It's either a feed or a page containing a link to a feed.
+    """
     parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
     if not parsed_feed["version"]:
         url = find_feed_page_content(url_content)
