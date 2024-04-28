@@ -1,5 +1,3 @@
-version: "3"
-
 volumes:
   legadilo_local_postgres_data: {}
   legadilo_local_postgres_data_backups: {}
@@ -7,6 +5,7 @@ volumes:
 services:
   django:
     build:
+      pull: true
       context: .
       dockerfile: ./compose/local/django/Dockerfile
     image: legadilo_local_django
@@ -25,6 +24,7 @@ services:
 
   postgres:
     build:
+      pull: true
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: legadilo_production_postgres
