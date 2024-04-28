@@ -159,24 +159,28 @@ def _normalize_found_link(link: str):
 def parse_articles_in_feed(
     feed_url: str, feed_title: str, parsed_feed: FeedParserDict
 ) -> list[ArticleData]:
-    return [
-        ArticleData(
-            external_article_id=full_sanitize(entry.get("id", "")),
-            title=full_sanitize(entry.title),
-            summary=_get_summary(_get_article_link(feed_url, entry), entry),
-            content=_get_article_content(entry),
-            authors=_get_article_authors(entry),
-            contributors=_get_article_contributors(entry),
-            tags=_get_articles_tags(entry),
-            link=_get_article_link(feed_url, entry),
-            preview_picture_url=_get_preview_picture_url(_get_article_link(feed_url, entry), entry),
-            preview_picture_alt=_get_preview_picture_alt(entry),
-            published_at=_feed_time_to_datetime(entry.get("published_parsed")),
-            updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
-            source_title=feed_title,
+    articles_data = []
+    for entry in parsed_feed.entries:
+        article_link = _get_article_link(feed_url, entry)
+        articles_data.append(
+            ArticleData(
+                external_article_id=full_sanitize(entry.get("id", "")),
+                title=full_sanitize(entry.title),
+                summary=_get_summary(article_link, entry),
+                content=_get_article_content(entry),
+                authors=_get_article_authors(entry),
+                contributors=_get_article_contributors(entry),
+                tags=_get_articles_tags(entry),
+                link=article_link,
+                preview_picture_url=_get_preview_picture_url(article_link, entry),
+                preview_picture_alt=_get_preview_picture_alt(entry),
+                published_at=_feed_time_to_datetime(entry.get("published_parsed")),
+                updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
+                source_title=feed_title,
+            )
         )
-        for entry in parsed_feed.entries
-    ]
+
+    return articles_data
 
 
 def _get_summary(article_url: str, entry) -> str:
