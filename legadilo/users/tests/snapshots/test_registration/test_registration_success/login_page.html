@@ -1,0 +1,152 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>
+            
+    
+    Sign In
+
+
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description"
+              content="Read your RSS feeds & other saved articles" />
+        <meta name="author" content="Julien Enselme" />
+        <meta name="htmx-config" content='{"includeIndicatorStyles":false}' />
+        <link rel="icon" href="/static/images/favicons/favicon.ico" />
+        
+            <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="/static/css/base.css" />
+            
+            
+        
+        
+        
+            
+                <script src="/static/js/bootstrap.min.js"></script>
+                <script src="/static/htmx.min.js"></script>
+            
+            <script src="/static/js/base.js"></script>
+            
+            
+        
+    </head>
+    <body>
+        <div id="danger-modal"
+             class="modal fade"
+             tabindex="-1"
+             aria-labelledby=""
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5"></h1>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-danger proceed">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            <div class="mb-1 sticky-top">
+                <nav class="navbar navbar-expand-md navbar-light bg-light">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler navbar-toggler-right"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#navbarSupportedContent"
+                                aria-controls="navbarSupportedContent"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <a class="navbar-brand" href="/reading/">Legadilo</a>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="/reading/">Home <span class="visually-hidden">(current)</span></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/about/">About</a>
+                                </li>
+                            </ul>
+                            <ul class="navbar-nav">
+                                
+                                    
+                                        <li class="nav-item">
+                                            
+                                            <a id="sign-up-link" class="nav-link" href="/accounts/signup/">Sign Up</a>
+                                        </li>
+                                    
+                                    <li class="nav-item">
+                                        
+                                        <a id="log-in-link" class="nav-link" href="/accounts/login/">Sign In</a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        
+        <div class="container">
+            
+                
+                    <div class="alert alert-dismissible alert-success">
+                        You have confirmed tester@legadilo.eu.
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                    </div>
+                
+            
+            
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            
+    <h1>Sign In</h1>
+    
+    
+        
+            <p>
+                If you have not created an account yet, then please <a href="/accounts/signup/">sign up</a> first.
+            </p>
+        
+    
+    <form class="login" method="post" action="/accounts/login/">
+        <input type="hidden" name="csrfmiddlewaretoken" value="mockedtokenyCeuigMCuiA">
+        
+
+<div id="div_id_login" class="mb-3"> <label
+                for="id_login" class="form-label requiredField">
+                Email<span class="asteriskField">*</span> </label> <input type="email" name="login" placeholder="Email address" autocomplete="email" maxlength="320" class="emailinput form-control" required id="id_login"> </div> <div id="div_id_password" class="mb-3"> <label
+                for="id_password" class="form-label requiredField">
+                Password<span class="asteriskField">*</span> </label> <input type="password" name="password" placeholder="Password" autocomplete="current-password" class="passwordinput form-control" required aria-describedby="id_password_helptext" id="id_password"> <div id="id_password_helptext" class="form-text"><a href="/accounts/password/reset/">Forgot your password?</a></div> </div> <div class="mb-3"> <div id="div_id_remember" class="form-check"> <input type="checkbox" name="remember" class="checkboxinput form-check-input" id="id_remember"> <label for="id_remember" class="form-check-label">
+                    Remember Me
+                </label> </div> </div>
+
+        
+        <a class="button secondaryAction"
+           href="/accounts/password/reset/">Forgot Password?</a>
+        <button class="primaryAction btn btn-primary" type="submit">Sign In</button>
+    </form>
+
+        </div>
+    </div>
+
+        </div>
+    </body>
+</html>

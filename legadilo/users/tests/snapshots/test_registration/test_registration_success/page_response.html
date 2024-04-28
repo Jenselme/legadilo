@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>
+            
+    Unread
+
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description"
+              content="Read your RSS feeds & other saved articles" />
+        <meta name="author" content="Julien Enselme" />
+        <meta name="htmx-config" content='{"includeIndicatorStyles":false}' />
+        <link rel="icon" href="/static/images/favicons/favicon.ico" />
+        
+            <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="/static/css/base.css" />
+            
+            
+        
+        
+        
+            
+                <script src="/static/js/bootstrap.min.js"></script>
+                <script src="/static/htmx.min.js"></script>
+            
+            <script src="/static/js/base.js"></script>
+            
+    <script src="/static/js/list_of_articles.js"></script>
+    <script id="js-cfg" type="application/json">{"is_reading_on_scroll_enabled": false, "auto_refresh_interval": 3600, "articles_list_min_refresh_timeout": 300}</script>
+
+        
+    </head>
+    <body>
+        <div id="danger-modal"
+             class="modal fade"
+             tabindex="-1"
+             aria-labelledby=""
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5"></h1>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-danger proceed">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            <div class="mb-1 sticky-top">
+                <nav class="navbar navbar-expand-md navbar-light bg-light">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler navbar-toggler-right"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#navbarSupportedContent"
+                                aria-controls="navbarSupportedContent"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <a class="navbar-brand" href="/reading/">Legadilo</a>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="/reading/">Home <span class="visually-hidden">(current)</span></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/about/">About</a>
+                                </li>
+                            </ul>
+                            <ul class="navbar-nav">
+                                
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/articles/add/">Add an article</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/feeds/">Subscribe to a feed</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/users/1/">My Profile</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        
+                                        <a class="nav-link" href="/accounts/logout/">Sign Out</a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        
+        <div class="container-fluid">
+            
+                
+                    <div class="alert alert-dismissible alert-success">
+                        Successfully signed in as tester@legadilo.eu.
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                    </div>
+                
+            
+            
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-2"></div>
+            <div class="col col-8">
+                <h1>Unread</h1>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid scrollable-container">
+        <div id="scrollable-article-list" class="row scrollable">
+            <div id="reading-list-group" class="col col-2">
+                
+
+<ul class="sticky-top list-group">
+    
+        <li class="p-0 list-group-item ">
+            <a href="/reading/lists/all-articles/"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>All articles</span>
+                <span class="badge text-bg-info">0</span>
+            </a>
+        </li>
+    
+        <li class="p-0 list-group-item active">
+            <a href="/reading/"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>Unread</span>
+                <span class="badge text-bg-info">0</span>
+            </a>
+        </li>
+    
+        <li class="p-0 list-group-item ">
+            <a href="/reading/lists/recent/"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>Recent</span>
+                <span class="badge text-bg-info">0</span>
+            </a>
+        </li>
+    
+        <li class="p-0 list-group-item ">
+            <a href="/reading/lists/favorite/"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>Favorite</span>
+                <span class="badge text-bg-info">0</span>
+            </a>
+        </li>
+    
+        <li class="p-0 list-group-item ">
+            <a href="/reading/lists/for-later/"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>For later</span>
+                <span class="badge text-bg-info">0</span>
+            </a>
+        </li>
+    
+        <li class="p-0 list-group-item ">
+            <a href="/reading/lists/archive/"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>Archive</span>
+                <span class="badge text-bg-info">0</span>
+            </a>
+        </li>
+    
+</ul>
+
+            </div>
+            <div class="col col-8">
+                
+
+
+    <p>No articles to display.</p>
+
+
+                <noscript>
+                    
+
+
+
+                </noscript>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </body>
+</html>
