@@ -182,7 +182,7 @@
     {% if not for_article_details %}
         <a class="btn btn-primary text-start"
            role="button"
-           href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}">
+           href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="16"
                  height="16"

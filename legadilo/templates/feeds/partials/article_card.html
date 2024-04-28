@@ -22,7 +22,7 @@
     {% endif %}
     <div class="card-body">
         <h2 class="card-title">
-            <a href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
+            <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
         </h2>
         <div class="card-subtitle">
             <p class="mb-0 text-secondary">{% include 'feeds/partials/article_metadata.html' %}</p>
