@@ -1,72 +1,16 @@
-from csp.decorators import csp_update
-from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_POST
 
-from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.feeds import constants
-from legadilo.feeds.models import Article, ArticleTag, ReadingList, Tag
+from legadilo.feeds.models import Article, ReadingList
 from legadilo.feeds.views.feed_views_utils import get_js_cfg_from_reading_list
+from legadilo.feeds.views.view_utils import get_from_url_for_article_details
 from legadilo.users.typing import AuthenticatedHttpRequest
-from legadilo.utils.urls import add_query_params, validate_from_url, validate_referer_url
-
-
-class EditTagsForm(forms.Form):
-    tags = MultipleTagsField(
-        required=False,
-        choices=[],
-        help_text=_(
-            "Tags to associate to this article. To create a new tag, type and press enter."
-        ),
-    )
-
-    class Meta:
-        fields = ("tags",)
-
-    def __init__(self, *args, tag_choices: list[tuple[str, str]], **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
-
-
-@require_GET
-@login_required
-@csp_update(IMG_SRC="https:")
-def article_details_view(
-    request: AuthenticatedHttpRequest, article_id: int, article_slug: str
-) -> TemplateResponse:
-    article = get_object_or_404(
-        Article.objects.get_queryset().for_details(),
-        id=article_id,
-        slug=article_slug,
-        user=request.user,
-    )
-    tag_choices = Tag.objects.get_all_choices(request.user)
-    edit_tags_form = EditTagsForm(
-        initial={
-            "tags": article.article_tags.get_selected_values(),
-        },
-        tag_choices=tag_choices,
-    )
-    return TemplateResponse(
-        request,
-        "feeds/article_details.html",
-        {
-            "article": article,
-            "edit_tags_form": edit_tags_form,
-            "from_url": _get_from_url_for_article_details(request, request.GET),
-        },
-    )
-
-
-def _get_from_url_for_article_details(request, query_dict) -> str:
-    return validate_from_url(
-        request, query_dict.get("from_url"), reverse("feeds:default_reading_list")
-    )
+from legadilo.utils.urls import add_query_params, validate_referer_url
 
 
 @require_POST
@@ -80,7 +24,7 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
         return _redirect_to_reading_list(request)
 
     if not request.htmx:
-        from_url = _get_from_url_for_article_details(request, request.POST)
+        from_url = get_from_url_for_article_details(request, request.POST)
         return HttpResponseRedirect(from_url)
 
     return _update_article_card(
@@ -92,7 +36,7 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
 
 
 def _redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    from_url = _get_from_url_for_article_details(request, request.POST)
+    from_url = get_from_url_for_article_details(request, request.POST)
     return HttpResponseRedirect(
         add_query_params(from_url, {"full_reload": ["true"]}),
     )
@@ -134,7 +78,7 @@ def update_article_view(
 def _update_article_card(
     request: AuthenticatedHttpRequest, article: Article, *, hx_reswap, hx_target
 ) -> TemplateResponse:
-    from_url = _get_from_url_for_article_details(request, request.POST)
+    from_url = get_from_url_for_article_details(request, request.POST)
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
         reading_list = ReadingList.objects.get(id=displayed_reading_list_id)
@@ -160,28 +104,4 @@ def _update_article_card(
             "HX-Reswap": hx_reswap,
             "HX-Retarget": hx_target,
         },
-    )
-
-
-@require_POST
-@login_required
-def update_article_tags_view(request: AuthenticatedHttpRequest, article_id: int) -> HttpResponse:
-    article = get_object_or_404(Article, id=article_id, user=request.user)
-    tag_choices = Tag.objects.get_all_choices(request.user)
-    form = EditTagsForm(
-        request.POST,
-        initial={
-            "tags": article.article_tags.get_selected_values(),
-        },
-        tag_choices=tag_choices,
-    )
-    if form.is_valid():
-        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
-        ArticleTag.objects.associate_articles_with_tags(
-            [article], tags, constants.TaggingReason.ADDED_MANUALLY, readd_deleted=True
-        )
-        ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
-
-    return HttpResponseRedirect(
-        validate_referer_url(request, reverse("feeds:default_reading_list"))
     )

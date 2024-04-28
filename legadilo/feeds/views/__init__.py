@@ -1,7 +1,6 @@
+from .article_details_views import article_details_view, update_article_tags_view
 from .article_views import (
-    article_details_view,
     delete_article_view,
-    update_article_tags_view,
     update_article_view,
 )
 from .fetch_article_views import add_article_view, refetch_article_view
