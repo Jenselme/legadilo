@@ -1,3 +1,4 @@
+from django.core import checks
 from django.core.checks import Error
 from feedparser.api import SUPPORTED_VERSIONS as FEEDPARSER_SUPPORTED_VERSIONS
 
@@ -20,3 +21,6 @@ def check_supported_feed_types_are_supported_by_feedparser(**kwargs):
         )
 
     return errors
+
+
+checks.register(check_supported_feed_types_are_supported_by_feedparser)
