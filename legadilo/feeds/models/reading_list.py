@@ -15,10 +15,10 @@ class ReadingListManager(models.Manager["ReadingList"]):
     def create_default_lists(self, user: User):
         self.update_or_create(
             slug=slugify(str(_("All articles"))),
+            user=user,
             defaults={
                 "name": str(_("All articles")),
                 "order": 0,
-                "user": user,
             },
         )
         base_default_list_values = {
@@ -26,10 +26,10 @@ class ReadingListManager(models.Manager["ReadingList"]):
             "read_status": constants.ReadStatus.ONLY_UNREAD,
             "for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER,
             "order": 10,
-            "user": user,
         }
         self.update_or_create(
             slug=slugify(str(_("Unread"))),
+            user=user,
             create_defaults={
                 **base_default_list_values,
                 "is_default": True,
@@ -39,16 +39,17 @@ class ReadingListManager(models.Manager["ReadingList"]):
         )
         self.update_or_create(
             slug=slugify(str(_("Recent"))),
+            user=user,
             defaults={
                 "name": str(_("Recent")),
                 "articles_max_age_value": 2,
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.DAYS,
                 "order": 20,
-                "user": user,
             },
         )
         self.update_or_create(
             slug=slugify(str(_("Favorite"))),
+            user=user,
             defaults={
                 "name": str(_("Favorite")),
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
@@ -58,20 +59,20 @@ class ReadingListManager(models.Manager["ReadingList"]):
         )
         self.update_or_create(
             slug=slugify(str(_("For later"))),
+            user=user,
             defaults={
                 "name": str(_("For later")),
                 "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,
                 "order": 35,
-                "user": user,
             },
         )
         self.update_or_create(
             slug=slugify(str(_("Archive"))),
+            user=user,
             defaults={
                 "name": str(_("Archive")),
                 "read_status": constants.ReadStatus.ONLY_READ,
                 "order": 40,
-                "user": user,
             },
         )
 
