@@ -10,7 +10,11 @@
     <h1>{% translate "E-mail Addresses" %}</h1>
     {% if user.emailaddress_set.all %}
         <p>{% translate "The following e-mail addresses are associated with your account:" %}</p>
-        <form action="{% url 'account_email' %}" class="email_list" method="post">
+        <form action="{% url 'account_email' %}"
+              class="email_list mb-4"
+              method="post"
+              hx-boost="true"
+              hx-indicator=".icon-indicator">
             {% csrf_token %}
             <fieldset class="blockLabels">
                 {% for emailaddress in user.emailaddress_set.all %}
@@ -24,26 +28,39 @@
                                    value="{{ emailaddress.email }}" />
                             {{ emailaddress.email }}
                             {% if emailaddress.verified %}
-                                <span class="verified">{% translate "Verified" %}</span>
+                                <span class="badge text-bg-info">{% translate "Verified" %}</span>
                             {% else %}
-                                <span class="unverified">{% translate "Unverified" %}</span>
+                                <span class="badge text-bg-warning">{% translate "Unverified" %}</span>
                             {% endif %}
                             {% if emailaddress.primary %}
-                                <span class="primary">{% translate "Primary" %}</span>
+                                <span class="badge text-bg-info">{% translate "Primary" %}</span>
                             {% endif %}
                         </label>
                     </div>
                 {% endfor %}
-                <div class="form-group">
+                <div class="form-group mt-1">
                     <button class="secondaryAction btn btn-primary"
                             type="submit"
-                            name="action_primary">{% translate "Make Primary" %}</button>
+                            name="action_primary">
+                        <span class="icon-indicator">{% include "core/partials/button_loading_indicator_icon.html" %}</span>
+                        {% translate "Make Primary" %}
+                    </button>
                     <button class="secondaryAction btn btn-primary"
                             type="submit"
-                            name="action_send">{% translate "Re-send Verification" %}</button>
+                            name="action_send">
+                        <span class="icon-indicator">{% include "core/partials/button_loading_indicator_icon.html" %}</span>
+                        {% translate "Re-send Verification" %}
+                    </button>
                     <button class="primaryAction btn btn-primary"
                             type="submit"
-                            name="action_remove">{% translate "Remove" %}</button>
+                            name="action_remove"
+                            data-modal-id="danger-modal"
+                            data-modal-title="{% translate 'Confirm deletion' %}"
+                            data-modal-body="{% translate 'Do you really want to remove the selected e-mail address?' %}"
+                            hx-confirm="Delete">
+                        <span class="icon-indicator">{% include "core/partials/button_loading_indicator_icon.html" %}</span>
+                        {% translate "Remove" %}
+                    </button>
                 </div>
             </fieldset>
         </form>
@@ -53,26 +70,17 @@
         </p>
     {% endif %}
     <h2>{% translate "Add E-mail Address" %}</h2>
-    <form method="post" action="{% url 'account_email' %}" class="add_email">
+    <form method="post"
+          action="{% url 'account_email' %}"
+          class="add_email"
+          hx-boost="true"
+          hx-push-url="false"
+          hx-indicator=".icon-indicator">
         {% csrf_token %}
         {{ form|crispy }}
-        <button class="btn btn-primary" name="action_add" type="submit">{% translate "Add E-mail" %}</button>
+        <button class="btn btn-primary" name="action_add" type="submit">
+            <span class="icon-indicator">{% include "core/partials/button_loading_indicator_icon.html" %}</span>
+            {% translate "Add E-mail" %}
+        </button>
     </form>
 {% endblock inner %}
-{% block inline_javascript %}
-    {{ block.super }}
-    <script type="text/javascript">
-        window.addEventListener('DOMContentLoaded', function() {
-            const message = "{% translate 'Do you really want to remove the selected e-mail address?' %}";
-            const actions = document.getElementsByName('action_remove');
-            if (actions.length) {
-                actions[0].addEventListener("click", function(e) {
-                    if (!confirm(message)) {
-                        e.preventDefault();
-                    }
-                });
-            }
-            Array.from(document.getElementsByClassName('form-group')).forEach(x => x.classList.remove('row'));
-        });
-    </script>
-{% endblock inline_javascript %}
