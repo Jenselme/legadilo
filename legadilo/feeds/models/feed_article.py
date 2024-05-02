@@ -9,7 +9,7 @@ else:
 
 
 class FeedArticle(models.Model):
-    feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
+    feed = models.ForeignKey("feeds.Feed", related_name="feed_articles", on_delete=models.CASCADE)
     article = models.ForeignKey(
         "feeds.Article", related_name="feed_articles", on_delete=models.CASCADE
     )

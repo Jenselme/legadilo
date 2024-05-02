@@ -99,7 +99,7 @@ class Feed(models.Model):
     feed_type = models.CharField(choices=SupportedFeedType, max_length=100)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
-    feed_articles = models.ManyToManyField(
+    articles = models.ManyToManyField(
         "feeds.Article",
         related_name="feeds",
         through="feeds.FeedArticle",

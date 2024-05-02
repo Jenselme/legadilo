@@ -58,11 +58,11 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=50, blank=True)
 
     user = models.ForeignKey("users.User", related_name="tags", on_delete=models.CASCADE)
-    article_tags = models.ManyToManyField(
+    articles = models.ManyToManyField(
         "feeds.Article", related_name="tags", through="feeds.ArticleTag"
     )
-    feed_tags = models.ManyToManyField("feeds.Feed", related_name="tags", through="feeds.FeedTag")
-    reading_list_tags = models.ManyToManyField(
+    feeds = models.ManyToManyField("feeds.Feed", related_name="tags", through="feeds.FeedTag")
+    reading_lists = models.ManyToManyField(
         "feeds.ReadingList", related_name="tags", through="feeds.ReadingListTag"
     )
 
@@ -159,7 +159,7 @@ class ArticleTag(models.Model):
     article = models.ForeignKey(
         "feeds.Article", related_name="article_tags", on_delete=models.CASCADE
     )
-    tag = models.ForeignKey("feeds.Tag", related_name="articles", on_delete=models.CASCADE)
+    tag = models.ForeignKey("feeds.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
     tagging_reason = models.CharField(
         choices=constants.TaggingReason.choices,
@@ -207,7 +207,7 @@ class FeedTagManager(models.Manager["FeedTag"]):
 
 class FeedTag(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_tags", on_delete=models.CASCADE)
-    tag = models.ForeignKey("feeds.Tag", related_name="feeds", on_delete=models.CASCADE)
+    tag = models.ForeignKey("feeds.Tag", related_name="feed_tags", on_delete=models.CASCADE)
 
     objects = FeedTagManager()
 
@@ -227,7 +227,7 @@ class ReadingListTag(models.Model):
     reading_list = models.ForeignKey(
         "feeds.ReadingList", related_name="reading_list_tags", on_delete=models.CASCADE
     )
-    tag = models.ForeignKey("feeds.Tag", related_name="reading_lists", on_delete=models.CASCADE)
+    tag = models.ForeignKey("feeds.Tag", related_name="reading_list_tags", on_delete=models.CASCADE)
 
     filter_type = models.CharField(
         choices=constants.ReadingListTagFilterType.choices,
