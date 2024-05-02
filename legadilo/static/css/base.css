@@ -13,6 +13,11 @@
   fill: currentcolor;
 }
 
+.btn-primary img.bi,
+.btn-danger img.bi {
+  filter: invert(1);
+}
+
 .htmx-indicator,
 .icon-indicator .indicator {
   display: none;
