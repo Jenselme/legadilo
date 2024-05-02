@@ -204,27 +204,25 @@ class ArticleManager(models.Manager["Article"]):
                     )
                 )
 
-        if articles_to_create:
-            self.bulk_create(articles_to_create, unique_fields=["user", "link"])
+        self.bulk_create(articles_to_create, unique_fields=["user", "link"])
 
-        if articles_to_update:
-            self.bulk_update(
-                articles_to_update,
-                fields=[
-                    "title",
-                    "slug",
-                    "summary",
-                    "content",
-                    "reading_time",
-                    "authors",
-                    "preview_picture_url",
-                    "preview_picture_alt",
-                    "contributors",
-                    "external_tags",
-                    "updated_at",
-                    "read_at",
-                ],
-            )
+        self.bulk_update(
+            articles_to_update,
+            fields=[
+                "title",
+                "slug",
+                "summary",
+                "content",
+                "reading_time",
+                "authors",
+                "preview_picture_url",
+                "preview_picture_alt",
+                "contributors",
+                "external_tags",
+                "updated_at",
+                "read_at",
+            ],
+        )
 
         all_articles = [*articles_to_create, *existing_links_to_articles.values()]
         ArticleTag.objects.associate_articles_with_tags(

@@ -45,8 +45,7 @@ class TagManager(models.Manager["Tag"]):
             for name_or_slug in names_or_slugs
             if slugify(name_or_slug) not in existing_slugs
         ]
-        if tags_to_create:
-            self.bulk_create(tags_to_create)
+        self.bulk_create(tags_to_create)
 
         return [*existing_tags, *tags_to_create]
 
@@ -135,8 +134,7 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
             for tag in tags
             if (article.id, tag.id) not in existing_article_tag_links
         ]
-        if article_tags_to_create:
-            self.bulk_create(article_tags_to_create)
+        self.bulk_create(article_tags_to_create)
 
         if readd_deleted:
             self.get_queryset().for_deleted_links(existing_article_tag_links).update(
