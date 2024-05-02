@@ -76,3 +76,28 @@ def reading_list_url(reading_list: ReadingList) -> str:
         return reverse("feeds:default_reading_list")
 
     return reverse("feeds:reading_list", kwargs={"reading_list_slug": reading_list.slug})
+
+
+@register.filter
+def article_action_indicator(article: Article) -> str:
+    return f"icon-indicator-{article.id}"
+
+
+@register.filter
+def article_card_id(article: Article) -> str:
+    return f"article-card-{article.id}"
+
+
+@register.filter
+def delete_article_form_id(article: Article) -> str:
+    return f"delete-article-{article.id}"
+
+
+@register.filter
+def update_article_form_id(article: Article) -> str:
+    return f"update-article-actions-form-{article.id}"
+
+
+@register.filter
+def refetch_article_form_id(article: Article) -> str:
+    return f"refetch-article-actions-form-{article.id}"

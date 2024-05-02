@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<form id="delete-article-{{ article.id }}"
+<form id="{{ article|delete_article_form_id }}"
       class="visually-hidden"
       aria-hidden="true"
       method="post"
@@ -8,7 +8,7 @@
       data-modal-id="danger-modal"
       data-modal-title="{% translate 'Confirm article deletion' %}"
       data-modal-body="{% blocktranslate with article_title=article.title %}Are you sure you want to delete the article '{{ article_title }}'?{% endblocktranslate %}"
-      hx-indicator=".icon-indicator-{{ article.id }}"
+      hx-indicator=".{{ article|article_action_indicator }}"
       hx-boost="true"
       hx-push-url="false"
       hx-confirm="Delete?">
@@ -27,8 +27,8 @@
     <button class="btn btn-danger"
             {% if article.is_from_feed %}disabled{% endif %}
             type="submit"
-            form="delete-article-{{ article.id }}">
-        <span class="icon-indicator icon-indicator-{{ article.id }}">
+            form="{{ article|delete_article_form_id }}">
+        <span class="icon-indicator {{ article|article_action_indicator }}">
             {% include "core/partials/button_loading_indicator.html" %}
             {% include "core/partials/bs-icons/delete.html" %}
         </span>

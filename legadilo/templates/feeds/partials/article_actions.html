@@ -1,10 +1,10 @@
 {% load static i18n feeds %}
 
-<form id="update-article-actions-form-{{ article.id }}"
+<form id="{{ article|update_article_form_id }}"
       class="visually-hidden"
       aria-hidden="true"
       method="post"
-      hx-indicator=".icon-indicator-{{ article.id }}"
+      hx-indicator=".{{ article|article_action_indicator }}"
       hx-boost="true"
       hx-push-url="false">
     {% csrf_token %}
@@ -26,7 +26,7 @@
           hx-trigger="submit"
           hx-boost="true"
           hx-swap="outerHTML show:none"
-          hx-target="#article-card-{{ article.id }}"
+          hx-target="#{{ article|article_card_id }}"
           hx-push-url="false">
         {% csrf_token %}
         <input type="hidden"
@@ -39,16 +39,16 @@
      role="group">
     <button class="btn {% if for_article_details %}btn-primary{% else %}btn-outline-secondary{% endif %} text-start"
             type="submit"
-            form="update-article-actions-form-{{ article.id }}"
+            form="{{ article|update_article_form_id }}"
             formaction="{{ article|read_action_url }}">
         {% if article.is_read %}
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+            <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_unread.html" %}
             </span>
             {% translate 'Mark as unread' %}
         {% else %}
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+            <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_read.html" %}
             </span>
@@ -57,16 +57,16 @@
     </button>
     <button class="btn btn-outline-secondary text-start"
             type="submit"
-            form="update-article-actions-form-{{ article.id }}"
+            form="{{ article|update_article_form_id }}"
             formaction="{{ article|favorite_action_url }}">
         {% if article.is_favorite %}
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+            <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/unmark_as_favorite.html" %}
             </span>
             {% translate 'Unmark as favorite' %}
         {% else %}
-            <span class="icon-indicator icon-indicator-{{ article.id }} text-start">
+            <span class="icon-indicator {{ article|article_action_indicator }} text-start">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_favorite.html" %}
             </span>
@@ -75,16 +75,16 @@
     </button>
     <button class="btn btn-outline-secondary text-start"
             type="submit"
-            form="update-article-actions-form-{{ article.id }}"
+            form="{{ article|update_article_form_id }}"
             formaction="{{ article|for_later_action_url }}">
         {% if article.is_for_later %}
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+            <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_not_for_later.html" %}
             </span>
             {% translate 'Not for later' %}
         {% else %}
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+            <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_for_later.html" %}
             </span>
@@ -92,20 +92,20 @@
         {% endif %}
     </button>
     {% if allow_refetch %}
-        <form id="refetch-article-{{ article.id }}"
+        <form id="{{ article|refetch_article_form_id }}"
               class="visually-hidden"
               aria-hidden="true"
               method="post"
               action="{% url 'feeds:refetch_article' %}"
               hx-boost="true"
               hx-push-url="false"
-              hx-indicator=".icon-indicator-{{ article.id }}">
+              hx-indicator=".{{ article|article_action_indicator }}">
             {% csrf_token %}
             <input type="hidden" name="url" value="{{ article.link }}" />
         </form>
         <button class="btn btn-outline-secondary text-start"
-                form="refetch-article-{{ article.id }}">
-            <span class="icon-indicator icon-indicator-{{ article.id }}">
+                form="{{ article|refetch_article_form_id }}">
+            <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/refetch.html" %}
             </span>

@@ -38,7 +38,7 @@
                 <form class="row row-cols-auto align-items-center"
                       method="post"
                       action="{{ article|update_tags_action_url }}"
-                      hx-indicator=".icon-indicator-{{ article.id }}"
+                      hx-indicator=".{{ article|article_action_indicator }}"
                       hx-boost="true"
                       hx-push-url="false">
                     {% csrf_token %}
@@ -50,7 +50,7 @@
                         </div>
                     {% endfor %}
                     <button class="btn btn-outline-primary col-2" type="submit">
-                        <span class="icon-indicator icon-indicator-{{ article.id }}">
+                        <span class="icon-indicator {{ article|article_action_indicator }}">
                             {% include "core/partials/button_loading_indicator.html" %}
                         </span>
                         {% translate "Update tags" %}
