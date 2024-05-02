@@ -4,15 +4,18 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
 
 from django.db import models, transaction
-from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from ...users.models import User
 from .. import constants
 
 if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+
     from .article import Article
     from .feed import Feed
+else:
+    TypedModelMeta = object
 
 
 class TagQuerySet(models.QuerySet["Tag"]):

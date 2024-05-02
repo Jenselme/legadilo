@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
-from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.users.models import User
 
@@ -13,6 +14,11 @@ from .article import Article
 from .feed_article import FeedArticle
 from .feed_update import FeedUpdate
 from .tag import FeedTag, Tag
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
 
 
 class FeedQuerySet(models.QuerySet["Feed"]):

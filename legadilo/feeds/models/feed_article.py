@@ -1,5 +1,11 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
-from django_stubs_ext.db.models import TypedModelMeta
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
 
 
 class FeedArticle(models.Model):

@@ -4,14 +4,17 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from django.db import models
-from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.feeds.constants import FEED_ERRORS_TIME_WINDOW
 
 from .. import constants
 
 if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+
     from .feed import Feed
+else:
+    TypedModelMeta = object
 
 
 class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):

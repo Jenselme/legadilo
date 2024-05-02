@@ -8,7 +8,6 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
-from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
@@ -20,11 +19,15 @@ from .. import constants
 from .tag import ArticleTag
 
 if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+
     from legadilo.users.models import User
 
     from ..utils.feed_parsing import ArticleData
     from .reading_list import ReadingList
     from .tag import Tag
+else:
+    TypedModelMeta = object
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
