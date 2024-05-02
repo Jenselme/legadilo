@@ -19,7 +19,7 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
     article = get_object_or_404(Article, id=article_id, user=request.user)
     article.delete()
 
-    for_article_details = request.POST.get("for_article_details", "").lower() == "true"
+    for_article_details = request.POST.get("for_article_details", "")
     if for_article_details:
         return _redirect_to_reading_list(request)
 
@@ -56,7 +56,7 @@ def update_article_view(
     article.save()
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)
-    for_article_details = request.POST.get("for_article_details", "").lower() == "true"
+    for_article_details = request.POST.get("for_article_details", "")
 
     if for_article_details:
         if is_read_status_update:

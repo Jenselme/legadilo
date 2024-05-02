@@ -49,7 +49,7 @@ def _display_list_of_articles(
     # If the full_reload params is passed, we render the full template. To avoid issues with
     # following requests, we must remove it from the URL.
     from_url, full_reload_param = pop_query_param(request.get_full_path(), "full_reload")
-    must_do_full_reload = full_reload_param and full_reload_param.lower() == "true"
+    must_do_full_reload = bool(full_reload_param)
     requested_page = get_page_number_from_request(request)
     articles_page = get_requested_page(articles_paginator, requested_page)
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
