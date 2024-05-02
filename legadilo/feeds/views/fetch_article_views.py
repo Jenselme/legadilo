@@ -24,7 +24,7 @@ from legadilo.utils.urls import validate_referer_url
 
 class FetchArticleForm(forms.Form):
     url = forms.URLField(
-        assume_scheme="https",  # type: ignore[call-arg]
+        assume_scheme="https",
         help_text=_("URL of the article to add."),
     )
     tags = MultipleTagsField(

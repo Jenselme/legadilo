@@ -258,7 +258,7 @@ time-machine = "2.14.1"  #  https://github.com/adamchainz/time-machine
 # ------------------------------------------------------------------------------
 sphinx = "7.3.7"  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild = "2024.4.16"  # https://github.com/GaretJax/sphinx-autobuild
-myst-parser = "3.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
+myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
 # Code quality
 # ------------------------------------------------------------------------------
@@ -280,8 +280,8 @@ optional = true
 
 [tool.poetry.group.typing.dependencies]
 types-python-dateutil = "^2.9.0.20240316"
-mypy = "1.7.1"  # https://github.com/python/mypy
-django-stubs = { extras = ["compatible-mypy"], version = "4.2.7" }  # https://github.com/typeddjango/django-stubs
+mypy = "1.10.0"  # https://github.com/python/mypy
+django-stubs = { extras = ["compatible-mypy"], version = "5.0.0" }  # https://github.com/typeddjango/django-stubs
 
 [build-system]
 requires = ["poetry-core"]

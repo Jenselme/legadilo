@@ -28,7 +28,7 @@ from ..utils.feed_parsing import (
 
 class SubscribeToFeedForm(forms.Form):
     url = forms.URLField(
-        assume_scheme="https",  # type: ignore[call-arg]
+        assume_scheme="https",
         help_text=_(
             "Enter the URL to the feed you want to subscribe to or of a site in which case we will "
             "try to find the URL of the feed."

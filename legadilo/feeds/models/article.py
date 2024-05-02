@@ -292,14 +292,20 @@ class Article(models.Model):
     )
 
     read_at = models.DateTimeField(null=True, blank=True)
-    is_read = models.GeneratedField(  # type: ignore[attr-defined]
-        expression=models.Q(read_at__isnull=False),
+    is_read = models.GeneratedField(
+        expression=models.Case(
+            models.When(models.Q(read_at__isnull=True), then=False),
+            default=True,
+        ),
         output_field=models.BooleanField(),
         db_persist=True,
     )
     opened_at = models.DateTimeField(null=True, blank=True)
-    was_opened = models.GeneratedField(  # type: ignore[attr-defined]
-        expression=models.Q(opened_at__isnull=False),
+    was_opened = models.GeneratedField(
+        expression=models.Case(
+            models.When(models.Q(opened_at__isnull=True), then=False),
+            default=True,
+        ),
         output_field=models.BooleanField(),
         db_persist=True,
     )
