@@ -26,13 +26,13 @@
         {# Placed at the top of the document so pages load faster with defer #}
         {% block javascript %}
             {% if debug %}
-                <script src="{% static 'js/bootstrap.js' %}"></script>
-                <script src="{% static 'htmx.js' %}"></script>
+                <script src="{% static 'js/bootstrap.js' %}" defer></script>
+                <script src="{% static 'htmx.js' %}" defer></script>
             {% else %}
-                <script src="{% static 'js/bootstrap.min.js' %}"></script>
-                <script src="{% static 'htmx.min.js' %}"></script>
+                <script src="{% static 'js/bootstrap.min.js' %}" defer></script>
+                <script src="{% static 'htmx.min.js' %}" defer></script>
             {% endif %}
-            <script src="{% static 'js/base.js' %}"></script>
+            <script src="{% static 'js/base.js' %}" defer></script>
             {% block page_js %}
             {% endblock page_js %}
         {% endblock javascript %}
