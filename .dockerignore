@@ -11,3 +11,4 @@
 venv
 .git/
 .envs/
+.pytest_cache

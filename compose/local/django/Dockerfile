@@ -36,7 +36,7 @@ COPY poetry.lock .
 RUN pip install -U pip && \
   pip install poetry==1.8.2 && \
   poetry config virtualenvs.create false && \
-  poetry install --with dev --with typing
+  poetry install --with dev --with typing --no-interaction
 
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint

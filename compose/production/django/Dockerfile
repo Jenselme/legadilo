@@ -26,7 +26,8 @@ COPY pyproject.toml .
 COPY poetry.lock .
 RUN pip install -U pip && \
   pip install poetry==1.8.2 && \
-  poetry install --no-cache
+  poetry config virtualenvs.create false && \
+  poetry install --no-interaction
 
 
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
@@ -49,10 +50,15 @@ USER django
 
 RUN DATABASE_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings" \
-  python manage.py compilemessages && \
-  DATABASE_URL="" \
+  DJANGO_SECRET_KEY="test" \
+  DJANGO_ADMIN_URL="/admin" \
+  python manage.py compilemessages
+
+RUN DATABASE_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings" \
-  python /app/manage.py collectstatic \
+  DJANGO_SECRET_KEY="test" \
+  DJANGO_ADMIN_URL="/admin" \
+  python manage.py collectstatic \
     --clear \
     --ignore 'bootstrap.rtl*' \
     --ignore 'bootstrap-*' \
