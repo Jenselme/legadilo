@@ -110,6 +110,21 @@ repos:
         types: [python]
         pass_filenames: false
 
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: env
+        args:
+          - poetry
+          - run
+          - pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages:
+          - pre-push
+
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
   autoupdate_schedule: weekly
