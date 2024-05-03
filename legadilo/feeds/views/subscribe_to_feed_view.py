@@ -11,12 +11,14 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
+from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.utils.decorators import alogin_required
 
+from ...users.models import User
 from ...users.typing import AuthenticatedHttpRequest
 from .. import constants
-from ..models import Feed, Tag
+from ..models import Feed, FeedCategory, Tag
 from ..utils.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
@@ -43,6 +45,10 @@ class SubscribeToFeedForm(forms.Form):
         required=False,
         widget=forms.HiddenInput(),
     )
+    category = forms.ChoiceField(
+        required=False,
+        help_text=_("The category of the feed to help you keep them organized."),
+    )
     tags = MultipleTagsField(
         required=False,
         choices=[],
@@ -51,9 +57,18 @@ class SubscribeToFeedForm(forms.Form):
         ),
     )
 
-    def __init__(self, data=None, *, tag_choices: list[tuple[str, str]], **kwargs):
+    def __init__(
+        self,
+        data=None,
+        *,
+        tag_choices: FormChoices,
+        category_choices: FormChoices,
+        user: User,
+        **kwargs,
+    ):
         super().__init__(data, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["category"].choices = category_choices  # type: ignore[attr-defined]
         if data and (proposed_feed_choices := data.get("proposed_feed_choices")):
             self.fields["url"].widget.attrs["readonly"] = "true"
             self.initial["proposed_feed_choices"] = proposed_feed_choices  # type: ignore[index]
@@ -78,7 +93,7 @@ class SubscribeToFeedForm(forms.Form):
         return choices
 
     class Meta:
-        fields = ("url", "tags")
+        fields = ("url", "category", "tags")
 
     @property
     def feed_url(self):
@@ -88,18 +103,25 @@ class SubscribeToFeedForm(forms.Form):
 @require_http_methods(["GET", "POST"])
 @alogin_required
 async def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
-    tag_choices = await sync_to_async(Tag.objects.get_all_choices)(request.user)
     if request.method == HTTPMethod.GET:
         status = HTTPStatus.OK
-        form = SubscribeToFeedForm(tag_choices=tag_choices)
+        form = await _get_subscribe_to_feed_form(data=None, user=request.user)
     else:
-        status, form = await _handle_creation(request, tag_choices)
+        status, form = await _handle_creation(request)
 
     return TemplateResponse(request, "feeds/subscribe_to_feed.html", {"form": form}, status=status)
 
 
-async def _handle_creation(request, tag_choices: list[tuple[str, str]]):  # noqa: PLR0911 Too many return statements
-    form = SubscribeToFeedForm(request.POST, tag_choices=tag_choices)
+async def _get_subscribe_to_feed_form(data: dict | None, user: User):
+    tag_choices = await sync_to_async(Tag.objects.get_all_choices)(user)
+    category_choices = await sync_to_async(FeedCategory.objects.get_all_choices)(user)
+    return SubscribeToFeedForm(
+        data, tag_choices=tag_choices, category_choices=category_choices, user=user
+    )
+
+
+async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too many return statements
+    form = await _get_subscribe_to_feed_form(request.POST, user=request.user)
     if not form.is_valid():
         messages.error(request, _("Failed to create the feed"))
         return HTTPStatus.BAD_REQUEST, form
@@ -110,8 +132,14 @@ async def _handle_creation(request, tag_choices: list[tuple[str, str]]):  # noqa
         tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
             request.user, form.cleaned_data["tags"]
         )
+        category = await sync_to_async(
+            FeedCategory.objects.filter(slug=form.cleaned_data.get("category")).first
+        )()
         feed = await sync_to_async(Feed.objects.create_from_metadata)(
-            feed_medata, request.user, tags
+            feed_medata,
+            request.user,
+            tags,
+            category,
         )
     except httpx.HTTPError:
         messages.error(
@@ -129,12 +157,12 @@ async def _handle_creation(request, tag_choices: list[tuple[str, str]]):  # noqa
         messages.error(request, _("Failed to find a feed URL on the supplied page."))
         return HTTPStatus.BAD_REQUEST, form
     except MultipleFeedFoundError as e:
-        form = SubscribeToFeedForm(
+        form = await _get_subscribe_to_feed_form(
             {
                 "url": form.feed_url,
                 "proposed_feed_choices": json.dumps(e.feed_urls),
             },
-            tag_choices=tag_choices,
+            user=request.user,
         )
         messages.warning(
             request, _("Multiple feeds were found at this location, please select the proper one.")
@@ -157,6 +185,6 @@ async def _handle_creation(request, tag_choices: list[tuple[str, str]]):  # noqa
         return HTTPStatus.BAD_REQUEST, form
     else:
         # Empty form after success.
-        form = SubscribeToFeedForm(tag_choices=tag_choices)
+        form = await _get_subscribe_to_feed_form(data=None, user=request.user)
         messages.success(request, _("Feed '%s' added") % feed.title)
         return HTTPStatus.CREATED, form

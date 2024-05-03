@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Self
 from django.db import models, transaction
 from slugify import slugify
 
+from legadilo.core.forms import FormChoices
+
 from ...users.models import User
 from .. import constants
 
@@ -32,7 +34,7 @@ class TagManager(models.Manager["Tag"]):
     def get_queryset(self) -> TagQuerySet:
         return TagQuerySet(self.model, using=self._db, hints=self._hints)
 
-    def get_all_choices(self, user: User) -> list[tuple[str, str]]:
+    def get_all_choices(self, user: User) -> FormChoices:
         return list(self.get_queryset().for_user(user).values_list("slug", "name"))
 
     @transaction.atomic()

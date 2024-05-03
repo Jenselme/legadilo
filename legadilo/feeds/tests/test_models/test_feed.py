@@ -171,7 +171,7 @@ class TestFeedManager:
                 [],
             )
 
-        assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(
+        assert 'duplicate key value violates unique constraint "feeds_feed_feed_url_unique"' in str(
             execinfo.value
         )
 

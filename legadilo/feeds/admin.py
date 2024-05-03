@@ -5,6 +5,7 @@ from legadilo.feeds.models import (
     ArticleTag,
     Feed,
     FeedArticle,
+    FeedCategory,
     FeedTag,
     FeedUpdate,
     ReadingList,
@@ -42,6 +43,11 @@ class FeedAdmin(admin.ModelAdmin):
     inlines = [
         FeedTagInline,
     ]
+
+
+@admin.register(FeedCategory)
+class FeedCategoryAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(ReadingList)
