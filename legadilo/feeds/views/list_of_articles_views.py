@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 
 from legadilo.feeds.models import Article, ReadingList, Tag
-from legadilo.feeds.views.feed_views_utils import get_js_cfg_from_reading_list
+from legadilo.feeds.views.view_utils import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
 from legadilo.utils.urls import pop_query_param

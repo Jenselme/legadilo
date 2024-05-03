@@ -7,8 +7,10 @@ from django.views.decorators.http import require_POST
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Article, ReadingList
-from legadilo.feeds.views.feed_views_utils import get_js_cfg_from_reading_list
-from legadilo.feeds.views.view_utils import get_from_url_for_article_details
+from legadilo.feeds.views.view_utils import (
+    get_from_url_for_article_details,
+    get_js_cfg_from_reading_list,
+)
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.urls import add_query_params, validate_referer_url
 
