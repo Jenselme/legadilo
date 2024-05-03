@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
+{% load i18n %}
+
 {% block title %}
-    Forbidden (403)
+    {% translate "Forbidden (403)" %}
 {% endblock title %}
 {% block content %}
-    <h1>Forbidden (403)</h1>
-    <p>You're not allowed to access this page.</p>
+    <h1>{% translate "Forbidden (403)" %}</h1>
+    <p>{% translate "You're not allowed to access this page." %}</p>
 {% endblock content %}

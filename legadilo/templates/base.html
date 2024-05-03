@@ -13,7 +13,7 @@
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description"
-              content="Read your RSS feeds & other saved articles" />
+              content="{% translate 'Read your RSS feeds & other saved articles' %}" />
         <meta name="author" content="Julien Enselme" />
         <meta name="htmx-config" content='{"includeIndicatorStyles":false}' />
         <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
@@ -77,10 +77,10 @@
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav me-auto">
                                 <li class="nav-item active">
-                                    <a class="nav-link" href="{% url 'feeds:default_reading_list' %}">Home <span class="visually-hidden">(current)</span></a>
+                                    <a class="nav-link" href="{% url 'feeds:default_reading_list' %}">{% translate "Default reading list" %}</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'about' %}">About</a>
+                                    <a class="nav-link" href="{% url 'about' %}">{% translate "About" %}</a>
                                 </li>
                             </ul>
                             <ul class="navbar-nav">
@@ -129,7 +129,6 @@
                 {% endfor %}
             {% endif %}
             {% block content %}
-                <p>Use this document as a way to quick start any new project.</p>
             {% endblock content %}
         </div>
     </body>

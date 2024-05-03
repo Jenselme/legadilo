@@ -3,8 +3,9 @@
 {% load static i18n %}
 
 {% block title %}
-    User:
-    {{ object.email }}
+    {% blocktranslate with email=object.email %}
+        User: {{ email }}
+    {% endblocktranslate %}
 {% endblock title %}
 {% block content %}
     <div class="container">
