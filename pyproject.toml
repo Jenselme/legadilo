@@ -250,7 +250,7 @@ myst-parser = "2.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
 # Code quality
 # ------------------------------------------------------------------------------
-coverage = "7.4.4"  # https://github.com/nedbat/coveragepy
+coverage = "7.5.1"  # https://github.com/nedbat/coveragepy
 pre-commit = "3.7.0"  # https://github.com/pre-commit/pre-commit
 
 # Django
