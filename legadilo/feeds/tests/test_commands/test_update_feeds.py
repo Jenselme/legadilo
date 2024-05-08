@@ -25,7 +25,7 @@ class TestUpdateFeedsCommand:
         httpx_mock.add_response(url=feed_url, content=get_feed_fixture_content("sample_rss.xml"))
 
         with (
-            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
             django_assert_num_queries(11),
         ):
             call_command("update_feeds")
@@ -34,7 +34,7 @@ class TestUpdateFeedsCommand:
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.first()
         assert feed_update is not None
-        assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
+        assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
@@ -46,7 +46,7 @@ class TestUpdateFeedsCommand:
         httpx_mock.add_response(status_code=HTTPStatus.NOT_MODIFIED, url=feed_url)
 
         with (
-            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
             django_assert_num_queries(3),
         ):
             call_command("update_feeds")
@@ -55,7 +55,7 @@ class TestUpdateFeedsCommand:
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.first()
         assert feed_update is not None
-        assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
+        assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.NOT_MODIFIED
 
     def test_update_feed_command_http_error(self, httpx_mock, django_assert_num_queries):
@@ -65,7 +65,7 @@ class TestUpdateFeedsCommand:
         httpx_mock.add_exception(httpx.HTTPError("Some error"), url=feed_url)
 
         with (
-            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
             django_assert_num_queries(6),
         ):
             call_command("update_feeds")
@@ -74,7 +74,7 @@ class TestUpdateFeedsCommand:
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.select_related("feed").first()
         assert feed_update is not None
-        assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
+        assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Some error"
         assert not feed_update.feed_etag
@@ -95,7 +95,7 @@ class TestUpdateFeedsCommand:
         )
 
         with (
-            time_machine.travel(datetime(2023, 12, 31, tzinfo=UTC), tick=False),
+            time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
             django_assert_num_queries(6),
         ):
             call_command("update_feeds")
@@ -104,7 +104,7 @@ class TestUpdateFeedsCommand:
         assert FeedUpdate.objects.count() == 2
         feed_update = FeedUpdate.objects.select_related("feed").first()
         assert feed_update is not None
-        assert feed_update.created_at == datetime(2023, 12, 31, tzinfo=UTC)
+        assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Some error"
         assert not feed_update.feed_etag

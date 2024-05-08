@@ -24,6 +24,9 @@ class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):
     def only_success(self):
         return self.filter(status=constants.FeedUpdateStatus.SUCCESS)
 
+    def only_latest(self):
+        return self.values("id").order_by("feed_id", "-created_at").distinct("feed_id")
+
 
 class FeedUpdateManager(models.Manager["FeedUpdate"]):
     _hints: dict

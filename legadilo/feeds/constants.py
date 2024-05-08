@@ -24,6 +24,22 @@ class SupportedFeedType(TextChoices):
     json1 = "json1", "JSON 1"
 
 
+class FeedRefreshDelays(TextChoices):
+    pass
+    HOURLY = "HOURLY", _("Hourly")
+    BIHOURLY = "BIHOURLY", _("Bihourly")
+    EVERY_MORNING = "EVERY_MORNING", _("Every Morning")
+    DAILY_AT_NOON = "DAILY_AT_NOON", _("Daily at Noon")
+    EVERY_EVENING = "EVERY_EVENING", _("Every Evening")
+    ON_MONDAYS = "ON_MONDAYS", _("On Mondays")
+    ON_THURSDAYS = "ON_THURSDAYS", _("On Thursdays")
+    TWICE_A_WEEK = "TWICE_A_WEEK", _("Twice a week")
+    FIRST_DAY_OF_THE_MONTH = "FIRST_DAY_OF_THE_MONTH", _("First Day of the Month")
+    MIDDLE_OF_THE_MONTH = "MIDDLE_OF_THE_MONTH", _("Middle Day of the Month")
+    END_OF_THE_MONTH = "END_OF_THE_MONTH", _("End of the Month")
+    THRICE_A_MONTH = "THRICE_A_MONTH", _("Thrice a month")
+
+
 class FeedUpdateStatus(TextChoices):
     SUCCESS = "SUCCESS", _("Success")
     FAILURE = "FAILURE", _("Failure")

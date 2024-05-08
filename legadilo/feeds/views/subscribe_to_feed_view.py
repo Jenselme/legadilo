@@ -45,6 +45,11 @@ class SubscribeToFeedForm(forms.Form):
         required=False,
         widget=forms.HiddenInput(),
     )
+    refresh_delay = forms.ChoiceField(
+        required=True,
+        choices=constants.FeedRefreshDelays.choices,
+        initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
+    )
     category = forms.ChoiceField(
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
@@ -138,6 +143,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         feed = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_medata,
             request.user,
+            form.cleaned_data["refresh_delay"],
             tags,
             category,
         )

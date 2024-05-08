@@ -11,6 +11,21 @@ from ..factories import FeedFactory, FeedUpdateFactory
 
 
 @pytest.mark.django_db()
+class TestFeedUpdateQuerySet:
+    def test_only_latest(self):
+        feed = FeedFactory()
+        with time_machine.travel("2024-05-08 11:00:00"):
+            latest_for_feed = FeedUpdateFactory(feed=feed)
+        with time_machine.travel("2024-05-08 10:00:00"):
+            FeedUpdateFactory(feed=feed)
+            latest_for_other_feed = FeedUpdateFactory()
+
+        latest = FeedUpdate.objects.get_queryset().only_latest()
+
+        assert list(latest) == [{"id": latest_for_feed.id}, {"id": latest_for_other_feed.id}]
+
+
+@pytest.mark.django_db()
 class TestFeedUpdateManager:
     def test_get_latest_for_feed(self):
         feed = FeedFactory()
