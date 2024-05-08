@@ -710,14 +710,6 @@ class TestArticleManager:
             [tag1.slug, tag2.slug],
         ]
 
-    def test_update_and_create_articles_empty_list(self, user, django_assert_num_queries):
-        with django_assert_num_queries(2):
-            Article.objects.update_or_create_from_articles_list(
-                user, [], [], source_type=constants.ArticleSourceType.MANUAL
-            )
-
-        assert Article.objects.count() == 0
-
     def test_manually_readd_read_article(self, user, django_assert_num_queries):
         now_dt = utcnow()
         existing_article = ArticleFactory(

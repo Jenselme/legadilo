@@ -8,7 +8,6 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
-from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from legadilo.utils.validators import list_of_strings_json_schema_validator
@@ -20,11 +19,15 @@ from .. import constants
 from .tag import ArticleTag
 
 if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+
     from legadilo.users.models import User
 
     from ..utils.feed_parsing import ArticleData
     from .reading_list import ReadingList
     from .tag import Tag
+else:
+    TypedModelMeta = object
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
@@ -198,31 +201,31 @@ class ArticleManager(models.Manager["Article"]):
                         published_at=article_data.published_at,
                         updated_at=article_data.updated_at,
                         initial_source_type=source_type,
-                        initial_source_title=article_data.source_title,
+                        initial_source_title=article_data.source_title[
+                            : constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH
+                        ],
                     )
                 )
 
-        if articles_to_create:
-            self.bulk_create(articles_to_create, unique_fields=["user", "link"])
+        self.bulk_create(articles_to_create, unique_fields=["user", "link"])
 
-        if articles_to_update:
-            self.bulk_update(
-                articles_to_update,
-                fields=[
-                    "title",
-                    "slug",
-                    "summary",
-                    "content",
-                    "reading_time",
-                    "authors",
-                    "preview_picture_url",
-                    "preview_picture_alt",
-                    "contributors",
-                    "external_tags",
-                    "updated_at",
-                    "read_at",
-                ],
-            )
+        self.bulk_update(
+            articles_to_update,
+            fields=[
+                "title",
+                "slug",
+                "summary",
+                "content",
+                "reading_time",
+                "authors",
+                "preview_picture_url",
+                "preview_picture_alt",
+                "contributors",
+                "external_tags",
+                "updated_at",
+                "read_at",
+            ],
+        )
 
         all_articles = [*articles_to_create, *existing_links_to_articles.values()]
         ArticleTag.objects.associate_articles_with_tags(
@@ -283,18 +286,27 @@ class Article(models.Model):
         help_text=_("Tags of the article from the its source"),
     )
     external_article_id = models.CharField(
-        default="", blank=True, help_text=_("The id of the article in the its source.")
+        default="",
+        blank=True,
+        max_length=512,
+        help_text=_("The id of the article in the its source."),
     )
 
     read_at = models.DateTimeField(null=True, blank=True)
-    is_read = models.GeneratedField(  # type: ignore[attr-defined]
-        expression=models.Q(read_at__isnull=False),
+    is_read = models.GeneratedField(
+        expression=models.Case(
+            models.When(models.Q(read_at__isnull=True), then=False),
+            default=True,
+        ),
         output_field=models.BooleanField(),
         db_persist=True,
     )
     opened_at = models.DateTimeField(null=True, blank=True)
-    was_opened = models.GeneratedField(  # type: ignore[attr-defined]
-        expression=models.Q(opened_at__isnull=False),
+    was_opened = models.GeneratedField(
+        expression=models.Case(
+            models.When(models.Q(opened_at__isnull=True), then=False),
+            default=True,
+        ),
         output_field=models.BooleanField(),
         db_persist=True,
     )
@@ -304,9 +316,11 @@ class Article(models.Model):
     user = models.ForeignKey("users.User", related_name="articles", on_delete=models.CASCADE)
 
     initial_source_type = models.CharField(
-        default=constants.ArticleSourceType.FEED, choices=constants.ArticleSourceType.choices
+        default=constants.ArticleSourceType.FEED,
+        choices=constants.ArticleSourceType.choices,
+        max_length=100,
     )
-    initial_source_title = models.CharField()
+    initial_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
 
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")

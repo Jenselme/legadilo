@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags i18n %}
 
 {% block title %}
     {{ user.email }}
@@ -14,7 +14,7 @@
         {{ form|crispy }}
         <div class="control-group">
             <div class="controls">
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">{% translate "Update" %}</button>
             </div>
         </div>
     </form>

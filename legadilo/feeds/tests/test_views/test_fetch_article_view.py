@@ -65,6 +65,7 @@ class TestAddArticle:
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
+        assert response.template_name == "feeds/add_article.html"
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
@@ -87,6 +88,7 @@ class TestAddArticle:
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
+        assert response.template_name == "feeds/add_article.html"
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
@@ -101,6 +103,7 @@ class TestAddArticle:
         response = logged_in_sync_client.post(self.url, {"url": "Some trash"})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "feeds/add_article.html"
 
     def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
@@ -108,6 +111,7 @@ class TestAddArticle:
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.NOT_ACCEPTABLE
+        assert response.template_name == "feeds/add_article.html"
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
@@ -126,6 +130,7 @@ class TestAddArticle:
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "feeds/add_article.html"
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(

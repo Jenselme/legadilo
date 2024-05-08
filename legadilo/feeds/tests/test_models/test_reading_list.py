@@ -7,11 +7,13 @@ from legadilo.feeds.tests.factories import ReadingListFactory
 
 @pytest.mark.django_db()
 class TestReadingListManager:
-    def test_create_default_lists(self, user):
+    def test_create_default_lists(self, user, other_user):
         ReadingList.objects.create_default_lists(user)
+        ReadingList.objects.create_default_lists(other_user)
 
-        assert ReadingList.objects.count() == 6
+        assert ReadingList.objects.count() == 12
         assert user.reading_lists.count() == 6
+        assert other_user.reading_lists.count() == 6
 
     def test_get_default_reading_list(self, user):
         ReadingList.objects.create_default_lists(user)

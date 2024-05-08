@@ -1,9 +1,15 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
-from django_stubs_ext.db.models import TypedModelMeta
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
 
 
 class FeedArticle(models.Model):
-    feed = models.ForeignKey("feeds.Feed", related_name="articles", on_delete=models.CASCADE)
+    feed = models.ForeignKey("feeds.Feed", related_name="feed_articles", on_delete=models.CASCADE)
     article = models.ForeignKey(
         "feeds.Article", related_name="feed_articles", on_delete=models.CASCADE
     )

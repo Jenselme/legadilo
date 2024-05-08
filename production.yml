@@ -1,14 +1,12 @@
-version: "3"
-
 volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
-  production_traefik: {}
   production_django_media: {}
 
 services:
   django:
     build:
+      pull: true
       context: .
       dockerfile: ./compose/production/django/Dockerfile
 
@@ -24,6 +22,7 @@ services:
 
   postgres:
     build:
+      pull: true
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: legadilo_production_postgres
@@ -33,21 +32,9 @@ services:
     env_file:
       - ./.envs/.production/.postgres
 
-  traefik:
-    build:
-      context: .
-      dockerfile: ./compose/production/traefik/Dockerfile
-    image: legadilo_production_traefik
-    depends_on:
-      - django
-    volumes:
-      - production_traefik:/etc/traefik/acme
-    ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
-
   nginx:
     build:
+      pull: true
       context: .
       dockerfile: ./compose/production/nginx/Dockerfile
     image: legadilo_local_nginx

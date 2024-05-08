@@ -17,9 +17,7 @@ class UserManager(DjangoUserManager[User]):
     """Custom manager for the User model."""
 
     def _create_user(self, email: str, password: str | None, **extra_fields):
-        """
-        Create and save a user with the given email and password.
-        """
+        """Create and save a user with the given email and password."""
         if not email:
             raise ValueError("The given email must be set")
         validate_email(email)

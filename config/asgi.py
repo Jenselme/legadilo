@@ -1,5 +1,4 @@
-"""
-ASGI config for Legadilo project.
+"""ASGI config for Legadilo project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

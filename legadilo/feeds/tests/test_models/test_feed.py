@@ -171,7 +171,7 @@ class TestFeedManager:
                 [],
             )
 
-        assert 'duplicate key value violates unique constraint "feeds_Feed_feed_url_unique"' in str(
+        assert 'duplicate key value violates unique constraint "feeds_feed_feed_url_unique"' in str(
             execinfo.value
         )
 
@@ -265,14 +265,10 @@ class TestFeedManager:
 
         assert self.feed.articles.count() == 2
         assert self.feed.feed_updates.count() == 1
-        new_article = (
-            self.feed.articles.exclude(article__id=existing_article.id)
-            .select_related("article")
-            .get()
-        )
-        assert new_article.article.title == "Article 1"
-        assert new_article.article.initial_source_type == constants.ArticleSourceType.FEED
-        assert new_article.article.initial_source_title == self.feed.title
+        new_article = self.feed.articles.exclude(id=existing_article.id).get()
+        assert new_article.title == "Article 1"
+        assert new_article.initial_source_type == constants.ArticleSourceType.FEED
+        assert new_article.initial_source_title == self.feed.title
         existing_article.refresh_from_db()
         assert existing_article.initial_source_type == constants.ArticleSourceType.MANUAL
         assert existing_article.initial_source_title != self.feed.title

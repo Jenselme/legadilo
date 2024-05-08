@@ -62,13 +62,13 @@ async def get_feed_data(
     etag: str | None = None,
     last_modified: datetime | None = None,
 ) -> FeedData:
-    """Find the feed data from the supplied URL (either a feed or a page containing a link to
-    a feed).
-    """
+    """Find the feed data from the supplied URL.
 
+    It's either a feed or a page containing a link to a feed.
+    """
     parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
     if not parsed_feed["version"]:
-        url = find_feed_page_content(url_content)
+        url = _find_feed_page_content(url_content)
         parsed_feed, resolved_url = await _fetch_feed(
             client, url, etag=etag, last_modified=last_modified
         )
@@ -84,7 +84,7 @@ def build_feed_data(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
         title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
-        articles=parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
+        articles=_parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),
         last_modified=_parse_feed_time(parsed_feed.get("modified_parsed")),
     )
@@ -124,7 +124,7 @@ async def _fetch_feed(
     return parsed_feed, resolved_url
 
 
-def find_feed_page_content(page_content: str) -> str:
+def _find_feed_page_content(page_content: str) -> str:
     soup = BeautifulSoup(page_content, "html.parser")
     atom_feeds = soup.find_all("link", {"type": "application/atom+xml"})
     rss_feeds = soup.find_all("link", {"type": "application/rss+xml"})
@@ -156,27 +156,31 @@ def _normalize_found_link(link: str):
     return link
 
 
-def parse_articles_in_feed(
+def _parse_articles_in_feed(
     feed_url: str, feed_title: str, parsed_feed: FeedParserDict
 ) -> list[ArticleData]:
-    return [
-        ArticleData(
-            external_article_id=full_sanitize(entry.get("id", "")),
-            title=full_sanitize(entry.title),
-            summary=_get_summary(_get_article_link(feed_url, entry), entry),
-            content=_get_article_content(entry),
-            authors=_get_article_authors(entry),
-            contributors=_get_article_contributors(entry),
-            tags=_get_articles_tags(entry),
-            link=_get_article_link(feed_url, entry),
-            preview_picture_url=_get_preview_picture_url(_get_article_link(feed_url, entry), entry),
-            preview_picture_alt=_get_preview_picture_alt(entry),
-            published_at=_feed_time_to_datetime(entry.get("published_parsed")),
-            updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
-            source_title=feed_title,
+    articles_data = []
+    for entry in parsed_feed.entries:
+        article_link = _get_article_link(feed_url, entry)
+        articles_data.append(
+            ArticleData(
+                external_article_id=full_sanitize(entry.get("id", "")),
+                title=full_sanitize(entry.title),
+                summary=_get_summary(article_link, entry),
+                content=_get_article_content(entry),
+                authors=_get_article_authors(entry),
+                contributors=_get_article_contributors(entry),
+                tags=_get_articles_tags(entry),
+                link=article_link,
+                preview_picture_url=_get_preview_picture_url(article_link, entry),
+                preview_picture_alt=_get_preview_picture_alt(entry),
+                published_at=_feed_time_to_datetime(entry.get("published_parsed")),
+                updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
+                source_title=feed_title,
+            )
         )
-        for entry in parsed_feed.entries
-    ]
+
+    return articles_data
 
 
 def _get_summary(article_url: str, entry) -> str:

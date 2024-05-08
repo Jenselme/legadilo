@@ -58,7 +58,18 @@ jobs:
         run: docker compose -f local.yml run --rm django python manage.py migrate
 
       - name: Run Django Tests
-        run: docker compose -f local.yml run django pytest
+        run: docker compose -f local.yml run --rm django pytest
 
       - name: Tear down the Stack
         run: docker compose -f local.yml down
+
+      - name: Test build production images
+        run: |
+          cp -a .envs/.local .envs/.production
+          docker compose -f production.yml build
+
+      - name: Test production images
+        run: docker compose -f production.yml run -e IS_PRODUCTION=true -e DJANGO_SECRET_KEY=ci -e DJANGO_ADMIN_URL=/admin/ django python manage.py check
+
+      - name: Teardown production stack
+        run: docker compose -f production.yml down

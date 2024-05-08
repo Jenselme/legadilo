@@ -4,9 +4,7 @@ from django.core.exceptions import PermissionDenied
 
 
 def alogin_required(function):
-    """
-    Placeholder until https://code.djangoproject.com/ticket/35030 is done.
-    """
+    """Placeholder until https://code.djangoproject.com/ticket/35030 is done."""
 
     @wraps(function)
     async def wrapper(request, *args, **kwargs):

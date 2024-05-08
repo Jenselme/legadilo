@@ -19,7 +19,7 @@ function setup-pre-commit() {
         sleep 30
     done
 
-    pre-commit install
+    pre-commit install --hook-type pre-commit --hook-type pre-push
 }
 
 # Run in the backend to allow VSCode to configure git.

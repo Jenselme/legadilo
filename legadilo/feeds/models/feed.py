@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
-from django_stubs_ext.db.models import TypedModelMeta
 
 from legadilo.users.models import User
 
@@ -13,6 +14,13 @@ from .article import Article
 from .feed_article import FeedArticle
 from .feed_update import FeedUpdate
 from .tag import FeedTag, Tag
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+
+    from .feed_category import FeedCategory
+else:
+    TypedModelMeta = object
 
 
 class FeedQuerySet(models.QuerySet["Feed"]):
@@ -31,13 +39,20 @@ class FeedManager(models.Manager["Feed"]):
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     @transaction.atomic()
-    def create_from_metadata(self, feed_metadata: FeedData, user: User, tags: list[Tag]) -> Feed:
+    def create_from_metadata(
+        self,
+        feed_metadata: FeedData,
+        user: User,
+        tags: list[Tag],
+        category: FeedCategory | None = None,
+    ) -> Feed:
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,
-            title=feed_metadata.title,
+            title=feed_metadata.title[: constants.FEED_TITLE_MAX_LENGTH],
             description=feed_metadata.description,
             feed_type=feed_metadata.feed_type,
+            category=category,
             user=user,
         )
         FeedTag.objects.associate_feed_with_tags(feed, tags)
@@ -85,15 +100,18 @@ class Feed(models.Model):
     feed_url = models.URLField()
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
-    disabled_reason = models.CharField(blank=True)
+    disabled_reason = models.TextField(blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
-    title = models.CharField()
+    title = models.CharField(max_length=constants.FEED_TITLE_MAX_LENGTH)
     description = models.TextField(blank=True)
-    feed_type = models.CharField(choices=SupportedFeedType)
+    feed_type = models.CharField(choices=SupportedFeedType, max_length=100)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
-    feed_articles = models.ManyToManyField(
+    category = models.ForeignKey(
+        "feeds.FeedCategory", related_name="feeds", on_delete=models.SET_NULL, null=True
+    )
+    articles = models.ManyToManyField(
         "feeds.Article",
         related_name="feeds",
         through="feeds.FeedArticle",
@@ -106,7 +124,9 @@ class Feed(models.Model):
 
     class Meta(TypedModelMeta):
         constraints = [
-            models.UniqueConstraint("feed_url", "user", name="feeds_Feed_feed_url_unique"),
+            models.UniqueConstraint(
+                "feed_url", "user", name="%(app_label)s_%(class)s_feed_url_unique"
+            ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_feed_type_valid",
                 check=models.Q(
@@ -124,7 +144,7 @@ class Feed(models.Model):
         ]
 
     def __str__(self):
-        return f"Feed(title={self.title}, feed_type={self.feed_type})"
+        return f"Feed(title={self.title}, feed_type={self.feed_type}, category={self.category})"
 
     def disable(self, reason=""):
         self.disabled_reason = reason

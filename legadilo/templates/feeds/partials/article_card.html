@@ -1,17 +1,17 @@
 {% load feeds %}
 
-<div id="article-card-{{ article.id }}"
-     class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
+<article id="{{ article|article_card_id }}"
+         class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
     {% if js_cfg.is_reading_on_scroll_enabled and not article.is_read %}
         <form class="visually-hidden readable-on-scroll"
               aria-hidden="true"
               method="post"
               action="{{ article|read_action_url }}"
-              hx-indicator=".icon-indicator-{{ article.id }}"
+              hx-indicator=".{{ article|article_action_indicator }}"
               hx-trigger="submit"
               hx-boost="true"
               hx-swap="outerHTML show:none"
-              hx-target="#article-card-{{ article.id }}"
+              hx-target="#{{ article|article_card_id }}"
               hx-push-url="false">
             {% csrf_token %}
             <input type="hidden"
@@ -21,21 +21,23 @@
         </form>
     {% endif %}
     <div class="card-body">
-        <h2 class="card-title">
-            <a href="{% url 'feeds:article_details' article_id=article.id article_slug=article.slug %}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
-        </h2>
-        <div class="card-subtitle">
-            <p class="mb-0 text-secondary">{% include 'feeds/partials/article_metadata.html' %}</p>
-            {% if article.tags_to_display %}
-                <p>
-                    {% for tag in article.tags_to_display %}
-                        <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1"
-                           href="{% url 'feeds:tag_with_articles' tag_slug=tag.slug %}">{{ tag.name }}</a>
-                    {% endfor %}
-                </p>
-            {% endif %}
-        </div>
-        <div class="card-text mt-3 row">
+        <header>
+            <h2 class="card-title">
+                <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
+            </h2>
+            <div class="card-subtitle">
+                <p class="mb-0 text-secondary">{% include 'feeds/partials/article_metadata.html' %}</p>
+                {% if article.tags_to_display %}
+                    <p>
+                        {% for tag in article.tags_to_display %}
+                            <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1"
+                               href="{% url 'feeds:tag_with_articles' tag_slug=tag.slug %}">{{ tag.name }}</a>
+                        {% endfor %}
+                    </p>
+                {% endif %}
+            </div>
+        </header>
+        <main class="card-text mt-3 row">
             {% if article.preview_picture_url %}
                 <img class="col-1 object-fit-contain"
                      src="{{ article.preview_picture_url }}"
@@ -45,21 +47,19 @@
                 <div class="col-1 p-0"></div>
             {% endif %}
             <div class="col-11 m-0 p-0">{{ article.summary | truncatewords_html:100 | safe }}</div>
-        </div>
+        </main>
     </div>
-    <div class="card-footer d-flex justify-content-between">
+    <footer class="card-footer d-flex justify-content-between">
         <div>{% include "feeds/partials/article_actions.html" %}</div>
         <div>{% include "feeds/partials/article_danger_actions.html" %}</div>
-    </div>
-</div>
+    </footer>
+</article>
 {% if is_last and next_page_number %}
     <p class="icon-indicator infinite-scrolling-icon-indicator"
        hx-get="?page={{ next_page_number }}"
        hx-trigger="intersect once"
        hx-swap="outerHTML"
-       hx-indicator=".infinite-scrolling-icon-indicator">
-        {% include "core/partials/page_loading_indicator_icon.html" %}
-    </p>
+       hx-indicator=".infinite-scrolling-icon-indicator">{% include "core/partials/page_loading_indicator.html" %}</p>
 {% endif %}
 {% if is_last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
     <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>

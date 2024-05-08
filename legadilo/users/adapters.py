@@ -25,8 +25,7 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def populate_user(
         self, request: HttpRequest, sociallogin: SocialLogin, data: dict[str, typing.Any]
     ) -> User:
-        """
-        Populates user information from social provider info.
+        """Populates user information from social provider info.
 
         See: https://django-allauth.readthedocs.io/en/latest/advanced.html?#creating-and-populating-user-instances
         """

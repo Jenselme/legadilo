@@ -4,15 +4,20 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
 
 from django.db import models, transaction
-from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
+
+from legadilo.core.forms import FormChoices
 
 from ...users.models import User
 from .. import constants
 
 if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+
     from .article import Article
     from .feed import Feed
+else:
+    TypedModelMeta = object
 
 
 class TagQuerySet(models.QuerySet["Tag"]):
@@ -29,7 +34,7 @@ class TagManager(models.Manager["Tag"]):
     def get_queryset(self) -> TagQuerySet:
         return TagQuerySet(self.model, using=self._db, hints=self._hints)
 
-    def get_all_choices(self, user: User) -> list[tuple[str, str]]:
+    def get_all_choices(self, user: User) -> FormChoices:
         return list(self.get_queryset().for_user(user).values_list("slug", "name"))
 
     @transaction.atomic()
@@ -45,8 +50,7 @@ class TagManager(models.Manager["Tag"]):
             for name_or_slug in names_or_slugs
             if slugify(name_or_slug) not in existing_slugs
         ]
-        if tags_to_create:
-            self.bulk_create(tags_to_create)
+        self.bulk_create(tags_to_create)
 
         return [*existing_tags, *tags_to_create]
 
@@ -56,11 +60,11 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=50, blank=True)
 
     user = models.ForeignKey("users.User", related_name="tags", on_delete=models.CASCADE)
-    article_tags = models.ManyToManyField(
+    articles = models.ManyToManyField(
         "feeds.Article", related_name="tags", through="feeds.ArticleTag"
     )
-    feed_tags = models.ManyToManyField("feeds.Feed", related_name="tags", through="feeds.FeedTag")
-    reading_list_tags = models.ManyToManyField(
+    feeds = models.ManyToManyField("feeds.Feed", related_name="tags", through="feeds.FeedTag")
+    reading_lists = models.ManyToManyField(
         "feeds.ReadingList", related_name="tags", through="feeds.ReadingListTag"
     )
 
@@ -135,8 +139,7 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
             for tag in tags
             if (article.id, tag.id) not in existing_article_tag_links
         ]
-        if article_tags_to_create:
-            self.bulk_create(article_tags_to_create)
+        self.bulk_create(article_tags_to_create)
 
         if readd_deleted:
             self.get_queryset().for_deleted_links(existing_article_tag_links).update(
@@ -158,10 +161,12 @@ class ArticleTag(models.Model):
     article = models.ForeignKey(
         "feeds.Article", related_name="article_tags", on_delete=models.CASCADE
     )
-    tag = models.ForeignKey("feeds.Tag", related_name="articles", on_delete=models.CASCADE)
+    tag = models.ForeignKey("feeds.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
     tagging_reason = models.CharField(
-        choices=constants.TaggingReason.choices, default=constants.TaggingReason.ADDED_MANUALLY
+        choices=constants.TaggingReason.choices,
+        default=constants.TaggingReason.ADDED_MANUALLY,
+        max_length=100,
     )
 
     objects = ArticleTagManager()
@@ -204,7 +209,7 @@ class FeedTagManager(models.Manager["FeedTag"]):
 
 class FeedTag(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_tags", on_delete=models.CASCADE)
-    tag = models.ForeignKey("feeds.Tag", related_name="feeds", on_delete=models.CASCADE)
+    tag = models.ForeignKey("feeds.Tag", related_name="feed_tags", on_delete=models.CASCADE)
 
     objects = FeedTagManager()
 
@@ -224,11 +229,12 @@ class ReadingListTag(models.Model):
     reading_list = models.ForeignKey(
         "feeds.ReadingList", related_name="reading_list_tags", on_delete=models.CASCADE
     )
-    tag = models.ForeignKey("feeds.Tag", related_name="reading_lists", on_delete=models.CASCADE)
+    tag = models.ForeignKey("feeds.Tag", related_name="reading_list_tags", on_delete=models.CASCADE)
 
     filter_type = models.CharField(
         choices=constants.ReadingListTagFilterType.choices,
         default=constants.ReadingListTagFilterType.INCLUDE,
+        max_length=100,
     )
 
     class Meta(TypedModelMeta):

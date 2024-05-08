@@ -8,7 +8,16 @@ from legadilo.feeds.models import FeedUpdate, ReadingList, Tag
 from legadilo.users.tests.factories import UserFactory
 
 from .. import constants
-from ..models import Article, Feed
+from ..models import Article, Feed, FeedCategory
+
+
+class FeedCategoryFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: f"Feed category {n}")
+    slug = factory.Sequence(lambda n: f"feed-category-{n}")
+    user = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = FeedCategory
 
 
 class FeedFactory(DjangoModelFactory):

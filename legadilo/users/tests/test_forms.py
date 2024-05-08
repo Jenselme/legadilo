@@ -1,6 +1,4 @@
-"""
-Module for all Form Tests.
-"""
+"""Module for all Form Tests."""
 
 from django.utils.translation import gettext_lazy as _
 
@@ -9,18 +7,15 @@ from legadilo.users.models import User
 
 
 class TestUserAdminCreationForm:
-    """
-    Test class for all tests related to the UserAdminCreationForm
-    """
+    """Test class for all tests related to the UserAdminCreationForm."""
 
     def test_username_validation_error_msg(self, user: User):
-        """
-        Tests UserAdminCreation Form's unique validator functions correctly by testing:
-            1) A new user with an existing username cannot be added.
-            2) Only 1 error is raised by the UserCreation Form
-            3) The desired error message is raised
-        """
+        """Tests UserAdminCreation Form's unique validator functions correctly by testing:
 
+        #. A new user with an existing username cannot be added.
+        #. Only 1 error is raised by the UserCreation Form
+        #. The desired error message is raised
+        """
         # The user already exists,
         # hence cannot be created.
         form = UserAdminCreationForm(

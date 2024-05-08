@@ -1,12 +1,11 @@
-"""
-Base settings to build other settings files upon.
-"""
+"""Base settings to build other settings files upon."""
 
 import warnings
 from pathlib import Path
 
 import environ
 from django.contrib.messages import constants as messages
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # legadilo/
@@ -42,11 +41,11 @@ TIME_ZONE = "UTC"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
-# from django.utils.translation import gettext_lazy as _
-# LANGUAGES = [
-#     ('en', _('English')),
-#     ('fr-fr', _('French')),
-# ]
+LANGUAGES = [
+    ("en", _("English")),
+    # ("fr", _("French")),
+]
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n

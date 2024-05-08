@@ -57,6 +57,7 @@ class TestReadingListWithArticlesView:
             response = logged_in_sync_client.get(self.default_reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/list_of_articles.html"
         assert response.context["page_title"] == self.default_reading_list.name
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["displayed_reading_list_id"] == self.default_reading_list.id
@@ -169,6 +170,7 @@ class TestTagWithArticlesView:
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/list_of_articles.html"
         assert response.context["page_title"] == f"Articles with tag '{self.tag_to_display.name}'"
         assert response.context["displayed_reading_list_id"] is None
         assert response.context["reading_lists"] == []

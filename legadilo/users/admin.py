@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth import decorators, get_user_model
+from django.db.models.functions import Collate
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.forms import UserAdminChangeForm, UserAdminCreationForm
@@ -48,7 +49,7 @@ class UserAdmin(auth_admin.UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
     list_display = ["email", "name", "is_superuser"]
-    search_fields = ["name"]
+    search_fields = ["name", "email_deterministic"]
     ordering = ["id"]
     add_fieldsets = (
         (
@@ -60,3 +61,8 @@ class UserAdmin(auth_admin.UserAdmin):
         ),
     )
     inlines = [UserSettingsInline]
+
+    def get_queryset(self, request):
+        return (
+            super().get_queryset(request).alias(email_deterministic=Collate("email", "und-x-icu"))
+        )

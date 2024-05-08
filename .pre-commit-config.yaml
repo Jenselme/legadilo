@@ -1,4 +1,4 @@
-exclude: "^docs/|.idea|devcontainer.json|tests/fixtures|tests/.*snapshots/.*\\.json"
+exclude: "^docs/|.idea|devcontainer.json|tests/fixtures|tests/.*snapshots/.*\\.(json|html)"
 default_stages: [commit]
 
 default_language_version:
@@ -6,7 +6,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -34,14 +34,14 @@ repos:
         args: ["--target-version", "5.0"]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.15.2
     hooks:
       - id: pyupgrade
         args: [--py312-plus]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.4.0
+    rev: v0.4.3
     hooks:
       - id: ruff
         args: [--fix, --preview]
@@ -65,7 +65,7 @@ repos:
       - id: curlylint
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: v0.10.0.1
     hooks:
       - id: shellcheck
         args: [-e, SC1091]
@@ -109,6 +109,21 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: env
+        args:
+          - poetry
+          - run
+          - pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages:
+          - pre-push
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:

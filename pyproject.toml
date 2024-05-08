@@ -30,13 +30,22 @@ target-version = "py312"
 select = [
     "F", "E", "W", "C", "I", "N", "UP", "ASYNC", "S", "BLE", "FBT", "B", "A", "COM", "DTZ", "T",
     "DJ", "ICN", "RSE", "PT", "ISC", "RET", "SIM", "INT", "PTH", "ERA", "PGH", "PL", "FLY",
-    "FURB", "LOG", "RUF"
+    "FURB", "LOG", "RUF", "D"
 ]
 ignore = [
     "RUF012", # RUF012 Mutable class attributes should be annotated with `typing.ClassVar`
     "COM812", # missing-trailing-comma (the formatter will do this)
     "ISC001", # single-line-implicit-string-concatenation (the formatter will do this)
     "PLR6301", # Method XXX could be a function, class method, or static method
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D106", # Missing docstring in public nested class
+    "D107", # Missing docstring in __init__
+    "D415", # First line should end with a period, question mark, or exclamation point
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -90,6 +99,9 @@ known-first-party = [
 
 [tool.ruff.lint.pylint]
 max-args = 6
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 
 # ==== curlylint ====
@@ -197,9 +209,9 @@ rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 
 # Django
 # ------------------------------------------------------------------------------
-django = "5.0.4"  # https://www.djangoproject.com/
+django = "5.0.6"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.61.1"  # https://github.com/pennersr/django-allauth
+django-allauth = "0.62.1"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "10.3"  # https://github.com/anymail/django-anymail
@@ -219,7 +231,7 @@ feedparser = {git = "https://github.com/Jenselme/feedparser.git", rev = "correct
 httpx = "^0.27.0"  # https://www.python-httpx.org/
 beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
-jsonschema = "^4.21.1"  # https://github.com/python-jsonschema/jsonschema
+jsonschema = "^4.22.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 
 
@@ -232,7 +244,7 @@ ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
-pytest = "8.1.1"  # https://github.com/pytest-dev/pytest
+pytest = "8.2.0"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
 pytest-asyncio = "^0.23.6"  # https://github.com/pytest-dev/pytest-asyncio/
@@ -244,13 +256,13 @@ time-machine = "2.14.1"  #  https://github.com/adamchainz/time-machine
 
 # Documentation
 # ------------------------------------------------------------------------------
-sphinx = "7.2.6"  # https://github.com/sphinx-doc/sphinx
-sphinx-autobuild = "2024.2.4"  # https://github.com/GaretJax/sphinx-autobuild
-myst-parser = "2.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
+sphinx = "7.3.7"  # https://github.com/sphinx-doc/sphinx
+sphinx-autobuild = "2024.4.16"  # https://github.com/GaretJax/sphinx-autobuild
+myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
 # Code quality
 # ------------------------------------------------------------------------------
-coverage = "7.4.4"  # https://github.com/nedbat/coveragepy
+coverage = "7.5.1"  # https://github.com/nedbat/coveragepy
 pre-commit = "3.7.0"  # https://github.com/pre-commit/pre-commit
 
 # Django
@@ -261,14 +273,15 @@ django-coverage-plugin = "3.1.0"  # https://github.com/nedbat/django_coverage_pl
 pytest-django = "4.8.0"  # https://github.com/pytest-dev/pytest-django
 django-browser-reload = "1.12.1"  # https://pypi.org/project/django-browser-reload/
 django-watchfiles = "0.1.1"  # https://github.com/adamchainz/django-watchfiles
+django-extensions = "3.2.3"  # https://github.com/django-extensions/django-extensions
 
 [tool.poetry.group.typing]
 optional = true
 
 [tool.poetry.group.typing.dependencies]
 types-python-dateutil = "^2.9.0.20240316"
-mypy = "1.7.1"  # https://github.com/python/mypy
-django-stubs = { extras = ["compatible-mypy"], version = "4.2.7" }  # https://github.com/typeddjango/django-stubs
+mypy = "1.10.0"  # https://github.com/python/mypy
+django-stubs = { extras = ["compatible-mypy"], version = "5.0.0" }  # https://github.com/typeddjango/django-stubs
 
 [build-system]
 requires = ["poetry-core"]

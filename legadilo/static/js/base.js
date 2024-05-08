@@ -1,14 +1,19 @@
 (function () {
   const setupHtmxConfirmWithPopup = () => {
     document.addEventListener("htmx:confirm", (htmxEvent) => {
-      const modalId = htmxEvent.target.dataset.modalId;
+      const elementForModal = getElementForModalData(htmxEvent);
+      if (!elementForModal) {
+        return;
+      }
+
+      const modalId = elementForModal.dataset.modalId;
       if (!modalId) {
         return;
       }
 
       htmxEvent.preventDefault();
-      const modalTitle = htmxEvent.target.dataset.modalTitle;
-      const modalBody = htmxEvent.target.dataset.modalBody;
+      const modalTitle = elementForModal.dataset.modalTitle;
+      const modalBody = elementForModal.dataset.modalBody;
       const dialogElt = document.getElementById(modalId);
       dialogElt.setAttribute("aria-labelledby", modalTitle);
       dialogElt.querySelector(".modal-title").textContent = modalTitle;
@@ -19,7 +24,19 @@
       const proceedButton = dialogElt.querySelector("button.proceed");
       const handleProceed = () => {
         bsModal.hide();
+        // When we use HTMX confirm, HTMX will lose the last button clicked and thus won't transmit
+        // its name. It's a problem. In which case, we force it ourselves with the hx-vals attribute.
+        // To avoid having multiple names in other cases (and thus interfering with form actions)
+        // we remove it afterward.
+        if (
+          htmxEvent.explicitOriginalTarget &&
+          htmxEvent.explicitOriginalTarget.getAttribute("name")
+        ) {
+          const buttonName = htmxEvent.explicitOriginalTarget.getAttribute("name");
+          htmxEvent.target.setAttribute("hx-vals", JSON.stringify({ [buttonName]: "" }));
+        }
         htmxEvent.detail.issueRequest(true);
+        htmxEvent.target.removeAttribute("hx-vals");
       };
       const handleClose = () => {
         dialogElt.removeEventListener("hide.bs.modal", handleClose);
@@ -30,6 +47,18 @@
       proceedButton.addEventListener("click", handleProceed);
       bsModal.show();
     });
+  };
+
+  const getElementForModalData = (htmxEvent) => {
+    // By default, we look at the form, but sometimes we only want confirmation on a certain button.
+    // In which case, we want to put the data-* attribute for the modal on it directly.
+    if (htmxEvent.target.dataset.modalId) {
+      return htmxEvent.target;
+    }
+
+    if (htmxEvent.explicitOriginalTarget.dataset.modalId) {
+      return htmxEvent.explicitOriginalTarget;
+    }
   };
 
   window.addEventListener("DOMContentLoaded", setupHtmxConfirmWithPopup);

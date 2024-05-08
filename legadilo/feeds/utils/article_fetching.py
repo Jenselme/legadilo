@@ -42,7 +42,7 @@ async def get_article_from_url(url: str) -> ArticleData:
         response.raise_for_status()
 
     page_content = response.content
-    if sys.getsizeof(page_content) > constants.MAX_FEED_FILE_SIZE:
+    if sys.getsizeof(page_content) > constants.MAX_ARTICLE_FILE_SIZE:
         raise ArticleTooBigError
 
     return _build_article_data(str(response.url), page_content.decode(response.encoding or "utf-8"))

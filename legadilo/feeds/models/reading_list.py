@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
-from django_stubs_ext.db.models import TypedModelMeta
 from slugify import slugify
 
 from legadilo.feeds import constants
 from legadilo.users.models import User
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
 
 
 class ReadingListManager(models.Manager["ReadingList"]):
@@ -15,10 +21,10 @@ class ReadingListManager(models.Manager["ReadingList"]):
     def create_default_lists(self, user: User):
         self.update_or_create(
             slug=slugify(str(_("All articles"))),
+            user=user,
             defaults={
                 "name": str(_("All articles")),
                 "order": 0,
-                "user": user,
             },
         )
         base_default_list_values = {
@@ -26,10 +32,10 @@ class ReadingListManager(models.Manager["ReadingList"]):
             "read_status": constants.ReadStatus.ONLY_UNREAD,
             "for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER,
             "order": 10,
-            "user": user,
         }
         self.update_or_create(
             slug=slugify(str(_("Unread"))),
+            user=user,
             create_defaults={
                 **base_default_list_values,
                 "is_default": True,
@@ -39,16 +45,17 @@ class ReadingListManager(models.Manager["ReadingList"]):
         )
         self.update_or_create(
             slug=slugify(str(_("Recent"))),
+            user=user,
             defaults={
                 "name": str(_("Recent")),
                 "articles_max_age_value": 2,
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.DAYS,
                 "order": 20,
-                "user": user,
             },
         )
         self.update_or_create(
             slug=slugify(str(_("Favorite"))),
+            user=user,
             defaults={
                 "name": str(_("Favorite")),
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
@@ -58,20 +65,20 @@ class ReadingListManager(models.Manager["ReadingList"]):
         )
         self.update_or_create(
             slug=slugify(str(_("For later"))),
+            user=user,
             defaults={
                 "name": str(_("For later")),
                 "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,
                 "order": 35,
-                "user": user,
             },
         )
         self.update_or_create(
             slug=slugify(str(_("Archive"))),
+            user=user,
             defaults={
                 "name": str(_("Archive")),
                 "read_status": constants.ReadStatus.ONLY_READ,
                 "order": 40,
-                "user": user,
             },
         )
 
@@ -104,13 +111,17 @@ class ReadingList(models.Model):
     order = models.IntegerField(default=0)
 
     read_status = models.CharField(
-        choices=constants.ReadStatus.choices, default=constants.ReadStatus.ALL
+        choices=constants.ReadStatus.choices, default=constants.ReadStatus.ALL, max_length=100
     )
     favorite_status = models.CharField(
-        choices=constants.FavoriteStatus.choices, default=constants.FavoriteStatus.ALL
+        choices=constants.FavoriteStatus.choices,
+        default=constants.FavoriteStatus.ALL,
+        max_length=100,
     )
     for_later_status = models.CharField(
-        choices=constants.ForLaterStatus.choices, default=constants.ForLaterStatus.ALL
+        choices=constants.ForLaterStatus.choices,
+        default=constants.ForLaterStatus.ALL,
+        max_length=100,
     )
     articles_max_age_value = models.PositiveIntegerField(
         default=0,
@@ -121,6 +132,7 @@ class ReadingList(models.Model):
     articles_max_age_unit = models.CharField(
         choices=constants.ArticlesMaxAgeUnit.choices,
         default=constants.ArticlesMaxAgeUnit.UNSET,
+        max_length=100,
         help_text=_(
             "Define the unit for the previous number. Leave to unset to not use this feature."
         ),
@@ -132,11 +144,13 @@ class ReadingList(models.Model):
     articles_reading_time_operator = models.CharField(
         choices=constants.ArticlesReadingTimeOperator.choices,
         default=constants.ArticlesReadingTimeOperator.UNSET,
+        max_length=100,
         help_text=_("Whether the reading must be more or less that the supplied value."),
     )
     include_tag_operator = models.CharField(
         choices=constants.ReadingListTagOperator.choices,
         default=constants.ReadingListTagOperator.ALL,
+        max_length=100,
         help_text=_(
             "Defines whether the articles must have all or any of the tags to be included in the reading list."  # noqa: E501
         ),
@@ -144,6 +158,7 @@ class ReadingList(models.Model):
     exclude_tag_operator = models.CharField(
         choices=constants.ReadingListTagOperator.choices,
         default=constants.ReadingListTagOperator.ALL,
+        max_length=100,
         help_text=_(
             "Defines whether the articles must have all or any of the tags to be excluded from the reading list."  # noqa: E501
         ),
