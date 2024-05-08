@@ -17,7 +17,7 @@
                value="{{ displayed_reading_list_id }}" />
     {% endif %}
 </form>
-{% if not article.was_opened and not article.content and not for_article_details %}
+{% if not article.was_opened and not for_article_details %}
     <form id="mark-article-as-opened-form-{{ article.id }}"
           class="visually-hidden"
           aria-hidden="true"
