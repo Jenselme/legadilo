@@ -23,14 +23,21 @@ class TestSubscribeToFeedView:
     def _setup_data(self, user):
         self.url = reverse("feeds:subscribe_to_feed")
         self.feed_url = "https://example.com/feeds/atom.xml"
-        self.sample_payload = {"url": self.feed_url}
+        self.sample_payload = {
+            "url": self.feed_url,
+            "refresh_delay": constants.FeedRefreshDelays.BIHOURLY.name,
+        }
         self.existing_tag = TagFactory(user=user)
         self.sample_payload_with_tags = {
             "url": self.feed_url,
+            "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
             "tags": [self.existing_tag.slug, "New"],
         }
         self.page_url = "https://example.com"
-        self.sample_page_payload = {"url": self.page_url}
+        self.sample_page_payload = {
+            "url": self.page_url,
+            "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+        }
 
     def test_not_logged_in(self, client):
         response = client.get(self.url)
@@ -103,6 +110,7 @@ class TestSubscribeToFeedView:
         category = FeedCategoryFactory(user=user)
         sample_payload_with_category = {
             "url": self.feed_url,
+            "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
             "category": category.slug,
         }
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
@@ -141,6 +149,7 @@ class TestSubscribeToFeedView:
                 "proposed_feed_choices": f'[["{self.feed_url}", "Cat 1 feed"], '
                 '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]',
                 "feed_choices": self.feed_url,
+                "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
             },
         )
 

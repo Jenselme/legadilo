@@ -10,6 +10,7 @@ from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.utils.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
+from legadilo.utils.time import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ class Command(AsyncCommand):
         )
 
     async def run(self, *args, **options):
+        logger.info("Starting feed update")
+        start_time = utcnow()
         async with (
             AsyncClient(
                 limits=Limits(
@@ -38,10 +41,14 @@ class Command(AsyncCommand):
         ):
             async for feed in (
                 Feed.objects.get_queryset()
-                .select_related("user", "user__settings")
-                .only_feeds_to_update(options["feed_ids"])
+                .select_related("user", "user__settings", "category")
+                .only_with_ids(options["feed_ids"])
+                .for_update()
             ):
                 tg.create_task(self._update_feed(client, feed))
+
+        duration = utcnow() - start_time
+        logger.info("Completed feed update in %s", duration)
 
     async def _update_feed(self, client, feed):
         logger.debug("Updating feed %s", feed)

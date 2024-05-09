@@ -1,12 +1,18 @@
 from datetime import UTC, datetime
 
 import pytest
+import time_machine
 from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.models import Article, FeedArticle, FeedUpdate
-from legadilo.feeds.tests.factories import ArticleFactory, FeedFactory, TagFactory
+from legadilo.feeds.tests.factories import (
+    ArticleFactory,
+    FeedFactory,
+    FeedUpdateFactory,
+    TagFactory,
+)
 from legadilo.feeds.utils.feed_parsing import ArticleData, FeedData
 from legadilo.users.tests.factories import UserFactory
 
@@ -16,23 +22,86 @@ from ...models import Feed
 
 @pytest.mark.django_db()
 class TestFeedQuerySet:
-    def test_only_feeds_to_update(self):
-        FeedFactory(enabled=False)
+    @time_machine.travel("2024-05-08 11:00:00")
+    def test_for_update(self, user):
+        feed_updated_more_than_one_hour_ago = FeedFactory(
+            title="Updated more than one hour ago",
+            user=user,
+            refresh_delay=constants.FeedRefreshDelays.HOURLY,
+        )
+        with time_machine.travel("2024-05-08 10:00:00"):
+            FeedUpdateFactory(feed=feed_updated_more_than_one_hour_ago)
+        disabled_feed_updated_more_than_one_hour_ago = FeedFactory(
+            title="Disabled feed",
+            user=user,
+            refresh_delay=constants.FeedRefreshDelays.HOURLY,
+            enabled=False,
+        )
+        with time_machine.travel("2024-05-08 10:00:00"):
+            FeedUpdateFactory(feed=disabled_feed_updated_more_than_one_hour_ago)
+        feed_updated_less_than_one_hour_ago = FeedFactory(
+            title="Updated less than one hour ago",
+            user=user,
+            refresh_delay=constants.FeedRefreshDelays.HOURLY,
+        )
+        with time_machine.travel("2024-05-08 08:30:00"):
+            FeedUpdateFactory(feed=feed_updated_less_than_one_hour_ago)
+        with time_machine.travel("2024-05-08 10:30:00"):
+            FeedUpdateFactory(feed=feed_updated_less_than_one_hour_ago)
+        feed_updated_this_morning = FeedFactory(
+            title="Updated this morning",
+            user=user,
+            refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING,
+        )
+        with time_machine.travel("2024-05-07 10:00:00"):
+            FeedUpdateFactory(feed=feed_updated_this_morning)
+        with time_machine.travel("2024-05-08 10:00:00"):
+            FeedUpdateFactory(feed=feed_updated_this_morning)
+        feed_not_yet_updated_this_morning = FeedFactory(
+            title="Not yet updated this morning",
+            user=user,
+            refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING,
+        )
+        with time_machine.travel("2024-05-07 10:00:00"):
+            FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
+
+        feeds_to_update = Feed.objects.get_queryset().for_update()
+
+        assert list(feeds_to_update) == [
+            feed_updated_more_than_one_hour_ago,
+            feed_not_yet_updated_this_morning,
+        ]
+
+    @time_machine.travel("2024-05-08 13:00:00")
+    def test_for_update_not_morning(self, user):
+        feed_updated_this_morning = FeedFactory(
+            user=user, refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING
+        )
+        with time_machine.travel("2024-05-08 10:00:00"):
+            FeedUpdateFactory(feed=feed_updated_this_morning)
+        feed_not_yet_updated_this_morning = FeedFactory(
+            user=user, refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING
+        )
+        with time_machine.travel("2024-05-07 10:00:00"):
+            FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
+
+        feeds_to_update = Feed.objects.get_queryset().for_update()
+
+        assert list(feeds_to_update) == []
+
+    def test_only_with_ids(self):
         feed1 = FeedFactory(enabled=True)
         feed2 = FeedFactory(enabled=True)
 
         feed_ids_to_update = (
-            Feed.objects.get_queryset()
-            .only_feeds_to_update()
-            .values_list("id", flat=True)
-            .order_by("id")
+            Feed.objects.get_queryset().only_with_ids().values_list("id", flat=True)
         )
 
         assert list(feed_ids_to_update) == [feed1.id, feed2.id]
 
         feed_ids_to_update = (
             Feed.objects.get_queryset()
-            .only_feeds_to_update([feed1.id])
+            .only_with_ids([feed1.id])
             .values_list("id", flat=True)
             .order_by("id")
         )
@@ -78,6 +147,7 @@ class TestFeedManager:
                     ],
                 ),
                 user,
+                constants.FeedRefreshDelays.DAILY_AT_NOON,
                 [],
             )
 
@@ -132,6 +202,7 @@ class TestFeedManager:
                     ],
                 ),
                 user,
+                constants.FeedRefreshDelays.DAILY_AT_NOON,
                 [tag],
             )
 
@@ -168,6 +239,7 @@ class TestFeedManager:
                     articles=[],
                 ),
                 user,
+                constants.FeedRefreshDelays.DAILY_AT_NOON,
                 [],
             )
 
@@ -190,6 +262,7 @@ class TestFeedManager:
                 articles=[],
             ),
             other_user,
+            constants.FeedRefreshDelays.DAILY_AT_NOON,
             [],
         )
 
