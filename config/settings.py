@@ -119,6 +119,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "legadilo.core",
     "legadilo.users",
+    "legadilo.reading",
     "legadilo.feeds",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -246,7 +247,7 @@ TEMPLATES = [
             ],
             "libraries": {
                 "util_tags": "legadilo.core.template_tags.util_tags",
-                "feeds": "legadilo.feeds.templatetags",
+                "feeds": "legadilo.reading.templatetags",
             },
             "debug": DEBUG,
             "loaders": [

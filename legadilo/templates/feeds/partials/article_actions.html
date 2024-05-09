@@ -96,7 +96,7 @@
               class="visually-hidden"
               aria-hidden="true"
               method="post"
-              action="{% url 'feeds:refetch_article' %}"
+              action="{% url 'reading:refetch_article' %}"
               hx-boost="true"
               hx-push-url="false"
               hx-indicator=".{{ article|article_action_indicator }}">

@@ -181,6 +181,7 @@ name = "Enforce Django apps layering"
 type = "layers"
 layers = [
     "legadilo.feeds",
+    "legadilo.reading",
     "legadilo.users",
     "legadilo.core",
     "legadilo.utils",

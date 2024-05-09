@@ -6,10 +6,13 @@ from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
-from legadilo.feeds.models import Article, Feed, FeedUpdate
-from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory, TagFactory
+from legadilo.feeds.models import Feed, FeedUpdate
+from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
+from legadilo.reading import constants as reading_constants
+from legadilo.reading.models import Article
+from legadilo.reading.tests.factories import TagFactory
 
-from ... import constants
+from ... import constants as feeds_constants
 from ..fixtures import get_feed_fixture_content, get_page_for_feed_subscription_content
 
 
@@ -25,18 +28,18 @@ class TestSubscribeToFeedView:
         self.feed_url = "https://example.com/feeds/atom.xml"
         self.sample_payload = {
             "url": self.feed_url,
-            "refresh_delay": constants.FeedRefreshDelays.BIHOURLY.name,
+            "refresh_delay": feeds_constants.FeedRefreshDelays.BIHOURLY.name,
         }
         self.existing_tag = TagFactory(user=user)
         self.sample_payload_with_tags = {
             "url": self.feed_url,
-            "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
             "tags": [self.existing_tag.slug, "New"],
         }
         self.page_url = "https://example.com"
         self.sample_page_payload = {
             "url": self.page_url,
-            "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
         }
 
     def test_not_logged_in(self, client):
@@ -99,8 +102,8 @@ class TestSubscribeToFeedView:
         article = Article.objects.first()
         assert article is not None
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            ("new", constants.TaggingReason.FROM_FEED),
-            (self.existing_tag.slug, constants.TaggingReason.FROM_FEED),
+            ("new", reading_constants.TaggingReason.FROM_FEED),
+            (self.existing_tag.slug, reading_constants.TaggingReason.FROM_FEED),
         ]
         assert FeedUpdate.objects.count() == 1
 
@@ -110,7 +113,7 @@ class TestSubscribeToFeedView:
         category = FeedCategoryFactory(user=user)
         sample_payload_with_category = {
             "url": self.feed_url,
-            "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
             "category": category.slug,
         }
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
@@ -149,7 +152,7 @@ class TestSubscribeToFeedView:
                 "proposed_feed_choices": f'[["{self.feed_url}", "Cat 1 feed"], '
                 '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]',
                 "feed_choices": self.feed_url,
-                "refresh_delay": constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+                "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
             },
         )
 

@@ -7,15 +7,17 @@ from typing import TYPE_CHECKING, assert_never
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
+from legadilo.reading import constants as reading_constants
+from legadilo.reading.models.article import Article
+from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
 from ...utils.time import utcnow
-from .. import constants
+from .. import constants as feeds_constants
 from ..utils.feed_parsing import FeedData
-from .article import Article
 from .feed_article import FeedArticle
+from .feed_tag import FeedTag
 from .feed_update import FeedUpdate
-from .tag import FeedTag, Tag
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -25,7 +27,7 @@ else:
     TypedModelMeta = object
 
 
-def _build_refresh_filters(refresh_delay: constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911 too complex
+def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911 too complex
     now = utcnow()
     last_day_of_month = calendar.monthrange(now.year, now.month)[1]
     base_filters = models.Q(refresh_delay=refresh_delay)
@@ -33,13 +35,13 @@ def _build_refresh_filters(refresh_delay: constants.FeedRefreshDelays) -> models
     # Notes: cron will run each hour. Since it will take time to complete, we use 45m instead
     # in 1h in our tests.
     match refresh_delay:
-        case constants.FeedRefreshDelays.HOURLY:
+        case feeds_constants.FeedRefreshDelays.HOURLY:
             return models.When(
                 base_filters
                 & models.Q(latest_feed_update__created_at__lte=now - timedelta(minutes=45)),
                 then=True,
             )
-        case constants.FeedRefreshDelays.BIHOURLY:
+        case feeds_constants.FeedRefreshDelays.BIHOURLY:
             return models.When(
                 base_filters
                 & models.Q(
@@ -47,61 +49,61 @@ def _build_refresh_filters(refresh_delay: constants.FeedRefreshDelays) -> models
                 ),
                 then=True,
             )
-        case constants.FeedRefreshDelays.EVERY_MORNING:
+        case feeds_constants.FeedRefreshDelays.EVERY_MORNING:
             if 8 <= now.hour <= 12:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.DAILY_AT_NOON:
+        case feeds_constants.FeedRefreshDelays.DAILY_AT_NOON:
             if 11 <= now.hour <= 13:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.EVERY_EVENING:
+        case feeds_constants.FeedRefreshDelays.EVERY_EVENING:
             if 20 <= now.hour <= 22:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.ON_MONDAYS:
+        case feeds_constants.FeedRefreshDelays.ON_MONDAYS:
             if now.weekday() == calendar.MONDAY:
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.ON_THURSDAYS:
+        case feeds_constants.FeedRefreshDelays.ON_THURSDAYS:
             if now.weekday() == calendar.THURSDAY:
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.TWICE_A_WEEK:
+        case feeds_constants.FeedRefreshDelays.TWICE_A_WEEK:
             if now.weekday() in {calendar.MONDAY, calendar.THURSDAY}:
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH:
+        case feeds_constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH:
             if now.day == 1:
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.MIDDLE_OF_THE_MONTH:
+        case feeds_constants.FeedRefreshDelays.MIDDLE_OF_THE_MONTH:
             if now.day == 15:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.END_OF_THE_MONTH:
+        case feeds_constants.FeedRefreshDelays.END_OF_THE_MONTH:
             if now.day == last_day_of_month:
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
-        case constants.FeedRefreshDelays.THRICE_A_MONTH:
+        case feeds_constants.FeedRefreshDelays.THRICE_A_MONTH:
             if now.day in {1, 15, last_day_of_month}:
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
@@ -137,7 +139,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
             must_update=models.Case(
                 *[
                     _build_refresh_filters(refresh_delay)
-                    for refresh_delay in constants.FeedRefreshDelays
+                    for refresh_delay in feeds_constants.FeedRefreshDelays
                 ],
                 default=False,
                 output_field=models.BooleanField(),
@@ -156,14 +158,14 @@ class FeedManager(models.Manager["Feed"]):
         self,
         feed_metadata: FeedData,
         user: User,
-        refresh_delay: constants.FeedRefreshDelays,
+        refresh_delay: feeds_constants.FeedRefreshDelays,
         tags: list[Tag],
         category: FeedCategory | None = None,
     ) -> Feed:
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,
-            title=feed_metadata.title[: constants.FEED_TITLE_MAX_LENGTH],
+            title=feed_metadata.title[: feeds_constants.FEED_TITLE_MAX_LENGTH],
             refresh_delay=refresh_delay,
             description=feed_metadata.description,
             feed_type=feed_metadata.feed_type,
@@ -180,10 +182,10 @@ class FeedManager(models.Manager["Feed"]):
             feed.user,
             feed_metadata.articles,
             feed.tags.all(),
-            source_type=constants.ArticleSourceType.FEED,
+            source_type=reading_constants.ArticleSourceType.FEED,
         )
         FeedUpdate.objects.create(
-            status=constants.FeedUpdateStatus.SUCCESS,
+            status=feeds_constants.FeedUpdateStatus.SUCCESS,
             feed_etag=feed_metadata.etag,
             feed_last_modified=feed_metadata.last_modified,
             feed=feed,
@@ -196,7 +198,7 @@ class FeedManager(models.Manager["Feed"]):
     @transaction.atomic()
     def log_error(self, feed: Feed, error_message: str):
         FeedUpdate.objects.create(
-            status=constants.FeedUpdateStatus.FAILURE,
+            status=feeds_constants.FeedUpdateStatus.FAILURE,
             error_message=error_message,
             feed=feed,
         )
@@ -206,7 +208,7 @@ class FeedManager(models.Manager["Feed"]):
 
     def log_not_modified(self, feed: Feed):
         FeedUpdate.objects.create(
-            status=constants.FeedUpdateStatus.NOT_MODIFIED,
+            status=feeds_constants.FeedUpdateStatus.NOT_MODIFIED,
             feed=feed,
         )
 
@@ -218,13 +220,13 @@ class Feed(models.Model):
     disabled_reason = models.TextField(blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
-    title = models.CharField(max_length=constants.FEED_TITLE_MAX_LENGTH)
+    title = models.CharField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH)
     description = models.TextField(blank=True)
-    feed_type = models.CharField(choices=constants.SupportedFeedType.choices, max_length=100)
+    feed_type = models.CharField(choices=feeds_constants.SupportedFeedType.choices, max_length=100)
     refresh_delay = models.CharField(
-        choices=constants.FeedRefreshDelays.choices,
+        choices=feeds_constants.FeedRefreshDelays.choices,
         max_length=100,
-        default=constants.FeedRefreshDelays.DAILY_AT_NOON,
+        default=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
@@ -232,7 +234,7 @@ class Feed(models.Model):
         "feeds.FeedCategory", related_name="feeds", on_delete=models.SET_NULL, null=True
     )
     articles = models.ManyToManyField(
-        "feeds.Article",
+        "reading.Article",
         related_name="feeds",
         through="feeds.FeedArticle",
     )
@@ -251,13 +253,13 @@ class Feed(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_feed_type_valid",
                 check=models.Q(
-                    feed_type__in=constants.SupportedFeedType.names,
+                    feed_type__in=feeds_constants.SupportedFeedType.names,
                 ),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_refresh_delay_type_valid",
                 check=models.Q(
-                    refresh_delay__in=constants.FeedRefreshDelays.names,
+                    refresh_delay__in=feeds_constants.FeedRefreshDelays.names,
                 ),
             ),
             models.CheckConstraint(

@@ -6,8 +6,9 @@ import pytest
 import time_machine
 from django.core.management import call_command
 
-from legadilo.feeds.models import Article, FeedUpdate
+from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedUpdateFactory
+from legadilo.reading.models import Article
 
 from ... import constants
 from ..fixtures import get_feed_fixture_content

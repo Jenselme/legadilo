@@ -5,18 +5,18 @@ import time_machine
 from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
-from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.models import Article, FeedArticle, FeedUpdate
+from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.feeds.tests.factories import (
-    ArticleFactory,
     FeedFactory,
     FeedUpdateFactory,
-    TagFactory,
 )
 from legadilo.feeds.utils.feed_parsing import ArticleData, FeedData
+from legadilo.reading import constants as reading_constants
+from legadilo.reading.models import Article
+from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.users.tests.factories import UserFactory
 
-from ... import constants
+from ... import constants as feeds_constants
 from ...models import Feed
 
 
@@ -27,14 +27,14 @@ class TestFeedQuerySet:
         feed_updated_more_than_one_hour_ago = FeedFactory(
             title="Updated more than one hour ago",
             user=user,
-            refresh_delay=constants.FeedRefreshDelays.HOURLY,
+            refresh_delay=feeds_constants.FeedRefreshDelays.HOURLY,
         )
         with time_machine.travel("2024-05-08 10:00:00"):
             FeedUpdateFactory(feed=feed_updated_more_than_one_hour_ago)
         disabled_feed_updated_more_than_one_hour_ago = FeedFactory(
             title="Disabled feed",
             user=user,
-            refresh_delay=constants.FeedRefreshDelays.HOURLY,
+            refresh_delay=feeds_constants.FeedRefreshDelays.HOURLY,
             enabled=False,
         )
         with time_machine.travel("2024-05-08 10:00:00"):
@@ -42,7 +42,7 @@ class TestFeedQuerySet:
         feed_updated_less_than_one_hour_ago = FeedFactory(
             title="Updated less than one hour ago",
             user=user,
-            refresh_delay=constants.FeedRefreshDelays.HOURLY,
+            refresh_delay=feeds_constants.FeedRefreshDelays.HOURLY,
         )
         with time_machine.travel("2024-05-08 08:30:00"):
             FeedUpdateFactory(feed=feed_updated_less_than_one_hour_ago)
@@ -51,7 +51,7 @@ class TestFeedQuerySet:
         feed_updated_this_morning = FeedFactory(
             title="Updated this morning",
             user=user,
-            refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING,
+            refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
         )
         with time_machine.travel("2024-05-07 10:00:00"):
             FeedUpdateFactory(feed=feed_updated_this_morning)
@@ -60,7 +60,7 @@ class TestFeedQuerySet:
         feed_not_yet_updated_this_morning = FeedFactory(
             title="Not yet updated this morning",
             user=user,
-            refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING,
+            refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
         )
         with time_machine.travel("2024-05-07 10:00:00"):
             FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
@@ -75,12 +75,12 @@ class TestFeedQuerySet:
     @time_machine.travel("2024-05-08 13:00:00")
     def test_for_update_not_morning(self, user):
         feed_updated_this_morning = FeedFactory(
-            user=user, refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING
+            user=user, refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING
         )
         with time_machine.travel("2024-05-08 10:00:00"):
             FeedUpdateFactory(feed=feed_updated_this_morning)
         feed_not_yet_updated_this_morning = FeedFactory(
-            user=user, refresh_delay=constants.FeedRefreshDelays.EVERY_MORNING
+            user=user, refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING
         )
         with time_machine.travel("2024-05-07 10:00:00"):
             FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
@@ -125,7 +125,7 @@ class TestFeedManager:
                     site_url="https://example.com",
                     title="Awesome website",
                     description="A description",
-                    feed_type=SupportedFeedType.atom,
+                    feed_type=feeds_constants.SupportedFeedType.atom,
                     etag="W/etag",
                     last_modified=None,
                     articles=[
@@ -147,7 +147,7 @@ class TestFeedManager:
                     ],
                 ),
                 user,
-                constants.FeedRefreshDelays.DAILY_AT_NOON,
+                feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
                 [],
             )
 
@@ -158,10 +158,10 @@ class TestFeedManager:
         assert feed.site_url == "https://example.com"
         assert feed.title == "Awesome website"
         assert feed.description == "A description"
-        assert feed.feed_type == SupportedFeedType.atom
+        assert feed.feed_type == feeds_constants.SupportedFeedType.atom
         assert feed.articles.count() > 0
         feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
-        assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
+        assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.error_message
         assert feed_update.feed_etag == "W/etag"
         assert feed_update.feed_last_modified is None
@@ -180,7 +180,7 @@ class TestFeedManager:
                     site_url="https://example.com",
                     title="Awesome website",
                     description="A description",
-                    feed_type=SupportedFeedType.atom,
+                    feed_type=feeds_constants.SupportedFeedType.atom,
                     etag="W/etag",
                     last_modified=None,
                     articles=[
@@ -202,7 +202,7 @@ class TestFeedManager:
                     ],
                 ),
                 user,
-                constants.FeedRefreshDelays.DAILY_AT_NOON,
+                feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
                 [tag],
             )
 
@@ -213,10 +213,10 @@ class TestFeedManager:
         assert feed.site_url == "https://example.com"
         assert feed.title == "Awesome website"
         assert feed.description == "A description"
-        assert feed.feed_type == SupportedFeedType.atom
+        assert feed.feed_type == feeds_constants.SupportedFeedType.atom
         assert feed.articles.count() > 0
         feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
-        assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
+        assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.error_message
         assert feed_update.feed_etag == "W/etag"
         assert feed_update.feed_last_modified is None
@@ -233,13 +233,13 @@ class TestFeedManager:
                     site_url="https://example.com",
                     title="Awesome website",
                     description="A description",
-                    feed_type=SupportedFeedType.atom,
+                    feed_type=feeds_constants.SupportedFeedType.atom,
                     etag="W/etag",
                     last_modified=None,
                     articles=[],
                 ),
                 user,
-                constants.FeedRefreshDelays.DAILY_AT_NOON,
+                feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
                 [],
             )
 
@@ -256,13 +256,13 @@ class TestFeedManager:
                 site_url="https://example.com",
                 title="Awesome website",
                 description="A description",
-                feed_type=SupportedFeedType.atom,
+                feed_type=feeds_constants.SupportedFeedType.atom,
                 etag="W/etag",
                 last_modified=None,
                 articles=[],
             ),
             other_user,
-            constants.FeedRefreshDelays.DAILY_AT_NOON,
+            feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
             [],
         )
 
@@ -278,13 +278,13 @@ class TestFeedManager:
         assert not self.feed.enabled
         assert self.feed.disabled_reason == "We failed too many times to fetch the feed"
         feed_update = self.feed.feed_updates.last()
-        assert feed_update.status == constants.FeedUpdateStatus.FAILURE
+        assert feed_update.status == feeds_constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Something went wrong"
 
     def test_update_feed(self, django_assert_num_queries):
         existing_article = ArticleFactory(
             link="https://example.com/article/existing",
-            initial_source_type=constants.ArticleSourceType.MANUAL,
+            initial_source_type=reading_constants.ArticleSourceType.MANUAL,
             initial_source_title="Not a feed",
             user=self.feed.user,
         )
@@ -298,7 +298,7 @@ class TestFeedManager:
                     site_url="https://example.com",
                     title="Awesome website",
                     description="A description",
-                    feed_type=SupportedFeedType.atom,
+                    feed_type=feeds_constants.SupportedFeedType.atom,
                     etag="W/etag",
                     last_modified=None,
                     articles=[
@@ -340,8 +340,8 @@ class TestFeedManager:
         assert self.feed.feed_updates.count() == 1
         new_article = self.feed.articles.exclude(id=existing_article.id).get()
         assert new_article.title == "Article 1"
-        assert new_article.initial_source_type == constants.ArticleSourceType.FEED
+        assert new_article.initial_source_type == reading_constants.ArticleSourceType.FEED
         assert new_article.initial_source_title == self.feed.title
         existing_article.refresh_from_db()
-        assert existing_article.initial_source_type == constants.ArticleSourceType.MANUAL
+        assert existing_article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
         assert existing_article.initial_source_title != self.feed.title

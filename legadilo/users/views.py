@@ -45,7 +45,7 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self):
-        return reverse("feeds:default_reading_list")
+        return reverse("reading:default_reading_list")
 
 
 user_redirect_view = UserRedirectView.as_view()

@@ -1,36 +1,9 @@
-from django.urls import path, register_converter
+from django.urls import path
 
-from ..utils.urls import create_path_converter_from_enum
-from . import constants, views
+from . import views
 
 app_name = "feeds"
 
-UpdateArticleActionsPathConverter = create_path_converter_from_enum(constants.UpdateArticleActions)
-register_converter(UpdateArticleActionsPathConverter, "article_update_action")
-
 urlpatterns = [
-    path("reading/", views.reading_list_with_articles_view, name="default_reading_list"),
-    path(
-        "reading/lists/<slug:reading_list_slug>/",
-        views.reading_list_with_articles_view,
-        name="reading_list",
-    ),
-    path("reading/tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
-    path(
-        "reading/articles/<int:article_id>-<slug:article_slug>/",
-        views.article_details_view,
-        name="article_details",
-    ),
-    path(
-        "reading/articles/<int:article_id>/<article_update_action:update_action>/",
-        views.update_article_view,
-        name="update_article",
-    ),
-    path("feeds/", views.subscribe_to_feed_view, name="subscribe_to_feed"),
-    path("articles/add/", views.add_article_view, name="add_article"),
-    path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
-    path("article/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
-    path(
-        "article/<int:article_id>/tags/", views.update_article_tags_view, name="update_article_tags"
-    ),
+    path("", views.subscribe_to_feed_view, name="subscribe_to_feed"),
 ]

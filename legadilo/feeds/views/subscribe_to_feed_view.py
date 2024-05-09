@@ -13,12 +13,13 @@ from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.reading.models import Tag
 from legadilo.utils.decorators import alogin_required
 
 from ...users.models import User
 from ...users.typing import AuthenticatedHttpRequest
 from .. import constants
-from ..models import Feed, FeedCategory, Tag
+from ..models import Feed, FeedCategory
 from ..utils.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
