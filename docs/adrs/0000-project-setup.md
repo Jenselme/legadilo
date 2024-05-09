@@ -14,6 +14,8 @@ To get started with good default and help me develop this, I already decided to 
 Since it will involve lots of fetching, I also decided to use Django in a fully async manner.
 Besides, I already know Django (which is good to get started quickly and easily) and I intend to use this project for practicing Django and applying some good practices.
 
+This choices were made to ease developing the project. I tested some other frameworks, but none justify moving away from Django for this project: I already know Django and am efficient with it, it doesn’t have drawbacks for what I am building and the project it big enough not to learn a framework in addition to developing it. 
+
 ### CSS framework
 
 The template comes with [django-crispy-forms](https://github.com/django-crispy-forms/django-crispy-forms) to help you render form.
@@ -51,9 +53,9 @@ All the frameworks were loaded through a CDN to make things easier.
 * **Test runner:** [pytest](https://docs.pytest.org/en/7.4.x/) with [pytest-django](https://pytest-django.readthedocs.io/en/latest/). Very solid and popular choice in the Python world. It’s kind of a default choice.
 * **Repository:** git on GitHub in the hope it will help collaboration.
 * **CI:** Raw GitHub actions to keep things simple.
-* **Async:** Let’s run everything with [daphne](https://github.com/django/daphne). See [this article](https://www.jujens.eu/posts/en/2023/Dec/10/django-async/#django-async) for a more in depth analysis of the possible solutions.
+* **Async:** Let’s run everything with [daphne](https://github.com/django/daphne). See [this article](https://www.jujens.eu/posts/en/2023/Dec/10/django-async/#django-async) for a more in depth analysis of the possible solutions. This should help us with article fetching and feed file fetching with many users. It should also make serving static files directly from Python easier.
 * **Initial dependencies:** They are either good and well-used within the community and will help me advance quickly or provide small niceties (the ones that add extra checks) I can just remove later easily if needed. The only structuring one is django-crispy-forms, but I won’t even write form code so the early gain of time will compensate for it.
-* **CSS framework:** Let’s keep bootstrap from now, it’s good enough and is better supported by crispy forms. I may even remove the JS part if I don’t need it. It’s loaded by a CDN for now to avoid loosing time on this.
+* **CSS framework:** Let’s keep bootstrap from now, it’s good enough and is better supported by crispy forms. I may even remove the JS part if I don’t need it. It’s loaded by a CDN for now to avoid loosing time on this. It also feels way easier to use given what I already know.
 * **Doc:** Let’s write relevant documentation and *most importantly* document architecture decisions in ADRs. They will be written in [MyST](https://myst-parser.readthedocs.io/en/stable/intro.html) to have the ease of writing of markdown while still being able to use advanced features of RST. 
 
 
