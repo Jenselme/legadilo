@@ -32,6 +32,9 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
         choices.extend(self.get_queryset().for_user(user).values_list("slug", "name"))
         return choices
 
+    def get_first_for_user(self, user: User, slug: str) -> FeedCategory | None:
+        return self.get_queryset().filter(user=user, slug=slug).first()
+
 
 class FeedCategory(models.Model):
     name = models.CharField(max_length=100)

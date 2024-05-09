@@ -1,7 +1,7 @@
 # 3 - Article deduplication
 
 * **Date:** 2024-04-19
-* **Status:** Pending
+* **Status:** Accepted
 
 
 ## Context

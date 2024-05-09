@@ -13,12 +13,13 @@ from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.reading.models import Tag
 from legadilo.utils.decorators import alogin_required
 
 from ...users.models import User
 from ...users.typing import AuthenticatedHttpRequest
 from .. import constants
-from ..models import Feed, FeedCategory, Tag
+from ..models import Feed, FeedCategory
 from ..utils.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
@@ -137,9 +138,9 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
             request.user, form.cleaned_data["tags"]
         )
-        category = await sync_to_async(
-            FeedCategory.objects.filter(slug=form.cleaned_data.get("category")).first
-        )()
+        category = await sync_to_async(FeedCategory.objects.get_first_for_user)(
+            request.user, form.cleaned_data.get("category")
+        )
         feed = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_medata,
             request.user,

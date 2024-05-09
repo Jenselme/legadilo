@@ -11,7 +11,7 @@
 {% endblock title %}
 {% block content %}
     <h1>{% translate "Add an article" %}</h1>
-    <form method="post" action="{% url 'feeds:add_article' %}">
+    <form method="post" action="{% url 'reading:add_article' %}">
         {% csrf_token %}
         {{ form|crispy }}
         <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>

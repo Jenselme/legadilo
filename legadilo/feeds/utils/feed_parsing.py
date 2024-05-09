@@ -11,12 +11,12 @@ from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
+from legadilo.reading.utils.article_fetching import ArticleData
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 from ...utils.time import dt_to_http_date
 from ...utils.validators import normalize_url
 from .. import constants
-from .article_fetching import ArticleData
 
 
 @dataclass(frozen=True)

@@ -14,11 +14,6 @@ class FeedRenderingCtx(TypedDict):
     media_content_variant: NotRequired[Literal["media_content_description", "media_content_title"]]
 
 
-def get_article_fixture_content(name: str):
-    file_path = settings.APPS_DIR / "feeds/tests/fixtures/articles" / name
-    with file_path.open() as f:
-        return f.read()
-
 
 def get_feed_fixture_content(name: Literal["sample_rss.xml", "sample_atom.xml", "sample_youtube_atom.xml", "attack_feed.xml"],
                              override_rendering_values: FeedRenderingCtx | None = None):

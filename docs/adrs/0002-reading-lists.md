@@ -1,7 +1,7 @@
 # 2 - Reading lists
 
 * **Date:** 2024-03-17
-* **Status:** Pending
+* **Status:** Accepted
 
 ## Context
 

@@ -106,7 +106,7 @@ class TestUserRegistration:
 
         login_redirect_response = self.client.get(login_response["Location"])
         assert login_redirect_response.status_code == HTTPStatus.FOUND
-        assert login_redirect_response["Location"] == reverse("feeds:default_reading_list")
+        assert login_redirect_response["Location"] == reverse("reading:default_reading_list")
 
         page_response = self.client.get(login_redirect_response["Location"])
         assert page_response.status_code == HTTPStatus.OK

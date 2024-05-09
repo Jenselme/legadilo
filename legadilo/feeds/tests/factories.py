@@ -1,14 +1,12 @@
-from datetime import UTC, datetime
-
 import factory
 from factory.django import DjangoModelFactory
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.models import FeedUpdate, ReadingList, Tag
+from legadilo.feeds.models import FeedUpdate
 from legadilo.users.tests.factories import UserFactory
 
 from .. import constants
-from ..models import Article, Feed, FeedCategory
+from ..models import Feed, FeedCategory
 
 
 class FeedCategoryFactory(DjangoModelFactory):
@@ -33,24 +31,6 @@ class FeedFactory(DjangoModelFactory):
         model = Feed
 
 
-class ArticleFactory(DjangoModelFactory):
-    title = factory.Sequence(lambda n: f"Article {n}")
-    summary = ""
-    content = ""
-    authors: list[str] = []
-    contributors: list[str] = []
-    external_tags: list[str] = []
-    link = factory.Sequence(lambda n: f"https://example.com/article/{n}")
-    published_at = datetime.now(tz=UTC)
-    updated_at = datetime.now(tz=UTC)
-    external_article_id = factory.Sequence(lambda n: f"article-{n}")
-
-    user = factory.SubFactory(UserFactory)
-
-    class Meta:
-        model = Article
-
-
 class FeedUpdateFactory(DjangoModelFactory):
     status = constants.FeedUpdateStatus.SUCCESS
     feed_etag = ""
@@ -60,22 +40,3 @@ class FeedUpdateFactory(DjangoModelFactory):
 
     class Meta:
         model = FeedUpdate
-
-
-class ReadingListFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f"Reading list {n}")
-    slug = factory.Sequence(lambda n: f"reading-list-{n}")
-
-    user = factory.SubFactory(UserFactory)
-
-    class Meta:
-        model = ReadingList
-
-
-class TagFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f"Tag {n}")
-    slug = factory.Sequence(lambda n: f"tag-{n}")
-    user = factory.SubFactory(UserFactory)
-
-    class Meta:
-        model = Tag

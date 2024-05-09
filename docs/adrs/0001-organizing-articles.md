@@ -1,7 +1,7 @@
-# 1 - organizing articles
+# 1 - Organizing articles
 
 * **Date:** 2024-03-17
-* **Status:** Pending
+* **Status:** Accepted
 
 ## Context
 
@@ -22,7 +22,7 @@ To give the user as much flexibility as possible:
 * When you try to add a tag, you must be able to see the list of existing tag and search through them. This search must ignore case and accentuation.
 * If a tag is not associated to anything, it must not be deleted automatically.
 
-Fo articles that are coming from feeds, we must allow them to be tagged with a set of default tags.
+For articles that are coming from feeds, we must allow them to be tagged with a set of default tags.
 We will list them on the detail page of a feed.
 Just like with articles: we can select a tag with autocomplete and create new ones on the fly.
 This will also help us to organize the feeds.
