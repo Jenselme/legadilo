@@ -138,9 +138,9 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
             request.user, form.cleaned_data["tags"]
         )
-        category = await sync_to_async(
-            FeedCategory.objects.filter(slug=form.cleaned_data.get("category")).first
-        )()
+        category = await sync_to_async(FeedCategory.objects.get_first_for_user)(
+            request.user, form.cleaned_data.get("category")
+        )
         feed = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_medata,
             request.user,
