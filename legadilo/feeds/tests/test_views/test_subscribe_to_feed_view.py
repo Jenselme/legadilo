@@ -295,3 +295,40 @@ class TestSubscribeToFeedView:
             ("https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"),
             ("https://www.jujens.eu/feeds/all.rss.xml", "Full feed"),
         ]
+
+    def test_other_user_subscribe_to_same_feed(
+        self, user, other_user, logged_in_other_user_sync_client, httpx_mock, sample_rss_feed
+    ):
+        FeedFactory(feed_url=self.feed_url, user=user)
+        wrong_category = FeedCategoryFactory(user=user)
+        category = FeedCategoryFactory(
+            user=other_user, name=wrong_category.name, slug=wrong_category.slug
+        )
+        existing_tag = TagFactory(
+            user=other_user, name=self.existing_tag.name, slug=self.existing_tag.slug
+        )
+        assert category.slug == wrong_category.slug
+        assert existing_tag.slug == self.existing_tag.slug
+        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        payload = {
+            "url": self.feed_url,
+            "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "category": category.slug,
+            "tags": [existing_tag.slug, "New"],
+        }
+
+        response = logged_in_other_user_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.CREATED
+        feed = Feed.objects.exclude(user=user).first()
+        assert feed is not None
+        assert feed.user == other_user
+        assert feed.tags.count() == 2
+        assert set(feed.tags.values_list("user_id", flat=True)) == {other_user.id}
+        assert feed.category == category
+        assert category.user == other_user
+        assert Article.objects.count() == Article.objects.filter(user=other_user).count()
+        article = Article.objects.first()
+        assert article is not None
+        assert article.tags.count() == 2
+        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}

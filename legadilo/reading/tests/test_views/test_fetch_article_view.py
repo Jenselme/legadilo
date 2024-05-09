@@ -81,6 +81,22 @@ class TestAddArticle:
             ("tag-with-spaces", constants.TaggingReason.ADDED_MANUALLY),
         ]
 
+    def test_add_article_with_tags_other_user(
+        self, user, other_user, logged_in_other_user_sync_client, httpx_mock
+    ):
+        ArticleFactory(user=user, link=self.article_url)
+        TagFactory(user=other_user, name=self.existing_tag.name, slug=self.existing_tag.slug)
+        httpx_mock.add_response(text=self.article_content, url=self.article_url)
+
+        response = logged_in_other_user_sync_client.post(self.url, self.payload_with_tags)
+
+        assert response.status_code == HTTPStatus.CREATED
+        article = Article.objects.exclude(user=user).first()
+        assert article is not None
+        assert article.user == other_user
+        assert article.tags.count() == 3
+        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}
+
     def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
         mocker.patch("legadilo.reading.utils.article_fetching._get_content", return_value="")
@@ -161,12 +177,17 @@ class TestRefetchArticleView:
 
         assert response.status_code == HTTPStatus.FORBIDDEN
 
+    def test_access_if_logged_in_as_other_user(self, logged_in_other_user_sync_client):
+        response = logged_in_other_user_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
     def test_refetch_article_with_tags(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
         httpx_mock.add_response(text="", url=self.article_url)
 
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND

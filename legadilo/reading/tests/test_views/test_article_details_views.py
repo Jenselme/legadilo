@@ -112,7 +112,7 @@ class TestUpdateArticleTagsView:
         assert response.status_code == HTTPStatus.FOUND
         assert reverse("account_login") in response["Location"]
 
-    def test_cannot_delete_article_as_other_user(self, logged_in_other_user_sync_client):
+    def test_cannot_access_article_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.post(self.url)
 
         assert response.status_code == HTTPStatus.NOT_FOUND
