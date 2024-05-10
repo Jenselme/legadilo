@@ -26,9 +26,11 @@
         {# Placed at the top of the document so pages load faster with defer #}
         {% block javascript %}
             {% if debug %}
+                <script src="{% static 'popper.js' %}" defer></script>
                 <script src="{% static 'js/bootstrap.js' %}" defer></script>
                 <script src="{% static 'htmx.js' %}" defer></script>
             {% else %}
+                <script src="{% static 'popper.min.js' %}" defer></script>
                 <script src="{% static 'js/bootstrap.min.js' %}" defer></script>
                 <script src="{% static 'htmx.min.js' %}" defer></script>
             {% endif %}
@@ -86,17 +88,27 @@
                             <ul class="navbar-nav">
                                 {% if request.user.is_authenticated %}
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'reading:add_article' %}">{% translate "Add an article" %}</a>
+                                        <a class="nav-link" href="{% url 'reading:add_article' %}">
+                                            {% include "core/partials/bs-icons/add_article.html" %}
+                                            {% translate "Add an article" %}
+                                        </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'feeds:subscribe_to_feed' %}">{% translate "Subscribe to a feed" %}</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        {# URL provided by django-allauth/account/urls.py #}
-                                        <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle"
+                                           href="#"
+                                           role="button"
+                                           data-bs-toggle="dropdown"
+                                           data-bs-reference="parent"
+                                           aria-expanded="false">
+                                            {% include "core/partials/bs-icons/profile_menu_icon.html" %}
+                                            <span class="visually-hidden">{% translate "Profile menu" %}</span>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item" href="{% url 'feeds:subscribe_to_feed' %}">{% translate "Subscribe to a feed" %}</a>
+                                            <a class="dropdown-item" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
+                                            {# URL provided by django-allauth/account/urls.py #}
+                                            <a class="dropdown-item" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+                                        </div>
                                     </li>
                                 {% else %}
                                     {% if ACCOUNT_ALLOW_REGISTRATION %}
@@ -116,7 +128,7 @@
                 </nav>
             </div>
         {% endif %}
-        <div class="{% if base.fluid_content %}container-fluid{% else %}container{% endif %}">
+        <div class="{% if base.fluid_content %}container-fluid px-0 px-md-3{% else %}container{% endif %}">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">

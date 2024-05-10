@@ -63,6 +63,8 @@
     max-height 1s ease-out;
 }
 
-.card {
-  max-height: 500px;
+@media (width >= 768px) {
+  .card {
+    max-height: 500px;
+  }
 }
