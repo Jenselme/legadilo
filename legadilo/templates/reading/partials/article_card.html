@@ -26,7 +26,7 @@
                 <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
             </h2>
             <div class="card-subtitle">
-                <p class="mb-0 text-secondary">{% include 'feeds/partials/article_metadata.html' %}</p>
+                <p class="mb-0 text-secondary">{% include 'reading/partials/article_metadata.html' %}</p>
                 {% if article.tags_to_display %}
                     <p>
                         {% for tag in article.tags_to_display %}
@@ -50,8 +50,8 @@
         </main>
     </div>
     <footer class="card-footer d-flex justify-content-between">
-        <div>{% include "feeds/partials/article_actions.html" %}</div>
-        <div>{% include "feeds/partials/article_danger_actions.html" %}</div>
+        <div>{% include "reading/partials/article_actions.html" %}</div>
+        <div>{% include "reading/partials/article_danger_actions.html" %}</div>
     </footer>
 </article>
 {% if is_last and next_page_number %}

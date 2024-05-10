@@ -61,7 +61,7 @@ class TestUpdateArticleView:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.template_name == "feeds/update_article_action.html"
+        assert response.template_name == "reading/update_article_action.html"
         assert response.context["article"] == self.article
         assert response.context["reading_lists"] == [self.reading_list]
         assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 1}

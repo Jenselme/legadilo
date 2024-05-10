@@ -22,7 +22,7 @@
                         data-bs-toggle="dropdown"
                         aria-expanded="false">{% translate "Reading lists" %}</button>
                 <div id="reading-list-dropdown-menu" class="p-0 dropdown-menu">
-                    {% include "feeds/partials/reading_list_dropdown_menu.html" %}
+                    {% include "reading/partials/reading_list_dropdown_menu.html" %}
                 </div>
             </div>
         </div>
@@ -30,12 +30,12 @@
     <div class="container-fluid scrollable-container">
         <div id="scrollable-article-list" class="row scrollable">
             <div id="reading-list-group" class="col col-2 d-none d-md-block">
-                {% include 'feeds/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
+                {% include 'reading/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
             </div>
             <div class="col col-12 col-md-8 px-1 px-md-2">
-                {% include "feeds/partials/article_paginator_page.html" %}
+                {% include "reading/partials/article_paginator_page.html" %}
                 <noscript>
-                    {% include 'feeds/partials/articles_list_pagination.html' %}
+                    {% include 'reading/partials/articles_list_pagination.html' %}
                 </noscript>
             </div>
         </div>

@@ -45,7 +45,7 @@ class TestArticleDetailsView:
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
-        assert response.template_name == "feeds/article_details.html"
+        assert response.template_name == "reading/article_details.html"
         assert response.context["article"] == self.article
         assert response.context["from_url"] == reverse("reading:default_reading_list")
         assert "edit_tags_form" in response.context
@@ -56,7 +56,7 @@ class TestArticleDetailsView:
             response = logged_in_sync_client.get(self.url, data={"from_url": from_url})
 
         assert response.status_code == HTTPStatus.OK
-        assert response.template_name == "feeds/article_details.html"
+        assert response.template_name == "reading/article_details.html"
         assert response.context["article"] == self.article
         assert response.context["from_url"] == from_url
         assert "edit_tags_form" in response.context

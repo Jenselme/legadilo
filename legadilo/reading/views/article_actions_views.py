@@ -93,7 +93,7 @@ def _update_article_card(
     count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
     return TemplateResponse(
         request,
-        "feeds/update_article_action.html",
+        "reading/update_article_action.html",
         {
             "article": article,
             "reading_lists": reading_lists,

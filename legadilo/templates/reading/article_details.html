@@ -23,17 +23,17 @@
             <aside class="col col-2 d-none d-md-block">
                 <div class="sticky-top">
                     <div>
-                        {% include "feeds/partials/article_actions.html" with for_article_details=True vertical_group=True allow_refetch=True %}
+                        {% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True allow_refetch=True %}
                     </div>
                     <div class="mt-5">
-                        {% include "feeds/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
+                        {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
                     </div>
                 </div>
             </aside>
             <article class="col col-12 col-md-10 container-xl">
                 <header>
                     <h1>{{ article.title |safe }}</h1>
-                    <div class="text-secondary">{% include 'feeds/partials/article_metadata.html' %}</div>
+                    <div class="text-secondary">{% include 'reading/partials/article_metadata.html' %}</div>
                 </header>
                 <form class="row row-cols-auto align-items-center p-2 p-md-0"
                       method="post"
@@ -62,7 +62,7 @@
                 </main>
                 <footer>
                     <div class="d-flex justify-content-center mt-2 mb-5">
-                        {% include 'feeds/partials/article_actions.html' with for_article_details=True %}
+                        {% include 'reading/partials/article_actions.html' with for_article_details=True %}
                     </div>
                 </footer>
             </article>
