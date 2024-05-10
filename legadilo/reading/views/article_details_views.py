@@ -54,7 +54,7 @@ def article_details_view(
     )
     return TemplateResponse(
         request,
-        "feeds/article_details.html",
+        "reading/article_details.html",
         {
             "article": article,
             "edit_tags_form": edit_tags_form,

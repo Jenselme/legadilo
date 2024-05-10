@@ -70,9 +70,18 @@ def _display_list_of_articles(
     headers = {"HX-Push-Url": from_url} if must_do_full_reload else {}
 
     if request.htmx and not must_do_full_reload:
-        return TemplateResponse(request, "feeds/partials/article_paginator_page.html", response_ctx)
+        return TemplateResponse(
+            request,
+            "reading/partials/article_paginator_page.html",
+            response_ctx,
+        )
 
-    return TemplateResponse(request, "feeds/list_of_articles.html", response_ctx, headers=headers)
+    return TemplateResponse(
+        request,
+        "reading/list_of_articles.html",
+        response_ctx,
+        headers=headers,
+    )
 
 
 @require_GET

@@ -63,7 +63,10 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
         )
 
     return TemplateResponse(
-        request, "feeds/add_article.html", {"form": form, "tags": Tag.objects.all()}, status=status
+        request,
+        "reading/add_article.html",
+        {"form": form, "tags": Tag.objects.all()},
+        status=status,
     )
 
 

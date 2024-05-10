@@ -119,6 +119,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "legadilo.core",
     "legadilo.users",
+    "legadilo.website",
     "legadilo.reading",
     "legadilo.feeds",
 ]
@@ -197,6 +198,7 @@ STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = [
     str(APPS_DIR / "static"),
+    str(BASE_DIR / "node_modules/@popperjs/core/dist/umd/"),
     str(BASE_DIR / "node_modules/bootstrap/dist/"),
     str(BASE_DIR / "node_modules/bootstrap5-tags/"),
     str(BASE_DIR / "node_modules/htmx.org/dist"),

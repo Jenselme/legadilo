@@ -46,13 +46,13 @@
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_unread.html" %}
             </span>
-            {% translate 'Mark as unread' %}
+            <span class="d-none d-md-inline">{% translate 'Mark as unread' %}</span>
         {% else %}
             <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_read.html" %}
             </span>
-            {% translate 'Mark as read' %}
+            <span class="d-none d-md-inline">{% translate 'Mark as read' %}</span>
         {% endif %}
     </button>
     <button class="btn btn-outline-secondary text-start"
@@ -64,13 +64,13 @@
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/unmark_as_favorite.html" %}
             </span>
-            {% translate 'Unmark as favorite' %}
+            <span class="d-none d-md-inline">{% translate 'Unmark as favorite' %}</span>
         {% else %}
             <span class="icon-indicator {{ article|article_action_indicator }} text-start">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_favorite.html" %}
             </span>
-            {% translate 'Mark as favorite' %}
+            <span class="d-none d-md-inline">{% translate 'Mark as favorite' %}</span>
         {% endif %}
     </button>
     <button class="btn btn-outline-secondary text-start"
@@ -82,13 +82,13 @@
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_not_for_later.html" %}
             </span>
-            {% translate 'Not for later' %}
+            <span class="d-none d-md-inline">{% translate 'Not for later' %}</span>
         {% else %}
             <span class="icon-indicator {{ article|article_action_indicator }}">
                 {% include "core/partials/button_loading_indicator.html" %}
                 {% include "core/partials/bs-icons/mark_as_for_later.html" %}
             </span>
-            {% translate 'For later' %}
+            <span class="d-none d-md-inline">{% translate 'For later' %}</span>
         {% endif %}
     </button>
     {% if allow_refetch %}
@@ -118,14 +118,14 @@
        target="_blank"
        href="{{ article.link }}">
         {% include "core/partials/bs-icons/open_original.html" %}
-        {% translate 'Open original' %}
+        <span class="d-none d-md-inline">{% translate 'Open original' %}</span>
     </a>
     {% if not for_article_details %}
         <a class="btn btn-primary text-start"
            role="button"
            href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">
             {% include "core/partials/bs-icons/open_details.html" %}
-            {% translate 'Open details' %}
+            <span class="d-none d-md-inline">{% translate 'Open details' %}</span>
         </a>
     {% endif %}
     {% if for_article_details and from_url %}

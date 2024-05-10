@@ -2,6 +2,7 @@
   "name": "Legadilo",
   "version": "1.0.0",
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap5-tags": "^1.7.1",
     "htmx.org": "^1.9.12"
