@@ -119,6 +119,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "legadilo.core",
     "legadilo.users",
+    "legadilo.website",
     "legadilo.reading",
     "legadilo.feeds",
 ]
