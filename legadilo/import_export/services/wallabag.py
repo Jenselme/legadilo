@@ -57,6 +57,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
                 "initial_source_title": full_sanitize(article_data["domain_name"][:100]),
                 "preview_picture_url": preview_picture_url,
                 "external_article_id": f"wallabag:{article_data["id"]}",
+                "annotations": article_data.get("annotations", []),
                 "read_at": utcnow() if article_data["is_archived"] else None,
                 "is_favorite": bool(article_data["is_starred"]),
             },
@@ -98,6 +99,7 @@ def _validate_data_batch(article_data: Any):
                     "reading_time": {"type": "number"},
                     "domain_name": {"type": "string"},
                     "preview_picture": {"type": "string"},
+                    "annotations": {"type": "array"},
                 },
                 "required": [
                     "id",

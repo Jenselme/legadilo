@@ -31,7 +31,7 @@ def test_import_valid_data(user):
                 "created_at": "2024-04-19T19:18:29+02:00",
                 "updated_at": "2024-04-20T19:17:54+02:00",
                 "published_by": [""],
-                "annotations": [],
+                "annotations": ["Some stuff"],
                 "mimetype": r"text\/html;charset=utf-8",
                 "language": "en",
                 "reading_time": 29,
@@ -97,6 +97,7 @@ def test_import_valid_data(user):
     assert article.external_article_id == "wallabag:4947"
     assert article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
     assert article.initial_source_title == "www.example.com"
+    assert article.annotations == ["Some stuff"]
     assert list(article.tags.values_list("name", "slug")) == [
         ("existing", "existing"),
         ("New tag", "new-tag"),

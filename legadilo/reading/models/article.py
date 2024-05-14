@@ -289,6 +289,14 @@ class Article(models.Model):
         max_length=512,
         help_text=_("The id of the article in the its source."),
     )
+    annotations = models.JSONField(
+        blank=True,
+        default=list,
+        help_text=_(
+            "Annotations made to the article. Currently only used for data imports to prevent data "
+            "loss."
+        ),
+    )
 
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.GeneratedField(
