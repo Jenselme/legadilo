@@ -275,7 +275,7 @@ class Article(models.Model):
         validators=[list_of_strings_json_schema_validator], blank=True, default=list
     )
     link = models.URLField(max_length=1_024)
-    preview_picture_url = models.URLField(blank=True)
+    preview_picture_url = models.URLField(blank=True, max_length=1_024)
     preview_picture_alt = models.TextField(blank=True)
     external_tags = models.JSONField(
         validators=[list_of_strings_json_schema_validator],

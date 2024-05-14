@@ -47,12 +47,14 @@ class Command(BaseCommand):
         except User.DoesNotExist as e:
             raise CommandError(f"No user with id {options["user_id"]} was found!") from e
         except JsonSchemaValidationError as e:
+            logger.debug(str(e))
             raise CommandError("The file you supplied is not valid") from e
         except FileNotFoundError as e:
             raise CommandError(f"{options["file_to_import"][0]} does not exist") from e
         except JSONDecodeError as e:
             raise CommandError(f"{options["file_to_import"][0]} is not a valid JSON") from e
         except DataImportError as e:
+            logger.exception("Failed to import data")
             raise CommandError("Failed to import data.") from e
 
         logger.info(f"Imported {nb_imported} articles")

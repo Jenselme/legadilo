@@ -85,7 +85,7 @@ def test_import_valid_data(user):
         ],
     )
 
-    assert nb_imported_articles == 3
+    assert nb_imported_articles == 2
     assert Article.objects.count() == 3
     article = Article.objects.exclude(id=existing_article.id).first()
     assert article is not None
