@@ -9,7 +9,7 @@ from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 
 def test_import_invalid_data(user):
     with pytest.raises(JsonSchemaValidationError):
-        _import_wallabag_data(user, iter([{"key": "value"}]))
+        _import_wallabag_data(user, [{"key": "value"}])
 
 
 def test_import_valid_data(user):
@@ -18,7 +18,7 @@ def test_import_valid_data(user):
 
     nb_imported_articles = _import_wallabag_data(
         user,
-        iter([
+        [
             {
                 "is_archived": 0,
                 "is_starred": 0,
@@ -82,7 +82,7 @@ def test_import_valid_data(user):
                 "http_status": "200",
                 "headers": {},
             },
-        ]),
+        ],
     )
 
     assert nb_imported_articles == 3

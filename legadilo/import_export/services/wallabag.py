@@ -1,8 +1,7 @@
-from collections.abc import Iterator
+import json
 from pathlib import Path
 from typing import Any
 
-import ijson
 from django.template.defaultfilters import truncatewords_html
 from jsonschema import validate as validate_json_schema
 from slugify import slugify
@@ -18,11 +17,13 @@ from legadilo.utils.validators import is_url_valid
 
 def import_wallabag_json_file(user: User, path_to_file: str) -> int:
     with Path(path_to_file).open("rb") as f:
-        data = ijson.items(f, "item")
-        return _import_wallabag_data(user, data)
+        data = json.load(f)
+
+    return _import_wallabag_data(user, data)
 
 
-def _import_wallabag_data(user: User, data: Iterator[dict]) -> int:
+def _import_wallabag_data(user: User, data: list[dict]) -> int:
+    _validate_data_batch(data)
     nb_added_articles = 0
     for article_data in data:
         nb_added_articles += 1
