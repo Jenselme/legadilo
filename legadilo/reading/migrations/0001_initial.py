@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                         ],
                     ),
                 ),
-                ("link", models.URLField()),
+                ("link", models.URLField(max_length=1024)),
                 ("preview_picture_url", models.URLField(blank=True)),
                 ("preview_picture_alt", models.TextField(blank=True)),
                 (
