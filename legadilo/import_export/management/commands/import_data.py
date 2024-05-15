@@ -1,5 +1,8 @@
 import logging
 from json import JSONDecodeError
+from xml.etree.ElementTree import (  # noqa: S405 etree methods are vulnerable to XML attacks
+    ParseError as XmlParseError,
+)
 
 from django.core.management import BaseCommand
 from django.core.management.base import CommandError, CommandParser
@@ -7,6 +10,7 @@ from django.db import transaction
 from jsonschema import ValidationError as JsonSchemaValidationError
 
 from legadilo.import_export.services.exceptions import DataImportError
+from legadilo.import_export.services.opml import import_opml_file
 from legadilo.import_export.services.wallabag import import_wallabag_json_file
 from legadilo.users.models import User
 
@@ -43,7 +47,7 @@ class Command(BaseCommand):
             f"Starting import of {options["file_to_import"][0]} with type {options["source_type"]}"
         )
         try:
-            nb_imported = self._import(options)
+            self._import(options)
         except User.DoesNotExist as e:
             raise CommandError(f"No user with id {options["user_id"]} was found!") from e
         except JsonSchemaValidationError as e:
@@ -53,17 +57,25 @@ class Command(BaseCommand):
             raise CommandError(f"{options["file_to_import"][0]} does not exist") from e
         except JSONDecodeError as e:
             raise CommandError(f"{options["file_to_import"][0]} is not a valid JSON") from e
+        except XmlParseError as e:
+            raise CommandError(f"{options["file_to_import"][0]} is not a valid OPML") from e
         except DataImportError as e:
             logger.exception("Failed to import data")
             raise CommandError("Failed to import data.") from e
 
-        logger.info(f"Imported {nb_imported} articles")
-
     @transaction.atomic()
-    def _import(self, options) -> int:
+    def _import(self, options):
         user = User.objects.get(id=options["user_id"])
         match options["source_type"]:
             case "wallabag":
-                return import_wallabag_json_file(user, options["file_to_import"][0])
+                nb_imported_articles = import_wallabag_json_file(user, options["file_to_import"][0])
+                logger.info(f"Imported {nb_imported_articles} articles")
+            case "opml":
+                nb_imported_feeds, nb_imported_categories = import_opml_file(
+                    user, options["file_to_import"][0]
+                )
+                logger.info(
+                    f"Imported {nb_imported_feeds} feeds in {nb_imported_categories} categories"
+                )
             case _:
                 raise CommandError("Unknown source type")

@@ -37,7 +37,10 @@ def get_page_number_from_request(request: HttpRequest) -> int:
         return 1
 
 
-def is_url_valid(url: str) -> bool:
+def is_url_valid(url: str | None) -> bool:
+    if not url:
+        return False
+
     validator = URLValidator(schemes=["http", "https"])
     url_fields = list(urlsplit(url))
     # Assume HTTPS if no scheme.

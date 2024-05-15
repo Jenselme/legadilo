@@ -50,6 +50,7 @@ def test_get_page_number(rf, request_params, expected_value):
         pytest.param("jujens.eu/toto", False, id="url-no-scheme-no-double-slash"),
         pytest.param("/toto", False, id="path-only"),
         pytest.param("Hello world!", False, id="trash"),
+        pytest.param(None, False, id="None"),
     ],
 )
 def test_is_url_valid(sample_url: str, expected_is_valid: bool):
