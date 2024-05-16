@@ -171,7 +171,12 @@ class ArticleManager(models.Manager["Article"]):
         }
         articles_to_create = []
         articles_to_update = []
+        seen_links = set()
         for article_data in articles_data:
+            if article_data.link in seen_links:
+                continue
+
+            seen_links.add(article_data.link)
             if article_data.link in existing_links_to_articles:
                 article_to_update = existing_links_to_articles[article_data.link]
                 was_updated = article_to_update.update_article_from_data(article_data)
