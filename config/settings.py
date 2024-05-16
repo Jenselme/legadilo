@@ -432,6 +432,14 @@ LOGGING = {
             "handlers": ["rich"],
             "propagate": True,
         },
+        "httpx": {
+            "handlers": ["rich"],
+            "level": "WARNING",
+        },
+        "httpcore": {
+            "handlers": ["rich"],
+            "level": "WARNING",
+        },
         "legadilo": {
             "level": "INFO" if IS_PRODUCTION else "DEBUG",
             "handlers": ["rich"],
