@@ -67,7 +67,7 @@ async def get_feed_data(
     It's either a feed or a page containing a link to a feed.
     """
     parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
-    if not parsed_feed["version"]:
+    if not parsed_feed.get("version"):
         url = _find_feed_page_content(url_content)
         parsed_feed, resolved_url = await _fetch_feed(
             client, url, etag=etag, last_modified=last_modified
@@ -209,7 +209,7 @@ def _is_youtube_link(link: str) -> bool:
 
 def _get_article_authors(entry):
     if authors := entry.get("authors", []):
-        return [full_sanitize(author["name"]) for author in authors]
+        return [full_sanitize(author["name"]) for author in authors if author.get("name")]
 
     if author := entry.get("author", ""):
         return [full_sanitize(author)]
@@ -231,7 +231,7 @@ def _get_article_content(entry):
 
 def _get_articles_tags(entry):
     if tags := entry.get("tags", []):
-        return [full_sanitize(tag["term"]) for tag in tags]
+        return [full_sanitize(tag["term"]) for tag in tags if tag.get("term")]
 
     if category := entry.get("category"):
         return [category]
