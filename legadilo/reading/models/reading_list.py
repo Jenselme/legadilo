@@ -23,12 +23,12 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("All articles"))),
             user=user,
             defaults={
-                "name": str(_("All articles")),
+                "title": str(_("All articles")),
                 "order": 0,
             },
         )
         base_default_list_values = {
-            "name": str(_("Unread")),
+            "title": str(_("Unread")),
             "read_status": constants.ReadStatus.ONLY_UNREAD,
             "for_later_status": constants.ForLaterStatus.ONLY_NOT_FOR_LATER,
             "order": 10,
@@ -47,7 +47,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("Recent"))),
             user=user,
             defaults={
-                "name": str(_("Recent")),
+                "title": str(_("Recent")),
                 "articles_max_age_value": 2,
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.DAYS,
                 "order": 20,
@@ -57,7 +57,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("Favorite"))),
             user=user,
             defaults={
-                "name": str(_("Favorite")),
+                "title": str(_("Favorite")),
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
                 "order": 30,
                 "user": user,
@@ -67,7 +67,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("For later"))),
             user=user,
             defaults={
-                "name": str(_("For later")),
+                "title": str(_("For later")),
                 "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,
                 "order": 35,
             },
@@ -76,7 +76,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             slug=slugify(str(_("Archive"))),
             user=user,
             defaults={
-                "name": str(_("Archive")),
+                "title": str(_("Archive")),
                 "read_status": constants.ReadStatus.ONLY_READ,
                 "order": 40,
             },
@@ -96,7 +96,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
 
 
 class ReadingList(models.Model):
-    name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     slug = models.SlugField(blank=True, max_length=255)
     is_default = models.BooleanField(default=False)
     enable_reading_on_scroll = models.BooleanField(default=False)
@@ -215,11 +215,13 @@ class ReadingList(models.Model):
         ]
 
     def __str__(self):
-        return f"ReadingList(id={self.id}, name={self.name}, user={self.user}, order={self.order})"
+        return (
+            f"ReadingList(id={self.id}, title={self.title}, user={self.user}, order={self.order})"
+        )
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.title)
         return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

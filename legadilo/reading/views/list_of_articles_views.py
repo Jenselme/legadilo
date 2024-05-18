@@ -36,7 +36,7 @@ def reading_list_with_articles_view(
         request,
         Article.objects.get_articles_of_reading_list(displayed_reading_list),
         {
-            "page_title": displayed_reading_list.name,
+            "page_title": displayed_reading_list.title,
             "displayed_reading_list_id": displayed_reading_list.id,
             "js_cfg": get_js_cfg_from_reading_list(displayed_reading_list),
         },
@@ -98,7 +98,7 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         request,
         Article.objects.get_articles_of_tag(displayed_tag),
         {
-            "page_title": _("Articles with tag '%(tag_name)s'") % {"tag_name": displayed_tag.name},
+            "page_title": _("Articles with tag '%(tag_name)s'") % {"tag_name": displayed_tag.title},
             "displayed_reading_list_id": None,
             "js_cfg": {},
         },

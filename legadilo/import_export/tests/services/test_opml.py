@@ -50,7 +50,7 @@ def test_import_valid_files(user, httpx_mock):
     assert FeedCategory.objects.count() == 1
     category = FeedCategory.objects.get()
     assert category.user == user
-    assert category.name == "Category 1"
+    assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 2
     assert list(Feed.objects.values_list("feed_url", "site_url")) == [
@@ -71,7 +71,7 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
         content=get_feed_fixture_content("sample_atom.xml"),
     )
     FeedFactory(user=user, feed_url="https://www.example.com/feeds/all.rss.xml")
-    FeedCategoryFactory(user=user, name="Category 1", slug="category-1")
+    FeedCategoryFactory(user=user, title="Category 1", slug="category-1")
 
     nb_imported_feeds, nb_imported_categories = import_opml_file(
         user, settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
@@ -82,7 +82,7 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
     assert FeedCategory.objects.count() == 1
     category = FeedCategory.objects.get()
     assert category.user == user
-    assert category.name == "Category 1"
+    assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 2
     assert set(Feed.objects.values_list("feed_url", "site_url")) == {
@@ -112,7 +112,7 @@ def test_import_valid_files_with_network_errors(user, httpx_mock):
     assert FeedCategory.objects.count() == 1
     category = FeedCategory.objects.get()
     assert category.user == user
-    assert category.name == "Category 1"
+    assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 1
     assert list(Feed.objects.values_list("feed_url", "site_url", "enabled")) == [

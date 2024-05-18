@@ -10,7 +10,7 @@ from ..models import Feed, FeedCategory
 
 
 class FeedCategoryFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f"Feed category {n}")
+    title = factory.Sequence(lambda n: f"Feed category {n}")
     slug = factory.Sequence(lambda n: f"feed-category-{n}")
     user = factory.SubFactory(UserFactory)
 

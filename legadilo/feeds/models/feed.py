@@ -273,8 +273,8 @@ class Feed(models.Model):
         ]
 
     def __str__(self):
-        category_name = self.category.name if self.category else "None"
-        return f"Feed(title={self.title}, feed_type={self.feed_type}, category={category_name})"
+        category_title = self.category.title if self.category else "None"
+        return f"Feed(title={self.title}, feed_type={self.feed_type}, category={category_title})"
 
     def disable(self, reason=""):
         self.disabled_reason = reason

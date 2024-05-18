@@ -104,7 +104,7 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url: dict[
 
 
 def _import_category(user, row):
-    return FeedCategory.objects.get_or_create(user=user, name=full_sanitize(row["category_title"]))
+    return FeedCategory.objects.get_or_create(user=user, title=full_sanitize(row["category_title"]))
 
 
 async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):

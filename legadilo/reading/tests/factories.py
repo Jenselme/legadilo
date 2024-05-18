@@ -27,7 +27,7 @@ class ArticleFactory(DjangoModelFactory):
 
 
 class ReadingListFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f"Reading list {n}")
+    title = factory.Sequence(lambda n: f"Reading list {n}")
     slug = factory.Sequence(lambda n: f"reading-list-{n}")
 
     user = factory.SubFactory(UserFactory)
@@ -37,7 +37,7 @@ class ReadingListFactory(DjangoModelFactory):
 
 
 class TagFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f"Tag {n}")
+    title = factory.Sequence(lambda n: f"Tag {n}")
     slug = factory.Sequence(lambda n: f"tag-{n}")
     user = factory.SubFactory(UserFactory)
 

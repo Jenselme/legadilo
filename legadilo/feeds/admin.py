@@ -16,7 +16,7 @@ class FeedTagInline(admin.TabularInline):
 
 @admin.register(Feed)
 class FeedAdmin(admin.ModelAdmin):
-    search_fields = ["title", "category__name"]
+    search_fields = ["title", "category__title"]
     autocomplete_fields = ["user", "category"]
     list_filter = ["feed_type"]
     inlines = [

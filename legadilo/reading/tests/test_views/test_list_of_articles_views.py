@@ -58,7 +58,7 @@ class TestReadingListWithArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
-        assert response.context["page_title"] == self.default_reading_list.name
+        assert response.context["page_title"] == self.default_reading_list.title
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["displayed_reading_list_id"] == self.default_reading_list.id
         assert response.context["js_cfg"] == {
@@ -75,7 +75,7 @@ class TestReadingListWithArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
-        assert response.context["page_title"] == self.reading_list.name
+        assert response.context["page_title"] == self.reading_list.title
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
@@ -99,7 +99,7 @@ class TestReadingListWithArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/partials/article_paginator_page.html"
-        assert response.context["page_title"] == self.reading_list.name
+        assert response.context["page_title"] == self.reading_list.title
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
@@ -125,7 +125,7 @@ class TestReadingListWithArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
-        assert response.context["page_title"] == self.reading_list.name
+        assert response.context["page_title"] == self.reading_list.title
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
@@ -173,7 +173,7 @@ class TestTagWithArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
-        assert response.context["page_title"] == f"Articles with tag '{self.tag_to_display.name}'"
+        assert response.context["page_title"] == f"Articles with tag '{self.tag_to_display.title}'"
         assert response.context["displayed_reading_list_id"] is None
         assert response.context["reading_lists"] == []
         assert response.context["js_cfg"] == {}

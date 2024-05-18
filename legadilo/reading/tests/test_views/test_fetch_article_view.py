@@ -19,7 +19,7 @@ class TestAddArticle:
         self.url = reverse("reading:add_article")
         self.article_url = "https://www.example.com/posts/en/1-super-article/"
         self.article_content = get_article_fixture_content("sample_blog_article.html")
-        self.existing_tag = TagFactory(name="Existing tag", user=user)
+        self.existing_tag = TagFactory(title="Existing tag", user=user)
         self.sample_payload = {"url": self.article_url}
         self.payload_with_tags = {
             "url": self.article_url,
@@ -85,7 +85,7 @@ class TestAddArticle:
         self, user, other_user, logged_in_other_user_sync_client, httpx_mock
     ):
         ArticleFactory(user=user, link=self.article_url)
-        TagFactory(user=other_user, name=self.existing_tag.name, slug=self.existing_tag.slug)
+        TagFactory(user=other_user, title=self.existing_tag.title, slug=self.existing_tag.slug)
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 
         response = logged_in_other_user_sync_client.post(self.url, self.payload_with_tags)
@@ -163,7 +163,7 @@ class TestRefetchArticleView:
         self.url = reverse("reading:refetch_article")
         self.article_url = "https://www.example.com/posts/en/1-super-article/"
         self.article = ArticleFactory(user=user, link=self.article_url)
-        self.existing_tag = TagFactory(name="Existing tag", user=user)
+        self.existing_tag = TagFactory(title="Existing tag", user=user)
         ArticleTag.objects.create(
             tag=self.existing_tag,
             article=self.article,

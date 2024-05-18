@@ -38,7 +38,7 @@ def test_import_empty_file(user):
 @time_machine.travel("2024-05-17 13:00:00")
 def test_import_custom_csv(user, httpx_mock, snapshot):
     feed_category = FeedCategoryFactory(
-        user=user, name="Existing category", slug="existing-category"
+        user=user, title="Existing category", slug="existing-category"
     )
     FeedFactory(
         user=user,
@@ -97,7 +97,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
                     *all_model_fields_except(
                         Feed, {"id", "user", "category", "created_at", "modified_at"}
                     ),
-                    "category__name",
+                    "category__title",
                 )
             )
         ),
@@ -106,7 +106,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     snapshot.assert_match(
         serialize_for_snapshot(
             list(
-                FeedCategory.objects.order_by("name").values(
+                FeedCategory.objects.order_by("title").values(
                     *all_model_fields_except(
                         FeedCategory, {"id", "user", "created_at", "modified_at"}
                     )

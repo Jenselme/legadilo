@@ -102,7 +102,7 @@ async def _process_outline(user, client, outline):
 
 async def _process_category(user, client, outline):
     category, created = await FeedCategory.objects.aget_or_create(
-        user=user, name=full_sanitize(outline.text)
+        user=user, title=full_sanitize(outline.text)
     )
     nb_imported_categories = 0
     if created:

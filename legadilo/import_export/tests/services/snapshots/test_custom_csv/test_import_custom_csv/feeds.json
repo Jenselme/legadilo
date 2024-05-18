@@ -1,6 +1,6 @@
 [
   {
-    "category__name": "Existing category",
+    "category__title": "Existing category",
     "description": "",
     "disabled_reason": "",
     "enabled": true,
@@ -11,7 +11,7 @@
     "title": "Existing feed"
   },
   {
-    "category__name": null,
+    "category__title": null,
     "description": "",
     "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
     "enabled": false,
@@ -22,7 +22,7 @@
     "title": "Feed 8"
   },
   {
-    "category__name": "Category 4",
+    "category__title": "Category 4",
     "description": "For documentation only",
     "disabled_reason": "",
     "enabled": true,
@@ -33,7 +33,7 @@
     "title": "Sample Feed"
   },
   {
-    "category__name": null,
+    "category__title": null,
     "description": "For documentation only",
     "disabled_reason": "",
     "enabled": true,

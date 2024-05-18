@@ -21,7 +21,7 @@ class TestReadingListManager:
         default_reading_list = ReadingList.objects.get_reading_list(user, reading_list_slug=None)
 
         assert default_reading_list.is_default
-        assert default_reading_list.name == "Unread"
+        assert default_reading_list.title == "Unread"
 
     def test_get_reading_list(self, user):
         slug_to_get = "my-reading-list"
