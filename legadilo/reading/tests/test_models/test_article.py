@@ -599,6 +599,8 @@ class TestArticleManager:
             user=user,
             external_article_id="existing-article-feed",
             updated_at=utcdt(2023, 4, 20),
+            read_at=utcnow(),
+            initial_source_type=constants.ArticleSourceType.FEED,
         )
         existing_article_to_keep = ArticleFactory(
             title="Title to keep",
@@ -691,6 +693,8 @@ class TestArticleManager:
         assert existing_article_to_update.title == "Article updated"
         assert existing_article_to_update.slug == "article-updated"
         assert existing_article_to_update.updated_at == now_dt
+        assert existing_article_to_update.read_at is None
+        assert existing_article_to_update.initial_source_type == constants.ArticleSourceType.MANUAL
         existing_article_to_keep.refresh_from_db()
         assert existing_article_to_keep.title == "Title to keep"
         assert existing_article_to_keep.slug == "title-to-keep"

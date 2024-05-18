@@ -181,7 +181,12 @@ class ArticleManager(models.Manager["Article"]):
                 article_to_update = existing_links_to_articles[article_data.link]
                 was_updated = article_to_update.update_article_from_data(article_data)
                 if source_type == constants.ArticleSourceType.MANUAL:
+                    if article_to_update.initial_source_type == constants.ArticleSourceType.FEED:
+                        # We force the source type to manual if we manually add it so prevent any
+                        # cleanup later one.
+                        article_to_update.initial_source_type = constants.ArticleSourceType.MANUAL
                     article_to_update.read_at = None
+                    was_updated = True
                 if was_updated:
                     articles_to_update.append(article_to_update)
             else:
@@ -227,6 +232,7 @@ class ArticleManager(models.Manager["Article"]):
                 "external_tags",
                 "updated_at",
                 "read_at",
+                "initial_source_type",
             ],
         )
 
