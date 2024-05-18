@@ -14,6 +14,7 @@ Welcome to Legadilo's documentation!
    pycharm/configuration
    users
    adrs/index.rst
+   techo_howto
 
 
 
