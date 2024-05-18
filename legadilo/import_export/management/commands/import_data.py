@@ -9,6 +9,7 @@ from django.core.management.base import CommandError, CommandParser
 from django.db import transaction
 from jsonschema import ValidationError as JsonSchemaValidationError
 
+from legadilo.import_export.services.custom_csv import import_custom_csv_file
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.import_export.services.opml import import_opml_file
 from legadilo.import_export.services.wallabag import import_wallabag_json_file
@@ -25,7 +26,7 @@ class Command(BaseCommand):
             dest="source_type",
             required=True,
             type=str,
-            choices=["wallabag", "opml"],
+            choices=["wallabag", "opml", "custom_csv"],
             help="What is the source type you are trying to import",
         )
         parser.add_argument(
@@ -75,7 +76,16 @@ class Command(BaseCommand):
                     user, options["file_to_import"][0]
                 )
                 logger.info(
-                    f"Imported {nb_imported_feeds} feeds in {nb_imported_categories} categories"
+                    f"Imported {nb_imported_feeds} feeds in {nb_imported_categories} feed "
+                    f"categories"
+                )
+            case "custom_csv":
+                nb_imported_articles, nb_imported_feeds, nb_imported_categories = (
+                    import_custom_csv_file(user, options["file_to_import"][0])
+                )
+                logger.info(
+                    f"Imported {nb_imported_articles} articles, {nb_imported_feeds} feeds "
+                    f"and {nb_imported_categories} feed categories"
                 )
             case _:
                 raise CommandError("Unknown source type")

@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
                 ("site_url", models.URLField()),
                 ("enabled", models.BooleanField(default=True)),
                 ("disabled_reason", models.TextField(blank=True)),
-                ("title", models.CharField(max_length=255)),
+                ("title", models.CharField(max_length=300)),
                 ("description", models.TextField(blank=True)),
                 (
                     "feed_type",

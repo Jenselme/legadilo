@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Category 1",
+    "slug": "category-1"
+  },
+  {
+    "name": "Category 4",
+    "slug": "category-4"
+  },
+  {
+    "name": "Existing category",
+    "slug": "existing-category"
+  }
+]
