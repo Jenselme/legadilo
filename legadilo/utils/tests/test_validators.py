@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from ..validators import (
     get_page_number_from_request,
     is_url_valid,
+    language_code_validator,
     list_of_strings_json_schema_validator,
     normalize_url,
 )
@@ -25,6 +26,23 @@ class TestListOfStringsJsonSchemaValidator:
     def test_list_of_string_json_schema_validator_with_invalid_data(self, value):
         with pytest.raises(ValidationError):
             list_of_strings_json_schema_validator(value)
+
+
+class TestLanguageCodeValidator:
+    @pytest.mark.parametrize("code", ["", None, 12, "test", "aaaaa"])
+    def test_invalid_codes(self, code):
+        with pytest.raises(ValidationError):
+            language_code_validator(code)
+
+    @pytest.mark.parametrize(
+        "code",
+        [
+            "fr",
+            "en_GB",
+        ],
+    )
+    def test_valid_codes(self, code):
+        assert language_code_validator(code) is None
 
 
 @pytest.mark.parametrize(

@@ -631,6 +631,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_update.external_article_id,
@@ -646,6 +647,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_keep.external_article_id,
@@ -661,6 +663,7 @@ class TestArticleManager:
                         published_at=utcdt(2024, 4, 19),
                         updated_at=utcdt(2024, 4, 19),
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id="article-3",
@@ -676,6 +679,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                 ],
                 [tag1, tag2],
@@ -731,6 +735,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id="some-article-1",
@@ -746,6 +751,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                 ],
                 [],
@@ -782,6 +788,7 @@ class TestArticleManager:
             source_title="Some site",
             preview_picture_url="https://example.com/preview.png",
             preview_picture_alt="Some image alt",
+            language="fr",
         )
 
         with django_assert_num_queries(4):
@@ -816,6 +823,7 @@ class TestArticleManager:
             source_title="Some site",
             preview_picture_url="https://example.com/preview.png",
             preview_picture_alt="Some image alt",
+            language="fr",
         )
 
         with django_assert_num_queries(4):
@@ -964,6 +972,7 @@ class TestArticleModel:
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",
+                language="fr",
             )
         )
 
@@ -1003,6 +1012,7 @@ class TestArticleModel:
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",
+                language="fr",
             )
         )
 

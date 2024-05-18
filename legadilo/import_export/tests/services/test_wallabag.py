@@ -75,7 +75,6 @@ def test_import_valid_data(user):
                 "published_by": [""],
                 "annotations": [],
                 "mimetype": r"text\/html;charset=utf-8",
-                "language": "en",
                 "reading_time": 29,
                 "domain_name": "www.example.com",
                 "preview_picture": "https://www.example.com/content/dam/images.png",
@@ -98,6 +97,7 @@ def test_import_valid_data(user):
     assert article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
     assert article.initial_source_title == "www.example.com"
     assert article.annotations == ["Some stuff"]
+    assert article.language == "en"
     assert list(article.tags.values_list("name", "slug")) == [
         ("existing", "existing"),
         ("New tag", "new-tag"),

@@ -1,3 +1,5 @@
+import re
+from typing import Any
 from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
 
 from django.core.exceptions import ValidationError
@@ -26,6 +28,19 @@ list_of_strings_json_schema_validator = JsonSchemaValidator({
     "type": "array",
     "items": {"type": "string"},
 })
+
+
+def language_code_validator(value: Any):
+    if not value or not isinstance(value, str):
+        raise ValidationError("Value must be a string")
+
+    if len(value) == 2 and re.match(r"[a-z]{2}", value.lower()):  # noqa: PLR2004 Magic value used in comparison
+        return
+
+    if len(value) == 5 and re.match(r"[a-z]{2}[_-][a-z]{2}", value.lower()):  # noqa: PLR2004 Magic value used in comparison
+        return
+
+    raise ValidationError("Language code is invalid")
 
 
 def get_page_number_from_request(request: HttpRequest) -> int:

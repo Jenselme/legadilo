@@ -4,6 +4,7 @@
     "content": "Watch out for\n                <span>\nnasty tricks</span>",
     "contributors": [],
     "external_article_id": "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
+    "language": "en-US",
     "link": "http://example.org/entry/3",
     "preview_picture_alt": "My image title \u00a9 Tester",
     "preview_picture_url": "https://example.com/my-image.jpg",

@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatewords_html
 from jsonschema import validate as validate_json_schema
 from slugify import slugify
@@ -13,7 +14,7 @@ from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.users.models import User
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from legadilo.utils.time import safe_datetime_parse, utcnow
-from legadilo.utils.validators import is_url_valid
+from legadilo.utils.validators import is_url_valid, language_code_validator
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,12 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
         if not is_url_valid(link):
             raise InvalidEntryError(f"The article URL ({link}) is not valid")
 
+        try:
+            language = full_sanitize(article_data.get("language", ""))
+            language_code_validator(language)
+        except ValidationError:
+            language = ""
+
         article, created = Article.objects.get_or_create(
             user=user,
             link=link,
@@ -58,6 +65,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
                 "preview_picture_url": preview_picture_url,
                 "external_article_id": f"wallabag:{article_data["id"]}",
                 "annotations": article_data.get("annotations", []),
+                "language": language,
                 "read_at": utcnow() if article_data["is_archived"] else None,
                 "is_favorite": bool(article_data["is_starred"]),
             },
@@ -100,6 +108,7 @@ def _validate_data_batch(article_data: Any):
                     "domain_name": {"type": "string"},
                     "preview_picture": {"type": "string"},
                     "annotations": {"type": "array"},
+                    "language": {"type": "string"},
                 },
                 "required": [
                     "id",

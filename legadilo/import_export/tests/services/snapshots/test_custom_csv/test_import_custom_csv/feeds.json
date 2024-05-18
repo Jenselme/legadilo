@@ -8,7 +8,7 @@
     "feed_url": "https://example.com/existing.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "https://example.com",
-    "title": "Feed 0"
+    "title": "Existing feed"
   },
   {
     "category__name": null,

@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
+from django.core.exceptions import ValidationError
 
 from legadilo.reading import constants
 from legadilo.utils.security import (
@@ -12,7 +13,7 @@ from legadilo.utils.security import (
     sanitize_keep_safe_tags,
 )
 from legadilo.utils.time import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid, normalize_url
+from legadilo.utils.validators import is_url_valid, language_code_validator, normalize_url
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,7 @@ class ArticleData:
     preview_picture_alt: str
     published_at: datetime | None
     updated_at: datetime | None
+    language: str
 
 
 class ArticleTooBigError(Exception):
@@ -45,10 +47,14 @@ async def get_article_from_url(url: str) -> ArticleData:
     if sys.getsizeof(page_content) > constants.MAX_ARTICLE_FILE_SIZE:
         raise ArticleTooBigError
 
-    return _build_article_data(str(response.url), page_content.decode(response.encoding or "utf-8"))
+    return _build_article_data(
+        str(response.url),
+        page_content.decode(response.encoding or "utf-8"),
+        response.headers.get("Content-Language"),
+    )
 
 
-def _build_article_data(fetched_url: str, text: str) -> ArticleData:
+def _build_article_data(fetched_url: str, text: str, content_language: str | None) -> ArticleData:
     soup = BeautifulSoup(text, "html.parser")
     return ArticleData(
         external_article_id="",
@@ -64,6 +70,7 @@ def _build_article_data(fetched_url: str, text: str) -> ArticleData:
         preview_picture_alt="",
         published_at=_get_published_at(soup),
         updated_at=_get_updated_at(soup),
+        language=_get_lang(soup, content_language),
     )
 
 
@@ -220,3 +227,16 @@ def _get_updated_at(soup: BeautifulSoup) -> datetime | None:
         updated_at = safe_datetime_parse(article_modified_time.get("content"))
 
     return updated_at
+
+
+def _get_lang(soup: BeautifulSoup, content_language: str | None) -> str:
+    if not soup.find("html") or (language := soup.find("html").get("lang")) is None:
+        language = content_language
+
+    try:
+        language = full_sanitize(language)
+        language_code_validator(language)
+    except (ValidationError, TypeError):
+        language = ""
+
+    return language

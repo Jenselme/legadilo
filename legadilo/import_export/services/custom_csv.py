@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 import httpx
 from asgiref.sync import async_to_sync, sync_to_async
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.template.defaultfilters import truncatewords_html
 from slugify import slugify
@@ -27,7 +28,7 @@ from legadilo.users.models import User
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid
+from legadilo.utils.validators import is_url_valid, language_code_validator
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +155,12 @@ def _import_article(user, feed, row):
     title = full_sanitize(row["article_title"])[: reading_constants.ARTICLE_TITLE_MAX_LENGTH]
     content = sanitize_keep_safe_tags(row["article_content"])
 
+    try:
+        language = full_sanitize(row["article_lang"])
+        language_code_validator(language)
+    except ValidationError:
+        language = ""
+
     article, created = Article.objects.get_or_create(
         user=user,
         link=row["article_link"],
@@ -180,6 +187,7 @@ def _import_article(user, feed, row):
             "external_article_id": f"custom_csv:{row["article_id"]}",
             "read_at": safe_datetime_parse(row["article_read_at"] or None),
             "is_favorite": _get_bool(row["article_is_favorite"]),
+            "language": language,
         },
     )
 

@@ -40,7 +40,12 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     feed_category = FeedCategoryFactory(
         user=user, name="Existing category", slug="existing-category"
     )
-    FeedFactory(user=user, feed_url="https://example.com/existing.xml", category=feed_category)
+    FeedFactory(
+        user=user,
+        feed_url="https://example.com/existing.xml",
+        category=feed_category,
+        title="Existing feed",
+    )
     ArticleFactory(
         user=user,
         link="https://example.com/article/existing",
