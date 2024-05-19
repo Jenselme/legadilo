@@ -167,7 +167,9 @@ def _import_article(user, feed, row):
         defaults={
             "title": title,
             "slug": slugify(title),
-            "summary": truncatewords_html(content, 255),
+            "summary": truncatewords_html(
+                sanitize_keep_safe_tags(content, extra_tags_to_cleanup={"img"}), 255
+            ),
             "content": content,
             "reading_time": get_nb_words_from_html(content) // user.settings.default_reading_time,
             "authors": [

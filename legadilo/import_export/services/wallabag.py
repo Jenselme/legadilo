@@ -52,7 +52,9 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
             defaults={
                 "title": title,
                 "slug": slugify(title),
-                "summary": truncatewords_html(content, 255),
+                "summary": truncatewords_html(
+                    sanitize_keep_safe_tags(content, extra_tags_to_cleanup={"img"}), 255
+                ),
                 "content": content,
                 "reading_time": int(article_data["reading_time"]),
                 "authors": [
