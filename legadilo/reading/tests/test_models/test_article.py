@@ -135,10 +135,18 @@ def test_build_filters_from_reading_list(
     with time_machine.travel("2024-03-19 21:08:00"):
         filters = _build_filters_from_reading_list(reading_list)
 
-    assert filters == models.Q(user=user) & expected_filter
+    assert filters == expected_filter
 
 
 class TestArticleQuerySet:
+    def test_for_user(self, user, other_user):
+        article = ArticleFactory(user=user)
+        ArticleFactory(user=other_user)
+
+        articles = Article.objects.get_queryset().for_user(user)
+
+        assert list(articles) == [article]
+
     def test_for_reading_list_with_tags_basic_include(self, user, django_assert_num_queries):
         reading_list = ReadingListFactory(user=user)
         tag_to_include = TagFactory(user=user)
@@ -851,7 +859,7 @@ class TestArticleManager:
         ArticleFactory(user=user, read_at=utcnow())
 
         with django_assert_num_queries(1):
-            counts = Article.objects.count_articles_of_reading_lists(reading_lists_with_tags)
+            counts = Article.objects.count_articles_of_reading_lists(user, reading_lists_with_tags)
 
         assert counts == {
             reading_list1.slug: 2,

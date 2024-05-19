@@ -90,7 +90,9 @@ def _update_article_card(
         js_cfg = {}
 
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
-    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
+    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(
+        request.user, reading_lists
+    )
     return TemplateResponse(
         request,
         "reading/update_article_action.html",

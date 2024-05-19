@@ -22,14 +22,14 @@ if TYPE_CHECKING:
 
     from legadilo.reading.models.reading_list import ReadingList
     from legadilo.reading.models.tag import Tag
-    from legadilo.reading.utils.feed_parsing import ArticleData
+    from legadilo.reading.utils.article_fetching import ArticleData
     from legadilo.users.models import User
 else:
     TypedModelMeta = object
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
-    filters = models.Q(user=reading_list.user)
+    filters = models.Q()
 
     if reading_list.read_status == constants.ReadStatus.ONLY_READ:
         filters &= models.Q(is_read=True)
@@ -118,6 +118,9 @@ def _build_prefetch_article_tags():
 
 
 class ArticleQuerySet(models.QuerySet["Article"]):
+    def for_user(self, user: User):
+        return self.filter(user=user)
+
     def for_reading_list_filtering(self) -> Self:
         return self.alias(
             alias_tag_ids_for_article=ArrayAgg(
@@ -129,7 +132,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
-            self.for_reading_list_filtering()
+            self.for_user(reading_list.user)
+            .for_reading_list_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
         )
@@ -253,14 +257,18 @@ class ArticleManager(models.Manager["Article"]):
             constants.MAX_ARTICLE_PER_PAGE,
         )
 
-    def count_articles_of_reading_lists(self, reading_lists: list[ReadingList]) -> dict[str, int]:
+    def count_articles_of_reading_lists(
+        self, user: User, reading_lists: list[ReadingList]
+    ) -> dict[str, int]:
         aggregation = {
             reading_list.slug: models.Count(
                 "id", filter=_build_filters_from_reading_list(reading_list)
             )
             for reading_list in reading_lists
         }
-        return self.get_queryset().for_reading_list_filtering().aggregate(**aggregation)
+        return (
+            self.get_queryset().for_user(user).for_reading_list_filtering().aggregate(**aggregation)
+        )
 
     def get_articles_of_tag(self, tag: Tag) -> Paginator[Article]:
         return Paginator(self.get_queryset().for_tag(tag), constants.MAX_ARTICLE_PER_PAGE)

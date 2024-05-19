@@ -53,7 +53,9 @@ def _display_list_of_articles(
     requested_page = get_page_number_from_request(request)
     articles_page = get_requested_page(articles_paginator, requested_page)
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
-    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
+    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(
+        request.user, reading_lists
+    )
 
     response_ctx = {
         **page_ctx,
