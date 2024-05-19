@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
+from django.core.exceptions import ValidationError
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
@@ -15,7 +16,7 @@ from legadilo.reading.utils.article_fetching import ArticleData
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 from ...utils.time import dt_to_http_date
-from ...utils.validators import normalize_url
+from ...utils.validators import language_code_validator, normalize_url
 from .. import constants
 
 
@@ -67,7 +68,7 @@ async def get_feed_data(
     It's either a feed or a page containing a link to a feed.
     """
     parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
-    if not parsed_feed["version"]:
+    if not parsed_feed.get("version"):
         url = _find_feed_page_content(url_content)
         parsed_feed, resolved_url = await _fetch_feed(
             client, url, etag=etag, last_modified=last_modified
@@ -102,7 +103,7 @@ async def _fetch_feed_and_raw_data(
     if last_modified:
         headers["If-Modified-Since"] = dt_to_http_date(last_modified)
 
-    response = await client.get(url, headers=headers)
+    response = await client.get(url, headers=headers, follow_redirects=True)
     raw_feed_content = response.raise_for_status().content
     if sys.getsizeof(raw_feed_content) > constants.MAX_FEED_FILE_SIZE:
         raise FeedFileTooBigError
@@ -176,6 +177,7 @@ def _parse_articles_in_feed(
                 preview_picture_alt=_get_preview_picture_alt(entry),
                 published_at=_feed_time_to_datetime(entry.get("published_parsed")),
                 updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
+                language=_get_language(parsed_feed, entry),
                 source_title=feed_title,
             )
         )
@@ -209,7 +211,7 @@ def _is_youtube_link(link: str) -> bool:
 
 def _get_article_authors(entry):
     if authors := entry.get("authors", []):
-        return [full_sanitize(author["name"]) for author in authors]
+        return [full_sanitize(author["name"]) for author in authors if author.get("name")]
 
     if author := entry.get("author", ""):
         return [full_sanitize(author)]
@@ -222,16 +224,36 @@ def _get_article_contributors(entry):
 
 
 def _get_article_content(entry):
+    content_entry = _get_article_content_entry(entry)
+    return sanitize_keep_safe_tags(content_entry.get("value", ""))
+
+
+def _get_article_content_entry(entry):
     for content_entry in entry.get("content", []):
         if content_entry["type"] in {"text/html", "plain", "text/plain", "application/xhtml+xml"}:
-            return sanitize_keep_safe_tags(content_entry["value"])
+            return content_entry
 
-    return ""
+    return {}
+
+
+def _get_language(parsed_feed, entry):
+    content_entry = _get_article_content_entry(entry)
+    try:
+        language = (
+            content_entry.get("language")
+            or content_entry.get("lang")
+            or parsed_feed["feed"].get("language")
+        )
+        language_code_validator(language)
+    except ValidationError:
+        language = ""
+
+    return language
 
 
 def _get_articles_tags(entry):
     if tags := entry.get("tags", []):
-        return [full_sanitize(tag["term"]) for tag in tags]
+        return [full_sanitize(tag["term"]) for tag in tags if tag.get("term")]
 
     if category := entry.get("category"):
         return [category]

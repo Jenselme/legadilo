@@ -143,6 +143,7 @@ class TestFeedManager:
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title="Awesome website",
+                            language="fr",
                         )
                     ],
                 ),
@@ -198,6 +199,7 @@ class TestFeedManager:
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title="Awesome website",
+                            language="fr",
                         )
                     ],
                 ),
@@ -316,6 +318,7 @@ class TestFeedManager:
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title=self.feed.title,
+                            language="fr",
                         ),
                         ArticleData(
                             external_article_id="some-article-existing",
@@ -331,6 +334,7 @@ class TestFeedManager:
                             published_at=datetime.now(tz=UTC),
                             updated_at=datetime.now(tz=UTC),
                             source_title=self.feed.title,
+                            language="fr",
                         ),
                     ],
                 ),

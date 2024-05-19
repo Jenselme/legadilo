@@ -1,0 +1,46 @@
+[
+  {
+    "category__name": "Existing category",
+    "description": "",
+    "disabled_reason": "",
+    "enabled": true,
+    "feed_type": "rss",
+    "feed_url": "https://example.com/existing.xml",
+    "refresh_delay": "DAILY_AT_NOON",
+    "site_url": "https://example.com",
+    "title": "Existing feed"
+  },
+  {
+    "category__name": null,
+    "description": "",
+    "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
+    "enabled": false,
+    "feed_type": "rss",
+    "feed_url": "https://example.com/rss8.xml",
+    "refresh_delay": "DAILY_AT_NOON",
+    "site_url": "https://example8.com/",
+    "title": "Feed 8"
+  },
+  {
+    "category__name": "Category 4",
+    "description": "For documentation only",
+    "disabled_reason": "",
+    "enabled": true,
+    "feed_type": "atom10",
+    "feed_url": "https://example.com/rss4.xml",
+    "refresh_delay": "DAILY_AT_NOON",
+    "site_url": "http://example.org/",
+    "title": "Sample Feed"
+  },
+  {
+    "category__name": null,
+    "description": "For documentation only",
+    "disabled_reason": "",
+    "enabled": true,
+    "feed_type": "rss20",
+    "feed_url": "https://example.com/rss2.xml",
+    "refresh_delay": "DAILY_AT_NOON",
+    "site_url": "http://example.org/",
+    "title": "Sample Feed"
+  }
+]

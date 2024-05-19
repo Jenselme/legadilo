@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<opml version="1.0">
+  <head>
+    <dateCreated>Fri, 10 May 2024 12:34:59 +0000</dateCreated>
+    <title>Tiny Tiny RSS Feed Export</title>
+  </head>
+  <body>
+    <outline text="Category 1" ttrssSortOrder="0">
+      <outline type="rss" text="Some blog" xmlUrl="https://www.example.com/feeds/all.rss.xml" ttrssSortOrder="0" ttrssPurgeInterval="0" ttrssUpdateInterval="0" htmlUrl="https://www.example.com/"/>
+    </outline>
+    <outline type="rss" text="Blog no category" xmlUrl="https://www.example.eu/feeds/all.atom.xml" ttrssSortOrder="0" ttrssPurgeInterval="0" ttrssUpdateInterval="0" htmlUrl="//www.example.eu/"/>
+    <outline text="tt-rss-prefs" schema-version="147">
+      <outline pref-name="USER_LANGUAGE" value="auto"/>
+    </outline>
+    <outline text="tt-rss-labels" schema-version="147"/>
+  </body>
+</opml>

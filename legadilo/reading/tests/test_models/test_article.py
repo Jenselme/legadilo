@@ -631,6 +631,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_update.external_article_id,
@@ -646,6 +647,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_keep.external_article_id,
@@ -661,6 +663,7 @@ class TestArticleManager:
                         published_at=utcdt(2024, 4, 19),
                         updated_at=utcdt(2024, 4, 19),
                         source_title="Some site",
+                        language="fr",
                     ),
                     ArticleData(
                         external_article_id="article-3",
@@ -676,6 +679,7 @@ class TestArticleManager:
                         published_at=now_dt,
                         updated_at=now_dt,
                         source_title="Some site",
+                        language="fr",
                     ),
                 ],
                 [tag1, tag2],
@@ -710,6 +714,56 @@ class TestArticleManager:
             [tag1.slug, tag2.slug],
         ]
 
+    def test_same_link_multiple_times(self, user, django_assert_num_queries):
+        now_dt = utcnow()
+
+        with django_assert_num_queries(4):
+            Article.objects.update_or_create_from_articles_list(
+                user,
+                [
+                    ArticleData(
+                        external_article_id="some-article-1",
+                        title="Article 1",
+                        summary="Summary 1",
+                        content="Description 1" + " word " * user.settings.default_reading_time * 3,
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        link="https//example.com/article/1",
+                        preview_picture_url="https://example.com/preview.png",
+                        preview_picture_alt="Some image alt",
+                        published_at=now_dt,
+                        updated_at=now_dt,
+                        source_title="Some site",
+                        language="fr",
+                    ),
+                    ArticleData(
+                        external_article_id="some-article-1",
+                        link="https//example.com/article/1",
+                        title="Article updated",
+                        summary="Summary updated",
+                        content="Description updated",
+                        authors=["Author"],
+                        contributors=[],
+                        tags=[],
+                        preview_picture_url="",
+                        preview_picture_alt="",
+                        published_at=now_dt,
+                        updated_at=now_dt,
+                        source_title="Some site",
+                        language="fr",
+                    ),
+                ],
+                [],
+                source_type=constants.ArticleSourceType.MANUAL,
+            )
+
+        assert Article.objects.count() == 1
+        other_article = Article.objects.get()
+        assert other_article.title == "Article 1"
+        assert other_article.slug == "article-1"
+        assert other_article.reading_time == 3
+
     def test_manually_readd_read_article(self, user, django_assert_num_queries):
         now_dt = utcnow()
         existing_article = ArticleFactory(
@@ -734,6 +788,7 @@ class TestArticleManager:
             source_title="Some site",
             preview_picture_url="https://example.com/preview.png",
             preview_picture_alt="Some image alt",
+            language="fr",
         )
 
         with django_assert_num_queries(4):
@@ -768,6 +823,7 @@ class TestArticleManager:
             source_title="Some site",
             preview_picture_url="https://example.com/preview.png",
             preview_picture_alt="Some image alt",
+            language="fr",
         )
 
         with django_assert_num_queries(4):
@@ -916,6 +972,7 @@ class TestArticleModel:
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",
+                language="fr",
             )
         )
 
@@ -955,6 +1012,7 @@ class TestArticleModel:
                 published_at=utcdt(2024, 4, 20),
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",
+                language="fr",
             )
         )
 

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 from dateutil.parser import ParserError
 from dateutil.parser import parse as datetime_parse
@@ -25,7 +26,10 @@ def utcdt(  # noqa: PLR0913,PLR0917 (too many arguments)
     return datetime(year, month, day, hour, minute, second, microsecond, tzinfo=UTC)
 
 
-def safe_datetime_parse(data: str) -> datetime | None:
+def safe_datetime_parse(data: Any) -> datetime | None:
+    if data is None:
+        return None
+
     try:
         return datetime_parse(data).astimezone(UTC)
     except (ParserError, OverflowError):

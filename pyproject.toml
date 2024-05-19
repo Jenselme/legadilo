@@ -180,6 +180,7 @@ root_package = "legadilo"
 name = "Enforce Django apps layering"
 type = "layers"
 layers = [
+    "legadilo.import_export",
     "legadilo.feeds",
     "legadilo.reading",
     "legadilo.users",
@@ -207,6 +208,7 @@ argon2-cffi = "23.1.0"  # https://github.com/hynek/argon2_cffi
 whitenoise = "6.6.0"  # https://github.com/evansd/whitenoise
 psycopg = { extras = ["binary"], version = "3.1.18" }  # https://github.com/psycopg/psycopg
 rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
+defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 
 # Django
 # ------------------------------------------------------------------------------

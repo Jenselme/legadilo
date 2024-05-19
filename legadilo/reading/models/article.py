@@ -15,7 +15,7 @@ from legadilo.reading.models.tag import ArticleTag
 from legadilo.utils.collections import max_or_none, min_or_none
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import utcnow
-from legadilo.utils.validators import list_of_strings_json_schema_validator
+from legadilo.utils.validators import language_code_validator, list_of_strings_json_schema_validator
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -171,7 +171,12 @@ class ArticleManager(models.Manager["Article"]):
         }
         articles_to_create = []
         articles_to_update = []
+        seen_links = set()
         for article_data in articles_data:
+            if article_data.link in seen_links:
+                continue
+
+            seen_links.add(article_data.link)
             if article_data.link in existing_links_to_articles:
                 article_to_update = existing_links_to_articles[article_data.link]
                 was_updated = article_to_update.update_article_from_data(article_data)
@@ -274,8 +279,8 @@ class Article(models.Model):
     contributors = models.JSONField(
         validators=[list_of_strings_json_schema_validator], blank=True, default=list
     )
-    link = models.URLField()
-    preview_picture_url = models.URLField(blank=True)
+    link = models.URLField(max_length=1_024)
+    preview_picture_url = models.URLField(blank=True, max_length=1_024)
     preview_picture_alt = models.TextField(blank=True)
     external_tags = models.JSONField(
         validators=[list_of_strings_json_schema_validator],
@@ -288,6 +293,21 @@ class Article(models.Model):
         blank=True,
         max_length=512,
         help_text=_("The id of the article in the its source."),
+    )
+    annotations = models.JSONField(
+        blank=True,
+        default=list,
+        help_text=_(
+            "Annotations made to the article. Currently only used for data imports to prevent data "
+            "loss."
+        ),
+    )
+    language = models.CharField(
+        default="",
+        blank=True,
+        max_length=5,
+        help_text=_("The language code for this article"),
+        validators=[language_code_validator],
     )
 
     read_at = models.DateTimeField(null=True, blank=True)

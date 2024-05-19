@@ -25,8 +25,8 @@ class Migration(migrations.Migration):
                         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ("title", models.CharField(max_length=255)),
-                ("slug", models.SlugField(max_length=255)),
+                ("title", models.CharField(max_length=300)),
+                ("slug", models.SlugField(max_length=300)),
                 ("summary", models.TextField()),
                 ("content", models.TextField(blank=True)),
                 (
@@ -62,8 +62,8 @@ class Migration(migrations.Migration):
                         ],
                     ),
                 ),
-                ("link", models.URLField()),
-                ("preview_picture_url", models.URLField(blank=True)),
+                ("link", models.URLField(max_length=1024)),
+                ("preview_picture_url", models.URLField(blank=True, max_length=1_024)),
                 ("preview_picture_alt", models.TextField(blank=True)),
                 (
                     "external_tags",
@@ -122,7 +122,7 @@ class Migration(migrations.Migration):
                         max_length=100,
                     ),
                 ),
-                ("initial_source_title", models.CharField(max_length=255)),
+                ("initial_source_title", models.CharField(max_length=300)),
                 (
                     "published_at",
                     models.DateTimeField(

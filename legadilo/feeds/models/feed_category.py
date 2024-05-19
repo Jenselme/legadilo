@@ -24,6 +24,10 @@ class FeedCategoryQuerySet(models.QuerySet["FeedCategory"]):
 class FeedCategoryManager(models.Manager["FeedCategory"]):
     _hints: dict
 
+    def create(self, **kwargs):
+        kwargs.setdefault("slug", slugify(kwargs["name"]))
+        return super().create(**kwargs)
+
     def get_queryset(self) -> FeedCategoryQuerySet:
         return FeedCategoryQuerySet(model=self.model, using=self._db, hints=self._hints)
 
@@ -54,7 +58,7 @@ class FeedCategory(models.Model):
         ordering = ("name",)
 
     def __str__(self):
-        return f"FeedCategory(id={self.id}, name={self.name}, user={self.user})"
+        return f"FeedCategory(id={self.id}, name={self.name}, user={self.user_id})"
 
     def save(self, *args, **kwargs):
         if not self.slug:
