@@ -406,7 +406,8 @@ class Article(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
+        if not self.slug:
+            self.slug = slugify(self.title)
 
         return super().save(*args, **kwargs)
 
@@ -463,6 +464,10 @@ class Article(models.Model):
                 self.was_opened = True
             case _:
                 assert_never(action)
+
+    def update_from_details(self, *, title: str, reading_time: int):
+        self.title = title
+        self.reading_time = reading_time
 
     @property
     def is_from_feed(self):

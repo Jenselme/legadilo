@@ -91,27 +91,6 @@
             <span class="d-none d-md-inline">{% translate 'For later' %}</span>
         {% endif %}
     </button>
-    {% if allow_refetch %}
-        <form id="{{ article|refetch_article_form_id }}"
-              class="visually-hidden"
-              aria-hidden="true"
-              method="post"
-              action="{% url 'reading:refetch_article' %}"
-              hx-boost="true"
-              hx-push-url="false"
-              hx-indicator=".{{ article|article_action_indicator }}">
-            {% csrf_token %}
-            <input type="hidden" name="url" value="{{ article.link }}" />
-        </form>
-        <button class="btn btn-outline-secondary text-start"
-                form="{{ article|refetch_article_form_id }}">
-            <span class="icon-indicator {{ article|article_action_indicator }}">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/refetch.html" %}
-            </span>
-            {% translate 'Re-fetch content' %}
-        </button>
-    {% endif %}
     <a class="btn btn-outline-secondary text-start open-original"
        role="button"
        data-article-id="{{ article.id }}"

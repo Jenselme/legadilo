@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from urllib.parse import urljoin
 
 import pytest
 from django.urls import reverse
@@ -48,7 +47,7 @@ class TestArticleDetailsView:
         assert response.template_name == "reading/article_details.html"
         assert response.context["article"] == self.article
         assert response.context["from_url"] == reverse("reading:default_reading_list")
-        assert "edit_tags_form" in response.context
+        assert "edit_article_form" in response.context
 
     def test_view_details_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
         from_url = "/reading/lists/unread/"
@@ -59,11 +58,11 @@ class TestArticleDetailsView:
         assert response.template_name == "reading/article_details.html"
         assert response.context["article"] == self.article
         assert response.context["from_url"] == from_url
-        assert "edit_tags_form" in response.context
+        assert "edit_article_form" in response.context
 
 
 @pytest.mark.django_db()
-class TestUpdateArticleTagsView:
+class TestUpdateArticleDetailsView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.article = ArticleFactory(user=user)
@@ -88,13 +87,11 @@ class TestUpdateArticleTagsView:
         )
         self.existing_tag_to_add = TagFactory(user=user)
         self.some_other_tag = TagFactory(user=user)
-        self.reading_list_url = reverse(
-            "reading:reading_list", kwargs={"reading_list_slug": self.reading_list.slug}
-        )
         self.url = reverse(
-            "reading:update_article_tags",
+            "reading:article_details",
             kwargs={
                 "article_id": self.article.id,
+                "article_slug": self.article.slug,
             },
         )
         self.sample_payload = {
@@ -103,7 +100,9 @@ class TestUpdateArticleTagsView:
                 self.existing_tag_to_add.slug,
                 self.deleted_tag_to_readd.slug,
                 "Some tag",
-            ]
+            ],
+            "title": self.article.title,
+            "reading_time": self.article.reading_time,
         }
 
     def test_cannot_access_if_not_logged_in(self, client):
@@ -117,19 +116,27 @@ class TestUpdateArticleTagsView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
+    def test_invalid_form(self, logged_in_sync_client):
+        payload = self.sample_payload.copy()
+        del payload["reading_time"]
+        payload["title"] = "Updated title"
+
+        response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        self.article.refresh_from_db()
+        assert self.article.title != "Updated title"
+
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        referer_url = urljoin("http://testserver/", self.reading_list_url)
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
-                HTTP_REFERER=referer_url,
             )
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == referer_url
+        assert response.status_code == HTTPStatus.OK
         assert list(self.article.article_tags.values_list("tag__slug", "tagging_reason")) == [
             ("some-tag", constants.TaggingReason.ADDED_MANUALLY),
             (self.tag_to_keep.slug, constants.TaggingReason.ADDED_MANUALLY),
@@ -137,3 +144,19 @@ class TestUpdateArticleTagsView:
             (self.deleted_tag_to_readd.slug, constants.TaggingReason.ADDED_MANUALLY),
             (self.existing_tag_to_add.slug, constants.TaggingReason.ADDED_MANUALLY),
         ]
+
+    def test_update_other_values_for_article_details(
+        self, logged_in_sync_client, django_assert_num_queries
+    ):
+        initial_slug = self.article.slug
+
+        with django_assert_num_queries(20):
+            response = logged_in_sync_client.post(
+                self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.title == "Updated title"
+        assert self.article.slug == initial_slug
+        assert self.article.reading_time == 666
