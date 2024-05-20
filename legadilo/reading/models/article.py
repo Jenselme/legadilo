@@ -393,6 +393,11 @@ class Article(models.Model):
                 ),
             ),
         ]
+        indexes = [
+            models.Index(
+                fields=["user", "is_read", "is_favorite", "is_for_later"],
+            ),
+        ]
 
     def __str__(self):
         return (
