@@ -121,6 +121,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_user(self, user: User):
         return self.filter(user=user)
 
+    def only_unread(self):
+        return self.filter(is_read=False)
+
     def for_reading_list_filtering(self) -> Self:
         return self.alias(
             alias_tag_ids_for_article=ArrayAgg(
@@ -257,17 +260,24 @@ class ArticleManager(models.Manager["Article"]):
             constants.MAX_ARTICLE_PER_PAGE,
         )
 
-    def count_articles_of_reading_lists(
+    def count_unread_articles_of_reading_lists(
         self, user: User, reading_lists: list[ReadingList]
     ) -> dict[str, int]:
         aggregation = {
             reading_list.slug: models.Count(
-                "id", filter=_build_filters_from_reading_list(reading_list)
+                "id",
+                filter=_build_filters_from_reading_list(reading_list),
             )
             for reading_list in reading_lists
         }
+        # We only count unread articles in the reading list. Not all article. I think it's more
+        # relevant.
         return (
-            self.get_queryset().for_user(user).for_reading_list_filtering().aggregate(**aggregation)
+            self.get_queryset()
+            .for_user(user)
+            .only_unread()
+            .for_reading_list_filtering()
+            .aggregate(**aggregation)
         )
 
     def get_articles_of_tag(self, tag: Tag) -> Paginator[Article]:

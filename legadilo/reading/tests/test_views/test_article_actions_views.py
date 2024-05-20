@@ -64,7 +64,9 @@ class TestUpdateArticleView:
         assert response.template_name == "reading/update_article_action.html"
         assert response.context["article"] == self.article
         assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 1}
+        assert response.context["count_unread_articles_of_reading_lists"] == {
+            self.reading_list.slug: 0
+        }
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
@@ -163,7 +165,9 @@ class TestDeleteArticleView:
         assert response.status_code == HTTPStatus.OK
         assert response.context["article"].pk is None
         assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_articles_of_reading_lists"] == {self.reading_list.slug: 0}
+        assert response.context["count_unread_articles_of_reading_lists"] == {
+            self.reading_list.slug: 0
+        }
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,

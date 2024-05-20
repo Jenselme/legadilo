@@ -90,7 +90,7 @@ def _update_article_card(
         js_cfg = {}
 
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
-    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(
+    count_unread_articles_of_reading_lists = Article.objects.count_unread_articles_of_reading_lists(
         request.user, reading_lists
     )
     return TemplateResponse(
@@ -99,7 +99,7 @@ def _update_article_card(
         {
             "article": article,
             "reading_lists": reading_lists,
-            "count_articles_of_reading_lists": count_articles_of_reading_lists,
+            "count_unread_articles_of_reading_lists": count_unread_articles_of_reading_lists,
             "displayed_reading_list_id": displayed_reading_list_id,
             "js_cfg": js_cfg,
             "from_url": from_url,

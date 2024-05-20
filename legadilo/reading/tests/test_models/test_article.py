@@ -147,6 +147,14 @@ class TestArticleQuerySet:
 
         assert list(articles) == [article]
 
+    def test_only_unread(self, user):
+        ArticleFactory(user=user, read_at=utcnow())
+        unread_article = ArticleFactory(user=user, read_at=None)
+
+        articles = Article.objects.get_queryset().only_unread()
+
+        assert list(articles) == [unread_article]
+
     def test_for_reading_list_with_tags_basic_include(self, user, django_assert_num_queries):
         reading_list = ReadingListFactory(user=user)
         tag_to_include = TagFactory(user=user)
@@ -846,7 +854,7 @@ class TestArticleManager:
         existing_article.refresh_from_db()
         assert existing_article.read_at == now_dt
 
-    def test_count_articles_of_reading_lists(self, user, django_assert_num_queries):
+    def test_count_unread_articles_of_reading_lists(self, user, django_assert_num_queries):
         reading_list1 = ReadingListFactory(user=user)
         reading_list2 = ReadingListFactory(user=user, read_status=constants.ReadStatus.ONLY_READ)
         reading_list3 = ReadingListFactory(
@@ -859,11 +867,13 @@ class TestArticleManager:
         ArticleFactory(user=user, read_at=utcnow())
 
         with django_assert_num_queries(1):
-            counts = Article.objects.count_articles_of_reading_lists(user, reading_lists_with_tags)
+            counts = Article.objects.count_unread_articles_of_reading_lists(
+                user, reading_lists_with_tags
+            )
 
         assert counts == {
-            reading_list1.slug: 2,
-            reading_list2.slug: 1,
+            reading_list1.slug: 1,
+            reading_list2.slug: 0,
             reading_list3.slug: 0,
         }
 

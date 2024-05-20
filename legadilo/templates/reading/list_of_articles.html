@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n static %}
+{% load i18n static humanize %}
 
 {% block title %}
     {{ page_title }}
@@ -33,6 +33,15 @@
                 {% include 'reading/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
             </div>
             <div class="col col-12 col-md-8 px-1 px-md-2">
+                {% if count_articles_of_current_reading_list > 0 %}
+                    <h2 class="fs-6">
+                        {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
+                            {{ formatted_nb_articles }} article in total
+                        {% plural %}
+                            {{ formatted_nb_articles }} articles in total
+                        {% endblocktranslate %}
+                    </h2>
+                {% endif %}
                 {% include "reading/partials/article_paginator_page.html" %}
                 <noscript>
                     {% include 'reading/partials/articles_list_pagination.html' %}

@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from typing import Any
 
 from csp.decorators import csp_update
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -44,7 +47,9 @@ def reading_list_with_articles_view(
 
 
 def _display_list_of_articles(
-    request: AuthenticatedHttpRequest, articles_paginator, page_ctx: dict[str, Any]
+    request: AuthenticatedHttpRequest,
+    articles_paginator: Paginator[Article],
+    page_ctx: dict[str, Any],
 ) -> TemplateResponse:
     # If the full_reload params is passed, we render the full template. To avoid issues with
     # following requests, we must remove it from the URL.
@@ -53,7 +58,7 @@ def _display_list_of_articles(
     requested_page = get_page_number_from_request(request)
     articles_page = get_requested_page(articles_paginator, requested_page)
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
-    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(
+    count_unread_articles_of_reading_lists = Article.objects.count_unread_articles_of_reading_lists(
         request.user, reading_lists
     )
 
@@ -63,7 +68,8 @@ def _display_list_of_articles(
             "fluid_content": True,
         },
         "reading_lists": reading_lists,
-        "count_articles_of_reading_lists": count_articles_of_reading_lists,
+        "count_unread_articles_of_reading_lists": count_unread_articles_of_reading_lists,
+        "count_articles_of_current_reading_list": articles_paginator.count,
         "articles_page": articles_page,
         "next_page_number": articles_page.next_page_number if articles_page.has_next() else None,
         "articles_paginator": articles_paginator,
