@@ -72,15 +72,6 @@ class ReadingListManager(models.Manager["ReadingList"]):
                 "order": 35,
             },
         )
-        self.update_or_create(
-            slug=slugify(str(_("Archive"))),
-            user=user,
-            defaults={
-                "title": str(_("Archive")),
-                "read_status": constants.ReadStatus.ONLY_READ,
-                "order": 40,
-            },
-        )
 
     def get_reading_list(self, user: User, reading_list_slug: str | None) -> ReadingList:
         qs = self.get_queryset().select_related("user")
