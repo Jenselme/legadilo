@@ -119,7 +119,9 @@ def _get_summary(soup: BeautifulSoup) -> str:
     ) and itemprop_description.get("content"):
         summary = itemprop_description.get("content")
 
-    return sanitize_keep_safe_tags(summary)
+    return sanitize_keep_safe_tags(
+        summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
+    )
 
 
 def _get_content(soup: BeautifulSoup) -> str:

@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
+from legadilo.reading import constants as reading_constants
 from legadilo.reading.utils.article_fetching import ArticleData
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
@@ -193,7 +194,9 @@ def _get_summary(article_url: str, entry) -> str:
     if not summary and _is_youtube_link(article_url):
         summary = _get_preview_picture_alt(entry)
 
-    return sanitize_keep_safe_tags(summary, extra_tags_to_cleanup={"img"})
+    return sanitize_keep_safe_tags(
+        summary, extra_tags_to_cleanup=reading_constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
+    )
 
 
 def _is_youtube_link(link: str) -> bool:
