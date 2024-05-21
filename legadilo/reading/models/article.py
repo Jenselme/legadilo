@@ -153,6 +153,27 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())
 
+    def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
+        match action:
+            case constants.UpdateArticleActions.DO_NOTHING:
+                return 0
+            case constants.UpdateArticleActions.MARK_AS_READ:
+                return self.update(read_at=utcnow())
+            case constants.UpdateArticleActions.MARK_AS_UNREAD:
+                return self.update(read_at=None)
+            case constants.UpdateArticleActions.MARK_AS_FAVORITE:
+                return self.update(is_favorite=True)
+            case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
+                return self.update(is_favorite=False)
+            case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
+                return self.update(is_for_later=True)
+            case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
+                return self.update(is_for_later=False)
+            case constants.UpdateArticleActions.MARK_AS_OPENED:
+                return self.update(opened_at=utcnow())
+            case _:
+                assert_never(action)
+
 
 class ArticleManager(models.Manager["Article"]):
     _hints: dict
@@ -442,28 +463,6 @@ class Article(models.Model):
             self.content = article_data.content
 
         return True
-
-    def update_article_from_action(self, action: constants.UpdateArticleActions):
-        match action:
-            case constants.UpdateArticleActions.MARK_AS_READ:
-                self.read_at = utcnow()
-                self.is_read = True
-            case constants.UpdateArticleActions.MARK_AS_UNREAD:
-                self.read_at = None
-                self.is_read = False
-            case constants.UpdateArticleActions.MARK_AS_FAVORITE:
-                self.is_favorite = True
-            case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
-                self.is_favorite = False
-            case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
-                self.is_for_later = True
-            case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
-                self.is_for_later = False
-            case constants.UpdateArticleActions.MARK_AS_OPENED:
-                self.opened_at = utcnow()
-                self.was_opened = True
-            case _:
-                assert_never(action)
 
     def update_from_details(self, *, title: str, reading_time: int):
         self.title = title

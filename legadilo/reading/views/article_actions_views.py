@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -46,16 +47,15 @@ def _redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse
 
 @require_POST
 @login_required
+@transaction.atomic()
 def update_article_view(
     request: AuthenticatedHttpRequest,
     article_id: int,
     update_action: constants.UpdateArticleActions,
 ) -> HttpResponse:
-    article = get_object_or_404(
-        Article.objects.get_queryset().for_details(), id=article_id, user=request.user
-    )
-    article.update_article_from_action(update_action)
-    article.save()
+    article_qs = Article.objects.get_queryset().for_details()
+    article_qs.update_articles_from_action(update_action)
+    article = get_object_or_404(article_qs, id=article_id, user=request.user)
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)
     for_article_details = request.POST.get("for_article_details", "")

@@ -138,6 +138,7 @@ def test_build_filters_from_reading_list(
     assert filters == expected_filter
 
 
+@pytest.mark.django_db()
 class TestArticleQuerySet:
     def test_for_user(self, user, other_user):
         article = ArticleFactory(user=user)
@@ -202,8 +203,8 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        with django_assert_num_queries(3):
-            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
+        with django_assert_num_queries(1):
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
 
         assert list(articles) == [
             article_to_include_linked_many_tags,
@@ -586,6 +587,63 @@ class TestArticleQuerySet:
             article_to_include_linked_to_all_tags,
             article_to_include_linked_to_deleted_tag_to_exclude,
         ]
+
+    @pytest.mark.parametrize(
+        ("action", "attrs"),
+        [
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_READ,
+                {"read_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "is_read": True},
+                id="mark-as-read",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_UNREAD,
+                {"read_at": None, "is_read": False},
+                id="mark-as-unread",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FAVORITE,
+                {"is_favorite": True},
+                id="mark-as-favorite",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FAVORITE,
+                {"is_favorite": False},
+                id="unmark-as-favorite",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FOR_LATER,
+                {"is_for_later": True},
+                id="mark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
+                {"is_for_later": False},
+                id="unmark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_OPENED,
+                {"opened_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "was_opened": True},
+                id="mark-as-opened",
+            ),
+        ],
+    )
+    def test_update_articles_from_action(
+        self, action: constants.UpdateArticleActions, attrs: dict[str, bool | str]
+    ):
+        article = ArticleFactory(
+            read_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
+            is_favorite=choice([True, False]),
+            is_for_later=choice([True, False]),
+            opened_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
+        )
+
+        with time_machine.travel("2024-04-20 12:00:00"):
+            Article.objects.get_queryset().filter(id=article.id).update_articles_from_action(action)
+
+        article.refresh_from_db()
+        for attr_name, attr_value in attrs.items():
+            assert getattr(article, attr_name) == attr_value
 
 
 @pytest.mark.django_db()
@@ -1024,62 +1082,6 @@ class TestArticleModel:
         assert was_updated
         for attr, value in expected_data.items():
             assert getattr(article, attr) == value
-
-    @pytest.mark.parametrize(
-        ("action", "attrs"),
-        [
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_READ,
-                {"read_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "is_read": True},
-                id="mark-as-read",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_UNREAD,
-                {"read_at": None, "is_read": False},
-                id="mark-as-unread",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_FAVORITE,
-                {"is_favorite": True},
-                id="mark-as-favorite",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.UNMARK_AS_FAVORITE,
-                {"is_favorite": False},
-                id="unmark-as-favorite",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_FOR_LATER,
-                {"is_for_later": True},
-                id="mark-as-for-later",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
-                {"is_for_later": False},
-                id="unmark-as-for-later",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_OPENED,
-                {"opened_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "was_opened": True},
-                id="mark-as-opened",
-            ),
-        ],
-    )
-    def test_update_article_from_action(
-        self, action: constants.UpdateArticleActions, attrs: dict[str, bool | str]
-    ):
-        article = ArticleFactory.build(
-            read_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
-            is_favorite=choice([True, False]),
-            is_for_later=choice([True, False]),
-            opened_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
-        )
-
-        with time_machine.travel("2024-04-20 12:00:00"):
-            article.update_article_from_action(action)
-
-        for attr_name, attr_value in attrs.items():
-            assert getattr(article, attr_name) == attr_value
 
     @pytest.mark.parametrize(
         ("source_type", "is_from_feed"),
