@@ -8,6 +8,7 @@
     "feed_url": "https://example.com/existing.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "https://example.com",
+    "slug": "existing-feed",
     "title": "Existing feed"
   },
   {
@@ -19,6 +20,7 @@
     "feed_url": "https://example.com/rss8.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "https://example8.com/",
+    "slug": "feed-8",
     "title": "Feed 8"
   },
   {
@@ -30,6 +32,7 @@
     "feed_url": "https://example.com/rss4.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "http://example.org/",
+    "slug": "sample-feed",
     "title": "Sample Feed"
   },
   {
@@ -41,6 +44,7 @@
     "feed_url": "https://example.com/rss2.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "http://example.org/",
+    "slug": "sample-feed",
     "title": "Sample Feed"
   }
 ]

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Feeds admin" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Feeds admin" %}</h1>
+    <a class="btn btn-outline-secondary"
+       href="{% url 'feeds:subscribe_to_feed' %}"
+       role="button">{% translate "Subscribe to a feed" %}</a>
+    <div id="feeds-by-categories-accordion" class="accordion mt-3">
+        {% for category_title, feeds in feeds_by_categories.items %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#category-{{ category_title|slugify }}"
+                            aria-expanded="false"
+                            aria-controls="category-{{ category_title|slugify }}">
+                        {% if category_title %}
+                            {{ category_title }}
+                        {% else %}
+                            {% translate "Articles without a category" %}
+                        {% endif %}
+                    </button>
+                </h2>
+                <div id="category-{{ category_title|slugify }}"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#feeds-by-categories-accordion">
+                    <div class="accordion-body">
+                        <ul class="list-group">
+                            {% for feed in feeds %}
+                                <li class="list-group-item container">
+                                    <div class="row {% if not feed.enabled %}opacity-50{% endif %}">
+                                        <div class="col">
+                                            <a href="{{ feed.site_url }}">
+                                                {% if feed.title %}
+                                                    {{ feed.title }}
+                                                {% else %}
+                                                    {{ feed.site_url }}
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                        <div class="col">
+                                            <a>{% translate "Edit feed" %}</a>
+                                        </div>
+                                        <div class="col">
+                                            {% if feed.slug %}
+                                                <a href="{% url 'feeds:feed_articles' feed_id=feed.id feed_slug=feed.slug %}">{% translate "View articles" %}</a>
+                                            {% else %}
+                                                <a href="{% url 'feeds:feed_articles' feed_id=feed.id %}">{% translate "View articles" %}</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

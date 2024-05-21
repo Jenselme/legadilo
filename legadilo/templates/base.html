@@ -109,7 +109,7 @@
                                             <span class="visually-hidden">{% translate "Profile menu" %}</span>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end">
-                                            <a class="dropdown-item" href="{% url 'feeds:subscribe_to_feed' %}">{% translate "Subscribe to a feed" %}</a>
+                                            <a class="dropdown-item" href="{% url 'feeds:feeds_admin' %}">{% translate "Feeds admin" %}</a>
                                             <a class="dropdown-item" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
                                             {# URL provided by django-allauth/account/urls.py #}
                                             <a class="dropdown-item" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>

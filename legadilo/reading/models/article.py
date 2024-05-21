@@ -148,6 +148,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
         )
 
+    def for_feed(self) -> Self:
+        return self.prefetch_related(_build_prefetch_article_tags())
+
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())
 

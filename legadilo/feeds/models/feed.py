@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import calendar
 from datetime import timedelta
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING, assert_never, cast
 
+from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
+from slugify import slugify
 
 from legadilo.reading import constants as reading_constants
-from legadilo.reading.models.article import Article
+from legadilo.reading.models.article import Article, ArticleQuerySet
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
@@ -114,6 +116,10 @@ def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> 
 
 
 class FeedQuerySet(models.QuerySet["Feed"]):
+    def create(self, **kwargs):
+        kwargs.setdefault("slug", slugify(kwargs["title"]))
+        return super().create(**kwargs)
+
     def only_with_ids(self, feed_ids: list[int] | None = None):
         feeds_to_update = self
         if feed_ids:
@@ -146,12 +152,34 @@ class FeedQuerySet(models.QuerySet["Feed"]):
             ),
         ).filter(must_update=True, enabled=True)
 
+    def for_user(self, user: User):
+        return self.filter(user=user)
+
 
 class FeedManager(models.Manager["Feed"]):
     _hints: dict
 
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    def get_by_categories(self, user: User) -> dict[str, list[Feed]]:
+        feeds_by_categories: dict[str, list[Feed]] = {}
+        for feed in (
+            self.get_queryset()
+            .for_user(user)
+            .select_related("category")
+            .order_by("category__title")
+        ):
+            category_title = feed.category.title if feed.category else None
+            feeds_by_categories.setdefault(category_title, []).append(feed)
+
+        return feeds_by_categories
+
+    def get_articles(self, feed: Feed) -> Paginator[Article]:
+        return Paginator(
+            cast(ArticleQuerySet, feed.articles.all()).for_feed(),
+            reading_constants.MAX_ARTICLE_PER_PAGE,
+        )
 
     @transaction.atomic()
     def create_from_metadata(
@@ -221,6 +249,7 @@ class Feed(models.Model):
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH)
+    slug = models.SlugField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH, blank=True)
     description = models.TextField(blank=True)
     feed_type = models.CharField(choices=feeds_constants.SupportedFeedType.choices, max_length=100)
     refresh_delay = models.CharField(

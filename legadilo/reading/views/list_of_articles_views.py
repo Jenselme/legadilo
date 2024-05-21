@@ -35,7 +35,7 @@ def reading_list_with_articles_view(
             return HttpResponseNotFound()
         return HttpResponseRedirect(reverse("reading:default_reading_list"))
 
-    return _display_list_of_articles(
+    return display_list_of_articles(
         request,
         Article.objects.get_articles_of_reading_list(displayed_reading_list),
         {
@@ -46,7 +46,7 @@ def reading_list_with_articles_view(
     )
 
 
-def _display_list_of_articles(
+def display_list_of_articles(
     request: AuthenticatedHttpRequest,
     articles_paginator: Paginator[Article],
     page_ctx: dict[str, Any],
@@ -102,11 +102,12 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         user=request.user,
     )
 
-    return _display_list_of_articles(
+    return display_list_of_articles(
         request,
         Article.objects.get_articles_of_tag(displayed_tag),
         {
-            "page_title": _("Articles with tag '%(tag_name)s'") % {"tag_name": displayed_tag.title},
+            "page_title": _("Articles with tag '%(tag_title)s'")
+            % {"tag_title": displayed_tag.title},
             "displayed_reading_list_id": None,
             "js_cfg": {},
         },
