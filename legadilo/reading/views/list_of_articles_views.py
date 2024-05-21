@@ -12,7 +12,9 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 
+from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList, Tag
+from legadilo.reading.models.article import ArticleQuerySet
 from legadilo.reading.utils.views import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
@@ -48,9 +50,10 @@ def reading_list_with_articles_view(
 
 def display_list_of_articles(
     request: AuthenticatedHttpRequest,
-    articles_paginator: Paginator[Article],
+    articles_qs: ArticleQuerySet,
     page_ctx: dict[str, Any],
 ) -> TemplateResponse:
+    articles_paginator = Paginator(articles_qs, constants.MAX_ARTICLE_PER_PAGE)
     # If the full_reload params is passed, we render the full template. To avoid issues with
     # following requests, we must remove it from the URL.
     from_url, full_reload_param = pop_query_param(request.get_full_path(), "full_reload")

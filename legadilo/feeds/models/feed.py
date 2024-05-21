@@ -4,7 +4,6 @@ import calendar
 from datetime import timedelta
 from typing import TYPE_CHECKING, assert_never, cast
 
-from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
@@ -175,11 +174,8 @@ class FeedManager(models.Manager["Feed"]):
 
         return feeds_by_categories
 
-    def get_articles(self, feed: Feed) -> Paginator[Article]:
-        return Paginator(
-            cast(ArticleQuerySet, feed.articles.all()).for_feed(),
-            reading_constants.MAX_ARTICLE_PER_PAGE,
-        )
+    def get_articles(self, feed: Feed) -> ArticleQuerySet:
+        return cast(ArticleQuerySet, feed.articles.all()).for_feed()
 
     @transaction.atomic()
     def create_from_metadata(

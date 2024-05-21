@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
@@ -257,11 +256,8 @@ class ArticleManager(models.Manager["Article"]):
 
         return all_articles
 
-    def get_articles_of_reading_list(self, reading_list: ReadingList) -> Paginator[Article]:
-        return Paginator(
-            self.get_queryset().for_reading_list(reading_list).order_by("-published_at", "id"),
-            constants.MAX_ARTICLE_PER_PAGE,
-        )
+    def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
+        return self.get_queryset().for_reading_list(reading_list).order_by("-published_at", "id")
 
     def count_unread_articles_of_reading_lists(
         self, user: User, reading_lists: list[ReadingList]
@@ -283,8 +279,8 @@ class ArticleManager(models.Manager["Article"]):
             .aggregate(**aggregation)
         )
 
-    def get_articles_of_tag(self, tag: Tag) -> Paginator[Article]:
-        return Paginator(self.get_queryset().for_tag(tag), constants.MAX_ARTICLE_PER_PAGE)
+    def get_articles_of_tag(self, tag: Tag) -> ArticleQuerySet:
+        return self.get_queryset().for_tag(tag)
 
 
 class Article(models.Model):
@@ -385,6 +381,7 @@ class Article(models.Model):
     objects = ArticleManager()
 
     class Meta(TypedModelMeta):
+        ordering = ["-published_at", "id"]
         constraints = [
             models.UniqueConstraint(
                 "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"

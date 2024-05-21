@@ -202,12 +202,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        with django_assert_num_queries(1):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        articles_page = articles_paginator.page(1)
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_to_include_linked_many_tags,
             article_to_include_one_tag,
         ]
@@ -246,13 +244,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        with django_assert_num_queries(1):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert articles_paginator.count == 1
-        articles_page = articles_paginator.page(1)
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_linked_to_all_tags,
         ]
 
@@ -290,13 +285,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        with django_assert_num_queries(1):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert articles_paginator.count == 2
-        articles_page = articles_paginator.page(1)
-        assert list(articles_page.object_list) == [
+        assert articles == [
             article_linked_to_all_tags,
             article_to_include_one_tag,
         ]
@@ -349,12 +341,10 @@ class TestArticleQuerySet:
         )
         article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert articles == [
             article_linked_only_to_other_tag,
             article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
@@ -413,12 +403,10 @@ class TestArticleQuerySet:
         )
         article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
         ]
@@ -475,12 +463,10 @@ class TestArticleQuerySet:
         )
         article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(1):
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_linked_to_one_tag,
             article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
@@ -593,12 +579,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.DELETED,
         )
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(1):
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_to_include_linked_to_all_tags,
             article_to_include_linked_to_deleted_tag_to_exclude,
         ]
@@ -877,7 +861,7 @@ class TestArticleManager:
             reading_list3.slug: 0,
         }
 
-    def test_get_articles_of_tag(self, user):
+    def test_get_articles_of_tag(self, user, django_assert_num_queries):
         tag_to_display = TagFactory(user=user)
         other_tag = TagFactory(user=user)
         article_linked_only_to_tag_to_display = ArticleFactory(
@@ -898,11 +882,10 @@ class TestArticleManager:
         article_linked_to_other_tag = ArticleFactory(title="Article linked to other tag", user=user)
         ArticleTag.objects.create(tag=other_tag, article=article_linked_to_other_tag)
 
-        articles_paginator = Article.objects.get_articles_of_tag(tag_to_display)
+        with django_assert_num_queries(2):
+            articles = list(Article.objects.get_articles_of_tag(tag_to_display))
 
-        assert articles_paginator.num_pages == 1
-        page = articles_paginator.page(1)
-        assert list(page.object_list) == [
+        assert list(articles) == [
             article_linked_only_to_tag_to_display,
             article_linked_to_all_tags,
         ]

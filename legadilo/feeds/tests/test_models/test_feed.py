@@ -161,11 +161,9 @@ class TestFeedManager:
         article_of_other_feed = ArticleFactory(user=user)
         FeedArticle.objects.create(feed=other_feed, article=article_of_other_feed)
 
-        articles_paginator = Feed.objects.get_articles(self.feed)
+        articles_qs = Feed.objects.get_articles(self.feed)
 
-        assert articles_paginator.num_pages == 1
-        article_page = articles_paginator.page(1)
-        assert list(article_page.object_list) == [article_of_feed]
+        assert list(articles_qs) == [article_of_feed]
 
     def test_create_from_feed_data(self, user, django_assert_num_queries):
         with django_assert_num_queries(12):
