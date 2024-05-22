@@ -107,22 +107,27 @@ class TestFeedQuerySet:
 
     def test_only_with_ids(self):
         feed1 = FeedFactory(enabled=True)
-        feed2 = FeedFactory(enabled=True)
+        FeedFactory(enabled=True)
 
-        feed_ids_to_update = (
-            Feed.objects.get_queryset().only_with_ids().values_list("id", flat=True)
-        )
+        feeds = list(Feed.objects.get_queryset().only_with_ids([feed1.id]))
 
-        assert list(feed_ids_to_update) == [feed1.id, feed2.id]
+        assert feeds == [feed1]
 
-        feed_ids_to_update = (
-            Feed.objects.get_queryset()
-            .only_with_ids([feed1.id])
-            .values_list("id", flat=True)
-            .order_by("id")
-        )
+    def test_only_enabled(self):
+        feed1 = FeedFactory(enabled=True)
+        FeedFactory(enabled=False)
 
-        assert list(feed_ids_to_update) == [feed1.id]
+        feeds = list(Feed.objects.get_queryset().only_enabled())
+
+        assert feeds == [feed1]
+
+    def test_for_user_ids(self):
+        feed1 = FeedFactory(enabled=True)
+        FeedFactory(enabled=True)
+
+        feeds = list(Feed.objects.get_queryset().for_user_ids([feed1.user.id]))
+
+        assert feeds == [feed1]
 
 
 @pytest.mark.django_db()

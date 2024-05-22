@@ -119,40 +119,46 @@ class FeedQuerySet(models.QuerySet["Feed"]):
         kwargs.setdefault("slug", slugify(kwargs["title"]))
         return super().create(**kwargs)
 
-    def only_with_ids(self, feed_ids: list[int] | None = None):
-        feeds_to_update = self
-        if feed_ids:
-            feeds_to_update = feeds_to_update.filter(id__in=feed_ids)
+    def only_with_ids(self, feed_ids: list[int]):
+        return self.filter(id__in=feed_ids)
 
-        return feeds_to_update
+    def only_enabled(self):
+        return self.filter(enabled=True)
 
     def for_update(self):
-        return self.alias(
-            # We need to filter for update only on the latest FeedUpdate object. If we have entries
-            # that are too old, we don't want to include them or the feed will be refreshed even if
-            # according to its rules it should: by default, we do a left join of FeedUpdate thus
-            # getting on the whole history. We only want to run our test on the latest entry to
-            # check whether it's too old and thus must be updated or not.
-            latest_feed_update=models.FilteredRelation(
-                "feed_updates",
-                condition=models.Q(
-                    feed_updates__id__in=models.Subquery(
-                        FeedUpdate.objects.get_queryset().only_latest()
-                    )
+        return (
+            self.alias(
+                # We need to filter for update only on the latest FeedUpdate object. If we have
+                # entries that are too old, we don't want to include them or the feed will be
+                # refreshed even if according to its rules it should: by default, we do a left join
+                # of FeedUpdate thus getting on the whole history. We only want to run our test on
+                # the latest entry to check whether it's too old and thus must be updated or not.
+                latest_feed_update=models.FilteredRelation(
+                    "feed_updates",
+                    condition=models.Q(
+                        feed_updates__id__in=models.Subquery(
+                            FeedUpdate.objects.get_queryset().only_latest()
+                        )
+                    ),
                 ),
-            ),
-            must_update=models.Case(
-                *[
-                    _build_refresh_filters(refresh_delay)
-                    for refresh_delay in feeds_constants.FeedRefreshDelays
-                ],
-                default=False,
-                output_field=models.BooleanField(),
-            ),
-        ).filter(must_update=True, enabled=True)
+                must_update=models.Case(
+                    *[
+                        _build_refresh_filters(refresh_delay)
+                        for refresh_delay in feeds_constants.FeedRefreshDelays
+                    ],
+                    default=False,
+                    output_field=models.BooleanField(),
+                ),
+            )
+            .only_enabled()
+            .filter(must_update=True)
+        )
 
     def for_user(self, user: User):
         return self.filter(user=user)
+
+    def for_user_ids(self, user_id: list[int]):
+        return self.filter(user_id__in=user_id)
 
 
 class FeedManager(models.Manager["Feed"]):
