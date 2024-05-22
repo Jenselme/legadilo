@@ -18,7 +18,7 @@ class FeedTagInline(admin.TabularInline):
 class FeedAdmin(admin.ModelAdmin):
     search_fields = ["title", "category__title"]
     autocomplete_fields = ["user", "category"]
-    list_filter = ["feed_type"]
+    list_filter = ["enabled", "feed_type"]
     inlines = [
         FeedTagInline,
     ]
