@@ -557,5 +557,42 @@ if DEBUG:
         INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 
+# Sentry
+# ------------------------------------------------------------------------------
+SENTRY_DSN = env.str(
+    "SENTRY_DSN",
+    default="",
+)
+if not DEBUG and SENTRY_DSN:
+    try:
+        import sentry_sdk
+
+        def before_send_to_sentry(event, hint):
+            if event.get("logger") == "django.channels.server":
+                return None
+
+            # Don't send any private information. The id is more than enough.
+            if user := event.get("user"):
+                user.pop("email", None)
+                user["username"] = f"user:{user["id"]}"
+
+            return event
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            traces_sample_rate=0.1,
+            # Set profiles_sample_rate to 1.0 to profile 100%
+            # of sampled transactions.
+            # We recommend adjusting this value in production.
+            profiles_sample_rate=0.1,
+            before_send=before_send_to_sentry,
+            send_default_pii=True,
+        )
+    except ImportError:
+        print("Failed to import sentry_sdk")  # noqa: T201 print found
+
+
 # Your stuff...
 # ------------------------------------------------------------------------------

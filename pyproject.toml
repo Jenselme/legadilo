@@ -214,7 +214,7 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 # ------------------------------------------------------------------------------
 django = "5.0.6"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.63.1"  # https://github.com/pennersr/django-allauth
+django-allauth = "0.63.2"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "10.3"  # https://github.com/anymail/django-anymail
@@ -236,6 +236,13 @@ beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/
 nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.22.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
+
+
+[tool.poetry.group.prod]
+optional = true
+
+[tool.poetry.group.prod.dependencies]
+sentry-sdk = {extras = ["django"], version = "^2.2.1"}
 
 
 [tool.poetry.group.dev]
