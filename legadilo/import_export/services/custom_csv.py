@@ -15,7 +15,7 @@ from slugify import slugify
 
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
-from legadilo.feeds.utils.feed_parsing import (
+from legadilo.feeds.services.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
     NoFeedUrlFoundError,

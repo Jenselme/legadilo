@@ -6,12 +6,12 @@ from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.feeds.models import FeedArticle, FeedUpdate
+from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
 from legadilo.feeds.tests.factories import (
     FeedCategoryFactory,
     FeedFactory,
     FeedUpdateFactory,
 )
-from legadilo.feeds.utils.feed_parsing import ArticleData, FeedData
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory

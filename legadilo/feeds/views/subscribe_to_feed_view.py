@@ -20,7 +20,7 @@ from ...users.models import User
 from ...users.typing import AuthenticatedHttpRequest
 from .. import constants
 from ..models import Feed, FeedCategory
-from ..utils.feed_parsing import (
+from ..services.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
     MultipleFeedFoundError,

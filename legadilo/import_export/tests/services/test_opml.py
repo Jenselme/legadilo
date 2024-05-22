@@ -3,9 +3,9 @@ import pytest
 from django.conf import settings
 
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
+from legadilo.feeds.services.feed_parsing import FeedFileTooBigError
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
-from legadilo.feeds.utils.feed_parsing import FeedFileTooBigError
 from legadilo.import_export.services.opml import import_opml_file
 from legadilo.reading.models import Article
 

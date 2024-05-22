@@ -10,7 +10,7 @@ from httpx import AsyncClient
 
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedCategory
-from legadilo.feeds.utils.feed_parsing import (
+from legadilo.feeds.services.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
     get_feed_data,

@@ -15,7 +15,7 @@ from legadilo.users.models import User
 
 from ...utils.time import utcnow
 from .. import constants as feeds_constants
-from ..utils.feed_parsing import FeedData
+from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
 from .feed_tag import FeedTag
 from .feed_update import FeedUpdate

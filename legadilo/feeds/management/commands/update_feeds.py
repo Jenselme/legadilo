@@ -8,7 +8,7 @@ from httpx import AsyncClient, HTTPError, HTTPStatusError, Limits
 
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedUpdate
-from legadilo.feeds.utils.feed_parsing import get_feed_data
+from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.time import utcnow
 
