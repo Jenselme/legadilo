@@ -147,6 +147,13 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
         )
 
+    def for_external_tag(self, user: User, tag: str) -> Self:
+        return (
+            self.for_user(user)
+            .filter(external_tags__icontains=tag)
+            .prefetch_related(_build_prefetch_article_tags())
+        )
+
     def for_feed(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())
 
@@ -302,6 +309,9 @@ class ArticleManager(models.Manager["Article"]):
 
     def get_articles_of_tag(self, tag: Tag) -> ArticleQuerySet:
         return self.get_queryset().for_tag(tag)
+
+    def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
+        return self.get_queryset().for_external_tag(user, tag)
 
 
 class Article(models.Model):

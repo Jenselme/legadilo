@@ -26,11 +26,15 @@
         {% endblocktranslate %}
     </span>
 </p>
-{% if article.tags_to_display %}
+{% if article.tags_to_display or article.external_tags %}
     <p>
         {% for tag in article.tags_to_display %}
             <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1"
                href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{{ tag.title }}</a>
+        {% endfor %}
+        {% for tag in article.external_tags %}
+            <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1"
+               href="{% url 'reading:external_tag_with_articles' tag=tag|urlencode %}">{{ tag }}</a>
         {% endfor %}
     </p>
 {% endif %}

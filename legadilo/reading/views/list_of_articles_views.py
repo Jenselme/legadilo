@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import unquote
 
 from csp.decorators import csp_update
 from django import forms
@@ -120,6 +121,20 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         request,
         Article.objects.get_articles_of_tag(displayed_tag),
         _("Articles with tag '%(tag_title)s'") % {"tag_title": displayed_tag.title},
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@csp_update(IMG_SRC="https:")
+def external_tag_with_articles_view(
+    request: AuthenticatedHttpRequest, tag: str
+) -> TemplateResponse:
+    tag_title = unquote(tag)
+    return list_or_update_articles(
+        request,
+        Article.objects.get_articles_with_external_tag(request.user, tag_title),
+        _("Articles with tag '%(tag_title)s'") % {"tag_title": tag_title},
     )
 
 

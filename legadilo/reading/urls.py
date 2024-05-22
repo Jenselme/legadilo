@@ -18,6 +18,11 @@ urlpatterns = [
     ),
     path("tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
+        "tags/externals/<str:tag>/",
+        views.external_tag_with_articles_view,
+        name="external_tag_with_articles",
+    ),
+    path(
         "articles/<int:article_id>-<slug:article_slug>/",
         views.article_details_view,
         name="article_details",

@@ -960,6 +960,20 @@ class TestArticleManager:
             article_link_to_tag_to_display_and_deleted_tag,
         ]
 
+    def test_get_articles_with_external_tag(self, user, django_assert_num_queries):
+        tag = TagFactory(user=user, title="Test")
+        article = ArticleFactory(user=user, external_tags=["Test"])
+        ArticleTag.objects.create(tag=tag, article=article)
+        ArticleFactory(user=user, external_tags=["Other tag"])
+        properly_tagged_article = ArticleFactory(user=user)
+        ArticleTag.objects.create(article=properly_tagged_article, tag=tag)
+        ArticleFactory(external_tags=["Test"])
+
+        with django_assert_num_queries(2):
+            articles = list(Article.objects.get_articles_with_external_tag(user, "Test"))
+
+        assert articles == [article]
+
 
 class TestArticleModel:
     @pytest.mark.django_db()

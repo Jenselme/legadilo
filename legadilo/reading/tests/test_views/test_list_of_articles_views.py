@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 import pytest
 from django.core.paginator import Paginator
+from django.template.defaultfilters import urlencode
 from django.urls import reverse
 
 from legadilo.reading import constants
@@ -270,3 +271,42 @@ class TestUpdateArticlesFromTagWithArticlesView:
             (self.other_tag.slug, constants.TaggingReason.ADDED_MANUALLY),
             (self.tag_to_remove.slug, constants.TaggingReason.ADDED_MANUALLY),
         }
+
+
+class TestExternalTagWithArticleView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        tag = TagFactory(user=user)
+        self.url = reverse(
+            "reading:external_tag_with_articles", kwargs={"tag": urlencode("External tag")}
+        )
+        self.article_in_list = ArticleFactory(user=user, external_tags=["external tag"])
+        ArticleTag.objects.create(tag=tag, article=self.article_in_list)
+
+    def test_not_logged_in(self, client):
+        response = client.get(self.url)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert reverse("account_login") in response["Location"]
+
+    def test_cannot_access_as_other_user(self, logged_in_other_user_sync_client):
+        response = logged_in_other_user_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert list(response.context["articles_page"].object_list) == []
+
+    def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(7):
+            response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/list_of_articles.html"
+        assert response.context["page_title"] == "Articles with tag 'External tag'"
+        assert response.context["displayed_reading_list_id"] is None
+        assert response.context["reading_lists"] == []
+        assert response.context["js_cfg"] == {}
+        assert isinstance(response.context["articles_paginator"], Paginator)
+        assert response.context["articles_page"].object_list == [
+            self.article_in_list,
+        ]
+        assert response.context["update_articles_form"] is not None
