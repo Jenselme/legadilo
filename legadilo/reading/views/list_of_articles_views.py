@@ -44,7 +44,7 @@ def reading_list_with_articles_view(
             return HttpResponseNotFound()
         return HttpResponseRedirect(reverse("reading:default_reading_list"))
 
-    return display_list_of_articles(
+    return _display_list_of_articles(
         request,
         Article.objects.get_articles_of_reading_list(displayed_reading_list),
         {
@@ -55,7 +55,7 @@ def reading_list_with_articles_view(
     )
 
 
-def display_list_of_articles(
+def _display_list_of_articles(
     request: AuthenticatedHttpRequest,
     articles_qs: ArticleQuerySet,
     page_ctx: dict[str, Any],
@@ -115,20 +115,28 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         slug=tag_slug,
         user=request.user,
     )
-    tag_choices = Tag.objects.get_all_choices(request.user)
 
+    return list_or_update_articles(
+        request,
+        Article.objects.get_articles_of_tag(displayed_tag),
+        _("Articles with tag '%(tag_title)s'") % {"tag_title": displayed_tag.title},
+    )
+
+
+def list_or_update_articles(
+    request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet, page_title: str
+) -> TemplateResponse:
+    tag_choices = Tag.objects.get_all_choices(request.user)
     status = HTTPStatus.OK
     form = UpdateArticlesForm(tag_choices=tag_choices)
-    articles_qs = Article.objects.get_articles_of_tag(displayed_tag)
     if request.method == "POST":
-        status, form = update_list_of_articles(request, articles_qs, tag_choices)
+        status, form = _update_list_of_articles(request, articles_qs, tag_choices)
 
-    return display_list_of_articles(
+    return _display_list_of_articles(
         request,
         articles_qs,
         {
-            "page_title": _("Articles with tag '%(tag_title)s'")
-            % {"tag_title": displayed_tag.title},
+            "page_title": page_title,
             "displayed_reading_list_id": None,
             "js_cfg": {},
             "update_articles_form": form,
@@ -177,7 +185,7 @@ class UpdateArticlesForm(forms.Form):
 
 
 @transaction.atomic()
-def update_list_of_articles(
+def _update_list_of_articles(
     request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet, tag_choices: FormChoices
 ):
     form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
