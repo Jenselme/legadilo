@@ -57,8 +57,8 @@ def test_import_valid_files(user, httpx_mock):
         ("https://www.example.eu/feeds/all.atom.xml", "http://example.org/"),
         ("https://www.example.com/feeds/all.rss.xml", "http://example.org/"),
     ]
-    assert Article.objects.count() == 1
-    assert FeedArticle.objects.count() == 2
+    assert Article.objects.count() == 2
+    assert FeedArticle.objects.count() == 3
 
 
 def test_import_valid_files_some_data_already_exist(user, httpx_mock):
@@ -89,8 +89,8 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
         ("https://www.example.eu/feeds/all.atom.xml", "http://example.org/"),
         ("https://www.example.com/feeds/all.rss.xml", "https://example.com"),
     }
-    assert Article.objects.count() == 1
-    assert FeedArticle.objects.count() == 1
+    assert Article.objects.count() == 2
+    assert FeedArticle.objects.count() == 2
 
 
 def test_import_valid_files_with_network_errors(user, httpx_mock):

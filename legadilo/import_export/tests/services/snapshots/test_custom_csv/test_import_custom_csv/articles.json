@@ -194,5 +194,34 @@
     "title": "Existing article",
     "updated_at": "2024-05-17T13:00:00+00:00",
     "was_opened": false
+  },
+  {
+    "annotations": [],
+    "authors": [],
+    "content": "",
+    "contributors": [],
+    "external_article_id": "",
+    "external_tags": [
+      "Other tag",
+      "Tag"
+    ],
+    "initial_source_title": "Sample Feed",
+    "initial_source_type": "FEED",
+    "is_favorite": false,
+    "is_for_later": false,
+    "is_read": false,
+    "language": "",
+    "link": "https://example.com/articles/with-tags",
+    "opened_at": null,
+    "preview_picture_alt": "",
+    "preview_picture_url": "",
+    "published_at": null,
+    "read_at": null,
+    "reading_time": 0,
+    "slug": "with-tags",
+    "summary": "Super article with tags",
+    "title": "With tags",
+    "updated_at": null,
+    "was_opened": false
   }
 ]

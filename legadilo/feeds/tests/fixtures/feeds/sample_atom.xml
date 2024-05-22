@@ -60,4 +60,10 @@ nasty tricks</span></div>
             </media:content>
         {% endif %}
     </entry>
+    <entry>
+        <title>With tags</title>
+        <link rel="alternate" href="https://example.com/articles/with-tags" />
+        <summary>Super article with tags</summary>
+        <category><![CDATA[Tag, Other tag]]></category>
+    </entry>
 </feed>

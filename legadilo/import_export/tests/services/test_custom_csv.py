@@ -75,10 +75,10 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     assert nb_imported_articles == 5
     assert nb_imported_feeds == 3
     assert nb_imported_categories == 2
-    assert Article.objects.count() == 7
+    assert Article.objects.count() == 8
     assert Feed.objects.count() == 4
     assert FeedCategory.objects.count() == 3
-    assert FeedArticle.objects.count() == 4
+    assert FeedArticle.objects.count() == 5
 
     snapshot.assert_match(
         serialize_for_snapshot(

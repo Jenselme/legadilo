@@ -255,13 +255,21 @@ def _get_language(parsed_feed, entry):
 
 
 def _get_articles_tags(entry):
-    if tags := entry.get("tags", []):
-        return [full_sanitize(tag["term"]) for tag in tags if tag.get("term")]
+    parsed_tags = set()
 
-    if category := entry.get("category"):
-        return [category]
+    if not (tags := entry.get("tags", [])):
+        return []
 
-    return []
+    for term in tags:
+        if not (term_value := term.get("term")):
+            continue
+        for raw_tag in term_value.split(","):
+            tag = full_sanitize(raw_tag).strip()
+            if not tag:
+                continue
+            parsed_tags.add(tag)
+
+    return sorted(parsed_tags)
 
 
 def _get_article_link(feed_url, entry):
