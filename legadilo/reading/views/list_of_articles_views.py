@@ -1,19 +1,26 @@
 from __future__ import annotations
 
+from http import HTTPStatus
 from typing import Any
 
 from csp.decorators import csp_update
+from django import forms
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 
+from legadilo.core.forms import FormChoices
+from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.widgets import MultipleTagsWidget
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ReadingList, Tag
+from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
 from legadilo.reading.utils.views import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
@@ -52,6 +59,8 @@ def display_list_of_articles(
     request: AuthenticatedHttpRequest,
     articles_qs: ArticleQuerySet,
     page_ctx: dict[str, Any],
+    *,
+    status: HTTPStatus = HTTPStatus.OK,
 ) -> TemplateResponse:
     articles_paginator = Paginator(articles_qs, constants.MAX_ARTICLE_PER_PAGE)
     # If the full_reload params is passed, we render the full template. To avoid issues with
@@ -85,17 +94,19 @@ def display_list_of_articles(
             request,
             "reading/partials/article_paginator_page.html",
             response_ctx,
+            status=status,
         )
 
     return TemplateResponse(
         request,
         "reading/list_of_articles.html",
         response_ctx,
+        status=status,
         headers=headers,
     )
 
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 @login_required
 @csp_update(IMG_SRC="https:")
 def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> TemplateResponse:
@@ -104,14 +115,93 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         slug=tag_slug,
         user=request.user,
     )
+    tag_choices = Tag.objects.get_all_choices(request.user)
+
+    status = HTTPStatus.OK
+    form = UpdateArticlesForm(tag_choices=tag_choices)
+    articles_qs = Article.objects.get_articles_of_tag(displayed_tag)
+    if request.method == "POST":
+        status, form = update_list_of_articles(request, articles_qs, tag_choices)
 
     return display_list_of_articles(
         request,
-        Article.objects.get_articles_of_tag(displayed_tag),
+        articles_qs,
         {
             "page_title": _("Articles with tag '%(tag_title)s'")
             % {"tag_title": displayed_tag.title},
             "displayed_reading_list_id": None,
             "js_cfg": {},
+            "update_articles_form": form,
         },
+        status=status,
     )
+
+
+class UpdateArticlesForm(forms.Form):
+    add_tags = MultipleTagsField(
+        required=False,
+        choices=[],
+        help_text=_(
+            "Tags to associate to all articles of this search (not only the visible ones). "
+            "To create a new tag, type and press enter."
+        ),
+    )
+    remove_tags = MultipleTagsField(
+        required=False,
+        choices=[],
+        help_text=_(
+            "Tags to dissociate with all articles of this search (not only the visible ones)."
+        ),
+        widget=MultipleTagsWidget(allow_new=False),
+    )
+    update_action = forms.ChoiceField(
+        required=True,
+        initial=constants.UpdateArticleActions.DO_NOTHING,
+        choices=constants.UpdateArticleActions.choices,
+    )
+
+    def __init__(self, data=None, *, tag_choices: FormChoices, **kwargs):
+        super().__init__(data, **kwargs)
+        self._tag_value_choices = {choice[0] for choice in tag_choices}
+        self.fields["add_tags"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["remove_tags"].choices = tag_choices  # type: ignore[attr-defined]
+
+    def clean_remove_tags(self):
+        for tag in self.cleaned_data["remove_tags"]:
+            if tag not in self._tag_value_choices:
+                raise ValidationError(
+                    _("%s is not a known tag") % tag, code="tried-to-remove-inexistant-tag"
+                )
+
+        return self.cleaned_data["remove_tags"]
+
+
+@transaction.atomic()
+def update_list_of_articles(
+    request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet, tag_choices: FormChoices
+):
+    form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
+    if not form.is_valid():
+        return HTTPStatus.BAD_REQUEST, form
+
+    if form.cleaned_data["add_tags"]:
+        tags_to_add = Tag.objects.get_or_create_from_list(
+            request.user, form.cleaned_data["add_tags"]
+        )
+        ArticleTag.objects.associate_articles_with_tags(
+            articles_qs.all(),
+            tags_to_add,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+            readd_deleted=True,
+        )
+
+    if form.cleaned_data["remove_tags"]:
+        # Note: the form validation assures us we won't create any tags here.
+        tags_to_delete = Tag.objects.get_or_create_from_list(
+            request.user, form.cleaned_data["remove_tags"]
+        )
+        ArticleTag.objects.dissociate_articles_with_tags(articles_qs.all(), tags_to_delete)
+
+    articles_qs.all().update_articles_from_action(form.cleaned_data["update_action"])
+
+    return HTTPStatus.OK, UpdateArticlesForm(tag_choices=tag_choices)

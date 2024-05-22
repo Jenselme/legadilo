@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from legadilo.feeds.models import FeedArticle
 from legadilo.feeds.tests.factories import FeedFactory
+from legadilo.reading import constants as reading_constants
 from legadilo.reading.tests.factories import ArticleFactory
 
 
@@ -42,3 +43,12 @@ class TestFeedArticlesView:
         assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [self.article]
+        assert response.context["update_articles_form"] is not None
+
+    def test_only_article_update_action(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(11):
+            response = logged_in_sync_client.post(
+                self.url, {"update_action": reading_constants.UpdateArticleActions.MARK_AS_READ}
+            )
+
+        assert response.status_code == HTTPStatus.OK

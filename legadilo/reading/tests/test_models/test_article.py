@@ -939,13 +939,25 @@ class TestArticleManager:
         )
         article_linked_to_other_tag = ArticleFactory(title="Article linked to other tag", user=user)
         ArticleTag.objects.create(tag=other_tag, article=article_linked_to_other_tag)
+        article_link_to_tag_to_display_and_deleted_tag = ArticleFactory(
+            title="Article linked to tag to display and some other deleted tag", user=user
+        )
+        ArticleTag.objects.create(
+            tag=tag_to_display, article=article_link_to_tag_to_display_and_deleted_tag
+        )
+        ArticleTag.objects.create(
+            tag=other_tag,
+            article=article_link_to_tag_to_display_and_deleted_tag,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
 
         with django_assert_num_queries(2):
-            articles = list(Article.objects.get_articles_of_tag(tag_to_display))
+            articles = list(Article.objects.get_articles_of_tag(tag_to_display).order_by("id"))
 
         assert list(articles) == [
             article_linked_only_to_tag_to_display,
             article_linked_to_all_tags,
+            article_link_to_tag_to_display_and_deleted_tag,
         ]
 
 

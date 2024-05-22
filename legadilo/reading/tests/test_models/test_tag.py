@@ -193,6 +193,18 @@ class TestArticleTagManager:
             },
         ]
 
+    def test_dissociate_articles_with_tags(self, user, django_assert_num_queries):
+        with django_assert_num_queries(1):
+            ArticleTag.objects.dissociate_articles_with_tags(
+                [self.article1, self.article2], [self.tag1, self.tag2]
+            )
+
+        assert list(ArticleTag.objects.values("article", "tag", "tagging_reason")) == [
+            {"article": self.article1.id, "tag": self.tag1.id, "tagging_reason": "DELETED"},
+            {"article": self.article1.id, "tag": self.tag2.id, "tagging_reason": "DELETED"},
+            {"article": self.article1.id, "tag": self.tag3.id, "tagging_reason": "ADDED_MANUALLY"},
+        ]
+
     def test_dissociate_article_with_tags_not_in_list(self, user, django_assert_num_queries):
         with django_assert_num_queries(2):
             ArticleTag.objects.dissociate_article_with_tags_not_in_list(self.article1, [self.tag1])

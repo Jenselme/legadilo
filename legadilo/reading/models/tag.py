@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Self
 
+from django.core.paginator import Paginator
 from django.db import models, transaction
 from slugify import slugify
 
+from legadilo.core import constants as core_constants
 from legadilo.core.forms import FormChoices
 from legadilo.reading import constants
 from legadilo.users.models import User
@@ -13,7 +15,7 @@ from legadilo.users.models import User
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
 
-    from legadilo.reading.models.article import Article
+    from legadilo.reading.models.article import Article, ArticleQuerySet
 else:
     TypedModelMeta = object
 
@@ -120,29 +122,33 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
 
     def associate_articles_with_tags(
         self,
-        articles: Iterable[Article],
+        all_articles: Sequence[Article] | ArticleQuerySet,
         tags: Iterable[Tag],
         tagging_reason: constants.TaggingReason,
         *,
         readd_deleted=False,
     ):
-        existing_article_tag_links = list(
-            self.get_queryset()
-            .for_articles_and_tags(articles, tags)
-            .values_list("article_id", "tag_id")
+        paginator: Paginator[Article] = Paginator(
+            all_articles, core_constants.PER_PAGE_FOR_BULK_OPERATIONS
         )
-        article_tags_to_create = [
-            self.model(article=article, tag=tag, tagging_reason=tagging_reason)
-            for article in articles
-            for tag in tags
-            if (article.id, tag.id) not in existing_article_tag_links
-        ]
-        self.bulk_create(article_tags_to_create)
-
-        if readd_deleted:
-            self.get_queryset().for_deleted_links(existing_article_tag_links).update(
-                tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        for page in paginator:
+            existing_article_tag_links = list(
+                self.get_queryset()
+                .for_articles_and_tags(page.object_list, tags)
+                .values_list("article_id", "tag_id")
             )
+            article_tags_to_create = [
+                self.model(article=article, tag=tag, tagging_reason=tagging_reason)
+                for article in page.object_list
+                for tag in tags
+                if (article.id, tag.id) not in existing_article_tag_links
+            ]
+            self.bulk_create(article_tags_to_create)
+
+            if readd_deleted:
+                self.get_queryset().for_deleted_links(existing_article_tag_links).update(
+                    tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+                )
 
     def dissociate_article_with_tags_not_in_list(self, article: Article, tags: Iterable[Tag]):
         existing_article_tag_slugs = set(article.tags.all().values_list("slug", flat=True))
@@ -151,6 +157,17 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
 
         if article_tag_slugs_to_delete:
             article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).update(
+                tagging_reason=constants.TaggingReason.DELETED
+            )
+
+    def dissociate_articles_with_tags(
+        self, all_articles: Sequence[Article] | ArticleQuerySet, tags: Iterable[Tag]
+    ):
+        paginator: Paginator[Article] = Paginator(
+            all_articles, core_constants.PER_PAGE_FOR_BULK_OPERATIONS
+        )
+        for page in paginator:
+            self.get_queryset().for_articles_and_tags(page.object_list, tags).update(
                 tagging_reason=constants.TaggingReason.DELETED
             )
 

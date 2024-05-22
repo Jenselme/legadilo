@@ -123,7 +123,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def only_unread(self):
         return self.filter(is_read=False)
 
-    def for_reading_list_filtering(self) -> Self:
+    def for_current_tag_filtering(self) -> Self:
         return self.alias(
             alias_tag_ids_for_article=ArrayAgg(
                 "article_tags__tag_id",
@@ -135,15 +135,15 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
             self.for_user(reading_list.user)
-            .for_reading_list_filtering()
+            .for_current_tag_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
         )
 
     def for_tag(self, tag: Tag) -> Self:
         return (
-            self.filter(article_tags__tag=tag)
-            .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
+            self.for_current_tag_filtering()
+            .filter(alias_tag_ids_for_article__contains=[tag.id])
             .prefetch_related(_build_prefetch_article_tags())
         )
 
@@ -296,7 +296,7 @@ class ArticleManager(models.Manager["Article"]):
             self.get_queryset()
             .for_user(user)
             .only_unread()
-            .for_reading_list_filtering()
+            .for_current_tag_filtering()
             .aggregate(**aggregation)
         )
 

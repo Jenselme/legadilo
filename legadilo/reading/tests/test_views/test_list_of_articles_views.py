@@ -68,6 +68,7 @@ class TestReadingListWithArticlesView:
         }
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [self.unread_article]
+        assert response.context.get("update_articles_form") is None
 
     def test_reading_list_view(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(10):
@@ -89,6 +90,7 @@ class TestReadingListWithArticlesView:
             self.unread_article,
         ]
         assert response.context["from_url"] == self.reading_list_url
+        assert response.context.get("update_articles_form") is None
 
     def test_reading_list_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(10):
@@ -168,7 +170,7 @@ class TestTagWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -181,3 +183,90 @@ class TestTagWithArticlesView:
         assert response.context["articles_page"].object_list == [
             self.article_in_list,
         ]
+        assert response.context["update_articles_form"] is not None
+
+
+@pytest.mark.django_db()
+class TestUpdateArticlesFromTagWithArticlesView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.tag_to_display = TagFactory(user=user)
+        self.tag_to_remove = TagFactory(user=user)
+        self.other_tag = TagFactory(user=user)
+        self.url = reverse(
+            "reading:tag_with_articles", kwargs={"tag_slug": self.tag_to_display.slug}
+        )
+        self.article_in_list = ArticleFactory(user=user, read_at=None)
+        ArticleTag.objects.create(tag=self.tag_to_display, article=self.article_in_list)
+        self.other_article_in_list = ArticleFactory(user=user, read_at=None)
+        ArticleTag.objects.create(tag=self.tag_to_display, article=self.other_article_in_list)
+        ArticleTag.objects.create(tag=self.tag_to_remove, article=self.other_article_in_list)
+        self.article_not_in_list = ArticleFactory(user=user, read_at=None)
+        ArticleTag.objects.create(tag=self.other_tag, article=self.article_not_in_list)
+        ArticleTag.objects.create(tag=self.tag_to_remove, article=self.article_not_in_list)
+
+    def test_invalid_form(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url, {"update_action": "Test", "remove_tags": ["toto"]}
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context["update_articles_form"].errors == {
+            "remove_tags": ["toto is not a known tag"],
+            "update_action": ["Select a valid choice. Test is not one of the available choices."],
+        }
+
+    def test_only_article_update_action(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(11):
+            response = logged_in_sync_client.post(
+                self.url, {"update_action": constants.UpdateArticleActions.MARK_AS_READ}
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article_in_list.refresh_from_db()
+        assert self.article_in_list.read_at is not None
+        assert self.article_in_list.tags.count() == 1
+        self.other_article_in_list.refresh_from_db()
+        assert self.other_article_in_list.read_at is not None
+        assert self.other_article_in_list.tags.count() == 2
+        self.article_not_in_list.refresh_from_db()
+        assert self.article_not_in_list.read_at is None
+        assert self.article_not_in_list.tags.count() == 2
+
+    def test_with_tag_actions(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(26):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "update_action": constants.UpdateArticleActions.DO_NOTHING,
+                    "add_tags": ["New tag"],
+                    "remove_tags": [self.tag_to_remove.slug],
+                },
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article_in_list.refresh_from_db()
+        assert self.article_in_list.read_at is None
+        assert set(
+            self.article_in_list.article_tags.values_list("tag__slug", "tagging_reason")
+        ) == {
+            ("new-tag", constants.TaggingReason.ADDED_MANUALLY),
+            (self.tag_to_display.slug, constants.TaggingReason.ADDED_MANUALLY),
+        }
+        self.other_article_in_list.refresh_from_db()
+        assert self.other_article_in_list.read_at is None
+        assert set(
+            self.other_article_in_list.article_tags.values_list("tag__slug", "tagging_reason")
+        ) == {
+            ("new-tag", constants.TaggingReason.ADDED_MANUALLY),
+            (self.tag_to_remove.slug, constants.TaggingReason.DELETED),
+            (self.tag_to_display.slug, constants.TaggingReason.ADDED_MANUALLY),
+        }
+        self.article_not_in_list.refresh_from_db()
+        assert self.article_not_in_list.read_at is None
+        assert set(
+            self.article_not_in_list.article_tags.values_list("tag__slug", "tagging_reason")
+        ) == {
+            (self.other_tag.slug, constants.TaggingReason.ADDED_MANUALLY),
+            (self.tag_to_remove.slug, constants.TaggingReason.ADDED_MANUALLY),
+        }
