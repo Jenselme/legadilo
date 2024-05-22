@@ -1,8 +1,11 @@
 """Base settings to build other settings files upon."""
 
+import concurrent
 import warnings
 from pathlib import Path
 
+import asgiref
+import django
 import environ
 from django.contrib.messages import constants as messages
 from django.utils.translation import gettext_lazy as _
@@ -391,6 +394,13 @@ DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=Fals
 # https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # See https://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+tracebacks_suppress = [django, asgiref, concurrent]
+if DEBUG:
+    import debug_toolbar
+    import django_htmx
+
+    tracebacks_suppress.extend((debug_toolbar, django_htmx))
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -411,26 +421,27 @@ LOGGING = {
             "class": "rich.logging.RichHandler",
             "filters": [],
             "level": "DEBUG",
-            "rich_tracebacks": env.bool("LOGGING_RICH_TRACEBACK", default=DEBUG),
-            "tracebacks_show_locals": env.bool("LOGGING_RICH_TRACEBACK", default=DEBUG),
+            "rich_tracebacks": env.bool("LOGGING_RICH_TRACEBACK", default=True),
+            "tracebacks_show_locals": env.bool("LOGGING_RICH_TRACEBACK", default=True),
+            "tracebacks_suppress": tracebacks_suppress,
         },
     },
-    "root": {"level": "INFO", "handlers": ["rich"]},
+    "root": {"level": "INFO" if DEBUG else "WARNING", "handlers": ["rich"]},
     "loggers": {
         "django": {
             "handlers": ["rich"],
-            "level": "WARNING" if IS_PRODUCTION else "INFO",
+            "level": "INFO" if DEBUG else "WARNING",
             "propagate": False,
         },
         "django.request": {
             "handlers": ["rich"],
             "level": "ERROR",
-            "propagate": True,
+            "propagate": False,
         },
         "django.security.DisallowedHost": {
             "level": "ERROR",
             "handlers": ["rich"],
-            "propagate": True,
+            "propagate": False,
         },
         "httpx": {
             "handlers": ["rich"],
@@ -441,7 +452,7 @@ LOGGING = {
             "level": "WARNING",
         },
         "legadilo": {
-            "level": "INFO" if IS_PRODUCTION else "DEBUG",
+            "level": "DEBUG" if DEBUG else "INFO",
             "handlers": ["rich"],
             "propagate": False,
         },
