@@ -74,11 +74,18 @@ class TestFeedQuerySet:
         with time_machine.travel("2024-05-07 10:00:00"):
             FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
 
+        feed_no_feed_update_object = FeedFactory(
+            title="Not yet updated this morning",
+            user=user,
+            refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
+        )
+
         feeds_to_update = Feed.objects.get_queryset().for_update()
 
         assert list(feeds_to_update) == [
             feed_updated_more_than_one_hour_ago,
             feed_not_yet_updated_this_morning,
+            feed_no_feed_update_object,
         ]
 
     @time_machine.travel("2024-05-08 13:00:00")
