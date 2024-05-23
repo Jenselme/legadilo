@@ -135,10 +135,27 @@ def test_build_filters_from_reading_list(
     with time_machine.travel("2024-03-19 21:08:00"):
         filters = _build_filters_from_reading_list(reading_list)
 
-    assert filters == models.Q(user=user) & expected_filter
+    assert filters == expected_filter
 
 
+@pytest.mark.django_db()
 class TestArticleQuerySet:
+    def test_for_user(self, user, other_user):
+        article = ArticleFactory(user=user)
+        ArticleFactory(user=other_user)
+
+        articles = Article.objects.get_queryset().for_user(user)
+
+        assert list(articles) == [article]
+
+    def test_only_unread(self, user):
+        ArticleFactory(user=user, read_at=utcnow())
+        unread_article = ArticleFactory(user=user, read_at=None)
+
+        articles = Article.objects.get_queryset().only_unread()
+
+        assert list(articles) == [unread_article]
+
     def test_for_reading_list_with_tags_basic_include(self, user, django_assert_num_queries):
         reading_list = ReadingListFactory(user=user)
         tag_to_include = TagFactory(user=user)
@@ -187,11 +204,9 @@ class TestArticleQuerySet:
         )
 
         with django_assert_num_queries(1):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
 
-        assert articles_paginator.num_pages == 1
-        articles_page = articles_paginator.page(1)
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_to_include_linked_many_tags,
             article_to_include_one_tag,
         ]
@@ -230,13 +245,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        with django_assert_num_queries(1):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert articles_paginator.count == 1
-        articles_page = articles_paginator.page(1)
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_linked_to_all_tags,
         ]
 
@@ -274,13 +286,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        with django_assert_num_queries(1):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert articles_paginator.count == 2
-        articles_page = articles_paginator.page(1)
-        assert list(articles_page.object_list) == [
+        assert articles == [
             article_linked_to_all_tags,
             article_to_include_one_tag,
         ]
@@ -333,12 +342,10 @@ class TestArticleQuerySet:
         )
         article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert articles == [
             article_linked_only_to_other_tag,
             article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
@@ -397,12 +404,10 @@ class TestArticleQuerySet:
         )
         article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
         ]
@@ -459,12 +464,10 @@ class TestArticleQuerySet:
         )
         article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(1):
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_linked_to_one_tag,
             article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
@@ -577,15 +580,70 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.DELETED,
         )
 
-        with django_assert_num_queries(2):
-            articles_paginator = Article.objects.get_articles_of_reading_list(reading_list)
-            articles_page = articles_paginator.page(1)
+        with django_assert_num_queries(1):
+            articles = Article.objects.get_articles_of_reading_list(reading_list)
 
-        assert articles_paginator.num_pages == 1
-        assert list(articles_page.object_list) == [
+        assert list(articles) == [
             article_to_include_linked_to_all_tags,
             article_to_include_linked_to_deleted_tag_to_exclude,
         ]
+
+    @pytest.mark.parametrize(
+        ("action", "attrs"),
+        [
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_READ,
+                {"read_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "is_read": True},
+                id="mark-as-read",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_UNREAD,
+                {"read_at": None, "is_read": False},
+                id="mark-as-unread",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FAVORITE,
+                {"is_favorite": True},
+                id="mark-as-favorite",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FAVORITE,
+                {"is_favorite": False},
+                id="unmark-as-favorite",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_FOR_LATER,
+                {"is_for_later": True},
+                id="mark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
+                {"is_for_later": False},
+                id="unmark-as-for-later",
+            ),
+            pytest.param(
+                constants.UpdateArticleActions.MARK_AS_OPENED,
+                {"opened_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "was_opened": True},
+                id="mark-as-opened",
+            ),
+        ],
+    )
+    def test_update_articles_from_action(
+        self, action: constants.UpdateArticleActions, attrs: dict[str, bool | str]
+    ):
+        article = ArticleFactory(
+            read_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
+            is_favorite=choice([True, False]),
+            is_for_later=choice([True, False]),
+            opened_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
+        )
+
+        with time_machine.travel("2024-04-20 12:00:00"):
+            Article.objects.get_queryset().filter(id=article.id).update_articles_from_action(action)
+
+        article.refresh_from_db()
+        for attr_name, attr_value in attrs.items():
+            assert getattr(article, attr_name) == attr_value
 
 
 @pytest.mark.django_db()
@@ -599,6 +657,8 @@ class TestArticleManager:
             user=user,
             external_article_id="existing-article-feed",
             updated_at=utcdt(2023, 4, 20),
+            read_at=utcnow(),
+            initial_source_type=constants.ArticleSourceType.FEED,
         )
         existing_article_to_keep = ArticleFactory(
             title="Title to keep",
@@ -691,6 +751,8 @@ class TestArticleManager:
         assert existing_article_to_update.title == "Article updated"
         assert existing_article_to_update.slug == "article-updated"
         assert existing_article_to_update.updated_at == now_dt
+        assert existing_article_to_update.read_at is None
+        assert existing_article_to_update.initial_source_type == constants.ArticleSourceType.MANUAL
         existing_article_to_keep.refresh_from_db()
         assert existing_article_to_keep.title == "Title to keep"
         assert existing_article_to_keep.slug == "title-to-keep"
@@ -834,7 +896,7 @@ class TestArticleManager:
         existing_article.refresh_from_db()
         assert existing_article.read_at == now_dt
 
-    def test_count_articles_of_reading_lists(self, user, django_assert_num_queries):
+    def test_count_unread_articles_of_reading_lists(self, user, django_assert_num_queries):
         reading_list1 = ReadingListFactory(user=user)
         reading_list2 = ReadingListFactory(user=user, read_status=constants.ReadStatus.ONLY_READ)
         reading_list3 = ReadingListFactory(
@@ -847,15 +909,17 @@ class TestArticleManager:
         ArticleFactory(user=user, read_at=utcnow())
 
         with django_assert_num_queries(1):
-            counts = Article.objects.count_articles_of_reading_lists(reading_lists_with_tags)
+            counts = Article.objects.count_unread_articles_of_reading_lists(
+                user, reading_lists_with_tags
+            )
 
         assert counts == {
-            reading_list1.slug: 2,
-            reading_list2.slug: 1,
+            reading_list1.slug: 1,
+            reading_list2.slug: 0,
             reading_list3.slug: 0,
         }
 
-    def test_get_articles_of_tag(self, user):
+    def test_get_articles_of_tag(self, user, django_assert_num_queries):
         tag_to_display = TagFactory(user=user)
         other_tag = TagFactory(user=user)
         article_linked_only_to_tag_to_display = ArticleFactory(
@@ -875,15 +939,40 @@ class TestArticleManager:
         )
         article_linked_to_other_tag = ArticleFactory(title="Article linked to other tag", user=user)
         ArticleTag.objects.create(tag=other_tag, article=article_linked_to_other_tag)
+        article_link_to_tag_to_display_and_deleted_tag = ArticleFactory(
+            title="Article linked to tag to display and some other deleted tag", user=user
+        )
+        ArticleTag.objects.create(
+            tag=tag_to_display, article=article_link_to_tag_to_display_and_deleted_tag
+        )
+        ArticleTag.objects.create(
+            tag=other_tag,
+            article=article_link_to_tag_to_display_and_deleted_tag,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
 
-        articles_paginator = Article.objects.get_articles_of_tag(tag_to_display)
+        with django_assert_num_queries(2):
+            articles = list(Article.objects.get_articles_of_tag(tag_to_display).order_by("id"))
 
-        assert articles_paginator.num_pages == 1
-        page = articles_paginator.page(1)
-        assert list(page.object_list) == [
+        assert list(articles) == [
             article_linked_only_to_tag_to_display,
             article_linked_to_all_tags,
+            article_link_to_tag_to_display_and_deleted_tag,
         ]
+
+    def test_get_articles_with_external_tag(self, user, django_assert_num_queries):
+        tag = TagFactory(user=user, title="Test")
+        article = ArticleFactory(user=user, external_tags=["Test"])
+        ArticleTag.objects.create(tag=tag, article=article)
+        ArticleFactory(user=user, external_tags=["Other tag"])
+        properly_tagged_article = ArticleFactory(user=user)
+        ArticleTag.objects.create(article=properly_tagged_article, tag=tag)
+        ArticleFactory(external_tags=["Test"])
+
+        with django_assert_num_queries(2):
+            articles = list(Article.objects.get_articles_with_external_tag(user, "Test"))
+
+        assert articles == [article]
 
 
 class TestArticleModel:
@@ -1019,62 +1108,6 @@ class TestArticleModel:
         assert was_updated
         for attr, value in expected_data.items():
             assert getattr(article, attr) == value
-
-    @pytest.mark.parametrize(
-        ("action", "attrs"),
-        [
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_READ,
-                {"read_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "is_read": True},
-                id="mark-as-read",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_UNREAD,
-                {"read_at": None, "is_read": False},
-                id="mark-as-unread",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_FAVORITE,
-                {"is_favorite": True},
-                id="mark-as-favorite",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.UNMARK_AS_FAVORITE,
-                {"is_favorite": False},
-                id="unmark-as-favorite",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_FOR_LATER,
-                {"is_for_later": True},
-                id="mark-as-for-later",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.UNMARK_AS_FOR_LATER,
-                {"is_for_later": False},
-                id="unmark-as-for-later",
-            ),
-            pytest.param(
-                constants.UpdateArticleActions.MARK_AS_OPENED,
-                {"opened_at": datetime(2024, 4, 20, 12, 0, tzinfo=UTC), "was_opened": True},
-                id="mark-as-opened",
-            ),
-        ],
-    )
-    def test_update_article_from_action(
-        self, action: constants.UpdateArticleActions, attrs: dict[str, bool | str]
-    ):
-        article = ArticleFactory.build(
-            read_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
-            is_favorite=choice([True, False]),
-            is_for_later=choice([True, False]),
-            opened_at=choice([datetime(2024, 4, 20, 12, 0, tzinfo=UTC), None]),
-        )
-
-        with time_machine.travel("2024-04-20 12:00:00"):
-            article.update_article_from_action(action)
-
-        for attr_name, attr_value in attrs.items():
-            assert getattr(article, attr_name) == attr_value
 
     @pytest.mark.parametrize(
         ("source_type", "is_from_feed"),

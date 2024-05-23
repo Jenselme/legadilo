@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n static %}
+{% load i18n static humanize crispy_forms_tags %}
 
 {% block title %}
     {{ page_title }}
@@ -8,6 +8,7 @@
 {% block page_js %}
     <script src="{% static 'js/list_of_articles.js' %}" defer></script>
     {{ js_cfg|json_script:"js-cfg" }}
+    <script src="{% static 'js/tag_edition.js' %}" type="module"></script>
 {% endblock page_js %}
 {% block content %}
     <div class="container-fluid">
@@ -33,6 +34,46 @@
                 {% include 'reading/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
             </div>
             <div class="col col-12 col-md-8 px-1 px-md-2">
+                <div class="row">
+                    {% if count_articles_of_current_reading_list > 0 %}
+                        <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center">
+                            {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
+                                {{ formatted_nb_articles }} article in total
+                            {% plural %}
+                                {{ formatted_nb_articles }} articles in total
+                            {% endblocktranslate %}
+                        </h2>
+                    {% endif %}
+                    {% if update_articles_form %}
+                        <div class="accordion mb-2 col-md-8" id="search-actions">
+                            <div class="accordion-item">
+                                <div class="accordion-header">
+                                    <button class="accordion-button {% if not update_articles_form.errors %}collapsed{% endif %}"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#search-actions-form"
+                                            aria-expanded="{% if update_articles_form.errors %}true{% else %}false{% endif %}"
+                                            aria-controls="search-actions-form">
+                                        {% translate "View search actions" %}
+                                    </button>
+                                </div>
+                                <div id="search-actions-form"
+                                     class="accordion-collapse collapse {% if update_articles_form.errors %}show{% endif %}"
+                                     data-bs-parent="#search-actions">
+                                    <div class="accordion-body">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            {{ update_articles_form|crispy }}
+                                            <div class="d-flex justify-content-end">
+                                                <button type="submit" class="btn btn-outline-primary">{% translate "Update articles" %}</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
                 {% include "reading/partials/article_paginator_page.html" %}
                 <noscript>
                     {% include 'reading/partials/articles_list_pagination.html' %}

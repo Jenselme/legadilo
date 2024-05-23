@@ -20,7 +20,7 @@ from ...users.models import User
 from ...users.typing import AuthenticatedHttpRequest
 from .. import constants
 from ..models import Feed, FeedCategory
-from ..utils.feed_parsing import (
+from ..services.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
     MultipleFeedFoundError,
@@ -69,7 +69,6 @@ class SubscribeToFeedForm(forms.Form):
         *,
         tag_choices: FormChoices,
         category_choices: FormChoices,
-        user: User,
         **kwargs,
     ):
         super().__init__(data, **kwargs)
@@ -121,9 +120,7 @@ async def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
 async def _get_subscribe_to_feed_form(data: dict | None, user: User):
     tag_choices = await sync_to_async(Tag.objects.get_all_choices)(user)
     category_choices = await sync_to_async(FeedCategory.objects.get_all_choices)(user)
-    return SubscribeToFeedForm(
-        data, tag_choices=tag_choices, category_choices=category_choices, user=user
-    )
+    return SubscribeToFeedForm(data, tag_choices=tag_choices, category_choices=category_choices)
 
 
 async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too many return statements

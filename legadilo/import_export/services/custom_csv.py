@@ -15,7 +15,7 @@ from slugify import slugify
 
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
-from legadilo.feeds.utils.feed_parsing import (
+from legadilo.feeds.services.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
     NoFeedUrlFoundError,
@@ -104,7 +104,7 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url: dict[
 
 
 def _import_category(user, row):
-    return FeedCategory.objects.get_or_create(user=user, name=full_sanitize(row["category_title"]))
+    return FeedCategory.objects.get_or_create(user=user, title=full_sanitize(row["category_title"]))
 
 
 async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
@@ -168,7 +168,11 @@ def _import_article(user, feed, row):
             "title": title,
             "slug": slugify(title),
             "summary": truncatewords_html(
-                sanitize_keep_safe_tags(content, extra_tags_to_cleanup={"img"}), 255
+                sanitize_keep_safe_tags(
+                    content,
+                    extra_tags_to_cleanup=reading_constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY,
+                ),
+                255,
             ),
             "content": content,
             "reading_time": get_nb_words_from_html(content) // user.settings.default_reading_time,

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
@@ -22,14 +21,14 @@ if TYPE_CHECKING:
 
     from legadilo.reading.models.reading_list import ReadingList
     from legadilo.reading.models.tag import Tag
-    from legadilo.reading.utils.feed_parsing import ArticleData
+    from legadilo.reading.utils.article_fetching import ArticleData
     from legadilo.users.models import User
 else:
     TypedModelMeta = object
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
-    filters = models.Q(user=reading_list.user)
+    filters = models.Q()
 
     if reading_list.read_status == constants.ReadStatus.ONLY_READ:
         filters &= models.Q(is_read=True)
@@ -118,7 +117,13 @@ def _build_prefetch_article_tags():
 
 
 class ArticleQuerySet(models.QuerySet["Article"]):
-    def for_reading_list_filtering(self) -> Self:
+    def for_user(self, user: User):
+        return self.filter(user=user)
+
+    def only_unread(self):
+        return self.filter(is_read=False)
+
+    def for_current_tag_filtering(self) -> Self:
         return self.alias(
             alias_tag_ids_for_article=ArrayAgg(
                 "article_tags__tag_id",
@@ -129,20 +134,52 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
-            self.for_reading_list_filtering()
+            self.for_user(reading_list.user)
+            .for_current_tag_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
         )
 
     def for_tag(self, tag: Tag) -> Self:
         return (
-            self.filter(article_tags__tag=tag)
-            .exclude(article_tags__tagging_reason=constants.TaggingReason.DELETED)
+            self.for_current_tag_filtering()
+            .filter(alias_tag_ids_for_article__contains=[tag.id])
             .prefetch_related(_build_prefetch_article_tags())
         )
 
+    def for_external_tag(self, user: User, tag: str) -> Self:
+        return (
+            self.for_user(user)
+            .filter(external_tags__icontains=tag)
+            .prefetch_related(_build_prefetch_article_tags())
+        )
+
+    def for_feed(self) -> Self:
+        return self.prefetch_related(_build_prefetch_article_tags())
+
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())
+
+    def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
+        match action:
+            case constants.UpdateArticleActions.DO_NOTHING:
+                return 0
+            case constants.UpdateArticleActions.MARK_AS_READ:
+                return self.update(read_at=utcnow())
+            case constants.UpdateArticleActions.MARK_AS_UNREAD:
+                return self.update(read_at=None)
+            case constants.UpdateArticleActions.MARK_AS_FAVORITE:
+                return self.update(is_favorite=True)
+            case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
+                return self.update(is_favorite=False)
+            case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
+                return self.update(is_for_later=True)
+            case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
+                return self.update(is_for_later=False)
+            case constants.UpdateArticleActions.MARK_AS_OPENED:
+                return self.update(opened_at=utcnow())
+            case _:
+                assert_never(action)
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -181,7 +218,12 @@ class ArticleManager(models.Manager["Article"]):
                 article_to_update = existing_links_to_articles[article_data.link]
                 was_updated = article_to_update.update_article_from_data(article_data)
                 if source_type == constants.ArticleSourceType.MANUAL:
+                    if article_to_update.initial_source_type == constants.ArticleSourceType.FEED:
+                        # We force the source type to manual if we manually add it so prevent any
+                        # cleanup later one.
+                        article_to_update.initial_source_type = constants.ArticleSourceType.MANUAL
                     article_to_update.read_at = None
+                    was_updated = True
                 if was_updated:
                     articles_to_update.append(article_to_update)
             else:
@@ -227,6 +269,7 @@ class ArticleManager(models.Manager["Article"]):
                 "external_tags",
                 "updated_at",
                 "read_at",
+                "initial_source_type",
             ],
         )
 
@@ -241,23 +284,38 @@ class ArticleManager(models.Manager["Article"]):
 
         return all_articles
 
-    def get_articles_of_reading_list(self, reading_list: ReadingList) -> Paginator[Article]:
-        return Paginator(
-            self.get_queryset().for_reading_list(reading_list).order_by("-published_at", "id"),
-            constants.MAX_ARTICLE_PER_PAGE,
+    def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
+        return (
+            self.get_queryset()
+            .for_reading_list(reading_list)
+            .order_by("-updated_at", "-published_at", "id")
         )
 
-    def count_articles_of_reading_lists(self, reading_lists: list[ReadingList]) -> dict[str, int]:
+    def count_unread_articles_of_reading_lists(
+        self, user: User, reading_lists: list[ReadingList]
+    ) -> dict[str, int]:
         aggregation = {
             reading_list.slug: models.Count(
-                "id", filter=_build_filters_from_reading_list(reading_list)
+                "id",
+                filter=_build_filters_from_reading_list(reading_list),
             )
             for reading_list in reading_lists
         }
-        return self.get_queryset().for_reading_list_filtering().aggregate(**aggregation)
+        # We only count unread articles in the reading list. Not all article. I think it's more
+        # relevant.
+        return (
+            self.get_queryset()
+            .for_user(user)
+            .only_unread()
+            .for_current_tag_filtering()
+            .aggregate(**aggregation)
+        )
 
-    def get_articles_of_tag(self, tag: Tag) -> Paginator[Article]:
-        return Paginator(self.get_queryset().for_tag(tag), constants.MAX_ARTICLE_PER_PAGE)
+    def get_articles_of_tag(self, tag: Tag) -> ArticleQuerySet:
+        return self.get_queryset().for_tag(tag)
+
+    def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
+        return self.get_queryset().for_external_tag(user, tag)
 
 
 class Article(models.Model):
@@ -358,6 +416,7 @@ class Article(models.Model):
     objects = ArticleManager()
 
     class Meta(TypedModelMeta):
+        ordering = ["-updated_at", "-published_at", "id"]
         constraints = [
             models.UniqueConstraint(
                 "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
@@ -369,6 +428,11 @@ class Article(models.Model):
                 ),
             ),
         ]
+        indexes = [
+            models.Index(
+                fields=["user", "is_read", "is_favorite", "is_for_later"],
+            ),
+        ]
 
     def __str__(self):
         return (
@@ -377,7 +441,8 @@ class Article(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
+        if not self.slug:
+            self.slug = slugify(self.title)
 
         return super().save(*args, **kwargs)
 
@@ -413,27 +478,9 @@ class Article(models.Model):
 
         return True
 
-    def update_article_from_action(self, action: constants.UpdateArticleActions):
-        match action:
-            case constants.UpdateArticleActions.MARK_AS_READ:
-                self.read_at = utcnow()
-                self.is_read = True
-            case constants.UpdateArticleActions.MARK_AS_UNREAD:
-                self.read_at = None
-                self.is_read = False
-            case constants.UpdateArticleActions.MARK_AS_FAVORITE:
-                self.is_favorite = True
-            case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
-                self.is_favorite = False
-            case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
-                self.is_for_later = True
-            case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
-                self.is_for_later = False
-            case constants.UpdateArticleActions.MARK_AS_OPENED:
-                self.opened_at = utcnow()
-                self.was_opened = True
-            case _:
-                assert_never(action)
+    def update_from_details(self, *, title: str, reading_time: int):
+        self.title = title
+        self.reading_time = reading_time
 
     @property
     def is_from_feed(self):

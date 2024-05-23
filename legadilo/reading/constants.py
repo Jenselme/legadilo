@@ -55,6 +55,7 @@ class ReadingListTagOperator(TextChoices):
 
 
 class UpdateArticleActions(TextChoices):
+    DO_NOTHING = "DO_NOTHING", _("Do nothing")
     MARK_AS_FAVORITE = "MARK_AS_FAVORITE", _("Mark as favorite")
     UNMARK_AS_FAVORITE = "UNMARK_AS_FAVORITE", _("Unmark as favorite")
     MARK_AS_READ = "MARK_AS_READ", _("Mark as read")
@@ -81,3 +82,4 @@ MAX_ARTICLE_PER_PAGE = 50
 ARTICLE_TITLE_MAX_LENGTH = 300
 ARTICLE_SOURCE_TITLE_MAX_LENGTH = 300
 ARTICLES_LIST_MIN_REFRESH_TIMEOUT = 5 * 60  # In seconds
+EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY = frozenset({"img", "pre"})

@@ -59,11 +59,6 @@ def delete_action_url(article: Article) -> str:
 
 
 @register.filter
-def update_tags_action_url(article: Article) -> str:
-    return reverse("reading:update_article_tags", kwargs={"article_id": article.id})
-
-
-@register.filter
 def article_details_url(article: Article) -> str:
     return reverse(
         "reading:article_details", kwargs={"article_id": article.id, "article_slug": article.slug}
@@ -96,8 +91,3 @@ def delete_article_form_id(article: Article) -> str:
 @register.filter
 def update_article_form_id(article: Article) -> str:
     return f"update-article-actions-form-{article.id}"
-
-
-@register.filter
-def refetch_article_form_id(article: Article) -> str:
-    return f"refetch-article-actions-form-{article.id}"

@@ -1,6 +1,6 @@
 [
   {
-    "category__name": "Existing category",
+    "category__title": "Existing category",
     "description": "",
     "disabled_reason": "",
     "enabled": true,
@@ -8,10 +8,11 @@
     "feed_url": "https://example.com/existing.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "https://example.com",
+    "slug": "existing-feed",
     "title": "Existing feed"
   },
   {
-    "category__name": null,
+    "category__title": null,
     "description": "",
     "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
     "enabled": false,
@@ -19,10 +20,11 @@
     "feed_url": "https://example.com/rss8.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "https://example8.com/",
+    "slug": "feed-8",
     "title": "Feed 8"
   },
   {
-    "category__name": "Category 4",
+    "category__title": "Category 4",
     "description": "For documentation only",
     "disabled_reason": "",
     "enabled": true,
@@ -30,10 +32,11 @@
     "feed_url": "https://example.com/rss4.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "http://example.org/",
+    "slug": "sample-feed",
     "title": "Sample Feed"
   },
   {
-    "category__name": null,
+    "category__title": null,
     "description": "For documentation only",
     "disabled_reason": "",
     "enabled": true,
@@ -41,6 +44,7 @@
     "feed_url": "https://example.com/rss2.xml",
     "refresh_delay": "DAILY_AT_NOON",
     "site_url": "http://example.org/",
+    "slug": "sample-feed",
     "title": "Sample Feed"
   }
 ]

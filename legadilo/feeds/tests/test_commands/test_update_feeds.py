@@ -7,7 +7,7 @@ import time_machine
 from django.core.management import call_command
 
 from legadilo.feeds.models import FeedUpdate
-from legadilo.feeds.tests.factories import FeedUpdateFactory
+from legadilo.feeds.tests.factories import FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article
 
 from ... import constants
@@ -21,24 +21,30 @@ class TestUpdateFeedsCommand:
 
     def test_update_feed_command(self, httpx_mock, django_assert_num_queries):
         feed_url = "http://example.com/feed/rss.xml"
+        other_feed_url = "http://example.com/feed/atom.xml"
         with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
             FeedUpdateFactory(feed__feed_url=feed_url)
         httpx_mock.add_response(url=feed_url, content=get_feed_fixture_content("sample_rss.xml"))
+        feed_without_feed_update = FeedFactory(feed_url=other_feed_url)
+        httpx_mock.add_response(
+            url=other_feed_url, content=get_feed_fixture_content("sample_atom.xml")
+        )
 
         with (
             time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
-            django_assert_num_queries(11),
+            django_assert_num_queries(21),
         ):
             call_command("update_feeds")
 
-        assert Article.objects.count() == 1
-        assert FeedUpdate.objects.count() == 2
+        assert Article.objects.count() == 3
+        assert FeedUpdate.objects.count() == 3
         feed_update = FeedUpdate.objects.first()
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
+        assert feed_without_feed_update.feed_updates.count() == 1
 
     def test_update_feed_command_feed_not_modified(self, httpx_mock, django_assert_num_queries):
         feed_url = "http://example.com/feed/rss.xml"

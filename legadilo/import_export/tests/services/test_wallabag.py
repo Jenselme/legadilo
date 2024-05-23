@@ -13,7 +13,7 @@ def test_import_invalid_data(user):
 
 
 def test_import_valid_data(user):
-    TagFactory(user=user, name="existing", slug="existing")
+    TagFactory(user=user, title="existing", slug="existing")
     existing_article = ArticleFactory(user=user, title="Existing title", content="Existing content")
 
     nb_imported_articles = _import_wallabag_data(
@@ -98,7 +98,7 @@ def test_import_valid_data(user):
     assert article.initial_source_title == "www.example.com"
     assert article.annotations == ["Some stuff"]
     assert article.language == "en"
-    assert list(article.tags.values_list("name", "slug")) == [
+    assert list(article.tags.values_list("title", "slug")) == [
         ("existing", "existing"),
         ("New tag", "new-tag"),
     ]

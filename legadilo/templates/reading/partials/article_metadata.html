@@ -1,26 +1,45 @@
 {% load i18n %}
 
-<span class="me-2">
-    {% include "core/partials/bs-icons/author.html" %}
-    {{ article.authors|join:", "|safe }}
-</span>
-<span class="me-2">
-    {% include "core/partials/bs-icons/published_at.html" %}
-    {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
-</span>
-<span class="me-2">
-    {% if article.initial_source_type == 'FEED' %}
-        {% include "core/partials/bs-icons/feed_source.html" %}
-    {% else %}
-        {% include "core/partials/bs-icons/article_source.html" %}
+<p class="mb-0 text-secondary">
+    <span class="me-2">
+        {% include "core/partials/bs-icons/author.html" %}
+        {{ article.authors|join:", "|safe }}
+    </span>
+    {% if article.published_at %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/published_at.html" %}
+            {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
+        </span>
+    {% elif article.updated_at %}
+        {% include "core/partials/bs-icons/published_at.html" %}
+        {{ article.updated_at | date:"SHORT_DATETIME_FORMAT" }}
     {% endif %}
-    {{ article.initial_source_title|safe }}
-</span>
-<span class="me-2">
-    {% include "core/partials/bs-icons/reading_time.html" %}
-    {% blocktranslate count reading_time=article.reading_time %}
-        {{ reading_time }} minute
-    {% plural %}
-        {{ reading_time }} minutes
-    {% endblocktranslate %}
-</span>
+    <span class="me-2">
+        {% if article.initial_source_type == 'FEED' %}
+            {% include "core/partials/bs-icons/feed_source.html" %}
+        {% else %}
+            {% include "core/partials/bs-icons/article_source.html" %}
+        {% endif %}
+        {{ article.initial_source_title|safe }}
+    </span>
+    <span class="me-2">
+        {% include "core/partials/bs-icons/reading_time.html" %}
+        {% blocktranslate count reading_time=article.reading_time %}
+            {{ reading_time }} minute
+        {% plural %}
+            {{ reading_time }} minutes
+        {% endblocktranslate %}
+    </span>
+</p>
+{% if article.tags_to_display or article.external_tags %}
+    <p>
+        {% for tag in article.tags_to_display %}
+            <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1"
+               href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{{ tag.title }}</a>
+        {% endfor %}
+        {% for tag in article.external_tags %}
+            <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1"
+               href="{% url 'reading:external_tag_with_articles' tag=tag|urlencode %}">{{ tag }}</a>
+        {% endfor %}
+    </p>
+{% endif %}

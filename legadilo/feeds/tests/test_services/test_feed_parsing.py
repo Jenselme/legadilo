@@ -2,7 +2,7 @@ import httpx
 import pytest
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.utils.feed_parsing import (
+from legadilo.feeds.services.feed_parsing import (
     FeedFileTooBigError,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
@@ -199,7 +199,7 @@ class TestGetFeedMetadata:
     @pytest.mark.asyncio()
     async def test_feed_file_too_big(self, httpx_mock, mocker):
         mocker.patch(
-            "legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
+            "legadilo.feeds.services.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
         )
         httpx_mock.add_response(
             text=get_feed_fixture_content("sample_atom.xml"),

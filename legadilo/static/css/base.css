@@ -67,4 +67,9 @@
   .card {
     max-height: 500px;
   }
+
+  .card main {
+    max-height: 200px;
+    overflow-x: hidden;
+  }
 }

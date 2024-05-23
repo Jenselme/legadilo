@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Self
 
+from django.core.paginator import Paginator
 from django.db import models, transaction
 from slugify import slugify
 
+from legadilo.core import constants as core_constants
 from legadilo.core.forms import FormChoices
 from legadilo.reading import constants
 from legadilo.users.models import User
@@ -13,7 +15,7 @@ from legadilo.users.models import User
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
 
-    from legadilo.reading.models.article import Article
+    from legadilo.reading.models.article import Article, ArticleQuerySet
 else:
     TypedModelMeta = object
 
@@ -33,20 +35,20 @@ class TagManager(models.Manager["Tag"]):
         return TagQuerySet(self.model, using=self._db, hints=self._hints)
 
     def get_all_choices(self, user: User) -> FormChoices:
-        return list(self.get_queryset().for_user(user).values_list("slug", "name"))
+        return list(self.get_queryset().for_user(user).values_list("slug", "title"))
 
     @transaction.atomic()
-    def get_or_create_from_list(self, user: User, names_or_slugs: list[str]) -> list[Tag]:
+    def get_or_create_from_list(self, user: User, titles_or_slugs: list[str]) -> list[Tag]:
         existing_tags = list(
             Tag.objects.get_queryset()
             .for_user(user)
-            .for_slugs([slugify(name_or_slug) for name_or_slug in names_or_slugs])
+            .for_slugs([slugify(title_or_slug) for title_or_slug in titles_or_slugs])
         )
         existing_slugs = {tag.slug for tag in existing_tags}
         tags_to_create = [
-            self.model(name=name_or_slug, slug=slugify(name_or_slug), user=user)
-            for name_or_slug in names_or_slugs
-            if slugify(name_or_slug) not in existing_slugs
+            self.model(title=title_or_slug, slug=slugify(title_or_slug), user=user)
+            for title_or_slug in titles_or_slugs
+            if slugify(title_or_slug) not in existing_slugs
         ]
         self.bulk_create(tags_to_create)
 
@@ -54,7 +56,7 @@ class TagManager(models.Manager["Tag"]):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50)
+    title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=50, blank=True)
 
     user = models.ForeignKey("users.User", related_name="tags", on_delete=models.CASCADE)
@@ -74,13 +76,13 @@ class Tag(models.Model):
                 "slug", "user_id", name="%(app_label)s_%(class)s_tag_slug_unique_for_user"
             )
         ]
-        ordering = ["name", "id"]
+        ordering = ["title", "id"]
 
     def __str__(self):
-        return f"Tag(name={self.name}, user={self.user})"
+        return f"Tag(title={self.title}, user={self.user})"
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        self.slug = slugify(self.title)
 
         return super().save(*args, **kwargs)
 
@@ -90,7 +92,7 @@ class ArticleTagQuerySet(models.QuerySet["ArticleTag"]):
         return (
             self.exclude(tagging_reason=constants.TaggingReason.DELETED)
             .select_related("tag")
-            .annotate(name=models.F("tag__name"), slug=models.F("tag__slug"))
+            .annotate(title=models.F("tag__title"), slug=models.F("tag__slug"))
         )
 
     def for_articles_and_tags(self, articles: Iterable[Article], tags: Iterable[Tag]) -> Self:
@@ -120,29 +122,33 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
 
     def associate_articles_with_tags(
         self,
-        articles: Iterable[Article],
+        all_articles: Sequence[Article] | ArticleQuerySet,
         tags: Iterable[Tag],
         tagging_reason: constants.TaggingReason,
         *,
         readd_deleted=False,
     ):
-        existing_article_tag_links = list(
-            self.get_queryset()
-            .for_articles_and_tags(articles, tags)
-            .values_list("article_id", "tag_id")
+        paginator: Paginator[Article] = Paginator(
+            all_articles, core_constants.PER_PAGE_FOR_BULK_OPERATIONS
         )
-        article_tags_to_create = [
-            self.model(article=article, tag=tag, tagging_reason=tagging_reason)
-            for article in articles
-            for tag in tags
-            if (article.id, tag.id) not in existing_article_tag_links
-        ]
-        self.bulk_create(article_tags_to_create)
-
-        if readd_deleted:
-            self.get_queryset().for_deleted_links(existing_article_tag_links).update(
-                tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        for page in paginator:
+            existing_article_tag_links = list(
+                self.get_queryset()
+                .for_articles_and_tags(page.object_list, tags)
+                .values_list("article_id", "tag_id")
             )
+            article_tags_to_create = [
+                self.model(article=article, tag=tag, tagging_reason=tagging_reason)
+                for article in page.object_list
+                for tag in tags
+                if (article.id, tag.id) not in existing_article_tag_links
+            ]
+            self.bulk_create(article_tags_to_create)
+
+            if readd_deleted:
+                self.get_queryset().for_deleted_links(existing_article_tag_links).update(
+                    tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+                )
 
     def dissociate_article_with_tags_not_in_list(self, article: Article, tags: Iterable[Tag]):
         existing_article_tag_slugs = set(article.tags.all().values_list("slug", flat=True))
@@ -151,6 +157,17 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
 
         if article_tag_slugs_to_delete:
             article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).update(
+                tagging_reason=constants.TaggingReason.DELETED
+            )
+
+    def dissociate_articles_with_tags(
+        self, all_articles: Sequence[Article] | ArticleQuerySet, tags: Iterable[Tag]
+    ):
+        paginator: Paginator[Article] = Paginator(
+            all_articles, core_constants.PER_PAGE_FOR_BULK_OPERATIONS
+        )
+        for page in paginator:
+            self.get_queryset().for_articles_and_tags(page.object_list, tags).update(
                 tagging_reason=constants.TaggingReason.DELETED
             )
 
@@ -181,7 +198,7 @@ class ArticleTag(models.Model):
                 "article", "tag", name="%(app_label)s_%(class)s_tagged_once_per_article"
             ),
         ]
-        ordering = ["article_id", "tag__name", "tag_id"]
+        ordering = ["article_id", "tag__title", "tag_id"]
 
     def __str__(self):
         return (
@@ -216,7 +233,7 @@ class ReadingListTag(models.Model):
                 ),
             ),
         ]
-        ordering = ["tag__name", "tag_id"]
+        ordering = ["tag__title", "tag_id"]
 
     def __str__(self):
         return f"ReadingListTag(reading_list={self.reading_list}, tag={self.tag})"

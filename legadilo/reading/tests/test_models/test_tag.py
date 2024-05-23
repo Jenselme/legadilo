@@ -12,7 +12,7 @@ class TestTagManager:
         self.tag1 = TagFactory(user=user)
         self.tag2 = TagFactory(user=user)
         self.existing_tag_with_spaces = TagFactory(
-            user=user, name="Existing tag with spaces", slug="existing-tag-with-spaces"
+            user=user, title="Existing tag with spaces", slug="existing-tag-with-spaces"
         )
         self.other_user_tag = TagFactory()
 
@@ -20,9 +20,9 @@ class TestTagManager:
         choices = list(Tag.objects.get_all_choices(user))
 
         assert choices == [
-            (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.name),
-            (self.tag1.slug, self.tag1.name),
-            (self.tag2.slug, self.tag2.name),
+            (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),
+            (self.tag1.slug, self.tag1.title),
+            (self.tag2.slug, self.tag2.title),
         ]
 
     def test_get_or_create_from_list(self, django_assert_num_queries, user):
@@ -36,10 +36,10 @@ class TestTagManager:
         assert Tag.objects.count() == 6
         assert tags[0] == self.existing_tag_with_spaces
         assert tags[1] == self.tag1
-        assert tags[2].name == self.other_user_tag.slug
+        assert tags[2].title == self.other_user_tag.slug
         assert tags[2].slug == self.other_user_tag.slug
         assert tags[2].user == user
-        assert tags[3].name == "New tag"
+        assert tags[3].title == "New tag"
         assert tags[3].slug == "new-tag"
         assert tags[3].user == user
 
@@ -191,6 +191,18 @@ class TestArticleTagManager:
                 "tag": self.tag3.id,
                 "tagging_reason": constants.TaggingReason.ADDED_MANUALLY,
             },
+        ]
+
+    def test_dissociate_articles_with_tags(self, user, django_assert_num_queries):
+        with django_assert_num_queries(1):
+            ArticleTag.objects.dissociate_articles_with_tags(
+                [self.article1, self.article2], [self.tag1, self.tag2]
+            )
+
+        assert list(ArticleTag.objects.values("article", "tag", "tagging_reason")) == [
+            {"article": self.article1.id, "tag": self.tag1.id, "tagging_reason": "DELETED"},
+            {"article": self.article1.id, "tag": self.tag2.id, "tagging_reason": "DELETED"},
+            {"article": self.article1.id, "tag": self.tag3.id, "tagging_reason": "ADDED_MANUALLY"},
         ]
 
     def test_dissociate_article_with_tags_not_in_list(self, user, django_assert_num_queries):

@@ -3,9 +3,9 @@ import pytest
 from django.conf import settings
 
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
+from legadilo.feeds.services.feed_parsing import FeedFileTooBigError
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
-from legadilo.feeds.utils.feed_parsing import FeedFileTooBigError
 from legadilo.import_export.services.opml import import_opml_file
 from legadilo.reading.models import Article
 
@@ -50,15 +50,15 @@ def test_import_valid_files(user, httpx_mock):
     assert FeedCategory.objects.count() == 1
     category = FeedCategory.objects.get()
     assert category.user == user
-    assert category.name == "Category 1"
+    assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 2
     assert list(Feed.objects.values_list("feed_url", "site_url")) == [
         ("https://www.example.eu/feeds/all.atom.xml", "http://example.org/"),
         ("https://www.example.com/feeds/all.rss.xml", "http://example.org/"),
     ]
-    assert Article.objects.count() == 1
-    assert FeedArticle.objects.count() == 2
+    assert Article.objects.count() == 2
+    assert FeedArticle.objects.count() == 3
 
 
 def test_import_valid_files_some_data_already_exist(user, httpx_mock):
@@ -71,7 +71,7 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
         content=get_feed_fixture_content("sample_atom.xml"),
     )
     FeedFactory(user=user, feed_url="https://www.example.com/feeds/all.rss.xml")
-    FeedCategoryFactory(user=user, name="Category 1", slug="category-1")
+    FeedCategoryFactory(user=user, title="Category 1", slug="category-1")
 
     nb_imported_feeds, nb_imported_categories = import_opml_file(
         user, settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
@@ -82,15 +82,15 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
     assert FeedCategory.objects.count() == 1
     category = FeedCategory.objects.get()
     assert category.user == user
-    assert category.name == "Category 1"
+    assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 2
     assert set(Feed.objects.values_list("feed_url", "site_url")) == {
         ("https://www.example.eu/feeds/all.atom.xml", "http://example.org/"),
         ("https://www.example.com/feeds/all.rss.xml", "https://example.com"),
     }
-    assert Article.objects.count() == 1
-    assert FeedArticle.objects.count() == 1
+    assert Article.objects.count() == 2
+    assert FeedArticle.objects.count() == 2
 
 
 def test_import_valid_files_with_network_errors(user, httpx_mock):
@@ -112,7 +112,7 @@ def test_import_valid_files_with_network_errors(user, httpx_mock):
     assert FeedCategory.objects.count() == 1
     category = FeedCategory.objects.get()
     assert category.user == user
-    assert category.name == "Category 1"
+    assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 1
     assert list(Feed.objects.values_list("feed_url", "site_url", "enabled")) == [

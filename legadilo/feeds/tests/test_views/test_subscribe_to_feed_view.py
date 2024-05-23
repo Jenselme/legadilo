@@ -192,7 +192,7 @@ class TestSubscribeToFeedView:
 
     def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker, sample_rss_feed):
         mocker.patch(
-            "legadilo.feeds.utils.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
+            "legadilo.feeds.services.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
         )
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
@@ -302,10 +302,10 @@ class TestSubscribeToFeedView:
         FeedFactory(feed_url=self.feed_url, user=user)
         wrong_category = FeedCategoryFactory(user=user)
         category = FeedCategoryFactory(
-            user=other_user, name=wrong_category.name, slug=wrong_category.slug
+            user=other_user, title=wrong_category.title, slug=wrong_category.slug
         )
         existing_tag = TagFactory(
-            user=other_user, name=self.existing_tag.name, slug=self.existing_tag.slug
+            user=other_user, title=self.existing_tag.title, slug=self.existing_tag.slug
         )
         assert category.slug == wrong_category.slug
         assert existing_tag.slug == self.existing_tag.slug

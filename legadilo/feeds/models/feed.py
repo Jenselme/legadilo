@@ -2,19 +2,20 @@ from __future__ import annotations
 
 import calendar
 from datetime import timedelta
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING, assert_never, cast
 
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
+from slugify import slugify
 
 from legadilo.reading import constants as reading_constants
-from legadilo.reading.models.article import Article
+from legadilo.reading.models.article import Article, ArticleQuerySet
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
 from ...utils.time import utcnow
 from .. import constants as feeds_constants
-from ..utils.feed_parsing import FeedData
+from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
 from .feed_tag import FeedTag
 from .feed_update import FeedUpdate
@@ -114,37 +115,50 @@ def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> 
 
 
 class FeedQuerySet(models.QuerySet["Feed"]):
-    def only_with_ids(self, feed_ids: list[int] | None = None):
-        feeds_to_update = self
-        if feed_ids:
-            feeds_to_update = feeds_to_update.filter(id__in=feed_ids)
+    def create(self, **kwargs):
+        kwargs.setdefault("slug", slugify(kwargs["title"]))
+        return super().create(**kwargs)
 
-        return feeds_to_update
+    def only_with_ids(self, feed_ids: list[int]):
+        return self.filter(id__in=feed_ids)
+
+    def only_enabled(self):
+        return self.filter(enabled=True)
 
     def for_update(self):
-        return self.alias(
-            # We need to filter for update only on the latest FeedUpdate object. If we have entries
-            # that are too old, we don't want to include them or the feed will be refreshed even if
-            # according to its rules it should: by default, we do a left join of FeedUpdate thus
-            # getting on the whole history. We only want to run our test on the latest entry to
-            # check whether it's too old and thus must be updated or not.
-            latest_feed_update=models.FilteredRelation(
-                "feed_updates",
-                condition=models.Q(
-                    feed_updates__id__in=models.Subquery(
-                        FeedUpdate.objects.get_queryset().only_latest()
-                    )
+        return (
+            self.alias(
+                # We need to filter for update only on the latest FeedUpdate object. If we have
+                # entries that are too old, we don't want to include them or the feed will be
+                # refreshed even if according to its rules it should: by default, we do a left join
+                # of FeedUpdate thus getting on the whole history. We only want to run our test on
+                # the latest entry to check whether it's too old and thus must be updated or not.
+                latest_feed_update=models.FilteredRelation(
+                    "feed_updates",
+                    condition=models.Q(
+                        feed_updates__id__in=models.Subquery(
+                            FeedUpdate.objects.get_queryset().only_latest()
+                        )
+                    ),
                 ),
-            ),
-            must_update=models.Case(
-                *[
-                    _build_refresh_filters(refresh_delay)
-                    for refresh_delay in feeds_constants.FeedRefreshDelays
-                ],
-                default=False,
-                output_field=models.BooleanField(),
-            ),
-        ).filter(must_update=True, enabled=True)
+                must_update=models.Case(
+                    *[
+                        _build_refresh_filters(refresh_delay)
+                        for refresh_delay in feeds_constants.FeedRefreshDelays
+                    ],
+                    default=False,
+                    output_field=models.BooleanField(),
+                ),
+            )
+            .only_enabled()
+            .filter(must_update=True)
+        )
+
+    def for_user(self, user: User):
+        return self.filter(user=user)
+
+    def for_user_ids(self, user_id: list[int]):
+        return self.filter(user_id__in=user_id)
 
 
 class FeedManager(models.Manager["Feed"]):
@@ -152,6 +166,22 @@ class FeedManager(models.Manager["Feed"]):
 
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    def get_by_categories(self, user: User) -> dict[str, list[Feed]]:
+        feeds_by_categories: dict[str, list[Feed]] = {}
+        for feed in (
+            self.get_queryset()
+            .for_user(user)
+            .select_related("category")
+            .order_by("category__title")
+        ):
+            category_title = feed.category.title if feed.category else None
+            feeds_by_categories.setdefault(category_title, []).append(feed)
+
+        return feeds_by_categories
+
+    def get_articles(self, feed: Feed) -> ArticleQuerySet:
+        return cast(ArticleQuerySet, feed.articles.all()).for_feed()
 
     @transaction.atomic()
     def create_from_metadata(
@@ -221,6 +251,7 @@ class Feed(models.Model):
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH)
+    slug = models.SlugField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH, blank=True)
     description = models.TextField(blank=True)
     feed_type = models.CharField(choices=feeds_constants.SupportedFeedType.choices, max_length=100)
     refresh_delay = models.CharField(
@@ -273,8 +304,8 @@ class Feed(models.Model):
         ]
 
     def __str__(self):
-        category_name = self.category.name if self.category else "None"
-        return f"Feed(title={self.title}, feed_type={self.feed_type}, category={category_name})"
+        category_title = self.category.title if self.category else "None"
+        return f"Feed(title={self.title}, feed_type={self.feed_type}, category={category_title})"
 
     def disable(self, reason=""):
         self.disabled_reason = reason

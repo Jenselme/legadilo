@@ -42,7 +42,7 @@ class FeedTag(models.Model):
                 "feed", "tag", name="%(app_label)s_%(class)s_tagged_once_per_feed"
             )
         ]
-        ordering = ["tag__name", "tag_id"]
+        ordering = ["tag__title", "tag_id"]
 
     def __str__(self):
         return f"FeedTag(feed={self.feed}, tag={self.tag})"

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -46,16 +47,15 @@ def _redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse
 
 @require_POST
 @login_required
+@transaction.atomic()
 def update_article_view(
     request: AuthenticatedHttpRequest,
     article_id: int,
     update_action: constants.UpdateArticleActions,
 ) -> HttpResponse:
-    article = get_object_or_404(
-        Article.objects.get_queryset().for_details(), id=article_id, user=request.user
-    )
-    article.update_article_from_action(update_action)
-    article.save()
+    article_qs = Article.objects.get_queryset().for_details()
+    article_qs.update_articles_from_action(update_action)
+    article = get_object_or_404(article_qs, id=article_id, user=request.user)
 
     is_read_status_update = constants.UpdateArticleActions.is_read_status_update(update_action)
     for_article_details = request.POST.get("for_article_details", "")
@@ -90,14 +90,16 @@ def _update_article_card(
         js_cfg = {}
 
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
-    count_articles_of_reading_lists = Article.objects.count_articles_of_reading_lists(reading_lists)
+    count_unread_articles_of_reading_lists = Article.objects.count_unread_articles_of_reading_lists(
+        request.user, reading_lists
+    )
     return TemplateResponse(
         request,
         "reading/update_article_action.html",
         {
             "article": article,
             "reading_lists": reading_lists,
-            "count_articles_of_reading_lists": count_articles_of_reading_lists,
+            "count_unread_articles_of_reading_lists": count_unread_articles_of_reading_lists,
             "displayed_reading_list_id": displayed_reading_list_id,
             "js_cfg": js_cfg,
             "from_url": from_url,

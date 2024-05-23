@@ -1,6 +1,6 @@
 import Tags from "/static/tags.js";
 
-let tagsInstance;
+let tagsInstances;
 
 const setupTagsInstance = () => {
   const potentialTagsElements = document.querySelectorAll("[data-bs5-tags=true]");
@@ -8,16 +8,13 @@ const setupTagsInstance = () => {
     return;
   }
 
-  if (potentialTagsElements.length > 1) {
-    console.error("We do not support multiple tag instances on HTMX powered pages!");
-    return;
+  if (tagsInstances) {
+    tagsInstances.forEach((tagInstance) => tagInstance.dispose());
   }
 
-  if (tagsInstance) {
-    tagsInstance.dispose();
-  }
-
-  tagsInstance = new Tags(potentialTagsElements[0], { allowClear: true });
+  tagsInstances = Array.from(potentialTagsElements).map((tagElement) => {
+    return new Tags(tagElement, { allowClear: true });
+  });
 };
 
 document.addEventListener("DOMContentLoaded", setupTagsInstance);

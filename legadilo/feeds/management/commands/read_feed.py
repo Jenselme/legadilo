@@ -5,7 +5,7 @@ import httpx
 from django.core.management import CommandError
 from django.core.management.base import CommandParser
 
-from legadilo.feeds.utils.feed_parsing import build_feed_data, parse_feed
+from legadilo.feeds.services.feed_parsing import build_feed_data, parse_feed
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.validators import is_url_valid
 

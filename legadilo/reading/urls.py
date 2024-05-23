@@ -18,6 +18,11 @@ urlpatterns = [
     ),
     path("tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
+        "tags/externals/<str:tag>/",
+        views.external_tag_with_articles_view,
+        name="external_tag_with_articles",
+    ),
+    path(
         "articles/<int:article_id>-<slug:article_slug>/",
         views.article_details_view,
         name="article_details",
@@ -30,7 +35,4 @@ urlpatterns = [
     path("articles/add/", views.add_article_view, name="add_article"),
     path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
     path("article/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
-    path(
-        "article/<int:article_id>/tags/", views.update_article_tags_view, name="update_article_tags"
-    ),
 ]

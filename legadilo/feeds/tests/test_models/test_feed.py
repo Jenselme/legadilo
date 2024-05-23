@@ -6,11 +6,12 @@ from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.feeds.models import FeedArticle, FeedUpdate
+from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
 from legadilo.feeds.tests.factories import (
+    FeedCategoryFactory,
     FeedFactory,
     FeedUpdateFactory,
 )
-from legadilo.feeds.utils.feed_parsing import ArticleData, FeedData
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
@@ -22,6 +23,14 @@ from ...models import Feed
 
 @pytest.mark.django_db()
 class TestFeedQuerySet:
+    def test_for_user(self, user, other_user):
+        feed = FeedFactory(user=user)
+        FeedFactory(user=other_user)
+
+        feeds = Feed.objects.get_queryset().for_user(user)
+
+        assert list(feeds) == [feed]
+
     @time_machine.travel("2024-05-08 11:00:00")
     def test_for_update(self, user):
         feed_updated_more_than_one_hour_ago = FeedFactory(
@@ -65,11 +74,18 @@ class TestFeedQuerySet:
         with time_machine.travel("2024-05-07 10:00:00"):
             FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
 
+        feed_no_feed_update_object = FeedFactory(
+            title="Not yet updated this morning",
+            user=user,
+            refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
+        )
+
         feeds_to_update = Feed.objects.get_queryset().for_update()
 
         assert list(feeds_to_update) == [
             feed_updated_more_than_one_hour_ago,
             feed_not_yet_updated_this_morning,
+            feed_no_feed_update_object,
         ]
 
     @time_machine.travel("2024-05-08 13:00:00")
@@ -91,22 +107,27 @@ class TestFeedQuerySet:
 
     def test_only_with_ids(self):
         feed1 = FeedFactory(enabled=True)
-        feed2 = FeedFactory(enabled=True)
+        FeedFactory(enabled=True)
 
-        feed_ids_to_update = (
-            Feed.objects.get_queryset().only_with_ids().values_list("id", flat=True)
-        )
+        feeds = list(Feed.objects.get_queryset().only_with_ids([feed1.id]))
 
-        assert list(feed_ids_to_update) == [feed1.id, feed2.id]
+        assert feeds == [feed1]
 
-        feed_ids_to_update = (
-            Feed.objects.get_queryset()
-            .only_with_ids([feed1.id])
-            .values_list("id", flat=True)
-            .order_by("id")
-        )
+    def test_only_enabled(self):
+        feed1 = FeedFactory(enabled=True)
+        FeedFactory(enabled=False)
 
-        assert list(feed_ids_to_update) == [feed1.id]
+        feeds = list(Feed.objects.get_queryset().only_enabled())
+
+        assert feeds == [feed1]
+
+    def test_for_user_ids(self):
+        feed1 = FeedFactory(enabled=True)
+        FeedFactory(enabled=True)
+
+        feeds = list(Feed.objects.get_queryset().for_user_ids([feed1.user.id]))
+
+        assert feeds == [feed1]
 
 
 @pytest.mark.django_db()
@@ -116,6 +137,45 @@ class TestFeedManager:
         self.default_feed_url = "https://example.com/feeds/atom.exsiting.xml"
         self.feed = FeedFactory(feed_url=self.default_feed_url, user=user)
         self.initial_feed_count = 1
+
+    def test_get_feeds_by_categories_no_categories(self, other_user):
+        feeds_by_categories = Feed.objects.get_by_categories(other_user)
+
+        assert feeds_by_categories == {}
+
+    def test_get_feeds_by_categories(self, user, other_user):
+        feed_1_without_category = FeedFactory(user=user)
+        feed_2_without_category = FeedFactory(user=user)
+        feed_category = FeedCategoryFactory(user=user)
+        feed_1_with_category = FeedFactory(
+            user=user, title="Feed 1 with category", category=feed_category
+        )
+        feed_2_with_category = FeedFactory(
+            user=user, title="Feed 2 with category", slug="", category=feed_category
+        )
+        other_feed_category = FeedCategoryFactory(user=user)
+        feed_other_category = FeedFactory(user=user, category=other_feed_category)
+        feed_category_other_user = FeedCategoryFactory(user=other_user)
+        FeedFactory(user=other_user, category=feed_category_other_user, title="Feed other user")
+
+        feeds_by_categories = Feed.objects.get_by_categories(user)
+
+        assert feeds_by_categories == {
+            None: [self.feed, feed_1_without_category, feed_2_without_category],
+            feed_category.title: [feed_1_with_category, feed_2_with_category],
+            other_feed_category.title: [feed_other_category],
+        }
+
+    def test_get_articles(self, user):
+        article_of_feed = ArticleFactory(user=user)
+        FeedArticle.objects.create(feed=self.feed, article=article_of_feed)
+        other_feed = FeedFactory(user=user)
+        article_of_other_feed = ArticleFactory(user=user)
+        FeedArticle.objects.create(feed=other_feed, article=article_of_other_feed)
+
+        articles_qs = Feed.objects.get_articles(self.feed)
+
+        assert list(articles_qs) == [article_of_feed]
 
     def test_create_from_feed_data(self, user, django_assert_num_queries):
         with django_assert_num_queries(12):
@@ -158,6 +218,7 @@ class TestFeedManager:
         assert feed.feed_url == "https://example.com/feeds/atom.xml"
         assert feed.site_url == "https://example.com"
         assert feed.title == "Awesome website"
+        assert feed.slug == "awesome-website"
         assert feed.description == "A description"
         assert feed.feed_type == feeds_constants.SupportedFeedType.atom
         assert feed.articles.count() > 0

@@ -25,7 +25,7 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
     _hints: dict
 
     def create(self, **kwargs):
-        kwargs.setdefault("slug", slugify(kwargs["name"]))
+        kwargs.setdefault("slug", slugify(kwargs["title"]))
         return super().create(**kwargs)
 
     def get_queryset(self) -> FeedCategoryQuerySet:
@@ -33,7 +33,7 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
 
     def get_all_choices(self, user: User) -> FormChoices:
         choices = [("", str(_("None")))]
-        choices.extend(self.get_queryset().for_user(user).values_list("slug", "name"))
+        choices.extend(self.get_queryset().for_user(user).values_list("slug", "title"))
         return choices
 
     def get_first_for_user(self, user: User, slug: str) -> FeedCategory | None:
@@ -41,7 +41,7 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
 
 
 class FeedCategory(models.Model):
-    name = models.CharField(max_length=100)
+    title = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, blank=True)
 
     user = models.ForeignKey("users.User", related_name="feed_categories", on_delete=models.CASCADE)
@@ -55,12 +55,12 @@ class FeedCategory(models.Model):
         constraints = [
             models.UniqueConstraint("slug", "user", name="%(app_label)s_%(class)s_unique"),
         ]
-        ordering = ("name",)
+        ordering = ("title",)
 
     def __str__(self):
-        return f"FeedCategory(id={self.id}, name={self.name}, user={self.user_id})"
+        return f"FeedCategory(id={self.id}, title={self.title}, user={self.user_id})"
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.title)
         return super().save(*args, **kwargs)
