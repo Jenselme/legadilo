@@ -31,14 +31,3 @@ services:
       - production_postgres_data_backups:/backups
     env_file:
       - ./.envs/.production/.postgres
-
-  nginx:
-    build:
-      pull: true
-      context: .
-      dockerfile: ./compose/production/nginx/Dockerfile
-    image: legadilo_local_nginx
-    depends_on:
-      - django
-    volumes:
-      - production_django_media:/usr/share/nginx/media:ro
