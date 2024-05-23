@@ -5,10 +5,15 @@
         {% include "core/partials/bs-icons/author.html" %}
         {{ article.authors|join:", "|safe }}
     </span>
-    <span class="me-2">
+    {% if article.published_at %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/published_at.html" %}
+            {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
+        </span>
+    {% elif article.updated_at %}
         {% include "core/partials/bs-icons/published_at.html" %}
-        {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
-    </span>
+        {{ article.updated_at | date:"SHORT_DATETIME_FORMAT" }}
+    {% endif %}
     <span class="me-2">
         {% if article.initial_source_type == 'FEED' %}
             {% include "core/partials/bs-icons/feed_source.html" %}

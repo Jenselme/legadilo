@@ -285,7 +285,11 @@ class ArticleManager(models.Manager["Article"]):
         return all_articles
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
-        return self.get_queryset().for_reading_list(reading_list).order_by("-published_at", "id")
+        return (
+            self.get_queryset()
+            .for_reading_list(reading_list)
+            .order_by("-updated_at", "-published_at", "id")
+        )
 
     def count_unread_articles_of_reading_lists(
         self, user: User, reading_lists: list[ReadingList]
@@ -412,7 +416,7 @@ class Article(models.Model):
     objects = ArticleManager()
 
     class Meta(TypedModelMeta):
-        ordering = ["-published_at", "id"]
+        ordering = ["-updated_at", "-published_at", "id"]
         constraints = [
             models.UniqueConstraint(
                 "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
