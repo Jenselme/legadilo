@@ -3,7 +3,9 @@
 {% load static i18n crispy_forms_tags %}
 
 {% block page_js %}
-    <script src="{% static 'js/tag_edition.js' %}" type="module"></script>
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{request.csp_nonce}}"
+            type="module"></script>
 {% endblock page_js %}
 {% block title %}
     {{ article.title|safe }}

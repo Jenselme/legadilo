@@ -173,7 +173,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
-    "csp.middleware.CSPMiddleware",
+    "legadilo.core.middlewares.CSPMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -324,8 +324,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", def
 # https://content-security-policy.com/
 # https://csp-evaluator.withgoogle.com/
 CSP_DEFAULT_SRC = ("'self'",)
-# TODO: We must use nonce here, we have a few inline stuff.
-CSP_SCRIPT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
 CSP_SCRIPT_SRC_ATTR = None
 CSP_SCRIPT_SRC_ELEM = None
 CSP_IMG_SRC = ("'self'", "data:")
@@ -334,17 +333,17 @@ CSP_MEDIA_SRC = ("'self'",)
 CSP_FRAME_SRC = ("'none'",)
 CSP_FONT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
 CSP_STYLE_SRC_ATTR = None
 CSP_STYLE_SRC_ELEM = None
-CSP_BASE_URI = ("'self'",)
+CSP_BASE_URI = ("'none'",)
 CSP_FRAME_ANCESTORS = ("'none'",)
 CSP_FORM_ACTION = ("'self'",)
 CSP_MANIFEST_SRC = ("'self'",)
 CSP_WORKER_SRC = ("'self'",)
 CSP_PLUGIN_TYPES = None
 CSP_REQUIRE_SRI_FOR = None
-CSP_INCLUDE_NONCE_IN = None
+CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 # Those are forced to true in production
 CSP_UPGRADE_INSECURE_REQUESTS = IS_PRODUCTION
 CSP_BLOCK_ALL_MIXED_CONTENT = IS_PRODUCTION
