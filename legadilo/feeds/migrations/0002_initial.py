@@ -54,6 +54,7 @@ class Migration(migrations.Migration):
             name="category",
             field=models.ForeignKey(
                 null=True,
+                blank=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="feeds",
                 to="feeds.feedcategory",

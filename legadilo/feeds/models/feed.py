@@ -262,7 +262,11 @@ class Feed(models.Model):
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
     category = models.ForeignKey(
-        "feeds.FeedCategory", related_name="feeds", on_delete=models.SET_NULL, null=True
+        "feeds.FeedCategory",
+        related_name="feeds",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     articles = models.ManyToManyField(
         "reading.Article",
