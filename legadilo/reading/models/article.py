@@ -321,7 +321,7 @@ class ArticleManager(models.Manager["Article"]):
 class Article(models.Model):
     title = models.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
     slug = models.SlugField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
-    summary = models.TextField()
+    summary = models.TextField(blank=True)
     content = models.TextField(blank=True)
     reading_time = models.PositiveIntegerField(
         default=0,

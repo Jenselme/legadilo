@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ),
                 ("title", models.CharField(max_length=300)),
                 ("slug", models.SlugField(max_length=300)),
-                ("summary", models.TextField()),
+                ("summary", models.TextField(blank=True)),
                 ("content", models.TextField(blank=True)),
                 (
                     "reading_time",
