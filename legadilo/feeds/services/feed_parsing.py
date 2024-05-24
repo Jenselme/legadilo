@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import time
@@ -19,6 +20,8 @@ from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from ...utils.time import dt_to_http_date
 from ...utils.validators import language_code_validator, normalize_url
 from .. import constants
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -53,7 +56,7 @@ class InvalidFeedFileError(Exception):
     pass
 
 
-class InvalidFeedArticleError(InvalidFeedFileError):
+class FailedToParseArticleError(InvalidFeedFileError):
     pass
 
 
@@ -163,25 +166,28 @@ def _parse_articles_in_feed(
 ) -> list[ArticleData]:
     articles_data = []
     for entry in parsed_feed.entries:
-        article_link = _get_article_link(feed_url, entry)
-        articles_data.append(
-            ArticleData(
-                external_article_id=full_sanitize(entry.get("id", "")),
-                title=full_sanitize(entry.title),
-                summary=_get_summary(article_link, entry),
-                content=_get_article_content(entry),
-                authors=_get_article_authors(entry),
-                contributors=_get_article_contributors(entry),
-                tags=_get_articles_tags(entry),
-                link=article_link,
-                preview_picture_url=_get_preview_picture_url(article_link, entry),
-                preview_picture_alt=_get_preview_picture_alt(entry),
-                published_at=_feed_time_to_datetime(entry.get("published_parsed")),
-                updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
-                language=_get_language(parsed_feed, entry),
-                source_title=feed_title,
+        try:
+            article_link = _get_article_link(feed_url, entry)
+            articles_data.append(
+                ArticleData(
+                    external_article_id=full_sanitize(entry.get("id", "")),
+                    title=full_sanitize(entry.title),
+                    summary=_get_summary(article_link, entry),
+                    content=_get_article_content(entry),
+                    authors=_get_article_authors(entry),
+                    contributors=_get_article_contributors(entry),
+                    tags=_get_articles_tags(entry),
+                    link=article_link,
+                    preview_picture_url=_get_preview_picture_url(article_link, entry),
+                    preview_picture_alt=_get_preview_picture_alt(entry),
+                    published_at=_feed_time_to_datetime(entry.get("published_parsed")),
+                    updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
+                    language=_get_language(parsed_feed, entry),
+                    source_title=feed_title,
+                )
             )
-        )
+        except FailedToParseArticleError:
+            logger.exception("Failed to parse an article")
 
     return articles_data
 
@@ -276,7 +282,9 @@ def _get_article_link(feed_url, entry):
     try:
         return normalize_url(feed_url, entry.link)
     except ValueError as e:
-        raise InvalidFeedArticleError from e
+        raise FailedToParseArticleError(
+            f"Failed to normalize article link {entry.link} (feed {feed_url})"
+        ) from e
 
 
 def _get_preview_picture_url(article_url, entry) -> str:
