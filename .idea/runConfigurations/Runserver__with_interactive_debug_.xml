@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Runserver (with interactive debug)" type="Python.DjangoServer" factoryName="Django server">
     <module name="legadilo" />
-    <option name="ENV_FILES" value="$PROJECT_DIR$/.envs/.local/.django:$PROJECT_DIR$/.envs/.local/.pycharm" />
+    <option name="ENV_FILES" value="$PROJECT_DIR$/devops/envs/local/django:$PROJECT_DIR$/devops/envs/local/pycharm" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="false" />
     <envs>
-      <env name="DJANGO_SETTINGS_MODULE" value="config.settings" />
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="DJANGO_SETTINGS_MODULE" value="config.settings" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="SDK_NAME" value="Poetry (legadilo)" />

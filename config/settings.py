@@ -34,7 +34,9 @@ SECRET_KEY = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
-    default=["legadilo.eu"] if IS_PRODUCTION else ["localhost", "0.0.0.0", "127.0.0.1"],  # noqa: S104 binding to all interfaces
+    default=["www.legadilo.eu", "legadilo.eu"]
+    if IS_PRODUCTION
+    else ["localhost", "0.0.0.0", "127.0.0.1"],  # noqa: S104 binding to all interfaces
 )
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

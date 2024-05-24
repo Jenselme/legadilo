@@ -196,6 +196,7 @@ description = ""
 authors = ["Julien Enselme <jujens@jujens.eu>"]
 license = "AGPLv3"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"

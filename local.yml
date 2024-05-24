@@ -7,8 +7,9 @@ services:
     build:
       pull: true
       context: .
-      dockerfile: ./compose/local/django/Dockerfile
+      dockerfile: ./devops/compose/local/django/Dockerfile
     image: legadilo_local_django
+    restart: unless-stopped
     container_name: legadilo_local_django
     depends_on:
       - postgres
@@ -16,24 +17,25 @@ services:
     volumes:
       - .:/app:z
     env_file:
-      - ./.envs/.local/.postgres
-      - ./.envs/.local/.django
+      - ./devops/envs/local/postgres
+      - ./devops/envs/local/django
     ports:
       - "8000:8000"
-    command: /start
+    command: /start.sh
 
   postgres:
     build:
       pull: true
       context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
+      dockerfile: ./devops/compose/production/postgres/Dockerfile
     image: legadilo_production_postgres
+    restart: unless-stopped
     container_name: legadilo_local_postgres
     volumes:
       - legadilo_local_postgres_data:/var/lib/postgresql/data
       - legadilo_local_postgres_data_backups:/backups
     env_file:
-      - ./.envs/.local/.postgres
+      - ./devops/envs/local/postgres
     ports:
       - "5432:5432"
 
@@ -42,16 +44,16 @@ services:
     container_name: legadilo_local_docs
     build:
       context: .
-      dockerfile: ./compose/local/docs/Dockerfile
+      dockerfile: ./devops/compose/local/docs/Dockerfile
     env_file:
-      - ./.envs/.local/.django
+      - ./devops/envs/local/django
     volumes:
       - ./docs:/docs:z
       - ./config:/app/config:z
       - ./legadilo:/app/legadilo:z
     ports:
       - "9000:9000"
-    command: /start-docs
+    command: /start-docs.sh
 
   mailpit:
     image: axllent/mailpit:latest

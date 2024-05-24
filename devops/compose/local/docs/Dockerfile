@@ -26,8 +26,7 @@ RUN pip install -U pip && \
     poetry config virtualenvs.create false && \
     poetry install --with dev --with typing
 
-COPY ./compose/local/docs/start /start-docs
-RUN sed -i 's/\r$//g' /start-docs
-RUN chmod +x /start-docs
+COPY ./devops/compose/local/docs/start.sh /start-docs.sh
+RUN chmod +x /start-docs.sh
 
 WORKDIR /docs

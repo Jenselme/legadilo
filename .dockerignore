@@ -10,5 +10,6 @@
 .travis.yml
 venv
 .git/
-.envs/
+devops/envs
 .pytest_cache
+staticfiles
