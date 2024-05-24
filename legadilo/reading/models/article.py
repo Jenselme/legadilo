@@ -165,7 +165,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             case constants.UpdateArticleActions.DO_NOTHING:
                 return 0
             case constants.UpdateArticleActions.MARK_AS_READ:
-                return self.update(read_at=utcnow())
+                return self.filter(read_at__isnull=True).update(read_at=utcnow())
             case constants.UpdateArticleActions.MARK_AS_UNREAD:
                 return self.update(read_at=None)
             case constants.UpdateArticleActions.MARK_AS_FAVORITE:
@@ -177,7 +177,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
                 return self.update(is_for_later=False)
             case constants.UpdateArticleActions.MARK_AS_OPENED:
-                return self.update(opened_at=utcnow())
+                return self.filter(opened_at__isnull=True).update(opened_at=utcnow())
             case _:
                 assert_never(action)
 
