@@ -269,8 +269,8 @@ TEMPLATES = [
             ]
             if IS_PRODUCTION
             else [
-                "django.template.loaders.filesystem.Loader",
-                "django.template.loaders.app_directories.Loader",
+                "django.template.loaders.filesystem.Loader",  # type: ignore[list-item]
+                "django.template.loaders.app_directories.Loader",  # type: ignore[list-item]
             ],
         },
     },
@@ -554,7 +554,7 @@ if DEBUG:
     if env("USE_DOCKER", default="no") == "yes":
         import socket
 
-        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())  # type: ignore[assignment]
         INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 

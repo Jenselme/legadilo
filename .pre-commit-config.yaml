@@ -106,6 +106,7 @@ repos:
           - run
           - mypy
           - legadilo
+          - config
         language: system
         types: [python]
         pass_filenames: false
