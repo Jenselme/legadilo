@@ -4,6 +4,7 @@ import logging
 import sys
 from json import JSONDecodeError
 from pathlib import Path
+from ssl import SSLCertVerificationError
 from urllib.parse import urlparse
 
 import httpx
@@ -126,7 +127,13 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
         )
         feed_url_in_file_to_true_feed_url[row["feed_url"]] = feed
         return feed, True
-    except (httpx.HTTPError, NoFeedUrlFoundError, FeedFileTooBigError, InvalidFeedFileError):
+    except (
+        httpx.HTTPError,
+        NoFeedUrlFoundError,
+        FeedFileTooBigError,
+        InvalidFeedFileError,
+        SSLCertVerificationError,
+    ):
         logger.error(
             f"Failed to import feed {row["feed_url"]} Created with basic data and disabled."
         )
