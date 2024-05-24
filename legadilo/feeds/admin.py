@@ -26,7 +26,7 @@ class FeedAdmin(admin.ModelAdmin):
 
 @admin.register(FeedCategory)
 class FeedCategoryAdmin(admin.ModelAdmin):
-    search_fields = ["name"]
+    search_fields = ["title"]
     autocomplete_fields = ["user"]
 
 
