@@ -243,7 +243,7 @@ python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.2.1"}
+sentry-sdk = {extras = ["django"], version = "^2.3.1"}
 
 
 [tool.poetry.group.dev]
