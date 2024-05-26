@@ -8,37 +8,30 @@ services:
     build:
       pull: true
       context: .
-      dockerfile: ./compose/production/django/Dockerfile
+      dockerfile: ./devops/compose/production/django/Dockerfile
 
     image: legadilo_production_django
+    restart: unless-stopped
     volumes:
       - production_django_media:/app/legadilo/media
     depends_on:
       - postgres
     env_file:
-      - ./.envs/.production/.django
-      - ./.envs/.production/.postgres
-    command: /start
+      - ./devops/envs/production/django
+      - ./devops/envs/production/postgres
+    ports:
+      - "8000:8000"
+    command: /start.sh
 
   postgres:
     build:
       pull: true
       context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
+      dockerfile: ./devops/compose/production/postgres/Dockerfile
     image: legadilo_production_postgres
+    restart: unless-stopped
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
     env_file:
-      - ./.envs/.production/.postgres
-
-  nginx:
-    build:
-      pull: true
-      context: .
-      dockerfile: ./compose/production/nginx/Dockerfile
-    image: legadilo_local_nginx
-    depends_on:
-      - django
-    volumes:
-      - production_django_media:/usr/share/nginx/media:ro
+      - ./devops/envs/production/postgres

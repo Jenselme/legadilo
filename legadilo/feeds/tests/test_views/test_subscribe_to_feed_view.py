@@ -220,16 +220,9 @@ class TestSubscribeToFeedView:
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="We failed to parse the feed you supplied. Please check it is supported "
-                "and matches the sync of a feed file.",
-            )
-        ]
+        assert Article.objects.count() == 0
 
     def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock, sample_rss_feed):
         FeedFactory(feed_url=self.feed_url, user=user)

@@ -102,6 +102,9 @@ class Command(AsyncCommand):
             logger.exception("Failed to update feed %s", feed)
             await sync_to_async(Feed.objects.log_error)(feed, str(e))
             return
+        except Exception as e:
+            logger.exception("Failed to update feed %s", feed)
+            await sync_to_async(Feed.objects.log_error)(feed, str(e))
 
         await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
         logger.debug("Updated feed %s", feed)

@@ -23,23 +23,38 @@
               href="{% static 'images/icons/legadilo.16x16.png' %}"
               sizes="16x16" />
         {% block css %}
-            <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
-            <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+            <link rel="stylesheet"
+                  href="{% static 'css/bootstrap.min.css' %}"
+                  nonce="{{ request.csp_nonce }}" />
+            <link rel="stylesheet"
+                  href="{% static 'css/base.css' %}"
+                  nonce="{{ request.csp_nonce }}" />
             {% block page_css %}
             {% endblock page_css %}
         {% endblock css %}
         {# Placed at the top of the document so pages load faster with defer #}
         {% block javascript %}
             {% if debug %}
-                <script src="{% static 'popper.js' %}" defer></script>
-                <script src="{% static 'js/bootstrap.js' %}" defer></script>
-                <script src="{% static 'htmx.js' %}" defer></script>
+                <script src="{% static 'popper.js' %}" nonce="{{request.csp_nonce}}" defer></script>
+                <script src="{% static 'js/bootstrap.js' %}"
+                        nonce="{{request.csp_nonce}}"
+                        defer></script>
+                <script src="{% static 'htmx.js' %}" nonce="{{request.csp_nonce}}" defer></script>
+                <script src="{% static 'django-browser-reload/reload-listener.js' %}"
+                        data-worker-script-path="{%  static 'django-browser-reload/reload-worker.js' %}"
+                        data-events-path="{%  url 'django_browser_reload:events' %}"
+                        nonce="{{request.csp_nonce}}"
+                        defer></script>
             {% else %}
-                <script src="{% static 'popper.min.js' %}" defer></script>
-                <script src="{% static 'js/bootstrap.min.js' %}" defer></script>
-                <script src="{% static 'htmx.min.js' %}" defer></script>
+                <script src="{% static 'popper.min.js' %}"
+                        nonce="{{request.csp_nonce}}"
+                        defer></script>
+                <script src="{% static 'js/bootstrap.min.js' %}"
+                        nonce="{{request.csp_nonce}}"
+                        defer></script>
+                <script src="{% static 'htmx.min.js' %}" nonce="{{request.csp_nonce}}" defer></script>
             {% endif %}
-            <script src="{% static 'js/base.js' %}" defer></script>
+            <script src="{% static 'js/base.js' %}" nonce="{{request.csp_nonce}}" defer></script>
             {% block page_js %}
             {% endblock page_js %}
         {% endblock javascript %}

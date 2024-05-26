@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from unittest.mock import patch
 
 import pytest
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
@@ -6,11 +7,17 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.urls import reverse
 
+from legadilo.core.middlewares import CSPMiddleware
 from legadilo.users.admin import User
 from legadilo.users.models import UserSettings
 
 
+def create_nonce(self, request, *args, **kwargs):
+    request.csp_nonce = "test-nonce"
+
+
 @pytest.mark.django_db(reset_sequences=True)
+@patch.object(CSPMiddleware, "process_request", create_nonce)
 class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.

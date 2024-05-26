@@ -65,7 +65,7 @@ jobs:
 
       - name: Test build production images
         run: |
-          cp -a .envs/.local .envs/.production
+          cp -a devops/envs/local devops/envs/production
           docker compose -f production.yml build
 
       - name: Test production images

@@ -13,7 +13,8 @@ class TestUpdateArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.reading_list = ReadingListFactory(user=user)
-        self.article = ArticleFactory(is_read=False, user=user)
+        self.article = ArticleFactory(read_at=None, user=user)
+        self.other_article = ArticleFactory(read_at=None, user=user)
         self.mark_as_read_url = reverse(
             "reading:update_article",
             kwargs={
@@ -49,7 +50,9 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.FOUND
         assert response.headers["Location"] == "http://testserver/reading/"
         self.article.refresh_from_db()
+        self.other_article.refresh_from_db()
         assert self.article.is_read
+        assert not self.other_article.is_read
 
     def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(11):
@@ -65,7 +68,7 @@ class TestUpdateArticleView:
         assert response.context["article"] == self.article
         assert response.context["reading_lists"] == [self.reading_list]
         assert response.context["count_unread_articles_of_reading_lists"] == {
-            self.reading_list.slug: 0
+            self.reading_list.slug: 1
         }
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["js_cfg"] == {

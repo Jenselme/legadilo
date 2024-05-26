@@ -1,8 +1,11 @@
 """Base settings to build other settings files upon."""
 
+import concurrent
 import warnings
 from pathlib import Path
 
+import asgiref
+import django
 import environ
 from django.contrib.messages import constants as messages
 from django.utils.translation import gettext_lazy as _
@@ -31,7 +34,9 @@ SECRET_KEY = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
-    default=["legadilo.eu"] if IS_PRODUCTION else ["localhost", "0.0.0.0", "127.0.0.1"],  # noqa: S104 binding to all interfaces
+    default=["www.legadilo.eu", "legadilo.eu"]
+    if IS_PRODUCTION
+    else ["localhost", "0.0.0.0", "127.0.0.1"],  # noqa: S104 binding to all interfaces
 )
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -170,7 +175,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
-    "csp.middleware.CSPMiddleware",
+    "legadilo.core.middlewares.CSPMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -264,8 +269,8 @@ TEMPLATES = [
             ]
             if IS_PRODUCTION
             else [
-                "django.template.loaders.filesystem.Loader",
-                "django.template.loaders.app_directories.Loader",
+                "django.template.loaders.filesystem.Loader",  # type: ignore[list-item]
+                "django.template.loaders.app_directories.Loader",  # type: ignore[list-item]
             ],
         },
     },
@@ -321,8 +326,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", def
 # https://content-security-policy.com/
 # https://csp-evaluator.withgoogle.com/
 CSP_DEFAULT_SRC = ("'self'",)
-# TODO: We must use nonce here, we have a few inline stuff.
-CSP_SCRIPT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
 CSP_SCRIPT_SRC_ATTR = None
 CSP_SCRIPT_SRC_ELEM = None
 CSP_IMG_SRC = ("'self'", "data:")
@@ -331,17 +335,17 @@ CSP_MEDIA_SRC = ("'self'",)
 CSP_FRAME_SRC = ("'none'",)
 CSP_FONT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
 CSP_STYLE_SRC_ATTR = None
 CSP_STYLE_SRC_ELEM = None
-CSP_BASE_URI = ("'self'",)
+CSP_BASE_URI = ("'none'",)
 CSP_FRAME_ANCESTORS = ("'none'",)
 CSP_FORM_ACTION = ("'self'",)
 CSP_MANIFEST_SRC = ("'self'",)
 CSP_WORKER_SRC = ("'self'",)
 CSP_PLUGIN_TYPES = None
 CSP_REQUIRE_SRI_FOR = None
-CSP_INCLUDE_NONCE_IN = None
+CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 # Those are forced to true in production
 CSP_UPGRADE_INSECURE_REQUESTS = IS_PRODUCTION
 CSP_BLOCK_ALL_MIXED_CONTENT = IS_PRODUCTION
@@ -391,6 +395,13 @@ DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=Fals
 # https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # See https://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+tracebacks_suppress = [django, asgiref, concurrent]
+if DEBUG:
+    import debug_toolbar
+    import django_htmx
+
+    tracebacks_suppress.extend((debug_toolbar, django_htmx))
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -411,26 +422,27 @@ LOGGING = {
             "class": "rich.logging.RichHandler",
             "filters": [],
             "level": "DEBUG",
-            "rich_tracebacks": env.bool("LOGGING_RICH_TRACEBACK", default=DEBUG),
-            "tracebacks_show_locals": env.bool("LOGGING_RICH_TRACEBACK", default=DEBUG),
+            "rich_tracebacks": env.bool("LOGGING_RICH_TRACEBACK", default=True),
+            "tracebacks_show_locals": env.bool("LOGGING_RICH_TRACEBACK", default=True),
+            "tracebacks_suppress": tracebacks_suppress,
         },
     },
-    "root": {"level": "INFO", "handlers": ["rich"]},
+    "root": {"level": "INFO" if DEBUG else "WARNING", "handlers": ["rich"]},
     "loggers": {
         "django": {
             "handlers": ["rich"],
-            "level": "WARNING" if IS_PRODUCTION else "INFO",
+            "level": "INFO" if DEBUG else "WARNING",
             "propagate": False,
         },
         "django.request": {
             "handlers": ["rich"],
             "level": "ERROR",
-            "propagate": True,
+            "propagate": False,
         },
         "django.security.DisallowedHost": {
             "level": "ERROR",
             "handlers": ["rich"],
-            "propagate": True,
+            "propagate": False,
         },
         "httpx": {
             "handlers": ["rich"],
@@ -441,7 +453,7 @@ LOGGING = {
             "level": "WARNING",
         },
         "legadilo": {
-            "level": "INFO" if IS_PRODUCTION else "DEBUG",
+            "level": "DEBUG" if DEBUG else "INFO",
             "handlers": ["rich"],
             "propagate": False,
         },
@@ -542,8 +554,45 @@ if DEBUG:
     if env("USE_DOCKER", default="no") == "yes":
         import socket
 
-        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())  # type: ignore[assignment]
         INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+
+
+# Sentry
+# ------------------------------------------------------------------------------
+SENTRY_DSN = env.str(
+    "SENTRY_DSN",
+    default="",
+)
+if not DEBUG and SENTRY_DSN:
+    try:
+        import sentry_sdk
+
+        def before_send_to_sentry(event, hint):
+            if event.get("logger") == "django.channels.server":
+                return None
+
+            # Don't send any private information. The id is more than enough.
+            if user := event.get("user"):
+                user.pop("email", None)
+                user["username"] = f"user:{user["id"]}"
+
+            return event
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            traces_sample_rate=0.1,
+            # Set profiles_sample_rate to 1.0 to profile 100%
+            # of sampled transactions.
+            # We recommend adjusting this value in production.
+            profiles_sample_rate=0.1,
+            before_send=before_send_to_sentry,
+            send_default_pii=True,
+        )
+    except ImportError:
+        print("Failed to import sentry_sdk")  # noqa: T201 print found
 
 
 # Your stuff...

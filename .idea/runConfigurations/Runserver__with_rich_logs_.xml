@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Runserver (with rich logs)" type="PythonConfigurationType" factoryName="Python">
     <module name="legadilo" />
-    <option name="ENV_FILES" value="$PROJECT_DIR$/.envs/.local/.django:$PROJECT_DIR$/.envs/.local/.pycharm" />
+    <option name="ENV_FILES" value="$PROJECT_DIR$/devops/envs/local/django:$PROJECT_DIR$/devops/envs/local/pycharm" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>

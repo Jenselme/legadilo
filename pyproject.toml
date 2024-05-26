@@ -196,6 +196,7 @@ description = ""
 authors = ["Julien Enselme <jujens@jujens.eu>"]
 license = "AGPLv3"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -206,7 +207,7 @@ python-slugify = "8.0.4"  # https://github.com/un33k/python-slugify
 Pillow = "10.3.0"  # https://github.com/python-pillow/Pillow
 argon2-cffi = "23.1.0"  # https://github.com/hynek/argon2_cffi
 whitenoise = "6.6.0"  # https://github.com/evansd/whitenoise
-psycopg = { extras = ["binary"], version = "3.1.18" }  # https://github.com/psycopg/psycopg
+psycopg = { extras = ["binary"], version = "3.1.19" }  # https://github.com/psycopg/psycopg
 rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 
@@ -214,7 +215,7 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 # ------------------------------------------------------------------------------
 django = "5.0.6"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.62.1"  # https://github.com/pennersr/django-allauth
+django-allauth = "0.63.2"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "10.3"  # https://github.com/anymail/django-anymail
@@ -238,6 +239,13 @@ jsonschema = "^4.22.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 
 
+[tool.poetry.group.prod]
+optional = true
+
+[tool.poetry.group.prod.dependencies]
+sentry-sdk = {extras = ["django"], version = "^2.2.1"}
+
+
 [tool.poetry.group.dev]
 optional = true
 
@@ -247,10 +255,10 @@ ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
-pytest = "8.2.0"  # https://github.com/pytest-dev/pytest
+pytest = "8.2.1"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
-pytest-asyncio = "^0.23.6"  # https://github.com/pytest-dev/pytest-asyncio/
+pytest-asyncio = "^0.23.7"  # https://github.com/pytest-dev/pytest-asyncio/
 pytest-mock = "^3.14.0"    # https://pytest-mock.readthedocs.io/en/latest/
 pytest-socket = "0.7.0"  # https://github.com/miketheman/pytest-socket
 pytest-env = "1.1.3"  # https://github.com/pytest-dev/pytest-env
@@ -266,7 +274,7 @@ myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 # Code quality
 # ------------------------------------------------------------------------------
 coverage = "7.5.1"  # https://github.com/nedbat/coveragepy
-pre-commit = "3.7.0"  # https://github.com/pre-commit/pre-commit
+pre-commit = "3.7.1"  # https://github.com/pre-commit/pre-commit
 
 # Django
 # ------------------------------------------------------------------------------

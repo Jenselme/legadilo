@@ -1,7 +1,7 @@
 {% load util_tags %}
 
-<nav class="sticky-top list-group">
-    <ul>
+<nav class="sticky-top">
+    <ul class="list-group">
         {% for reading_list in reading_lists %}
             <li class="p-0 list-group-item {% if displayed_reading_list_id == reading_list.id %}active{% endif %}">
                 <a href="{{ reading_list|reading_list_url }}"

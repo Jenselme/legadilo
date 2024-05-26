@@ -70,6 +70,10 @@
 
   .card main {
     max-height: 200px;
-    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .card main img {
+    max-height: 200px;
   }
 }

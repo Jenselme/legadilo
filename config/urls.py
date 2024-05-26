@@ -41,8 +41,8 @@ if settings.DEBUG:
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
 
-        urlpatterns = [  # noqa: RUF005 concatenation
+        urlpatterns = [  # type: ignore[assignment] # noqa: RUF005 concatenation
             path("__debug__/", include(debug_toolbar.urls))
-        ] + urlpatterns
+        ] + urlpatterns  # type: ignore[operator]
     if "django_browser_reload" in settings.INSTALLED_APPS:
         urlpatterns.append(path("__reload__/", include("django_browser_reload.urls")))

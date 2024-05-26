@@ -54,8 +54,8 @@ updates:
           - "version-update:semver-minor"
 
   - package-ecosystem: "docker"
-    # Look for a `Dockerfile` in the `compose/production/postgres` directory
-    directory: "compose/production/postgres/"
+    # Look for a `Dockerfile` in the `devops/compose/production/postgres` directory
+    directory: "devops/compose/production/postgres/"
     # Every weekday
     schedule:
       interval: "weekly"

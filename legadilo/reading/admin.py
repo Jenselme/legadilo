@@ -21,7 +21,7 @@ class ReadingListTagInline(admin.TabularInline):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    search_fields = ["name"]
+    search_fields = ["title"]
     autocomplete_fields = ["user"]
 
 
@@ -36,7 +36,7 @@ class ArticleAdmin(admin.ModelAdmin):
 
 @admin.register(ReadingList)
 class ReadingListAdmin(admin.ModelAdmin):
-    search_fields = ["name"]
+    search_fields = ["title"]
     autocomplete_fields = ["user"]
     inlines = [
         ReadingListTagInline,
