@@ -1,7 +1,7 @@
 {% load i18n static %}
 {
     "name": "Legadilo",
-    "short_name": "djangopwa",
+    "short_name": "Legadilo",
     "start_url": "{% url 'reading:default_reading_list' %}",
     "scope": ".",
     "display": "standalone",
