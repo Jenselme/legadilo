@@ -82,7 +82,7 @@ class Command(AsyncCommand):
         return feeds_qs
 
     async def _update_feed(self, client, feed):
-        logger.debug("Updating feed %s", feed)
+        logger.info("Updating feed %s", feed)
         feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
         try:
             feed_metadata = await get_feed_data(
@@ -107,4 +107,4 @@ class Command(AsyncCommand):
             await sync_to_async(Feed.objects.log_error)(feed, str(e))
 
         await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
-        logger.debug("Updated feed %s", feed)
+        logger.info("Updated feed %s", feed)
