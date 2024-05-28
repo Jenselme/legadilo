@@ -4,10 +4,22 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
 
+
+def _correct_admin_url(path: str) -> str:
+    if path.startswith("/"):
+        path = path[1:]
+
+    if not path.endswith("/"):
+        path += "/"
+
+    return path
+
+
 urlpatterns = [  # noqa: RUF005 concatenation
     path("", include("legadilo.website.urls", namespace="website")),
     # Django Admin, use {% url 'admin:index' %}
-    path(settings.ADMIN_URL, admin.site.urls),
+    # Make sure it's correct no matter how it's configured in the env.
+    path(_correct_admin_url(settings.ADMIN_URL), admin.site.urls),
     # User management
     path("users/", include("legadilo.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
