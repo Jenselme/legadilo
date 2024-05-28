@@ -32,15 +32,7 @@
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
         </header>
         <main class="card-text mt-3 row">
-            {% if article.preview_picture_url %}
-                <img class="col-1 object-fit-contain"
-                     src="{{ article.preview_picture_url }}"
-                     alt="{{ article.preview_picture_alt }}"
-                     height="auto" />
-            {% else %}
-                <div class="col-1 p-0"></div>
-            {% endif %}
-            <div class="col-11 m-0 p-0">{{ article.summary | truncatewords_html:100 | safe }}</div>
+            <p class="mb-0">{{ article.summary | truncatewords_html:100 | safe }}</p>
         </main>
     </div>
     <footer class="card-footer d-flex justify-content-between">
