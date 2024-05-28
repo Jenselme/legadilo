@@ -20,7 +20,6 @@ class FeedUpdateAdmin(admin.ModelAdmin):
     autocomplete_fields = ["feed"]
     list_display = ["__str__", "created_at"]
     list_filter = ["status"]
-    ordering = ["created_at"]
 
 
 class FeedUpdateInline(admin.TabularInline):
