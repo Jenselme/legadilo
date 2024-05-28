@@ -248,6 +248,7 @@ class Feed(models.Model):
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
     disabled_reason = models.TextField(blank=True)
+    disabled_at = models.DateTimeField(null=True, blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH)
@@ -298,9 +299,10 @@ class Feed(models.Model):
                 ),
             ),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_disabled_reason_empty_when_enabled",
+                name="%(app_label)s_%(class)s_disabled_reason_disabled_at_empty_when_enabled",
                 check=models.Q(
                     disabled_reason="",
+                    disabled_at__isnull=True,
                     enabled=True,
                 )
                 | models.Q(enabled=False),
@@ -313,4 +315,5 @@ class Feed(models.Model):
 
     def disable(self, reason=""):
         self.disabled_reason = reason
+        self.disabled_at = utcnow()
         self.enabled = False

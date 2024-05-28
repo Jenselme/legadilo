@@ -16,6 +16,7 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.users.tests.factories import UserFactory
+from legadilo.utils.time import utcdt
 
 from ... import constants as feeds_constants
 from ...models import Feed
@@ -335,11 +336,13 @@ class TestFeedManager:
         ]
 
     def test_disabled(self):
-        Feed.objects.log_error(self.feed, "Something went wrong")
+        with time_machine.travel(utcdt(2024, 5, 28, 21), tick=False):
+            Feed.objects.log_error(self.feed, "Something went wrong")
 
         self.feed.refresh_from_db()
         assert not self.feed.enabled
         assert self.feed.disabled_reason == "We failed too many times to fetch the feed"
+        assert self.feed.disabled_at == utcdt(2024, 5, 28, 21)
         feed_update = self.feed.feed_updates.last()
         assert feed_update.status == feeds_constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Something went wrong"

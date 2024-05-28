@@ -2,6 +2,7 @@
   {
     "category__title": "Existing category",
     "description": "",
+    "disabled_at": null,
     "disabled_reason": "",
     "enabled": true,
     "feed_type": "rss",
@@ -14,6 +15,7 @@
   {
     "category__title": null,
     "description": "",
+    "disabled_at": null,
     "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
     "enabled": false,
     "feed_type": "rss",
@@ -26,6 +28,7 @@
   {
     "category__title": "Category 4",
     "description": "For documentation only",
+    "disabled_at": null,
     "disabled_reason": "",
     "enabled": true,
     "feed_type": "atom10",
@@ -38,6 +41,7 @@
   {
     "category__title": null,
     "description": "For documentation only",
+    "disabled_at": null,
     "disabled_reason": "",
     "enabled": true,
     "feed_type": "rss20",
