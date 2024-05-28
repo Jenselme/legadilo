@@ -26,7 +26,10 @@
                 {% if article.content %}
                     <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
                 {% else %}
-                    <a href="{{ article.link }}" target="_blank">{{ article.title | safe }}</a>
+                    <a class="open-original"
+                       data-article-id="{{ article.id }}"
+                       href="{{ article.link }}"
+                       target="_blank">{{ article.title | safe }}</a>
                 {% endif %}
             </h2>
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
