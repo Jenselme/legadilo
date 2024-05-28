@@ -126,14 +126,37 @@ class TestAddArticle:
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.NOT_ACCEPTABLE
+        assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
         messages = list(get_messages(response.wsgi_request))
+        assert Article.objects.count() == 1
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["WARNING"],
+                message="Failed to fetch the article. Please check that the URL you entered is "
+                "correct, that the article exists and is accessible. "
+                "We added its URL directly.",
+            )
+        ]
+
+    def test_fetch_failure_link_already_saved(self, user, logged_in_sync_client, httpx_mock):
+        article = ArticleFactory(user=user)
+        httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
+
+        response = logged_in_sync_client.post(
+            self.url, {**self.sample_payload, "url": article.link}
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "reading/add_article.html"
+        messages = list(get_messages(response.wsgi_request))
+        assert Article.objects.count() == 1
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
                 message="Failed to fetch the article. Please check that the URL you entered is "
-                "correct, that the article exists and is accessible.",
+                "correct, that the article exists and is accessible. It was added before, "
+                "please check its link.",
             )
         ]
 

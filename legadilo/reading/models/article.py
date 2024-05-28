@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
 from legadilo.utils.collections import max_or_none, min_or_none
+from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import utcnow
 from legadilo.utils.validators import language_code_validator, list_of_strings_json_schema_validator
@@ -25,6 +27,8 @@ if TYPE_CHECKING:
     from legadilo.users.models import User
 else:
     TypedModelMeta = object
+
+logger = logging.getLogger(__name__)
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
@@ -283,6 +287,21 @@ class ArticleManager(models.Manager["Article"]):
         )
 
         return all_articles
+
+    @transaction.atomic()
+    def create_invalid_article(self, user: User, article_link: str, tags: Iterable[Tag]) -> bool:
+        try:
+            article = Article.objects.create(
+                user=user, link=article_link, title=full_sanitize(article_link)
+            )
+        except IntegrityError:
+            logger.debug(f"Article with link {article_link} already exists")
+            return False
+
+        ArticleTag.objects.associate_articles_with_tags(
+            [article], tags, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        )
+        return True
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
         return (

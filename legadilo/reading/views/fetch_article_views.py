@@ -100,11 +100,12 @@ async def _handle_save(
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form
 
+    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
+        request.user, form.cleaned_data["tags"]
+    )
+    article_link = form.cleaned_data["url"]
     try:
-        article_data = await get_article_from_url(form.cleaned_data["url"])
-        tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
-            request.user, form.cleaned_data["tags"]
-        )
+        article_data = await get_article_from_url(article_link)
         article = (
             await sync_to_async(Article.objects.update_or_create_from_articles_list)(
                 request.user,
@@ -114,14 +115,29 @@ async def _handle_save(
             )
         )[0]
     except httpx.HTTPError:
+        created = await sync_to_async(Article.objects.create_invalid_article)(
+            request.user,
+            article_link,
+            tags,
+        )
+        if created:
+            messages.warning(
+                request,
+                _(
+                    "Failed to fetch the article. Please check that the URL you entered is "
+                    "correct, that the article exists and is accessible. We added its URL directly."
+                ),
+            )
+            return HTTPStatus.CREATED, form
         messages.error(
             request,
             _(
-                "Failed to fetch the article. Please check that the URL you entered is correct, "
-                "that the article exists and is accessible."
+                "Failed to fetch the article. Please check that the URL you entered is "
+                "correct, that the article exists and is accessible. It was added before, "
+                "please check its link."
             ),
         )
-        return HTTPStatus.NOT_ACCEPTABLE, form
+        return HTTPStatus.BAD_REQUEST, form
     except ArticleTooBigError:
         messages.error(
             request, _("The article you are trying to fetch is too big and cannot be processed.")
