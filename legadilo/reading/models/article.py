@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db import IntegrityError, models, transaction
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
@@ -17,6 +17,8 @@ from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import utcnow
 from legadilo.utils.validators import language_code_validator, list_of_strings_json_schema_validator
+
+from .article_fetch_error import ArticleFetchError
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -289,19 +291,31 @@ class ArticleManager(models.Manager["Article"]):
         return all_articles
 
     @transaction.atomic()
-    def create_invalid_article(self, user: User, article_link: str, tags: Iterable[Tag]) -> bool:
+    def create_invalid_article(
+        self,
+        user: User,
+        article_link: str,
+        tags: Iterable[Tag],
+        *,
+        error_message="",
+        technical_debug_data: dict | None = None,
+    ) -> tuple[Article, bool]:
         try:
+            article = self.get(user=user, link=article_link)
+            created = False
+        except self.model.DoesNotExist:
+            created = True
             article = Article.objects.create(
                 user=user, link=article_link, title=full_sanitize(article_link)
             )
-        except IntegrityError:
-            logger.debug(f"Article with link {article_link} already exists")
-            return False
+            ArticleTag.objects.associate_articles_with_tags(
+                [article], tags, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+            )
 
-        ArticleTag.objects.associate_articles_with_tags(
-            [article], tags, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        ArticleFetchError.objects.create(
+            article=article, message=error_message, technical_debug_data=technical_debug_data
         )
-        return True
+        return article, created
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
         return (

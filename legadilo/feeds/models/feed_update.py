@@ -61,6 +61,7 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
 class FeedUpdate(models.Model):
     status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)
     error_message = models.TextField(blank=True)
+    technical_debug_data = models.JSONField(blank=True, null=True)
     feed_etag = models.CharField(max_length=100)
     feed_last_modified = models.DateTimeField(null=True, blank=True)
 

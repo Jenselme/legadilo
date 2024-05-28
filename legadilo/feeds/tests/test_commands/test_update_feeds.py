@@ -84,7 +84,8 @@ class TestUpdateFeedsCommand:
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.FAILURE
-        assert feed_update.error_message == "Some error"
+        assert feed_update.error_message == "HTTPError(Some error)"
+        assert feed_update.technical_debug_data == {"request": None, "response": None}
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
         assert feed_update.feed.enabled
@@ -114,7 +115,7 @@ class TestUpdateFeedsCommand:
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.FAILURE
-        assert feed_update.error_message == "Some error"
+        assert feed_update.error_message == "HTTPError(Some error)"
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
         assert not feed_update.feed.enabled

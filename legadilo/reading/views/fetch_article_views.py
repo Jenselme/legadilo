@@ -20,6 +20,7 @@ from legadilo.reading.utils.article_fetching import (
 )
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
+from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.urls import validate_referer_url
 
 
@@ -114,11 +115,13 @@ async def _handle_save(
                 source_type=constants.ArticleSourceType.MANUAL,
             )
         )[0]
-    except httpx.HTTPError:
-        created = await sync_to_async(Article.objects.create_invalid_article)(
+    except httpx.HTTPError as e:
+        article, created = await sync_to_async(Article.objects.create_invalid_article)(
             request.user,
             article_link,
             tags,
+            error_message=format_exception(e),
+            technical_debug_data=extract_debug_information(e),
         )
         if created:
             messages.warning(

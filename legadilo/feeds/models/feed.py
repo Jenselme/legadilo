@@ -226,11 +226,12 @@ class FeedManager(models.Manager["Feed"]):
         )
 
     @transaction.atomic()
-    def log_error(self, feed: Feed, error_message: str):
+    def log_error(self, feed: Feed, error_message: str, technical_debug_data: dict | None = None):
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.FAILURE,
             error_message=error_message,
             feed=feed,
+            technical_debug_data=technical_debug_data,
         )
         if FeedUpdate.objects.must_disable_feed(feed):
             feed.disable(_("We failed too many times to fetch the feed"))

@@ -978,37 +978,37 @@ class TestArticleManager:
         tag = TagFactory(user=user, title="Test")
         link = "http://toto.com/"
 
-        with django_assert_num_queries(5):
-            created = Article.objects.create_invalid_article(
+        with django_assert_num_queries(7):
+            article, created = Article.objects.create_invalid_article(
                 user,
                 link,
                 [tag],
             )
 
         assert created
-        article = Article.objects.get()
         assert article.link == link
         assert article.title == link
         assert article.updated_at is None
         assert list(article.tags.all()) == [tag]
+        assert article.article_fetch_errors.count() == 1
 
     def test_create_invalid_article_article_already_saved(self, user, django_assert_num_queries):
         initial_article = ArticleFactory(user=user)
         tag = TagFactory(user=user, title="Test")
 
         with django_assert_num_queries(4):
-            created = Article.objects.create_invalid_article(
+            article, created = Article.objects.create_invalid_article(
                 user,
                 initial_article.link,
                 [tag],
             )
 
         assert not created
-        article = Article.objects.get()
         assert article.link == initial_article.link
         assert article.title != initial_article.link
         assert article.title == initial_article.title
         assert article.tags.count() == 0
+        assert article.article_fetch_errors.count() == 1
 
 
 class TestArticleModel:

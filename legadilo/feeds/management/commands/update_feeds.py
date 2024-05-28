@@ -1,7 +1,6 @@
 import logging
 from asyncio import TaskGroup
 from http import HTTPStatus
-from ssl import SSLCertVerificationError
 from typing import Any
 
 from asgiref.sync import sync_to_async
@@ -13,6 +12,7 @@ from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
+from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.time import utcnow
 
 logger = logging.getLogger(__name__)
@@ -96,15 +96,19 @@ class Command(AsyncCommand):
                 await sync_to_async(Feed.objects.log_not_modified)(feed)
             else:
                 logger.exception("Failed to fetch feed %s", feed)
-                await sync_to_async(Feed.objects.log_error)(feed, str(e))
+                await sync_to_async(Feed.objects.log_error)(
+                    feed, format_exception(e), extract_debug_information(e)
+                )
             return
-        except (HTTPError, SSLCertVerificationError) as e:
+        except HTTPError as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.log_error)(feed, str(e))
+            await sync_to_async(Feed.objects.log_error)(
+                feed, format_exception(e), extract_debug_information(e)
+            )
             return
         except Exception as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.log_error)(feed, str(e))
+            await sync_to_async(Feed.objects.log_error)(feed, format_exception(e))
 
         await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
         logger.info("Updated feed %s", feed)

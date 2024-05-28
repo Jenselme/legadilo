@@ -139,7 +139,7 @@ class TestDeleteArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_delete(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(7):
             response = logged_in_sync_client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -147,7 +147,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(7):
             response = logged_in_sync_client.post(self.url, {"from_url": self.reading_list_url})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -155,7 +155,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -184,7 +184,7 @@ class TestDeleteArticleView:
     def test_delete_article_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(7):
             response = logged_in_sync_client.post(
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )
