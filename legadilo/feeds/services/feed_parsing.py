@@ -14,7 +14,7 @@ from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
 from legadilo.reading import constants as reading_constants
-from legadilo.reading.utils.article_fetching import ArticleData
+from legadilo.reading.utils.article_fetching import ArticleData, parse_tags_list
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 from ...utils.time import dt_to_http_date
@@ -269,11 +269,7 @@ def _get_articles_tags(entry):
     for term in tags:
         if not (term_value := term.get("term")):
             continue
-        for raw_tag in term_value.split(","):
-            tag = full_sanitize(raw_tag).strip()
-            if not tag:
-                continue
-            parsed_tags.add(tag)
+        parsed_tags |= parse_tags_list(term_value)
 
     return sorted(parsed_tags)
 

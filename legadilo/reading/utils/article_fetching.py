@@ -154,17 +154,28 @@ def _get_authors(soup: BeautifulSoup) -> list[str]:
 
 
 def _get_tags(soup: BeautifulSoup) -> list[str]:
-    tags = []
+    tags = set()
 
     if article_tags := soup.find_all("meta", attrs={"property": "article:tag"}):
-        tags = [meta_tag.get("content") for meta_tag in article_tags]
+        for meta_tag in article_tags:
+            tags |= parse_tags_list(meta_tag.get("content"))
     elif (keywords := soup.find("meta", attrs={"property": "keywords"})) and keywords.get(
         "content"
     ):
-        tags = keywords.get("content").split(",")
+        tags = parse_tags_list(keywords.get("content"))
 
-    cleaned_tags = [full_sanitize(tag.strip()) for tag in tags]
-    return [tag for tag in cleaned_tags if tag]
+    return sorted(tags)
+
+
+def parse_tags_list(tags_str: str) -> set[str]:
+    parsed_tags = set()
+    for raw_tag in tags_str.split(","):
+        tag = full_sanitize(raw_tag).strip()
+        if not tag:
+            continue
+        parsed_tags.add(tag)
+
+    return parsed_tags
 
 
 def _get_link(fetched_url: str, soup: BeautifulSoup) -> str:
