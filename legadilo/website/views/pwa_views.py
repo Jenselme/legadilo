@@ -9,5 +9,5 @@ def manifest_view(request: HttpRequest) -> TemplateResponse:
         request,
         "website/manifest.json",
         content_type="application/json",
-        headers={"Cache-Control": f"max-age={2 * 60 * 60}, public"},
+        headers={"Cache-Control": f"max-age={24 * 60 * 60}, public"},
     )
