@@ -46,6 +46,16 @@
                             {% plural %}
                                 {{ formatted_nb_articles }} articles in total
                             {% endblocktranslate %}
+                            {% if js_cfg.is_reading_on_scroll_enabled %}
+                                &nbsp;
+                                <button type="button"
+                                        class="btn btn-light p-0"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        data-bs-title="{% translate 'Read on scroll is enabled' %}">
+                                    {% include "core/partials/bs-icons/info.html" %}
+                                </button>
+                            {% endif %}
                         </h2>
                     {% endif %}
                     {% if update_articles_form %}

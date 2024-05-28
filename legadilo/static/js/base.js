@@ -61,5 +61,11 @@
     }
   };
 
+  const setupTooltips = () => {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
+  };
+
   window.addEventListener("DOMContentLoaded", setupHtmxConfirmWithPopup);
+  window.addEventListener("DOMContentLoaded", setupTooltips);
 })();
