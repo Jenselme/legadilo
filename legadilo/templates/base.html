@@ -7,9 +7,11 @@
         <meta charset="utf-8" />
         <meta http-equiv="x-ua-compatible" content="ie=edge" />
         <title>
-            {% block title %}
-                Legadilo
-            {% endblock title %}
+            {% block page_title %}
+                {% block title %}
+                {% endblock title %}
+                | Legadilo
+            {% endblock page_title %}
         </title>
         <meta name="description"
               content="{% translate 'Read your RSS feeds & other saved articles!' %}" />
