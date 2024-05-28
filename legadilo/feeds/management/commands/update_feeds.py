@@ -5,14 +5,14 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.core.management.base import CommandParser
-from httpx import AsyncClient, HTTPError, HTTPStatusError, Limits
+from httpx import HTTPError, HTTPStatusError
 
-from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.exceptions import extract_debug_information, format_exception
+from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.time import utcnow
 
 logger = logging.getLogger(__name__)
@@ -50,13 +50,7 @@ class Command(AsyncCommand):
         logger.info("Starting feed update")
         start_time = utcnow()
         async with (
-            AsyncClient(
-                limits=Limits(
-                    max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0
-                ),
-                timeout=constants.HTTP_TIMEOUT_CMD_CTX,
-                follow_redirects=True,
-            ) as client,
+            get_rss_async_client() as client,
             TaskGroup() as tg,
         ):
             async for feed in self._build_feed_qs(options):

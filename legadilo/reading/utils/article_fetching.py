@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from urllib.parse import urlparse
 
-import httpx
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
 from legadilo.reading import constants
+from legadilo.utils.http import get_async_client
 from legadilo.utils.security import (
     full_sanitize,
     sanitize_keep_safe_tags,
@@ -39,7 +39,7 @@ class ArticleTooBigError(Exception):
 
 
 async def get_article_from_url(url: str) -> ArticleData:
-    async with httpx.AsyncClient() as client:
+    async with get_async_client() as client:
         response = await client.get(url)
         response.raise_for_status()
 

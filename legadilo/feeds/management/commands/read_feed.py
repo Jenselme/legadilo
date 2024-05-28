@@ -1,12 +1,12 @@
 from pathlib import Path
 from pprint import pprint
 
-import httpx
 from django.core.management import CommandError
 from django.core.management.base import CommandParser
 
 from legadilo.feeds.services.feed_parsing import build_feed_data, parse_feed
 from legadilo.utils.command import AsyncCommand
+from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.validators import is_url_valid
 
 
@@ -46,7 +46,7 @@ class Command(AsyncCommand):
                 return f.read()
 
         if is_url_valid(feed_file):
-            async with httpx.AsyncClient() as client:
+            async with get_rss_async_client() as client:
                 response = await client.get(feed_file)
                 return response.raise_for_status().text
 

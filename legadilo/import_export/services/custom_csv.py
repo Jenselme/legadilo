@@ -26,6 +26,7 @@ from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.users.models import User
+from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import safe_datetime_parse
@@ -115,7 +116,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
         return feed, False
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with get_rss_async_client() as client:
             feed_data = await get_feed_data(row["feed_url"], client=client)
 
         feed = await sync_to_async(Feed.objects.create_from_metadata)(

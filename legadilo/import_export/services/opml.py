@@ -6,7 +6,6 @@ import httpx
 from asgiref.sync import async_to_sync, sync_to_async
 from defusedxml.ElementTree import parse
 from django.db import IntegrityError
-from httpx import AsyncClient
 
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedCategory
@@ -16,6 +15,7 @@ from legadilo.feeds.services.feed_parsing import (
     get_feed_data,
 )
 from legadilo.users.models import User
+from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.validators import is_url_valid
 
@@ -75,7 +75,7 @@ async def _process_opml_data(user, root) -> tuple[int, int]:
         return 0, 0
 
     tasks = []
-    async with AsyncClient() as client, TaskGroup() as tg:
+    async with get_rss_async_client() as client, TaskGroup() as tg:
         for outline_node in body.findall("outline"):
             outline = OutlineElt(outline_node)
             tasks.append(tg.create_task(_process_outline(user, client, outline)))
