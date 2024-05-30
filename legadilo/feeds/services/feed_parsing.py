@@ -4,6 +4,7 @@ import sys
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from html import unescape
 from itertools import chain
 from urllib.parse import urlparse
 
@@ -234,7 +235,11 @@ def _get_article_contributors(entry):
 
 def _get_article_content(entry):
     content_entry = _get_article_content_entry(entry)
-    return sanitize_keep_safe_tags(content_entry.get("value", ""))
+    content_value = content_entry.get("value", "")
+    if content_entry.get("type") == "application/xhtml+xml":
+        content_value = unescape(content_value)
+
+    return sanitize_keep_safe_tags(content_value)
 
 
 def _get_article_content_entry(entry):
