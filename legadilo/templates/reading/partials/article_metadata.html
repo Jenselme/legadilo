@@ -1,10 +1,12 @@
 {% load i18n %}
 
 <p class="mb-0 text-secondary">
-    <span class="me-2">
-        {% include "core/partials/bs-icons/author.html" %}
-        {{ article.authors|join:", "|safe }}
-    </span>
+    {% if article.authors %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/author.html" %}
+            {{ article.authors|join:", "|safe }}
+        </span>
+    {% endif %}
     {% if article.updated_at %}
         <span class="me-2">
             {% include "core/partials/bs-icons/updated_at.html" %}
