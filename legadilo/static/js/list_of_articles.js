@@ -6,6 +6,7 @@
   "use strict";
 
   let jsCfg = {};
+  let readOnScrollSequence = Promise.resolve();
 
   const debounce = (fn, waitTime) => {
     let timeout = null;
@@ -58,7 +59,9 @@
         return;
       }
 
-      htmx.trigger(htmxForm, "submit");
+      // To make sure counters are correct at the end, we run the requests on after the other so the
+      // last one to complete has the correct count.
+      readOnScrollSequence = readOnScrollSequence.then(() => htmx.trigger(htmxForm, "submit"));
     }
   };
 
