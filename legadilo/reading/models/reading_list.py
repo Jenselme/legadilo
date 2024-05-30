@@ -68,6 +68,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             user=user,
             defaults={
                 "title": str(_("For later")),
+                "read_status": constants.ReadStatus.ONLY_UNREAD,
                 "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,
                 "order": 35,
             },
