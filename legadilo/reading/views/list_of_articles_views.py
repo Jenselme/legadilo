@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from http import HTTPStatus
 from typing import Any
-from urllib.parse import unquote
 
 from csp.decorators import csp_update
 from django import forms
@@ -23,6 +22,7 @@ from legadilo.core.forms.widgets import MultipleTagsWidget
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
+from legadilo.reading.templatetags import decode_external_tag
 from legadilo.reading.utils.views import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
@@ -130,7 +130,7 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
 def external_tag_with_articles_view(
     request: AuthenticatedHttpRequest, tag: str
 ) -> TemplateResponse:
-    tag_title = unquote(tag)
+    tag_title = decode_external_tag(tag)
     return list_or_update_articles(
         request,
         Article.objects.get_articles_with_external_tag(request.user, tag_title),
