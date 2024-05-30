@@ -152,15 +152,17 @@
         {% endif %}
         <div class="{% if base.fluid_content %}container-fluid px-0{% else %}container{% endif %}">
             {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                        {{ message }}
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="alert"
-                                aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+                <div class="container-lg">
+                    {% for message in messages %}
+                        <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
             {% block content %}
             {% endblock content %}
