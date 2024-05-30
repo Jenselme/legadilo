@@ -1,7 +1,6 @@
 {% load feeds %}
 
-<article id="{{ article|article_card_id }}"
-         class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
+<article class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
     {% if js_cfg.is_reading_on_scroll_enabled and not article.is_read %}
         <form class="visually-hidden readable-on-scroll"
               aria-hidden="true"

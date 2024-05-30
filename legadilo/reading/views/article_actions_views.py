@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
+from legadilo.reading.templatetags import article_card_id
 from legadilo.reading.utils.views import (
     get_from_url_for_article_details,
     get_js_cfg_from_reading_list,
@@ -34,7 +35,7 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
         request,
         article,
         hx_reswap="outerHTML show:none swap:1s",
-        hx_target=f"#article-card-{article_id}",
+        hx_target=f"#{article_card_id(article)}",
     )
 
 
@@ -75,7 +76,7 @@ def update_article_view(
         )
 
     return _update_article_card(
-        request, article, hx_reswap="outerHTML show:none", hx_target=f"#article-card-{article.id}"
+        request, article, hx_reswap="innerHTML show:none", hx_target=f"#{article_card_id(article)}"
     )
 
 

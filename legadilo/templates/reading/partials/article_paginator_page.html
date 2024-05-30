@@ -1,7 +1,9 @@
 {% load i18n %}
 
 {% for article in articles_page %}
-    {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id is_last=forloop.last next_page_number=next_page_number %}
+    <div id="{{ article|article_card_id }}">
+        {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id is_last=forloop.last next_page_number=next_page_number %}
+    </div>
 {% empty %}
     <p>{% translate "No articles to display." %}</p>
 {% endfor %}
