@@ -7,6 +7,11 @@
             nonce="{{request.csp_nonce}}"
             type="module"></script>
 {% endblock page_js %}
+{% block page_css %}
+    <link rel="stylesheet"
+          href="{% static 'css/article_details.css' %}"
+          nonce="{{ request.csp_nonce }}" />
+{% endblock page_css %}
 {% block title %}
     {{ article.title|safe }}
 {% endblock title %}
