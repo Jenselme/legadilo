@@ -86,8 +86,10 @@ def _get_title(soup: BeautifulSoup) -> str:
         "content"
     ):
         title = meta_title.get("content")
-    elif soup.find("h1") and soup.find("h1").text:
-        title = soup.find("h1").text
+    elif (title_tag := soup.find("title")) and title_tag.text:
+        title = title_tag.text
+    elif (h1_tag := soup.find("h1")) and h1_tag.text:
+        title = h1_tag.text
 
     return full_sanitize(title)
 
