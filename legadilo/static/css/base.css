@@ -1,5 +1,15 @@
-.scrollable-container {
+.list-of-articles-scrollable-container {
   height: calc(100vh - 116px);
+}
+
+@media (width < 768px) {
+  .list-of-articles-scrollable-container {
+    height: 100%;
+  }
+}
+
+.article-details-scrollable-container {
+  height: calc(100vh - 64px);
 }
 
 .scrollable {

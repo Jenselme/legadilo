@@ -150,7 +150,7 @@
                 </nav>
             </div>
         {% endif %}
-        <div class="{% if base.fluid_content %}container-fluid px-0 px-md-3{% else %}container{% endif %}">
+        <div class="{% if base.fluid_content %}container-fluid px-0{% else %}container{% endif %}">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">

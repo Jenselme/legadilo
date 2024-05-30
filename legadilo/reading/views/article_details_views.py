@@ -71,6 +71,9 @@ def article_details_view(
         request,
         "reading/article_details.html",
         {
+            "base": {
+                "fluid_content": True,
+            },
             "article": article,
             "edit_article_form": edit_article_form,
             "from_url": get_from_url_for_article_details(request, request.GET),

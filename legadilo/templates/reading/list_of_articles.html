@@ -15,13 +15,13 @@
             type="module"></script>
 {% endblock page_js %}
 {% block content %}
-    <div class="container-fluid">
+    <div class="container-fluid px-md-3">
         <div class="row">
-            <div class="col col-2 d-none d-md-block"></div>
-            <div class="col col-6 col-md-8">
+            <div class="col col-3 d-none d-md-block"></div>
+            <div class="col col-7 col-md-8 px-1 px-md-3">
                 <h1>{{ page_title }}</h1>
             </div>
-            <div class="col col-6 d-md-none dropdown">
+            <div class="col col-5 d-md-none dropdown">
                 <button class="btn btn-secondary dropdown-toggle"
                         type="button"
                         data-bs-toggle="dropdown"
@@ -32,15 +32,16 @@
             </div>
         </div>
     </div>
-    <div class="container-fluid scrollable-container">
-        <div id="scrollable-article-list" class="row scrollable">
+    <div class="container-fluid list-of-articles-scrollable-container px-0">
+        <div id="scrollable-article-list" class="row scrollable px-0 mx-0">
+            <div class="col col-md-1"></div>
             <div id="reading-list-group" class="col col-2 d-none d-md-block">
                 {% include 'reading/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
             </div>
-            <div class="col col-12 col-md-8 px-1 px-md-2">
-                <div class="row">
+            <div class="col col-12 col-md-8 px-1 px-md-3 mx-0">
+                <div class="row px-0 mx-0">
                     {% if count_articles_of_current_reading_list > 0 %}
-                        <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center">
+                        <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center px-0 mx-0">
                             {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
                                 {{ formatted_nb_articles }} article in total
                             {% plural %}
