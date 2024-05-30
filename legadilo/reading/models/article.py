@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
@@ -144,6 +145,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .for_current_tag_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
+            .default_order_by()
         )
 
     def for_tag(self, tag: Tag) -> Self:
@@ -151,6 +153,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_current_tag_filtering()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
             .prefetch_related(_build_prefetch_article_tags())
+            .default_order_by()
         )
 
     def for_external_tag(self, user: User, tag: str) -> Self:
@@ -158,34 +161,44 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_user(user)
             .filter(external_tags__icontains=tag)
             .prefetch_related(_build_prefetch_article_tags())
+            .default_order_by()
         )
 
     def for_feed(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related(_build_prefetch_article_tags()).default_order_by()
 
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())
 
     def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
+        # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
+        # resolve the alias_date_field_order field.
+        update_qs = self.order_by()
+
         match action:
             case constants.UpdateArticleActions.DO_NOTHING:
                 return 0
             case constants.UpdateArticleActions.MARK_AS_READ:
-                return self.filter(read_at__isnull=True).update(read_at=utcnow())
+                return update_qs.filter(read_at__isnull=True).update(read_at=utcnow())
             case constants.UpdateArticleActions.MARK_AS_UNREAD:
-                return self.update(read_at=None)
+                return update_qs.update(read_at=None)
             case constants.UpdateArticleActions.MARK_AS_FAVORITE:
-                return self.update(is_favorite=True)
+                return update_qs.update(is_favorite=True)
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
-                return self.update(is_favorite=False)
+                return update_qs.update(is_favorite=False)
             case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
-                return self.update(is_for_later=True)
+                return update_qs.update(is_for_later=True)
             case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
-                return self.update(is_for_later=False)
+                return update_qs.update(is_for_later=False)
             case constants.UpdateArticleActions.MARK_AS_OPENED:
-                return self.filter(opened_at__isnull=True).update(opened_at=utcnow())
+                return update_qs.filter(opened_at__isnull=True).update(opened_at=utcnow())
             case _:
                 assert_never(action)
+
+    def default_order_by(self):
+        return self.alias(
+            alias_date_field_order=Coalesce(models.F("updated_at"), models.F("published_at"))
+        ).order_by(models.F("alias_date_field_order").desc(nulls_last=True))
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -318,11 +331,7 @@ class ArticleManager(models.Manager["Article"]):
         return article, created
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
-        return (
-            self.get_queryset()
-            .for_reading_list(reading_list)
-            .order_by("-updated_at", "-published_at", "id")
-        )
+        return self.get_queryset().for_reading_list(reading_list)
 
     def count_unread_articles_of_reading_lists(
         self, user: User, reading_lists: list[ReadingList]

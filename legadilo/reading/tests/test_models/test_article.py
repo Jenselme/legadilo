@@ -166,7 +166,10 @@ class TestArticleQuerySet:
             filter_type=constants.ReadingListTagFilterType.INCLUDE,
         )
         article_to_include_linked_many_tags = ArticleFactory(
-            title="Article to include linked many tags", user=user
+            title="Article to include linked many tags",
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_include_linked_many_tags,
@@ -179,7 +182,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_to_include_one_tag = ArticleFactory(
-            title="Article to include linked to one tag", user=user
+            title="Article to include linked to one tag",
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_include_one_tag,
@@ -187,7 +193,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
         article_would_be_included_if_tag_not_deleted = ArticleFactory(
-            title="Article to include if tag not deleted", user=user
+            title="Article to include if tag not deleted",
+            user=user,
+            published_at=utcdt(2024, 5, 3),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_would_be_included_if_tag_not_deleted,
@@ -195,7 +204,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.DELETED,
         )
         article_linked_only_to_other_tag = ArticleFactory(
-            title="Article linked to other tag", user=user
+            title="Article linked to other tag",
+            user=user,
+            published_at=utcdt(2024, 5, 4),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_linked_only_to_other_tag,
@@ -207,8 +219,8 @@ class TestArticleQuerySet:
             articles = Article.objects.get_articles_of_reading_list(reading_list)
 
         assert list(articles) == [
-            article_to_include_linked_many_tags,
             article_to_include_one_tag,
+            article_to_include_linked_many_tags,
         ]
 
     def test_for_reading_list_include_all_tags(self, user, django_assert_num_queries):
@@ -227,7 +239,11 @@ class TestArticleQuerySet:
             tag=tag2,
             filter_type=constants.ReadingListTagFilterType.INCLUDE,
         )
-        article_linked_to_all_tags = ArticleFactory(user=user)
+        article_linked_to_all_tags = ArticleFactory(
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
+        )
         ArticleTag.objects.create(
             article=article_linked_to_all_tags,
             tag=tag1,
@@ -238,7 +254,11 @@ class TestArticleQuerySet:
             tag=tag2,
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
-        article_linked_to_one_tag = ArticleFactory(user=user)
+        article_linked_to_one_tag = ArticleFactory(
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
+        )
         ArticleTag.objects.create(
             article=article_linked_to_one_tag,
             tag=tag1,
@@ -268,7 +288,11 @@ class TestArticleQuerySet:
             tag=tag2,
             filter_type=constants.ReadingListTagFilterType.INCLUDE,
         )
-        article_linked_to_all_tags = ArticleFactory(user=user)
+        article_linked_to_all_tags = ArticleFactory(
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
+        )
         ArticleTag.objects.create(
             article=article_linked_to_all_tags,
             tag=tag1,
@@ -279,7 +303,11 @@ class TestArticleQuerySet:
             tag=tag2,
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
-        article_to_include_one_tag = ArticleFactory(user=user)
+        article_to_include_one_tag = ArticleFactory(
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
+        )
         ArticleTag.objects.create(
             article=article_to_include_one_tag,
             tag=tag1,
@@ -290,8 +318,8 @@ class TestArticleQuerySet:
             articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
         assert articles == [
-            article_linked_to_all_tags,
             article_to_include_one_tag,
+            article_linked_to_all_tags,
         ]
 
     def test_for_reading_list_with_tags_basic_exclude(self, user, django_assert_num_queries):
@@ -304,7 +332,10 @@ class TestArticleQuerySet:
             filter_type=constants.ReadingListTagFilterType.EXCLUDE,
         )
         article_to_exclude_linked_many_tags = ArticleFactory(
-            title="Article to exclude linked to many tags", user=user
+            title="Article to exclude linked to many tags",
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_exclude_linked_many_tags,
@@ -317,7 +348,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_to_exclude_one_tag = ArticleFactory(
-            title="Article to exclude linked to one tag", user=user
+            title="Article to exclude linked to one tag",
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_exclude_one_tag,
@@ -325,7 +359,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
         article_linked_only_to_other_tag = ArticleFactory(
-            title="Article linked to only one other tag", user=user
+            title="Article linked to only one other tag",
+            user=user,
+            published_at=utcdt(2024, 5, 3),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_linked_only_to_other_tag,
@@ -333,22 +370,30 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
         article_would_be_excluded_if_tag_not_deleted = ArticleFactory(
-            title="Article would be excluded if tag not deleted", user=user
+            title="Article would be excluded if tag not deleted",
+            user=user,
+            published_at=utcdt(2024, 5, 4),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_would_be_excluded_if_tag_not_deleted,
             tag=tag_to_exclude,
             tagging_reason=constants.TaggingReason.DELETED,
         )
-        article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
+        article_linked_to_no_tag = ArticleFactory(
+            title="Article linked to no tag",
+            user=user,
+            published_at=utcdt(2024, 5, 5),
+            updated_at=None,
+        )
 
         with django_assert_num_queries(3):
             articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
         assert articles == [
-            article_linked_only_to_other_tag,
-            article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
+            article_would_be_excluded_if_tag_not_deleted,
+            article_linked_only_to_other_tag,
         ]
 
     def test_for_reading_list_exclude_any_tags(self, user, django_assert_num_queries):
@@ -369,7 +414,10 @@ class TestArticleQuerySet:
             filter_type=constants.ReadingListTagFilterType.EXCLUDE,
         )
         article_to_exclude_linked_many_tags = ArticleFactory(
-            title="Article to exclude linked to many tags", user=user
+            title="Article to exclude linked to many tags",
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_exclude_linked_many_tags,
@@ -382,7 +430,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_to_exclude_one_tag = ArticleFactory(
-            title="Article to exclude linked to one tag", user=user
+            title="Article to exclude linked to one tag",
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_exclude_one_tag,
@@ -390,7 +441,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
         article_would_be_excluded_if_tag_not_deleted = ArticleFactory(
-            title="Article would be excluded if tag not deleted", user=user
+            title="Article would be excluded if tag not deleted",
+            user=user,
+            published_at=utcdt(2024, 5, 3),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_would_be_excluded_if_tag_not_deleted,
@@ -402,14 +456,19 @@ class TestArticleQuerySet:
             tag=other_tag,
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
-        article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
+        article_linked_to_no_tag = ArticleFactory(
+            title="Article linked to no tag",
+            user=user,
+            published_at=utcdt(2024, 5, 4),
+            updated_at=None,
+        )
 
         with django_assert_num_queries(3):
             articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
         assert list(articles) == [
-            article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
+            article_would_be_excluded_if_tag_not_deleted,
         ]
 
     def test_for_reading_list_exclude_all_tags(self, user, django_assert_num_queries):
@@ -429,7 +488,10 @@ class TestArticleQuerySet:
             filter_type=constants.ReadingListTagFilterType.EXCLUDE,
         )
         article_to_exclude_linked_to_all_tags = ArticleFactory(
-            title="Article to exclude linked to many tags", user=user
+            title="Article to exclude linked to many tags",
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_exclude_linked_to_all_tags,
@@ -442,7 +504,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_linked_to_one_tag = ArticleFactory(
-            title="Article to exclude linked to one tag", user=user
+            title="Article to exclude linked to one tag",
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_linked_to_one_tag,
@@ -450,7 +515,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
         article_would_be_excluded_if_tag_not_deleted = ArticleFactory(
-            title="Article would be excluded if tag not deleted", user=user
+            title="Article would be excluded if tag not deleted",
+            user=user,
+            published_at=utcdt(2024, 5, 3),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_would_be_excluded_if_tag_not_deleted,
@@ -462,15 +530,20 @@ class TestArticleQuerySet:
             tag=tag2,
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
-        article_linked_to_no_tag = ArticleFactory(title="Article linked to no tag", user=user)
+        article_linked_to_no_tag = ArticleFactory(
+            title="Article linked to no tag",
+            user=user,
+            published_at=utcdt(2024, 5, 4),
+            updated_at=None,
+        )
 
         with django_assert_num_queries(1):
             articles = Article.objects.get_articles_of_reading_list(reading_list)
 
         assert list(articles) == [
-            article_linked_to_one_tag,
-            article_would_be_excluded_if_tag_not_deleted,
             article_linked_to_no_tag,
+            article_would_be_excluded_if_tag_not_deleted,
+            article_linked_to_one_tag,
         ]
 
     def test_for_reading_list_with_tags(self, user, django_assert_num_queries):
@@ -505,7 +578,10 @@ class TestArticleQuerySet:
             filter_type=constants.ReadingListTagFilterType.EXCLUDE,
         )
         article_to_include_linked_to_all_tags = ArticleFactory(
-            title="Article cannot be included", user=user
+            title="Article cannot be included",
+            user=user,
+            published_at=utcdt(2024, 5, 1),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_include_linked_to_all_tags,
@@ -523,7 +599,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_cannot_be_included_linked_to_tag_to_exclude = ArticleFactory(
-            title="Article cannot be included linked to tag to exclude", user=user
+            title="Article cannot be included linked to tag to exclude",
+            user=user,
+            published_at=utcdt(2024, 5, 2),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_cannot_be_included_linked_to_tag_to_exclude,
@@ -541,7 +620,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_cannot_be_included_linked_to_one_tag = ArticleFactory(
-            title="Article to include one tag", user=user
+            title="Article to include one tag",
+            user=user,
+            published_at=utcdt(2024, 5, 3),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_cannot_be_included_linked_to_one_tag,
@@ -549,7 +631,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
         article_cannot_be_included_linked_to_deleted_tag_to_include = ArticleFactory(
-            title="Article to include linked many tags", user=user
+            title="Article to include linked many tags",
+            user=user,
+            published_at=utcdt(2024, 5, 3),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_cannot_be_included_linked_to_deleted_tag_to_include,
@@ -562,7 +647,10 @@ class TestArticleQuerySet:
             tagging_reason=constants.TaggingReason.FROM_FEED,
         )
         article_to_include_linked_to_deleted_tag_to_exclude = ArticleFactory(
-            title="Article to include linked to deleted tag to exclude", user=user
+            title="Article to include linked to deleted tag to exclude",
+            user=user,
+            published_at=utcdt(2024, 5, 4),
+            updated_at=None,
         )
         ArticleTag.objects.create(
             article=article_to_include_linked_to_deleted_tag_to_exclude,
@@ -584,8 +672,8 @@ class TestArticleQuerySet:
             articles = Article.objects.get_articles_of_reading_list(reading_list)
 
         assert list(articles) == [
-            article_to_include_linked_to_all_tags,
             article_to_include_linked_to_deleted_tag_to_exclude,
+            article_to_include_linked_to_all_tags,
         ]
 
     @pytest.mark.parametrize(
@@ -644,6 +732,29 @@ class TestArticleQuerySet:
         article.refresh_from_db()
         for attr_name, attr_value in attrs.items():
             assert getattr(article, attr_name) == attr_value
+
+    def test_default_order_by(self):
+        article_only_published_at = ArticleFactory(
+            title="Only published at", published_at=utcdt(2024, 5, 28), updated_at=None
+        )
+        article_only_updated_at = ArticleFactory(
+            title="Only updated at", published_at=None, updated_at=utcdt(2024, 5, 31)
+        )
+        article_both_dates = ArticleFactory(
+            title="Both dates",
+            published_at=utcdt(2024, 5, 29),
+            updated_at=utcdt(2024, 5, 30),
+        )
+        article_no_dates = ArticleFactory(title="No date", published_at=None, updated_at=None)
+
+        articles = Article.objects.get_queryset().default_order_by()
+
+        assert list(articles) == [
+            article_only_updated_at,
+            article_both_dates,
+            article_only_published_at,
+            article_no_dates,
+        ]
 
 
 @pytest.mark.django_db()

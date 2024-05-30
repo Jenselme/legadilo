@@ -28,10 +28,16 @@ class TestReadingListWithArticlesView:
         )
 
         self.read_article = ArticleFactory(
-            read_at=utcnow(), published_at=datetime(2024, 3, 19, tzinfo=UTC), user=user
+            read_at=utcnow(),
+            published_at=datetime(2024, 3, 19, tzinfo=UTC),
+            updated_at=datetime(2024, 3, 19, tzinfo=UTC),
+            user=user,
         )
         self.unread_article = ArticleFactory(
-            read_at=None, published_at=datetime(2024, 3, 10, tzinfo=UTC), user=user
+            read_at=None,
+            published_at=datetime(2024, 3, 10, tzinfo=UTC),
+            updated_at=datetime(2024, 3, 10, tzinfo=UTC),
+            user=user,
         )
         # Article of some other user.
         ArticleFactory(user=other_user)
