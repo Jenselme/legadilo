@@ -177,7 +177,7 @@ class TestDeleteArticleView:
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,
         }
-        assert response["HX-Reswap"] == "innerHTML show:none swap:1s"
+        assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         assert Article.objects.count() == 0
 

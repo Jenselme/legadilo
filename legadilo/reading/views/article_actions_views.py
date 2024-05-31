@@ -21,6 +21,7 @@ from legadilo.utils.urls import add_query_params, validate_referer_url
 @login_required
 def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> HttpResponse:
     article = get_object_or_404(Article, id=article_id, user=request.user)
+    hx_target = f"#{article_card_id(article)}"
     article.delete()
 
     for_article_details = request.POST.get("for_article_details", "")
@@ -35,7 +36,7 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
         request,
         article,
         hx_reswap="outerHTML show:none swap:1s",
-        hx_target=f"#{article_card_id(article)}",
+        hx_target=hx_target,
     )
 
 

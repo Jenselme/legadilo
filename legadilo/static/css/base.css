@@ -65,7 +65,7 @@
   height: 100vh;
 }
 
-.card.htmx-swapping {
+.article-card-container.htmx-swapping {
   opacity: 0;
   max-height: 0;
   transition:
@@ -74,7 +74,7 @@
 }
 
 @media (width >= 768px) {
-  .card {
+  .article-card-container {
     max-height: 500px;
   }
 
