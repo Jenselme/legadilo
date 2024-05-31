@@ -94,7 +94,7 @@
                                           method="post"
                                           action="{% url 'reading:refetch_article' %}"
                                           hx-boost="true"
-                                          hx-push-url="false"
+                                          hx-push-url="true"
                                           hx-indicator=".{{ article|article_action_indicator }}">
                                         {% csrf_token %}
                                         <input type="hidden" name="url" value="{{ article.link }}" />

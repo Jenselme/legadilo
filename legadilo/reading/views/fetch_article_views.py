@@ -21,7 +21,7 @@ from legadilo.reading.utils.article_fetching import (
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
 from legadilo.utils.exceptions import extract_debug_information, format_exception
-from legadilo.utils.urls import validate_referer_url
+from legadilo.utils.urls import add_query_params, pop_query_param, validate_referer_url
 
 
 class FetchArticleForm(forms.Form):
@@ -61,6 +61,7 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
                 "The article '%s' was added but we failed to fetch its content. "
                 "Please check that it really points to an article."
             ),
+            force_update=False,
         )
 
     return TemplateResponse(
@@ -74,7 +75,9 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
 @require_http_methods(["POST"])
 @alogin_required
 async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    await sync_to_async(get_object_or_404)(Article, link=request.POST.get("url"), user=request.user)
+    article = await sync_to_async(get_object_or_404)(
+        Article, link=request.POST.get("url"), user=request.user
+    )
     await _handle_save(
         request,
         [],
@@ -83,11 +86,22 @@ async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpRespons
             "The article '%s' was re-fetched but we failed to fetch its content. "
             "Please check that it really points to an article."
         ),
+        force_update=True,
     )
 
-    return HttpResponseRedirect(
-        validate_referer_url(request, reverse("reading:default_reading_list"))
+    await article.arefresh_from_db()
+    _url, from_url = pop_query_param(
+        validate_referer_url(request, reverse("reading:default_reading_list")), "from_url"
     )
+    new_article_url = add_query_params(
+        reverse(
+            "reading:article_details",
+            kwargs={"article_id": article.id, "article_slug": article.slug},
+        ),
+        {"from_url": from_url},
+    )
+
+    return HttpResponseRedirect(new_article_url)
 
 
 async def _handle_save(
@@ -96,6 +110,7 @@ async def _handle_save(
     *,
     success_message,
     no_content_message,
+    force_update: bool,
 ):
     form = FetchArticleForm(request.POST, tag_choices=tag_choices)
     if not form.is_valid():
@@ -113,6 +128,7 @@ async def _handle_save(
                 [article_data],
                 tags,
                 source_type=constants.ArticleSourceType.MANUAL,
+                force_update=force_update,
             )
         )[0]
     except httpx.HTTPError as e:

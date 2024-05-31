@@ -1134,7 +1134,7 @@ class TestArticleModel:
         assert article.was_opened
 
     @pytest.mark.parametrize(
-        ("initial_data", "expected_data", "expected_was_updated"),
+        ("initial_data", "force_update", "expected_data", "expected_was_updated"),
         [
             pytest.param(
                 {
@@ -1142,6 +1142,7 @@ class TestArticleModel:
                     "content": "Initial content",
                     "updated_at": utcdt(2024, 4, 21),
                 },
+                False,
                 {
                     "title": "Initial title",
                     "content": "Initial content",
@@ -1153,9 +1154,25 @@ class TestArticleModel:
             pytest.param(
                 {
                     "title": "Initial title",
+                    "content": "Initial content",
+                    "updated_at": utcdt(2024, 4, 21),
+                },
+                True,
+                {
+                    "title": "Updated title",
+                    "content": "Updated content",
+                    "updated_at": utcdt(2024, 4, 21),
+                },
+                True,
+                id="initial-data-more-recent-than-update-proposal-but-ask-for-force-update",
+            ),
+            pytest.param(
+                {
+                    "title": "Initial title",
                     "content": "",
                     "updated_at": utcdt(2024, 4, 21),
                 },
+                False,
                 {
                     "title": "Initial title",
                     "content": "Updated content",
@@ -1174,6 +1191,7 @@ class TestArticleModel:
                     "authors": ["Author 1", "Author 2"],
                     "contributors": ["Contributor 1", "Contributor 2"],
                 },
+                False,
                 {
                     "title": "Updated title",
                     "summary": "Updated summary",
@@ -1189,7 +1207,12 @@ class TestArticleModel:
         ],
     )
     def test_update_article_from_data(
-        self, user, initial_data: dict, expected_data: dict, expected_was_updated: bool
+        self,
+        user,
+        initial_data: dict,
+        force_update: bool,
+        expected_data: dict,
+        expected_was_updated: bool,
     ):
         article = ArticleFactory.build(**initial_data, user=user)
 
@@ -1209,7 +1232,8 @@ class TestArticleModel:
                 updated_at=utcdt(2024, 4, 20),
                 source_title="Some site",
                 language="fr",
-            )
+            ),
+            force_update=force_update,
         )
 
         assert was_updated == expected_was_updated

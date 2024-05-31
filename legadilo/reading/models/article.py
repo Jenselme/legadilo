@@ -215,6 +215,7 @@ class ArticleManager(models.Manager["Article"]):
         tags: Iterable[Tag],
         *,
         source_type: constants.ArticleSourceType,
+        force_update: bool = False,
     ) -> list[Article]:
         if len(articles_data) == 0:
             return []
@@ -235,7 +236,9 @@ class ArticleManager(models.Manager["Article"]):
             seen_links.add(article_data.link)
             if article_data.link in existing_links_to_articles:
                 article_to_update = existing_links_to_articles[article_data.link]
-                was_updated = article_to_update.update_article_from_data(article_data)
+                was_updated = article_to_update.update_article_from_data(
+                    article_data, force_update=force_update
+                )
                 if source_type == constants.ArticleSourceType.MANUAL:
                     if article_to_update.initial_source_type == constants.ArticleSourceType.FEED:
                         # We force the source type to manual if we manually add it so prevent any
@@ -289,6 +292,7 @@ class ArticleManager(models.Manager["Article"]):
                 "updated_at",
                 "read_at",
                 "initial_source_type",
+                "obj_updated_at",
             ],
         )
 
@@ -488,17 +492,19 @@ class Article(models.Model):
 
         return super().save(*args, **kwargs)
 
-    def update_article_from_data(self, article_data: ArticleData) -> bool:
+    def update_article_from_data(
+        self, article_data: ArticleData, *, force_update: bool = False
+    ) -> bool:
         is_more_recent = (
             self.updated_at is None
             or article_data.updated_at is None
             or article_data.updated_at > self.updated_at
         )
         has_content_unlike_saved = bool(article_data.content) and not bool(self.content)
-        if not is_more_recent and not has_content_unlike_saved:
+        if not is_more_recent and not has_content_unlike_saved and not force_update:
             return False
 
-        if is_more_recent:
+        if is_more_recent or force_update:
             self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH] or self.title
             self.slug = (
                 slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]) or self.slug

@@ -49,6 +49,7 @@ class ArticleAdmin(admin.ModelAdmin):
         ArticleTagInline,
         ArticleFetchErrorInline,
     ]
+    readonly_fields = ("obj_created_at", "obj_updated_at")
 
 
 @admin.register(ReadingList)
