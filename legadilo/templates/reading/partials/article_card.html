@@ -42,13 +42,3 @@
         <div>{% include "reading/partials/article_danger_actions.html" %}</div>
     </footer>
 </article>
-{% if is_last and next_page_number %}
-    <p class="icon-indicator infinite-scrolling-icon-indicator"
-       hx-get="?page={{ next_page_number }}"
-       hx-trigger="intersect once"
-       hx-swap="outerHTML"
-       hx-indicator=".infinite-scrolling-icon-indicator">{% include "core/partials/page_loading_indicator.html" %}</p>
-{% endif %}
-{% if is_last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
-    <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
-{% endif %}

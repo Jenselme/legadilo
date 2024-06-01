@@ -47,7 +47,10 @@
     }
 
     const readOnScrollDebounced = debounce(readOnScroll, 1000);
+    // On desktop, we scroll within the container.
     scrollableContainer.addEventListener("scrollend", readOnScrollDebounced);
+    // On mobile, we scroll on the document to have more room for articles.
+    document.addEventListener("scrollend", readOnScrollDebounced);
   };
 
   const readOnScroll = () => {

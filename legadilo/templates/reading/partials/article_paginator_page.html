@@ -2,8 +2,20 @@
 
 {% for article in articles_page %}
     <div id="{{ article|article_card_id }}" class="article-card-container">
-        {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id is_last=forloop.last next_page_number=next_page_number %}
+        {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
     </div>
+    {% if forloop.last and next_page_number %}
+        <p class="icon-indicator infinite-scrolling-icon-indicator"
+           hx-get="?page={{ next_page_number }}"
+           hx-trigger="intersect once"
+           hx-swap="outerHTML"
+           hx-indicator=".infinite-scrolling-icon-indicator">
+            {% include "core/partials/page_loading_indicator.html" %}
+        </p>
+    {% endif %}
+    {% if forloop.last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
+        <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
+    {% endif %}
 {% empty %}
     <p>{% translate "No articles to display." %}</p>
 {% endfor %}
