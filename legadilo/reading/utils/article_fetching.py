@@ -162,7 +162,13 @@ def _get_summary(soup: BeautifulSoup) -> str:
 
 
 def _get_content(soup: BeautifulSoup) -> str:
-    article_content = soup.find("article")
+    articles = soup.find_all("article")
+    article_content = None
+    if len(articles) > 1:
+        article_content = _parse_multiple_articles(soup)
+    elif len(articles) > 0:
+        article_content = articles[0]
+
     if article_content is None:
         article_content = soup.find("main")
     if article_content is None:
@@ -174,6 +180,33 @@ def _get_content(soup: BeautifulSoup) -> str:
     for tag_name in ["noscript", "h1", "footer", "header", "nav", "aside"]:
         _extract_tag_from_content(article_content, tag_name)
     return sanitize_keep_safe_tags(str(article_content))
+
+
+def _parse_multiple_articles(soup: BeautifulSoup):
+    for article in soup.find_all(["article", "section"]):
+        attrs = set()
+        if article_id := article.get("id"):
+            attrs.update(article_id)
+        if article_class := article.get("class"):
+            attrs.update(article_class)
+
+        if (
+            len(
+                attrs.intersection({
+                    "post__content",
+                    "article__content",
+                    "post-content",
+                    "article-content",
+                    "article",
+                    "post",
+                    "content",
+                })
+            )
+            > 0
+        ):
+            return article
+
+    return soup.find("article")
 
 
 def _extract_tag_from_content(soup: BeautifulSoup, tag_name: str):
