@@ -39,23 +39,58 @@ class ArticleTooBigError(Exception):
 
 
 async def get_article_from_url(url: str) -> ArticleData:
-    async with get_async_client() as client:
-        response = await client.get(url)
-        response.raise_for_status()
-
-    page_content = response.content
-    if sys.getsizeof(page_content) > constants.MAX_ARTICLE_FILE_SIZE:
-        raise ArticleTooBigError
+    url, soup, content_language = await _get_page_content(url)
 
     return _build_article_data(
-        str(response.url),
-        page_content.decode(response.encoding or "utf-8"),
-        response.headers.get("Content-Language"),
+        url,
+        soup,
+        content_language,
     )
 
 
-def _build_article_data(fetched_url: str, text: str, content_language: str | None) -> ArticleData:
-    soup = BeautifulSoup(text, "html.parser")
+async def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
+    async with get_async_client() as client:
+        # We can have HTTP redirect with the meta htt-equiv tag. Let's read them to up to 10 time
+        # to find the final URL of the article we are looking for.
+        for _ in range(10):
+            response = await client.get(url)
+            response.raise_for_status()
+            if sys.getsizeof(response.content) > constants.MAX_ARTICLE_FILE_SIZE:
+                raise ArticleTooBigError
+            soup = BeautifulSoup(
+                response.content.decode(response.encoding or "utf-8"), "html.parser"
+            )
+            if (
+                (http_equiv_refresh := soup.find("meta", attrs={"http-equiv": "refresh"}))
+                and (http_equiv_refresh_value := http_equiv_refresh.get("content"))
+                and (http_equiv_refresh_url := _parse_http_equiv_refresh(http_equiv_refresh_value))
+            ):
+                url = http_equiv_refresh_url
+                continue
+
+            break
+
+    return str(response.url), soup, response.headers.get("Content-Language")
+
+
+def _parse_http_equiv_refresh(value: str) -> str | None:
+    raw_data = value.split(";")
+    if len(raw_data) != 2:  # noqa: PLR2004 Magic value used in comparison
+        return None
+
+    url = raw_data[1]
+    if url.startswith("url="):
+        url = url.replace("url=", "")
+
+    if is_url_valid(url):
+        return url
+
+    return None
+
+
+def _build_article_data(
+    fetched_url: str, soup: BeautifulSoup, content_language: str | None
+) -> ArticleData:
     return ArticleData(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
