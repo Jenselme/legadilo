@@ -24,14 +24,16 @@
         {% endif %}
         {{ article.initial_source_title|safe }}
     </span>
-    <span class="me-2">
-        {% include "core/partials/bs-icons/reading_time.html" %}
-        {% blocktranslate count reading_time=article.reading_time %}
-            {{ reading_time }} minute
-        {% plural %}
-            {{ reading_time }} minutes
-        {% endblocktranslate %}
-    </span>
+    {% if article.reading_time > 0 %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/reading_time.html" %}
+            {% blocktranslate count reading_time=article.reading_time %}
+                {{ reading_time }} minute
+            {% plural %}
+                {{ reading_time }} minutes
+            {% endblocktranslate %}
+        </span>
+    {% endif %}
 </p>
 {% if article.tags_to_display or article.external_tags %}
     <p>
