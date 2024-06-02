@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>Redirection</title>
+</head>
+<body>
+<noscript>
+    <meta http-equiv="refresh"
+          content="0.0;https://example.com/article/redirected-article/">
+</noscript>
+<iframe src="https://example.com/iframe"
+        onload="automationOnload()" style="display:none;"></iframe>
+</body>
+<script>
+    var autoRedirectTimeout = setTimeout(function () {
+        top.location = 'https://example.com/article/redirected-article'
+    }, 3000)
+
+    function automationOnload() {
+        clearTimeout(autoRedirectTimeout)
+        top.location = 'https://example.com/article/redirected-article'
+    }
+</script>
+</html>

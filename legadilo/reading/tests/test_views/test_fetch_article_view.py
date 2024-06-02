@@ -126,14 +126,37 @@ class TestAddArticle:
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.NOT_ACCEPTABLE
+        assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
         messages = list(get_messages(response.wsgi_request))
+        assert Article.objects.count() == 1
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["WARNING"],
+                message="Failed to fetch the article. Please check that the URL you entered is "
+                "correct, that the article exists and is accessible. "
+                "We added its URL directly.",
+            )
+        ]
+
+    def test_fetch_failure_link_already_saved(self, user, logged_in_sync_client, httpx_mock):
+        article = ArticleFactory(user=user)
+        httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
+
+        response = logged_in_sync_client.post(
+            self.url, {**self.sample_payload, "url": article.link}
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "reading/add_article.html"
+        messages = list(get_messages(response.wsgi_request))
+        assert Article.objects.count() == 1
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
                 message="Failed to fetch the article. Please check that the URL you entered is "
-                "correct, that the article exists and is accessible.",
+                "correct, that the article exists and is accessible. It was added before, "
+                "please check its link.",
             )
         ]
 
@@ -162,7 +185,14 @@ class TestRefetchArticleView:
     def _setup_data(self, user):
         self.url = reverse("reading:refetch_article")
         self.article_url = "https://www.example.com/posts/en/1-super-article/"
-        self.article = ArticleFactory(user=user, link=self.article_url)
+        self.article = ArticleFactory(
+            user=user,
+            link=self.article_url,
+            slug="initial-slug",
+            title="Initial title",
+            summary="Initial summary",
+            content="Initial content",
+        )
         self.existing_tag = TagFactory(title="Existing tag", user=user)
         ArticleTag.objects.create(
             tag=self.existing_tag,
@@ -185,15 +215,39 @@ class TestRefetchArticleView:
     def test_refetch_article_with_tags(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
-        httpx_mock.add_response(text="", url=self.article_url)
+        httpx_mock.add_response(
+            text=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
+        )
 
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("reading:default_reading_list")
+        assert response["Location"] == f"/reading/articles/{self.article.id}-on-the-3-musketeers/"
         assert Article.objects.count() == 1
         article = Article.objects.get()
+        assert article.title == "On the 3 musketeers"
+        assert article.slug == "on-the-3-musketeers"
+        assert article.summary.startswith("I just wrote a new book")
+        assert "Lorem ipsum" in article.content
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
             ("existing-tag", constants.TaggingReason.FROM_FEED),
         ]
+
+    def test_refetch_article_with_from_url(
+        self, django_assert_num_queries, logged_in_sync_client, httpx_mock
+    ):
+        httpx_mock.add_response(text="", url=self.article_url)
+
+        with django_assert_num_queries(11):
+            response = logged_in_sync_client.post(
+                self.url,
+                self.sample_payload,
+                HTTP_REFERER="http://testserver/" + self.url + "?from_url=%2Ftoto%2F",
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert (
+            response["Location"]
+            == f"/reading/articles/{self.article.id}-initial-slug/?from_url=%2Ftoto%2F"
+        )

@@ -4,6 +4,7 @@ import calendar
 from datetime import timedelta
 from typing import TYPE_CHECKING, assert_never, cast
 
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
@@ -18,7 +19,7 @@ from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
 from .feed_tag import FeedTag
-from .feed_update import FeedUpdate
+from .feed_update import FeedUpdate, FeedUpdateQuerySet
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -183,6 +184,19 @@ class FeedManager(models.Manager["Feed"]):
     def get_articles(self, feed: Feed) -> ArticleQuerySet:
         return cast(ArticleQuerySet, feed.articles.all()).for_feed()
 
+    def get_feed_update_for_cleanup(self) -> FeedUpdateQuerySet:
+        latest_feed_update_ids = (
+            self.get_queryset()
+            .alias(
+                alias_feed_update_ids=ArrayAgg(
+                    "feed_updates__id", ordering="-feed_updates__created_at"
+                ),
+            )
+            .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
+            .values_list("annot_latest_feed_update_id", flat=True)
+        )
+        return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids))
+
     @transaction.atomic()
     def create_from_metadata(
         self,
@@ -226,11 +240,12 @@ class FeedManager(models.Manager["Feed"]):
         )
 
     @transaction.atomic()
-    def log_error(self, feed: Feed, error_message: str):
+    def log_error(self, feed: Feed, error_message: str, technical_debug_data: dict | None = None):
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.FAILURE,
             error_message=error_message,
             feed=feed,
+            technical_debug_data=technical_debug_data,
         )
         if FeedUpdate.objects.must_disable_feed(feed):
             feed.disable(_("We failed too many times to fetch the feed"))
@@ -248,6 +263,7 @@ class Feed(models.Model):
     site_url = models.URLField()
     enabled = models.BooleanField(default=True)
     disabled_reason = models.TextField(blank=True)
+    disabled_at = models.DateTimeField(null=True, blank=True)
 
     # We store some feeds metadata, so we don't have to fetch when we need it.
     title = models.CharField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH)
@@ -298,9 +314,10 @@ class Feed(models.Model):
                 ),
             ),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_disabled_reason_empty_when_enabled",
+                name="%(app_label)s_%(class)s_disabled_reason_disabled_at_empty_when_enabled",
                 check=models.Q(
                     disabled_reason="",
+                    disabled_at__isnull=True,
                     enabled=True,
                 )
                 | models.Q(enabled=False),
@@ -313,4 +330,5 @@ class Feed(models.Model):
 
     def disable(self, reason=""):
         self.disabled_reason = reason
+        self.disabled_at = utcnow()
         self.enabled = False

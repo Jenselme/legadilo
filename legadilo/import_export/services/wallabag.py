@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import Any
 
 from django.core.exceptions import ValidationError
-from django.template.defaultfilters import truncatewords_html
 from jsonschema import validate as validate_json_schema
 from slugify import slugify
 
 from legadilo.import_export.services.exceptions import InvalidEntryError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, ArticleTag, Tag
+from legadilo.reading.utils.article_fetching import get_fallback_summary_from_content
 from legadilo.users.models import User
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from legadilo.utils.time import safe_datetime_parse, utcnow
@@ -52,13 +52,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
             defaults={
                 "title": title,
                 "slug": slugify(title),
-                "summary": truncatewords_html(
-                    sanitize_keep_safe_tags(
-                        content,
-                        extra_tags_to_cleanup=reading_constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY,
-                    ),
-                    255,
-                ),
+                "summary": get_fallback_summary_from_content(content),
                 "content": content,
                 "reading_time": int(article_data["reading_time"]),
                 "authors": [

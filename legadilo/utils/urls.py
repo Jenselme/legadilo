@@ -46,12 +46,23 @@ def validate_from_url(request: HttpRequest, from_url: str | None, fallback_url: 
     return fallback_url
 
 
-def add_query_params(url: str, params: dict[str, list[str]]) -> str:
+def add_query_params(url: str, params: dict[str, list[str | None] | str | None]) -> str:
     url_fragments = list(urlsplit(url))
     query = parse_qs(url_fragments[3])
-    query.update(params)
+    cleaned_params = {key: _clean_param_value(value) for key, value in params.items()}
+    query.update(cleaned_params)
     url_fragments[3] = urlencode(query, doseq=True)
     return urlunsplit(url_fragments)
+
+
+def _clean_param_value(raw_value: list[str | None] | str | None) -> list[str]:
+    if raw_value is None:
+        return []
+
+    if isinstance(raw_value, str):
+        return [raw_value]
+
+    return [val for val in raw_value if val is not None]
 
 
 def pop_query_param(url: str, param: str) -> tuple[str, str | None]:

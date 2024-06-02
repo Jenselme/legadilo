@@ -16,7 +16,7 @@ updates:
   # https://github.com/dependabot/dependabot-core/issues/2178
   - package-ecosystem: "docker"
     # Look for a `Dockerfile` in the `compose/local/django` directory
-    directory: "compose/local/django/"
+    directory: "devops/compose/local/django/"
     # Every weekday
     schedule:
       interval: "monthly"
@@ -29,7 +29,7 @@ updates:
 
   - package-ecosystem: "docker"
     # Look for a `Dockerfile` in the `compose/local/docs` directory
-    directory: "compose/local/docs/"
+    directory: "devops/compose/local/docs/"
     # Every weekday
     schedule:
       interval: "monthly"
@@ -42,7 +42,7 @@ updates:
 
   - package-ecosystem: "docker"
     # Look for a `Dockerfile` in the `compose/production/django` directory
-    directory: "compose/production/django/"
+    directory: "devops/compose/production/django/"
     # Every weekday
     schedule:
       interval: "weekly"
@@ -65,6 +65,7 @@ updates:
     # Look for a `requirements.txt` in the `root` directory
     # also 'setup.cfg', 'runtime.txt' and 'requirements/*.txt'
     directory: "/"
+    open-pull-requests-limit: 15
     # Every weekday
     schedule:
       interval: "daily"

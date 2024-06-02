@@ -1,7 +1,6 @@
 {% load feeds %}
 
-<article id="{{ article|article_card_id }}"
-         class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
+<article class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
     {% if js_cfg.is_reading_on_scroll_enabled and not article.is_read %}
         <form class="visually-hidden readable-on-scroll"
               aria-hidden="true"
@@ -26,21 +25,16 @@
                 {% if article.content %}
                     <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
                 {% else %}
-                    <a href="{{ article.link }}" target="_blank">{{ article.title | safe }}</a>
+                    <a class="open-original"
+                       data-article-id="{{ article.id }}"
+                       href="{{ article.link }}"
+                       target="_blank">{{ article.title | safe }}</a>
                 {% endif %}
             </h2>
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
         </header>
         <main class="card-text mt-3 row">
-            {% if article.preview_picture_url %}
-                <img class="col-1 object-fit-contain"
-                     src="{{ article.preview_picture_url }}"
-                     alt="{{ article.preview_picture_alt }}"
-                     height="auto" />
-            {% else %}
-                <div class="col-1 p-0"></div>
-            {% endif %}
-            <div class="col-11 m-0 p-0">{{ article.summary | truncatewords_html:100 | safe }}</div>
+            <p class="mb-0">{{ article.summary | truncatewords_html:100 | safe }}</p>
         </main>
     </div>
     <footer class="card-footer d-flex justify-content-between">
@@ -48,13 +42,3 @@
         <div>{% include "reading/partials/article_danger_actions.html" %}</div>
     </footer>
 </article>
-{% if is_last and next_page_number %}
-    <p class="icon-indicator infinite-scrolling-icon-indicator"
-       hx-get="?page={{ next_page_number }}"
-       hx-trigger="intersect once"
-       hx-swap="outerHTML"
-       hx-indicator=".infinite-scrolling-icon-indicator">{% include "core/partials/page_loading_indicator.html" %}</p>
-{% endif %}
-{% if is_last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
-    <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
-{% endif %}

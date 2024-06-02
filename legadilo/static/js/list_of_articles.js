@@ -6,6 +6,7 @@
   "use strict";
 
   let jsCfg = {};
+  let readOnScrollSequence = Promise.resolve();
 
   const debounce = (fn, waitTime) => {
     let timeout = null;
@@ -46,7 +47,10 @@
     }
 
     const readOnScrollDebounced = debounce(readOnScroll, 1000);
+    // On desktop, we scroll within the container.
     scrollableContainer.addEventListener("scrollend", readOnScrollDebounced);
+    // On mobile, we scroll on the document to have more room for articles.
+    document.addEventListener("scrollend", readOnScrollDebounced);
   };
 
   const readOnScroll = () => {
@@ -58,7 +62,9 @@
         return;
       }
 
-      htmx.trigger(htmxForm, "submit");
+      // To make sure counters are correct at the end, we run the requests on after the other so the
+      // last one to complete has the correct count.
+      readOnScrollSequence = readOnScrollSequence.then(() => htmx.trigger(htmxForm, "submit"));
     }
   };
 

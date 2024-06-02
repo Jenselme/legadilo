@@ -1,0 +1,43 @@
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+blockquote {
+  padding: 0 1em;
+  color: var(--bs-secondary-color);
+  border-left: 0.25em solid var(--bs-border-color);
+}
+
+figcaption {
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875em;
+  color: var(--bs-secondary-color);
+  padding: 0 1.25em;
+}
+
+pre {
+  border: var(--bs-light-border-subtle) solid var(--bs-border-width);
+  border-radius: var(--bs-border-radius);
+  padding: 0.5em;
+  background-color: var(--bs-tertiary-bg);
+}
+
+table {
+  margin: auto;
+}
+
+tbody,
+td,
+tfoot,
+th,
+thead,
+tr {
+  border-width: var(--bs-border-width);
+}
+
+th,
+td {
+  padding: 0.25em;
+}

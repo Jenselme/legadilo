@@ -11,7 +11,6 @@ import httpx
 from asgiref.sync import async_to_sync, sync_to_async
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.template.defaultfilters import truncatewords_html
 from slugify import slugify
 
 from legadilo.feeds import constants as feeds_constants
@@ -25,7 +24,9 @@ from legadilo.feeds.services.feed_parsing import (
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
+from legadilo.reading.utils.article_fetching import get_fallback_summary_from_content
 from legadilo.users.models import User
+from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import safe_datetime_parse
@@ -115,7 +116,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
         return feed, False
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with get_rss_async_client() as client:
             feed_data = await get_feed_data(row["feed_url"], client=client)
 
         feed = await sync_to_async(Feed.objects.create_from_metadata)(
@@ -174,13 +175,7 @@ def _import_article(user, feed, row):
         defaults={
             "title": title,
             "slug": slugify(title),
-            "summary": truncatewords_html(
-                sanitize_keep_safe_tags(
-                    content,
-                    extra_tags_to_cleanup=reading_constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY,
-                ),
-                255,
-            ),
+            "summary": get_fallback_summary_from_content(content),
             "content": content,
             "reading_time": get_nb_words_from_html(content) // user.settings.default_reading_time,
             "authors": [

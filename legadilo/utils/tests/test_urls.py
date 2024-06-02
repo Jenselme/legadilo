@@ -115,6 +115,15 @@ def test_add_query_params(url: str, expected_url: str):
     assert built_url == expected_url
 
 
+def test_add_empty_values_to_query_params():
+    built_url = add_query_params(
+        "https://example.com/test?some-param=some-value&my-other-param=value",
+        {"my-param": [], "my-other-param": [None], "another-param": None, "raw-string": "my-str"},
+    )
+
+    assert built_url == "https://example.com/test?some-param=some-value&raw-string=my-str"
+
+
 @pytest.mark.parametrize(
     ("url", "expected_url"),
     [

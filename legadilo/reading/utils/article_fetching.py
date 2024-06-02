@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from urllib.parse import urlparse
 
-import httpx
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
+from django.template.defaultfilters import truncatewords_html
 
 from legadilo.reading import constants
+from legadilo.utils.http import get_async_client
 from legadilo.utils.security import (
     full_sanitize,
     sanitize_keep_safe_tags,
@@ -39,29 +40,66 @@ class ArticleTooBigError(Exception):
 
 
 async def get_article_from_url(url: str) -> ArticleData:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        response.raise_for_status()
-
-    page_content = response.content
-    if sys.getsizeof(page_content) > constants.MAX_ARTICLE_FILE_SIZE:
-        raise ArticleTooBigError
+    url, soup, content_language = await _get_page_content(url)
 
     return _build_article_data(
-        str(response.url),
-        page_content.decode(response.encoding or "utf-8"),
-        response.headers.get("Content-Language"),
+        url,
+        soup,
+        content_language,
     )
 
 
-def _build_article_data(fetched_url: str, text: str, content_language: str | None) -> ArticleData:
-    soup = BeautifulSoup(text, "html.parser")
+async def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
+    async with get_async_client() as client:
+        # We can have HTTP redirect with the meta htt-equiv tag. Let's read them to up to 10 time
+        # to find the final URL of the article we are looking for.
+        for _ in range(10):
+            response = await client.get(url)
+            response.raise_for_status()
+            if sys.getsizeof(response.content) > constants.MAX_ARTICLE_FILE_SIZE:
+                raise ArticleTooBigError
+            soup = BeautifulSoup(
+                response.content.decode(response.encoding or "utf-8"), "html.parser"
+            )
+            if (
+                (http_equiv_refresh := soup.find("meta", attrs={"http-equiv": "refresh"}))
+                and (http_equiv_refresh_value := http_equiv_refresh.get("content"))
+                and (http_equiv_refresh_url := _parse_http_equiv_refresh(http_equiv_refresh_value))
+            ):
+                url = http_equiv_refresh_url
+                continue
+
+            break
+
+    return str(response.url), soup, response.headers.get("Content-Language")
+
+
+def _parse_http_equiv_refresh(value: str) -> str | None:
+    raw_data = value.split(";")
+    if len(raw_data) != 2:  # noqa: PLR2004 Magic value used in comparison
+        return None
+
+    url = raw_data[1]
+    if url.startswith("url="):
+        url = url.replace("url=", "")
+
+    if is_url_valid(url):
+        return url
+
+    return None
+
+
+def _build_article_data(
+    fetched_url: str, soup: BeautifulSoup, content_language: str | None
+) -> ArticleData:
+    content = _get_content(soup)
+
     return ArticleData(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
         title=_get_title(soup),
-        summary=_get_summary(soup),
-        content=_get_content(soup),
+        summary=_get_summary(soup, content),
+        content=content,
         authors=_get_authors(soup),
         contributors=[],
         tags=_get_tags(soup),
@@ -86,8 +124,10 @@ def _get_title(soup: BeautifulSoup) -> str:
         "content"
     ):
         title = meta_title.get("content")
-    elif soup.find("h1") and soup.find("h1").text:
-        title = soup.find("h1").text
+    elif (title_tag := soup.find("title")) and title_tag.text:
+        title = title_tag.text
+    elif (h1_tag := soup.find("h1")) and h1_tag.text:
+        title = h1_tag.text
 
     return full_sanitize(title)
 
@@ -104,7 +144,7 @@ def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
     return full_sanitize(site_title)
 
 
-def _get_summary(soup: BeautifulSoup) -> str:
+def _get_summary(soup: BeautifulSoup, content: str) -> str:
     summary = ""
     if (
         og_description := soup.find("meta", attrs={"property": "og:description"})
@@ -119,13 +159,32 @@ def _get_summary(soup: BeautifulSoup) -> str:
     ) and itemprop_description.get("content"):
         summary = itemprop_description.get("content")
 
+    if not summary and content:
+        summary = get_fallback_summary_from_content(content)
+
     return sanitize_keep_safe_tags(
         summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
     )
 
 
+def get_fallback_summary_from_content(content: str) -> str:
+    return truncatewords_html(
+        sanitize_keep_safe_tags(
+            content,
+            extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY,
+        ),
+        constants.MAX_SUMMARY_LENGTH,
+    )
+
+
 def _get_content(soup: BeautifulSoup) -> str:
-    article_content = soup.find("article")
+    articles = soup.find_all("article")
+    article_content = None
+    if len(articles) > 1:
+        article_content = _parse_multiple_articles(soup)
+    elif len(articles) > 0:
+        article_content = articles[0]
+
     if article_content is None:
         article_content = soup.find("main")
     if article_content is None:
@@ -137,6 +196,33 @@ def _get_content(soup: BeautifulSoup) -> str:
     for tag_name in ["noscript", "h1", "footer", "header", "nav", "aside"]:
         _extract_tag_from_content(article_content, tag_name)
     return sanitize_keep_safe_tags(str(article_content))
+
+
+def _parse_multiple_articles(soup: BeautifulSoup):
+    for article in soup.find_all(["article", "section"]):
+        attrs = set()
+        if article_id := article.get("id"):
+            attrs.update(article_id)
+        if article_class := article.get("class"):
+            attrs.update(article_class)
+
+        if (
+            len(
+                attrs.intersection({
+                    "post__content",
+                    "article__content",
+                    "post-content",
+                    "article-content",
+                    "article",
+                    "post",
+                    "content",
+                })
+            )
+            > 0
+        ):
+            return article
+
+    return soup.find("article")
 
 
 def _extract_tag_from_content(soup: BeautifulSoup, tag_name: str):
@@ -154,17 +240,28 @@ def _get_authors(soup: BeautifulSoup) -> list[str]:
 
 
 def _get_tags(soup: BeautifulSoup) -> list[str]:
-    tags = []
+    tags = set()
 
     if article_tags := soup.find_all("meta", attrs={"property": "article:tag"}):
-        tags = [meta_tag.get("content") for meta_tag in article_tags]
+        for meta_tag in article_tags:
+            tags |= parse_tags_list(meta_tag.get("content"))
     elif (keywords := soup.find("meta", attrs={"property": "keywords"})) and keywords.get(
         "content"
     ):
-        tags = keywords.get("content").split(",")
+        tags = parse_tags_list(keywords.get("content"))
 
-    cleaned_tags = [full_sanitize(tag.strip()) for tag in tags]
-    return [tag for tag in cleaned_tags if tag]
+    return sorted(tags)
+
+
+def parse_tags_list(tags_str: str) -> set[str]:
+    parsed_tags = set()
+    for raw_tag in tags_str.split(","):
+        tag = full_sanitize(raw_tag).strip()
+        if not tag:
+            continue
+        parsed_tags.add(tag)
+
+    return parsed_tags
 
 
 def _get_link(fetched_url: str, soup: BeautifulSoup) -> str:

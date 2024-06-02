@@ -18,6 +18,7 @@ from legadilo.utils.decorators import alogin_required
 
 from ...users.models import User
 from ...users.typing import AuthenticatedHttpRequest
+from ...utils.http import get_rss_async_client
 from .. import constants
 from ..models import Feed, FeedCategory
 from ..services.feed_parsing import (
@@ -130,7 +131,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         return HTTPStatus.BAD_REQUEST, form
 
     try:
-        async with httpx.AsyncClient(timeout=constants.HTTP_TIMEOUT) as client:
+        async with get_rss_async_client() as client:
             feed_medata = await get_feed_data(form.feed_url, client=client)
         tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
             request.user, form.cleaned_data["tags"]

@@ -9,6 +9,7 @@ from django.core.management import call_command
 from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article
+from legadilo.utils.time import utcdt
 
 from ... import constants
 from ..fixtures import get_feed_fixture_content
@@ -83,7 +84,8 @@ class TestUpdateFeedsCommand:
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.FAILURE
-        assert feed_update.error_message == "Some error"
+        assert feed_update.error_message == "HTTPError(Some error)"
+        assert feed_update.technical_debug_data == {"request": None, "response": None}
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
         assert feed_update.feed.enabled
@@ -113,8 +115,9 @@ class TestUpdateFeedsCommand:
         assert feed_update is not None
         assert feed_update.created_at == datetime(2023, 12, 31, 12, 0, tzinfo=UTC)
         assert feed_update.status == constants.FeedUpdateStatus.FAILURE
-        assert feed_update.error_message == "Some error"
+        assert feed_update.error_message == "HTTPError(Some error)"
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
         assert not feed_update.feed.enabled
         assert feed_update.feed.disabled_reason == "We failed too many times to fetch the feed"
+        assert feed_update.feed.disabled_at == utcdt(2023, 12, 31, 12)

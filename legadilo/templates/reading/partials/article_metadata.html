@@ -1,18 +1,20 @@
 {% load i18n %}
 
 <p class="mb-0 text-secondary">
-    <span class="me-2">
-        {% include "core/partials/bs-icons/author.html" %}
-        {{ article.authors|join:", "|safe }}
-    </span>
-    {% if article.published_at %}
+    {% if article.authors %}
         <span class="me-2">
-            {% include "core/partials/bs-icons/published_at.html" %}
-            {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
+            {% include "core/partials/bs-icons/author.html" %}
+            {{ article.authors|join:", "|safe }}
         </span>
-    {% elif article.updated_at %}
+    {% endif %}
+    {% if article.updated_at %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/updated_at.html" %}
+            {{ article.updated_at | date:"SHORT_DATETIME_FORMAT" }}
+        </span>
+    {% elif article.published_at %}
         {% include "core/partials/bs-icons/published_at.html" %}
-        {{ article.updated_at | date:"SHORT_DATETIME_FORMAT" }}
+        {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
     {% endif %}
     <span class="me-2">
         {% if article.initial_source_type == 'FEED' %}
@@ -22,14 +24,16 @@
         {% endif %}
         {{ article.initial_source_title|safe }}
     </span>
-    <span class="me-2">
-        {% include "core/partials/bs-icons/reading_time.html" %}
-        {% blocktranslate count reading_time=article.reading_time %}
-            {{ reading_time }} minute
-        {% plural %}
-            {{ reading_time }} minutes
-        {% endblocktranslate %}
-    </span>
+    {% if article.reading_time > 0 %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/reading_time.html" %}
+            {% blocktranslate count reading_time=article.reading_time %}
+                {{ reading_time }} minute
+            {% plural %}
+                {{ reading_time }} minutes
+            {% endblocktranslate %}
+        </span>
+    {% endif %}
 </p>
 {% if article.tags_to_display or article.external_tags %}
     <p>
@@ -38,10 +42,8 @@
                href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{{ tag.title }}</a>
         {% endfor %}
         {% for tag in article.external_tags %}
-            {% if "/" not in tag %}
-                <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1"
-                   href="{% url 'reading:external_tag_with_articles' tag=tag|urlencode %}">{{ tag }}</a>
-            {% endif %}
+            <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1"
+               href="{% url 'reading:external_tag_with_articles' tag=tag|encode_external_tag %}">{{ tag }}</a>
         {% endfor %}
     </p>
 {% endif %}

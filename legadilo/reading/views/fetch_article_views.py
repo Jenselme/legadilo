@@ -20,7 +20,8 @@ from legadilo.reading.utils.article_fetching import (
 )
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
-from legadilo.utils.urls import validate_referer_url
+from legadilo.utils.exceptions import extract_debug_information, format_exception
+from legadilo.utils.urls import add_query_params, pop_query_param, validate_referer_url
 
 
 class FetchArticleForm(forms.Form):
@@ -60,6 +61,7 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
                 "The article '%s' was added but we failed to fetch its content. "
                 "Please check that it really points to an article."
             ),
+            force_update=False,
         )
 
     return TemplateResponse(
@@ -73,7 +75,9 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
 @require_http_methods(["POST"])
 @alogin_required
 async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    await sync_to_async(get_object_or_404)(Article, link=request.POST.get("url"), user=request.user)
+    article = await sync_to_async(get_object_or_404)(
+        Article, link=request.POST.get("url"), user=request.user
+    )
     await _handle_save(
         request,
         [],
@@ -82,11 +86,22 @@ async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpRespons
             "The article '%s' was re-fetched but we failed to fetch its content. "
             "Please check that it really points to an article."
         ),
+        force_update=True,
     )
 
-    return HttpResponseRedirect(
-        validate_referer_url(request, reverse("reading:default_reading_list"))
+    await article.arefresh_from_db()
+    _url, from_url = pop_query_param(
+        validate_referer_url(request, reverse("reading:default_reading_list")), "from_url"
     )
+    new_article_url = add_query_params(
+        reverse(
+            "reading:article_details",
+            kwargs={"article_id": article.id, "article_slug": article.slug},
+        ),
+        {"from_url": from_url},
+    )
+
+    return HttpResponseRedirect(new_article_url)
 
 
 async def _handle_save(
@@ -95,33 +110,53 @@ async def _handle_save(
     *,
     success_message,
     no_content_message,
+    force_update: bool,
 ):
     form = FetchArticleForm(request.POST, tag_choices=tag_choices)
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form
 
+    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
+        request.user, form.cleaned_data["tags"]
+    )
+    article_link = form.cleaned_data["url"]
     try:
-        article_data = await get_article_from_url(form.cleaned_data["url"])
-        tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
-            request.user, form.cleaned_data["tags"]
-        )
+        article_data = await get_article_from_url(article_link)
         article = (
             await sync_to_async(Article.objects.update_or_create_from_articles_list)(
                 request.user,
                 [article_data],
                 tags,
                 source_type=constants.ArticleSourceType.MANUAL,
+                force_update=force_update,
             )
         )[0]
-    except httpx.HTTPError:
+    except httpx.HTTPError as e:
+        article, created = await sync_to_async(Article.objects.create_invalid_article)(
+            request.user,
+            article_link,
+            tags,
+            error_message=format_exception(e),
+            technical_debug_data=extract_debug_information(e),
+        )
+        if created:
+            messages.warning(
+                request,
+                _(
+                    "Failed to fetch the article. Please check that the URL you entered is "
+                    "correct, that the article exists and is accessible. We added its URL directly."
+                ),
+            )
+            return HTTPStatus.CREATED, form
         messages.error(
             request,
             _(
-                "Failed to fetch the article. Please check that the URL you entered is correct, "
-                "that the article exists and is accessible."
+                "Failed to fetch the article. Please check that the URL you entered is "
+                "correct, that the article exists and is accessible. It was added before, "
+                "please check its link."
             ),
         )
-        return HTTPStatus.NOT_ACCEPTABLE, form
+        return HTTPStatus.BAD_REQUEST, form
     except ArticleTooBigError:
         messages.error(
             request, _("The article you are trying to fetch is too big and cannot be processed.")

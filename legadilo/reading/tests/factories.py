@@ -5,7 +5,7 @@ from factory.django import DjangoModelFactory
 
 from legadilo.users.tests.factories import UserFactory
 
-from ..models import Article, ReadingList, Tag
+from ..models import Article, ArticleFetchError, ReadingList, Tag
 
 
 class ArticleFactory(DjangoModelFactory):
@@ -43,3 +43,11 @@ class TagFactory(DjangoModelFactory):
 
     class Meta:
         model = Tag
+
+
+class ArticleFetchErrorFactory(DjangoModelFactory):
+    message = "Error"
+    article = factory.SubFactory(ArticleFactory)
+
+    class Meta:
+        model = ArticleFetchError

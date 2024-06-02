@@ -38,11 +38,14 @@
                                         <div class="col">
                                             <a href="{{ feed.site_url }}">
                                                 {% if feed.title %}
-                                                    {{ feed.title }}
+                                                    {{ feed.title|safe }}
                                                 {% else %}
                                                     {{ feed.site_url }}
                                                 {% endif %}
                                             </a>
+                                        </div>
+                                        <div class="col">
+                                            <a href="{{ feed.feed_url }}">{% translate "Link to feed" %}</a>
                                         </div>
                                         <div class="col">
                                             <a>{% translate "Edit feed" %}</a>

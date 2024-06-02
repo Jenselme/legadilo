@@ -7,6 +7,11 @@
             nonce="{{request.csp_nonce}}"
             type="module"></script>
 {% endblock page_js %}
+{% block page_css %}
+    <link rel="stylesheet"
+          href="{% static 'css/article_details.css' %}"
+          nonce="{{ request.csp_nonce }}" />
+{% endblock page_css %}
 {% block title %}
     {{ article.title|safe }}
 {% endblock title %}
@@ -20,8 +25,9 @@
             {% csrf_token %}
         </form>
     {% endif %}
-    <div class="container-fluid scrollable-container p-0">
-        <div class="mt-1 mt-md-4 row scrollable">
+    <div class="container-fluid article-details-scrollable-container px-0">
+        <div class="mt-1 mt-md-2 row px-0 mx-0 scrollable">
+            <div class="col col-1"></div>
             <aside class="col col-2 d-none d-md-block">
                 <div class="sticky-top">
                     <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
@@ -30,7 +36,7 @@
                     </div>
                 </div>
             </aside>
-            <article class="col col-12 col-md-10 container-xl">
+            <article class="col col-12 col-md-7">
                 <header>
                     <h1>{{ article.title |safe }}</h1>
                     <div class="text-secondary">{% include 'reading/partials/article_metadata.html' %}</div>
@@ -88,7 +94,7 @@
                                           method="post"
                                           action="{% url 'reading:refetch_article' %}"
                                           hx-boost="true"
-                                          hx-push-url="false"
+                                          hx-push-url="true"
                                           hx-indicator=".{{ article|article_action_indicator }}">
                                         {% csrf_token %}
                                         <input type="hidden" name="url" value="{{ article.link }}" />
@@ -109,11 +115,12 @@
                     {{ article.content | safe }}
                 </main>
                 <footer>
-                    <div class="d-flex justify-content-center mt-2 mb-5">
+                    <div class="d-flex justify-content-center mt-2 mb-4">
                         {% include 'reading/partials/article_actions.html' with for_article_details=True %}
                     </div>
                 </footer>
             </article>
+            <div class="col col-2"></div>
         </div>
     </div>
 {% endblock content %}

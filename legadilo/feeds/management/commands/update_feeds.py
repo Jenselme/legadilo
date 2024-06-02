@@ -1,18 +1,18 @@
 import logging
 from asyncio import TaskGroup
 from http import HTTPStatus
-from ssl import SSLCertVerificationError
 from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.core.management.base import CommandParser
-from httpx import AsyncClient, HTTPError, HTTPStatusError, Limits
+from httpx import HTTPError, HTTPStatusError
 
-from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
+from legadilo.utils.exceptions import extract_debug_information, format_exception
+from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.time import utcnow
 
 logger = logging.getLogger(__name__)
@@ -50,13 +50,7 @@ class Command(AsyncCommand):
         logger.info("Starting feed update")
         start_time = utcnow()
         async with (
-            AsyncClient(
-                limits=Limits(
-                    max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0
-                ),
-                timeout=constants.HTTP_TIMEOUT_CMD_CTX,
-                follow_redirects=True,
-            ) as client,
+            get_rss_async_client() as client,
             TaskGroup() as tg,
         ):
             async for feed in self._build_feed_qs(options):
@@ -82,7 +76,7 @@ class Command(AsyncCommand):
         return feeds_qs
 
     async def _update_feed(self, client, feed):
-        logger.debug("Updating feed %s", feed)
+        logger.info("Updating feed %s", feed)
         feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
         try:
             feed_metadata = await get_feed_data(
@@ -96,15 +90,19 @@ class Command(AsyncCommand):
                 await sync_to_async(Feed.objects.log_not_modified)(feed)
             else:
                 logger.exception("Failed to fetch feed %s", feed)
-                await sync_to_async(Feed.objects.log_error)(feed, str(e))
+                await sync_to_async(Feed.objects.log_error)(
+                    feed, format_exception(e), extract_debug_information(e)
+                )
             return
-        except (HTTPError, SSLCertVerificationError) as e:
+        except HTTPError as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.log_error)(feed, str(e))
+            await sync_to_async(Feed.objects.log_error)(
+                feed, format_exception(e), extract_debug_information(e)
+            )
             return
         except Exception as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.log_error)(feed, str(e))
+            await sync_to_async(Feed.objects.log_error)(feed, format_exception(e))
 
         await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
-        logger.debug("Updated feed %s", feed)
+        logger.info("Updated feed %s", feed)

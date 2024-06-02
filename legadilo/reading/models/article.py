@@ -1,20 +1,25 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
 from legadilo.utils.collections import max_or_none, min_or_none
+from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time import utcnow
 from legadilo.utils.validators import language_code_validator, list_of_strings_json_schema_validator
+
+from .article_fetch_error import ArticleFetchError
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -25,6 +30,8 @@ if TYPE_CHECKING:
     from legadilo.users.models import User
 else:
     TypedModelMeta = object
+
+logger = logging.getLogger(__name__)
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
@@ -138,6 +145,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .for_current_tag_filtering()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
+            .default_order_by()
         )
 
     def for_tag(self, tag: Tag) -> Self:
@@ -145,6 +153,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_current_tag_filtering()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
             .prefetch_related(_build_prefetch_article_tags())
+            .default_order_by()
         )
 
     def for_external_tag(self, user: User, tag: str) -> Self:
@@ -152,34 +161,44 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_user(user)
             .filter(external_tags__icontains=tag)
             .prefetch_related(_build_prefetch_article_tags())
+            .default_order_by()
         )
 
     def for_feed(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related(_build_prefetch_article_tags()).default_order_by()
 
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())
 
     def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
+        # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
+        # resolve the alias_date_field_order field.
+        update_qs = self.order_by()
+
         match action:
             case constants.UpdateArticleActions.DO_NOTHING:
                 return 0
             case constants.UpdateArticleActions.MARK_AS_READ:
-                return self.filter(read_at__isnull=True).update(read_at=utcnow())
+                return update_qs.filter(read_at__isnull=True).update(read_at=utcnow())
             case constants.UpdateArticleActions.MARK_AS_UNREAD:
-                return self.update(read_at=None)
+                return update_qs.update(read_at=None)
             case constants.UpdateArticleActions.MARK_AS_FAVORITE:
-                return self.update(is_favorite=True)
+                return update_qs.update(is_favorite=True)
             case constants.UpdateArticleActions.UNMARK_AS_FAVORITE:
-                return self.update(is_favorite=False)
+                return update_qs.update(is_favorite=False)
             case constants.UpdateArticleActions.MARK_AS_FOR_LATER:
-                return self.update(is_for_later=True)
+                return update_qs.update(is_for_later=True)
             case constants.UpdateArticleActions.UNMARK_AS_FOR_LATER:
-                return self.update(is_for_later=False)
+                return update_qs.update(is_for_later=False)
             case constants.UpdateArticleActions.MARK_AS_OPENED:
-                return self.filter(opened_at__isnull=True).update(opened_at=utcnow())
+                return update_qs.filter(opened_at__isnull=True).update(opened_at=utcnow())
             case _:
                 assert_never(action)
+
+    def default_order_by(self):
+        return self.alias(
+            alias_date_field_order=Coalesce(models.F("updated_at"), models.F("published_at"))
+        ).order_by(models.F("alias_date_field_order").desc(nulls_last=True))
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -196,6 +215,7 @@ class ArticleManager(models.Manager["Article"]):
         tags: Iterable[Tag],
         *,
         source_type: constants.ArticleSourceType,
+        force_update: bool = False,
     ) -> list[Article]:
         if len(articles_data) == 0:
             return []
@@ -216,7 +236,9 @@ class ArticleManager(models.Manager["Article"]):
             seen_links.add(article_data.link)
             if article_data.link in existing_links_to_articles:
                 article_to_update = existing_links_to_articles[article_data.link]
-                was_updated = article_to_update.update_article_from_data(article_data)
+                was_updated = article_to_update.update_article_from_data(
+                    article_data, force_update=force_update
+                )
                 if source_type == constants.ArticleSourceType.MANUAL:
                     if article_to_update.initial_source_type == constants.ArticleSourceType.FEED:
                         # We force the source type to manual if we manually add it so prevent any
@@ -224,6 +246,7 @@ class ArticleManager(models.Manager["Article"]):
                         article_to_update.initial_source_type = constants.ArticleSourceType.MANUAL
                     article_to_update.read_at = None
                     was_updated = True
+                    article_to_update.obj_updated_at = utcnow()
                 if was_updated:
                     articles_to_update.append(article_to_update)
             else:
@@ -270,6 +293,7 @@ class ArticleManager(models.Manager["Article"]):
                 "updated_at",
                 "read_at",
                 "initial_source_type",
+                "obj_updated_at",
             ],
         )
 
@@ -284,12 +308,35 @@ class ArticleManager(models.Manager["Article"]):
 
         return all_articles
 
-    def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
-        return (
-            self.get_queryset()
-            .for_reading_list(reading_list)
-            .order_by("-updated_at", "-published_at", "id")
+    @transaction.atomic()
+    def create_invalid_article(
+        self,
+        user: User,
+        article_link: str,
+        tags: Iterable[Tag],
+        *,
+        error_message="",
+        technical_debug_data: dict | None = None,
+    ) -> tuple[Article, bool]:
+        try:
+            article = self.get(user=user, link=article_link)
+            created = False
+        except self.model.DoesNotExist:
+            created = True
+            article = Article.objects.create(
+                user=user, link=article_link, title=full_sanitize(article_link)
+            )
+            ArticleTag.objects.associate_articles_with_tags(
+                [article], tags, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+            )
+
+        ArticleFetchError.objects.create(
+            article=article, message=error_message, technical_debug_data=technical_debug_data
         )
+        return article, created
+
+    def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
+        return self.get_queryset().for_reading_list(reading_list)
 
     def count_unread_articles_of_reading_lists(
         self, user: User, reading_lists: list[ReadingList]
@@ -446,17 +493,19 @@ class Article(models.Model):
 
         return super().save(*args, **kwargs)
 
-    def update_article_from_data(self, article_data: ArticleData) -> bool:
+    def update_article_from_data(
+        self, article_data: ArticleData, *, force_update: bool = False
+    ) -> bool:
         is_more_recent = (
             self.updated_at is None
             or article_data.updated_at is None
             or article_data.updated_at > self.updated_at
         )
         has_content_unlike_saved = bool(article_data.content) and not bool(self.content)
-        if not is_more_recent and not has_content_unlike_saved:
+        if not is_more_recent and not has_content_unlike_saved and not force_update:
             return False
 
-        if is_more_recent:
+        if is_more_recent or force_update:
             self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH] or self.title
             self.slug = (
                 slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]) or self.slug
@@ -475,6 +524,8 @@ class Article(models.Model):
             self.published_at = min_or_none([article_data.published_at, self.published_at])
         elif has_content_unlike_saved:
             self.content = article_data.content
+
+        self.article_to_update = utcnow()
 
         return True
 

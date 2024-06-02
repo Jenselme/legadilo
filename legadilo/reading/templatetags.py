@@ -1,3 +1,6 @@
+from urllib.parse import unquote
+
+from django.template.defaultfilters import urlencode
 from django.template.defaulttags import register
 from django.urls import reverse
 
@@ -91,3 +94,13 @@ def delete_article_form_id(article: Article) -> str:
 @register.filter
 def update_article_form_id(article: Article) -> str:
     return f"update-article-actions-form-{article.id}"
+
+
+@register.filter
+def encode_external_tag(tag: str) -> str:
+    return urlencode(tag.replace("/", "------"))
+
+
+@register.filter
+def decode_external_tag(tag: str) -> str:
+    return unquote(tag).replace("------", "/")

@@ -1,5 +1,15 @@
-.scrollable-container {
+.list-of-articles-scrollable-container {
   height: calc(100vh - 116px);
+}
+
+@media (width < 768px) {
+  .list-of-articles-scrollable-container {
+    height: 100%;
+  }
+}
+
+.article-details-scrollable-container {
+  height: calc(100vh - 64px);
 }
 
 .scrollable {
@@ -55,7 +65,7 @@
   height: 100vh;
 }
 
-.card.htmx-swapping {
+.article-card-container.htmx-swapping {
   opacity: 0;
   max-height: 0;
   transition:
@@ -64,7 +74,7 @@
 }
 
 @media (width >= 768px) {
-  .card {
+  .article-card-container {
     max-height: 500px;
   }
 
