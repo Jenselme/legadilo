@@ -376,6 +376,8 @@ EMAIL_TIMEOUT = 5
 EMAIL_HOST = env("EMAIL_HOST", default="mailpit")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
 EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=30)
 
 
 # ADMIN
