@@ -1,7 +1,7 @@
 {% load static i18n feeds %}
 
 <form id="{{ article|update_article_form_id }}"
-      class="visually-hidden"
+      class="d-none"
       aria-hidden="true"
       method="post"
       hx-indicator=".{{ article|article_action_indicator }}"
