@@ -246,6 +246,7 @@ class ArticleManager(models.Manager["Article"]):
                         article_to_update.initial_source_type = constants.ArticleSourceType.MANUAL
                     article_to_update.read_at = None
                     was_updated = True
+                    article_to_update.obj_updated_at = utcnow()
                 if was_updated:
                     articles_to_update.append(article_to_update)
             else:
@@ -523,6 +524,8 @@ class Article(models.Model):
             self.published_at = min_or_none([article_data.published_at, self.published_at])
         elif has_content_unlike_saved:
             self.content = article_data.content
+
+        self.article_to_update = utcnow()
 
         return True
 

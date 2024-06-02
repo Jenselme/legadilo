@@ -759,6 +759,7 @@ class TestArticleQuerySet:
 
 @pytest.mark.django_db()
 class TestArticleManager:
+    @time_machine.travel("2024-06-01 12:00:00", tick=False)
     def test_update_and_create_articles(self, user, django_assert_num_queries):
         tag1 = TagFactory(user=user)
         tag2 = TagFactory(user=user)
@@ -784,7 +785,7 @@ class TestArticleManager:
         )
         now_dt = utcnow()
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(7), time_machine.travel("2024-06-02 12:00:00", tick=False):
             Article.objects.update_or_create_from_articles_list(
                 user,
                 [
@@ -864,11 +865,15 @@ class TestArticleManager:
         assert existing_article_to_update.updated_at == now_dt
         assert existing_article_to_update.read_at is None
         assert existing_article_to_update.initial_source_type == constants.ArticleSourceType.MANUAL
+        assert existing_article_to_update.obj_created_at == utcdt(2024, 6, 1, 12, 0)
+        assert existing_article_to_update.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
         existing_article_to_keep.refresh_from_db()
         assert existing_article_to_keep.title == "Title to keep"
         assert existing_article_to_keep.slug == "title-to-keep"
         assert existing_article_to_keep.content == "Content to keep"
         assert existing_article_to_keep.updated_at == utcdt(2024, 4, 20)
+        assert existing_article_to_keep.obj_created_at == utcdt(2024, 6, 1, 12, 0)
+        assert existing_article_to_keep.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
         other_article = Article.objects.exclude(
             id__in=[existing_article_to_update.id, existing_article_to_keep.id]
         ).first()
@@ -876,6 +881,8 @@ class TestArticleManager:
         assert other_article.title == "Article 1"
         assert other_article.slug == "article-1"
         assert other_article.reading_time == 3
+        assert other_article.obj_created_at == utcdt(2024, 6, 2, 12, 0)
+        assert other_article.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
         assert list(
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True
