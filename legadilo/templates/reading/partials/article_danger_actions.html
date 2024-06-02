@@ -23,6 +23,7 @@
     {% endif %}
 </form>
 <div class="{% if vertical_group %}btn-group-vertical w-100{% else %}btn-group{% endif %}"
+     {% if article.is_from_feed %}data-bs-toggle="tooltip" data-bs-title="{% translate 'Deletion of articles from feeds is not possible yet.' %}"{% endif %}
      role="group">
     <button class="btn btn-danger"
             {% if article.is_from_feed %}disabled{% endif %}
