@@ -4,6 +4,7 @@ import calendar
 from datetime import timedelta
 from typing import TYPE_CHECKING, assert_never, cast
 
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
@@ -18,7 +19,7 @@ from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
 from .feed_tag import FeedTag
-from .feed_update import FeedUpdate
+from .feed_update import FeedUpdate, FeedUpdateQuerySet
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -182,6 +183,19 @@ class FeedManager(models.Manager["Feed"]):
 
     def get_articles(self, feed: Feed) -> ArticleQuerySet:
         return cast(ArticleQuerySet, feed.articles.all()).for_feed()
+
+    def get_feed_update_for_cleanup(self) -> FeedUpdateQuerySet:
+        latest_feed_update_ids = (
+            self.get_queryset()
+            .alias(
+                alias_feed_update_ids=ArrayAgg(
+                    "feed_updates__id", ordering="-feed_updates__created_at"
+                ),
+            )
+            .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
+            .values_list("annot_latest_feed_update_id", flat=True)
+        )
+        return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids))
 
     @transaction.atomic()
     def create_from_metadata(

@@ -50,3 +50,4 @@ FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
 HTTP_TIMEOUT = 20  # In seconds.
 MAX_FEED_FILE_SIZE = 10 * 1024 * 1024  # 10MiB in bytes.
 FEED_TITLE_MAX_LENGTH = 300
+KEEP_FEED_UPDATES_FOR = 60  # In days

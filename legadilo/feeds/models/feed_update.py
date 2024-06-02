@@ -3,10 +3,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from legadilo.feeds.constants import FEED_ERRORS_TIME_WINDOW
 
+from ...utils.time import utcnow
 from .. import constants
 
 if TYPE_CHECKING:
@@ -26,6 +28,11 @@ class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):
 
     def only_latest(self):
         return self.values("id").order_by("feed_id", "-created_at").distinct("feed_id")
+
+    def for_cleanup(self, latest_feed_update_ids: set[int | None]):
+        return self.filter(
+            created_at__lt=utcnow() - relativedelta(days=constants.KEEP_FEED_UPDATES_FOR)
+        ).exclude(id__in=latest_feed_update_ids)
 
 
 class FeedUpdateManager(models.Manager["FeedUpdate"]):

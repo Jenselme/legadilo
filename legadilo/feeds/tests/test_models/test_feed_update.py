@@ -24,6 +24,29 @@ class TestFeedUpdateQuerySet:
 
         assert list(latest) == [{"id": latest_for_feed.id}, {"id": latest_for_other_feed.id}]
 
+    def test_for_cleanup(self):
+        feed = FeedFactory()
+        other_feed = FeedFactory()
+        with time_machine.travel("2024-03-15 12:00:00"):
+            feed_update_to_cleanup = FeedUpdateFactory(feed=feed)
+            # We only have this one, let's keep it.
+            only_feed_update_for_feed = FeedUpdateFactory()
+
+        with time_machine.travel("2024-05-01 12:00:00"):
+            FeedUpdateFactory(feed=feed)
+            FeedUpdateFactory(feed=other_feed)  # Too recent.
+
+        with time_machine.travel("2024-05-03 12:00:00"):
+            FeedUpdateFactory(feed=other_feed)  # Too recent.
+
+        with time_machine.travel("2024-06-01 12:00:00"):
+            feed_updates_to_cleanup = FeedUpdate.objects.get_queryset().for_cleanup({
+                None,
+                only_feed_update_for_feed.id,
+            })
+
+        assert list(feed_updates_to_cleanup) == [feed_update_to_cleanup]
+
 
 @pytest.mark.django_db()
 class TestFeedUpdateManager:

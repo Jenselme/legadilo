@@ -413,3 +413,25 @@ class TestFeedManager:
         existing_article.refresh_from_db()
         assert existing_article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
         assert existing_article.initial_source_title != self.feed.title
+
+    def test_get_feed_update_for_cleanup(self):
+        feed = FeedFactory()
+        other_feed = FeedFactory()
+        with time_machine.travel("2024-03-15 12:00:00"):
+            feed_update_to_cleanup = FeedUpdateFactory(feed=feed)
+            # We only have this one, let's keep it.
+            FeedUpdateFactory()
+
+        with time_machine.travel("2024-05-01 12:00:00"):
+            FeedUpdateFactory(feed=feed)
+            FeedUpdateFactory(feed=other_feed)  # Too recent.
+
+        with time_machine.travel("2024-05-03 12:00:00"):
+            FeedUpdateFactory(feed=other_feed)  # Too recent.
+
+        with time_machine.travel("2024-06-01 12:00:00"):
+            feed_updates_to_cleanup = Feed.objects.get_feed_update_for_cleanup()
+
+        assert list(feed_updates_to_cleanup) == [
+            feed_update_to_cleanup,
+        ]
