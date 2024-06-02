@@ -15,7 +15,11 @@ from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
 from legadilo.reading import constants as reading_constants
-from legadilo.reading.utils.article_fetching import ArticleData, parse_tags_list
+from legadilo.reading.utils.article_fetching import (
+    ArticleData,
+    get_fallback_summary_from_content,
+    parse_tags_list,
+)
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 from ...utils.time import dt_to_http_date
@@ -169,12 +173,13 @@ def _parse_articles_in_feed(
     for entry in parsed_feed.entries:
         try:
             article_link = _get_article_link(feed_url, entry)
+            content = _get_article_content(entry)
             articles_data.append(
                 ArticleData(
                     external_article_id=full_sanitize(entry.get("id", "")),
                     title=full_sanitize(entry.title),
-                    summary=_get_summary(article_link, entry),
-                    content=_get_article_content(entry),
+                    summary=_get_summary(article_link, entry, content),
+                    content=content,
                     authors=_get_article_authors(entry),
                     contributors=_get_article_contributors(entry),
                     tags=_get_articles_tags(entry),
@@ -193,13 +198,16 @@ def _parse_articles_in_feed(
     return articles_data
 
 
-def _get_summary(article_url: str, entry) -> str:
+def _get_summary(article_url: str, entry, content: str) -> str:
     summary = ""
     if proper_summary := entry.get("summary"):
         summary = proper_summary
 
     if not summary and _is_youtube_link(article_url):
         summary = _get_preview_picture_alt(entry)
+
+    if not summary and content:
+        summary = get_fallback_summary_from_content(content)
 
     return sanitize_keep_safe_tags(
         summary, extra_tags_to_cleanup=reading_constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY

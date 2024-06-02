@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
+from django.template.defaultfilters import truncatewords_html
 
 from legadilo.reading import constants
 from legadilo.utils.http import get_async_client
@@ -91,12 +92,14 @@ def _parse_http_equiv_refresh(value: str) -> str | None:
 def _build_article_data(
     fetched_url: str, soup: BeautifulSoup, content_language: str | None
 ) -> ArticleData:
+    content = _get_content(soup)
+
     return ArticleData(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
         title=_get_title(soup),
-        summary=_get_summary(soup),
-        content=_get_content(soup),
+        summary=_get_summary(soup, content),
+        content=content,
         authors=_get_authors(soup),
         contributors=[],
         tags=_get_tags(soup),
@@ -141,7 +144,7 @@ def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
     return full_sanitize(site_title)
 
 
-def _get_summary(soup: BeautifulSoup) -> str:
+def _get_summary(soup: BeautifulSoup, content: str) -> str:
     summary = ""
     if (
         og_description := soup.find("meta", attrs={"property": "og:description"})
@@ -156,8 +159,21 @@ def _get_summary(soup: BeautifulSoup) -> str:
     ) and itemprop_description.get("content"):
         summary = itemprop_description.get("content")
 
+    if not summary and content:
+        summary = get_fallback_summary_from_content(content)
+
     return sanitize_keep_safe_tags(
         summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
+    )
+
+
+def get_fallback_summary_from_content(content: str) -> str:
+    return truncatewords_html(
+        sanitize_keep_safe_tags(
+            content,
+            extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY,
+        ),
+        constants.MAX_SUMMARY_LENGTH,
     )
 
 
