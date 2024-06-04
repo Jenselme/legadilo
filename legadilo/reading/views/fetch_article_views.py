@@ -8,12 +8,14 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
+from legadilo.reading.templatetags import article_details_url
 from legadilo.reading.utils.article_fetching import (
     ArticleTooBigError,
     get_article_from_url,
@@ -56,7 +58,7 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
         status, form = await _handle_save(
             request,
             tag_choices,
-            success_message=_("Article '%s' successfully added!"),
+            success_message=_("Article '<a href=\"{}\">{}</a>' successfully added!"),
             no_content_message=_(
                 "The article '%s' was added but we failed to fetch its content. "
                 "Please check that it really points to an article."
@@ -81,7 +83,7 @@ async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpRespons
     await _handle_save(
         request,
         [],
-        success_message=_("Article '%s' successfully re-fetched!"),
+        success_message=_("Article '<a href=\"{}\">{}</a>' successfully re-fetched!"),
         no_content_message=_(
             "The article '%s' was re-fetched but we failed to fetch its content. "
             "Please check that it really points to an article."
@@ -171,5 +173,8 @@ async def _handle_save(
             no_content_message % article.title,
         )
     else:
-        messages.success(request, success_message % article.title)
+        messages.success(
+            request,
+            format_html(success_message, str(article_details_url(article)), article.title),
+        )
     return HTTPStatus.CREATED, form
