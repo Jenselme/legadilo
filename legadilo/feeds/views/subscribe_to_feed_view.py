@@ -8,6 +8,8 @@ from django import forms
 from django.contrib import messages
 from django.db import IntegrityError
 from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
@@ -191,5 +193,12 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
     else:
         # Empty form after success.
         form = await _get_subscribe_to_feed_form(data=None, user=request.user)
-        messages.success(request, _("Feed '%s' added") % feed.title)
+        messages.success(
+            request,
+            format_html(
+                str(_("Feed '<a href=\"{}\">{}</a>' added")),
+                str(reverse("feeds:feed_articles", kwargs={"feed_id": feed.id})),
+                feed.title,
+            ),
+        )
         return HTTPStatus.CREATED, form
