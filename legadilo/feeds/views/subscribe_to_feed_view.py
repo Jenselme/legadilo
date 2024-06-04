@@ -181,7 +181,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             _("The feed file is too big, we won't parse it. Try to find a more lightweight feed."),
         )
         return HTTPStatus.BAD_REQUEST, form
-    except InvalidFeedFileError:
+    except (InvalidFeedFileError, ValueError, TypeError):
         messages.error(
             request,
             _(
