@@ -55,7 +55,7 @@ class TestUpdateArticleView:
         assert not self.other_article.is_read
 
     def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
@@ -155,7 +155,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url,
                 {

@@ -87,10 +87,14 @@ def _update_article_card(
     from_url = get_from_url_for_article_details(request, request.POST)
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
-        reading_list = ReadingList.objects.get(id=displayed_reading_list_id)
+        reading_list = ReadingList.objects.select_related("user").get(id=displayed_reading_list_id)
+        count_articles_of_current_reading_list = Article.objects.get_articles_of_reading_list(
+            reading_list
+        ).count()
         js_cfg = get_js_cfg_from_reading_list(reading_list)
     except (ValueError, TypeError, ReadingList.DoesNotExist):
         displayed_reading_list_id = None
+        count_articles_of_current_reading_list = None
         js_cfg = {}
 
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
@@ -107,6 +111,7 @@ def _update_article_card(
             "displayed_reading_list_id": displayed_reading_list_id,
             "js_cfg": js_cfg,
             "from_url": from_url,
+            "count_articles_of_current_reading_list": count_articles_of_current_reading_list,
         },
         headers={
             "HX-Reswap": hx_reswap,
