@@ -165,6 +165,7 @@ include = "H017,H035"
 indent = 4
 max_line_length = 119
 profile = "django"
+custom_blocks = "partialdef"
 
 [tool.djlint.css]
 indent_size = 4

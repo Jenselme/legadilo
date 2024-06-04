@@ -15,19 +15,19 @@
             type="module"></script>
 {% endblock page_js %}
 {% partialdef reading-list-group %}
-<ul class="list-group">
-    {% for reading_list in reading_lists %}
-        <li class="p-0 list-group-item {% if displayed_reading_list_id == reading_list.id %}active{% endif %}">
-            <a href="{{ reading_list|reading_list_url }}"
-               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                <span>{{ reading_list.title }}</span>
-                {% if count_unread_articles_of_reading_lists|get_item:reading_list.slug > 0 %}
-                    <span class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
-                {% endif %}
-            </a>
-        </li>
-    {% endfor %}
-</ul>
+    <ul class="list-group">
+        {% for reading_list in reading_lists %}
+            <li class="p-0 list-group-item {% if displayed_reading_list_id == reading_list.id %}active{% endif %}">
+                <a href="{{ reading_list|reading_list_url }}"
+                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                    <span>{{ reading_list.title }}</span>
+                    {% if count_unread_articles_of_reading_lists|get_item:reading_list.slug > 0 %}
+                        <span class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 {% endpartialdef %}
 {% block content %}
     <div class="container-fluid px-md-3">
@@ -59,103 +59,103 @@
                         <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center px-0 mx-0">
                             <span id="articles-in-total">
                                 {% partialdef articles-in-total inline=True %}
-                                {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
-                                {{ formatted_nb_articles }} article in total
-                            {% plural %}
-                                {{ formatted_nb_articles }} articles in total
-                            {% endblocktranslate %}
-                            {% endpartialdef %}
-                        </span>
-                        {% if js_cfg.is_reading_on_scroll_enabled %}
-                            &nbsp;
-                            <button type="button"
-                                    class="btn btn-light p-0"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    data-bs-title="{% translate 'Read on scroll is enabled' %}">
-                                {% include "core/partials/bs-icons/info.html" %}
-                            </button>
-                        {% endif %}
-                    </h2>
-                {% endif %}
-                {% if update_articles_form %}
-                    <div class="accordion mb-2 col-md-8" id="search-actions">
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <button class="accordion-button {% if not update_articles_form.errors %}collapsed{% endif %}"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#search-actions-form"
-                                        aria-expanded="{% if update_articles_form.errors %}true{% else %}false{% endif %}"
-                                        aria-controls="search-actions-form">
-                                    {% translate "View search actions" %}
+                                    {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
+                                        {{ formatted_nb_articles }} article in total
+                                    {% plural %}
+                                        {{ formatted_nb_articles }} articles in total
+                                    {% endblocktranslate %}
+                                {% endpartialdef %}
+                            </span>
+                            {% if js_cfg.is_reading_on_scroll_enabled %}
+                                &nbsp;
+                                <button type="button"
+                                        class="btn btn-light p-0"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        data-bs-title="{% translate 'Read on scroll is enabled' %}">
+                                    {% include "core/partials/bs-icons/info.html" %}
                                 </button>
-                            </div>
-                            <div id="search-actions-form"
-                                 class="accordion-collapse collapse {% if update_articles_form.errors %}show{% endif %}"
-                                 data-bs-parent="#search-actions">
-                                <div class="accordion-body">
-                                    <form method="post">
-                                        {% csrf_token %}
-                                        {{ update_articles_form|crispy }}
-                                        <div class="d-flex justify-content-end">
-                                            <button type="submit" class="btn btn-outline-primary">{% translate "Update articles" %}</button>
-                                        </div>
-                                    </form>
+                            {% endif %}
+                        </h2>
+                    {% endif %}
+                    {% if update_articles_form %}
+                        <div class="accordion mb-2 col-md-8" id="search-actions">
+                            <div class="accordion-item">
+                                <div class="accordion-header">
+                                    <button class="accordion-button {% if not update_articles_form.errors %}collapsed{% endif %}"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#search-actions-form"
+                                            aria-expanded="{% if update_articles_form.errors %}true{% else %}false{% endif %}"
+                                            aria-controls="search-actions-form">
+                                        {% translate "View search actions" %}
+                                    </button>
+                                </div>
+                                <div id="search-actions-form"
+                                     class="accordion-collapse collapse {% if update_articles_form.errors %}show{% endif %}"
+                                     data-bs-parent="#search-actions">
+                                    <div class="accordion-body">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            {{ update_articles_form|crispy }}
+                                            <div class="d-flex justify-content-end">
+                                                <button type="submit" class="btn btn-outline-primary">{% translate "Update articles" %}</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
+                </div>
+                {% partialdef article-pagination inline=True %}
+                    {% for article in articles_page %}
+                        <div id="{{ article|article_card_id }}" class="article-card-container">
+                            {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
+                        </div>
+                        {% if forloop.last and next_page_number %}
+                            <p class="icon-indicator infinite-scrolling-icon-indicator"
+                               hx-get="?page={{ next_page_number }}"
+                               hx-trigger="intersect once"
+                               hx-swap="outerHTML"
+                               hx-indicator=".infinite-scrolling-icon-indicator">
+                                {% include "core/partials/page_loading_indicator.html" %}
+                            </p>
+                        {% endif %}
+                        {% if forloop.last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
+                            <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
+                        {% endif %}
+                    {% empty %}
+                        <p>{% translate "No articles to display." %}</p>
+                    {% endfor %}
+                {% endpartialdef %}
+                {% if articles_paginator.num_pages > 1 %}
+                    <noscript>
+                        <nav aria-label="{% translate 'Navigation between articles' %}">
+                            <ul class="pagination">
+                                <li class="page-item">
+                                    <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
+                                       {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
+                                        {% translate "Previous" %}
+                                    </a>
+                                </li>
+                                {% for page_number in articles_paginator.page_range %}
+                                    <li class="page-item">
+                                        <a class="page-link {% if articles_page.number == page_number %}active{% endif %}"
+                                           href="?page={{ page_number }}">{{ page_number }}</a>
+                                    </li>
+                                {% endfor %}
+                                <li class="page-item">
+                                    <a class="page-link {% if not articles_page.has_next %}disabled{% endif %}"
+                                       {% if articles_page.has_next %}href="?page={{ articles_page.next_page_number }}"{% endif %}>
+                                        {% translate "Next" %}
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </noscript>
                 {% endif %}
             </div>
-            {% partialdef article-pagination inline=True %}
-            {% for article in articles_page %}
-                <div id="{{ article|article_card_id }}" class="article-card-container">
-                    {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
-                </div>
-                {% if forloop.last and next_page_number %}
-                    <p class="icon-indicator infinite-scrolling-icon-indicator"
-                       hx-get="?page={{ next_page_number }}"
-                       hx-trigger="intersect once"
-                       hx-swap="outerHTML"
-                       hx-indicator=".infinite-scrolling-icon-indicator">
-                        {% include "core/partials/page_loading_indicator.html" %}
-                    </p>
-                {% endif %}
-                {% if forloop.last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
-                    <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
-                {% endif %}
-            {% empty %}
-                <p>{% translate "No articles to display." %}</p>
-            {% endfor %}
-        {% endpartialdef %}
-        {% if articles_paginator.num_pages > 1 %}
-            <noscript>
-                <nav aria-label="{% translate 'Navigation between articles' %}">
-                    <ul class="pagination">
-                        <li class="page-item">
-                            <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
-                               {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
-                                {% translate "Previous" %}
-                            </a>
-                        </li>
-                        {% for page_number in articles_paginator.page_range %}
-                            <li class="page-item">
-                                <a class="page-link {% if articles_page.number == page_number %}active{% endif %}"
-                                   href="?page={{ page_number }}">{{ page_number }}</a>
-                            </li>
-                        {% endfor %}
-                        <li class="page-item">
-                            <a class="page-link {% if not articles_page.has_next %}disabled{% endif %}"
-                               {% if articles_page.has_next %}href="?page={{ articles_page.next_page_number }}"{% endif %}>
-                                {% translate "Next" %}
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </noscript>
-        {% endif %}
+        </div>
     </div>
-</div>
-</div>
 {% endblock content %}
