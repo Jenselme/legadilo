@@ -28,7 +28,9 @@
                     <a class="open-original"
                        data-article-id="{{ article.id }}"
                        href="{{ article.link }}"
-                       target="_blank">{{ article.title | safe }}</a>
+                       target="_blank">{{ article.title | safe }}>
+                        <span>{% include "core/partials/bs-icons/new-tab.html" %}</span>
+                    </a>
                 {% endif %}
             </h2>
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
