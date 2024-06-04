@@ -7,6 +7,6 @@
 {% if count_articles_of_current_reading_list %}
     <div hx-swap-oob="innerHTML:#articles-in-total">{% include "reading/list_of_articles.html#articles-in-total" %}</div>
 {% endif %}
-{% if article.pk %}
+{% if not delete_article_card %}
     {% include "reading/partials/article_card.html" %}
 {% endif %}

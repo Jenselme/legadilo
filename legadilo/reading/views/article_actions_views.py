@@ -35,8 +35,9 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
     return _update_article_card(
         request,
         article,
-        hx_reswap="outerHTML show:none swap:1s",
+        constants.UpdateArticleActions.DO_NOTHING,
         hx_target=hx_target,
+        delete_article_card=True,
     )
 
 
@@ -77,12 +78,21 @@ def update_article_view(
         )
 
     return _update_article_card(
-        request, article, hx_reswap="innerHTML show:none", hx_target=f"#{article_card_id(article)}"
+        request,
+        article,
+        update_action,
+        hx_target=f"#{article_card_id(article)}",
+        delete_article_card=False,
     )
 
 
 def _update_article_card(
-    request: AuthenticatedHttpRequest, article: Article, *, hx_reswap, hx_target
+    request: AuthenticatedHttpRequest,
+    article: Article,
+    update_action: constants.UpdateArticleActions,
+    *,
+    hx_target,
+    delete_article_card,
 ) -> TemplateResponse:
     from_url = get_from_url_for_article_details(request, request.POST)
     try:
@@ -92,6 +102,19 @@ def _update_article_card(
             reading_list
         ).count()
         js_cfg = get_js_cfg_from_reading_list(reading_list)
+        for_later_but_excluded_from_list = (
+            update_action == constants.UpdateArticleActions.MARK_AS_FOR_LATER
+            and reading_list.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER
+        )
+        not_for_later_but_excluded_from_list = (
+            update_action == constants.UpdateArticleActions.UNMARK_AS_FOR_LATER
+            and reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER
+        )
+        delete_article_card = (
+            delete_article_card
+            or for_later_but_excluded_from_list
+            or not_for_later_but_excluded_from_list
+        )
     except (ValueError, TypeError, ReadingList.DoesNotExist):
         displayed_reading_list_id = None
         count_articles_of_current_reading_list = None
@@ -112,9 +135,12 @@ def _update_article_card(
             "js_cfg": js_cfg,
             "from_url": from_url,
             "count_articles_of_current_reading_list": count_articles_of_current_reading_list,
+            "delete_article_card": delete_article_card,
         },
         headers={
-            "HX-Reswap": hx_reswap,
+            "HX-Reswap": "outerHTML show:none swap:1s"
+            if delete_article_card
+            else "innerHTML show:none",
             "HX-Retarget": hx_target,
         },
     )
