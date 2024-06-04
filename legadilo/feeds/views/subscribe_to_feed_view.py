@@ -65,6 +65,7 @@ class SubscribeToFeedForm(forms.Form):
             "Tags to associate to articles of this feed. To create a new tag, type and press enter."
         ),
     )
+    open_original_link_by_default = forms.BooleanField(required=False)
 
     def __init__(
         self,
@@ -147,6 +148,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             form.cleaned_data["refresh_delay"],
             tags,
             category,
+            open_original_link_by_default=form.cleaned_data["open_original_link_by_default"],
         )
     except httpx.HTTPError:
         messages.error(

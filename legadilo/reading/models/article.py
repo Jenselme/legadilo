@@ -143,9 +143,13 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.alias(
             feed_ids=ArrayAgg("feeds__id", order="id"),
             feed_slugs=ArrayAgg("feeds__slug", ordering="id"),
+            feed_open_original_link_by_default=ArrayAgg(
+                "feeds__open_original_link_by_default", ordering="id"
+            ),
         ).annotate(
             annot_feed_id=models.F("feed_ids__0"),
             annot_feed_slug=models.F("feed_slugs__0"),
+            annot_open_original_by_default=models.F("feed_open_original_link_by_default__0"),
         )
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:

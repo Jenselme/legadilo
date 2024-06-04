@@ -165,21 +165,25 @@ class TestArticleQuerySet:
         other_feed = FeedFactory(user=user)
         article_two_feeds = ArticleFactory(user=user, title="Two feed")
         article_two_feeds.feeds.add(feed, other_feed)
-        feed_no_slug = FeedFactory(user=user, title="No slug", slug="")
+        feed_no_slug = FeedFactory(
+            user=user, title="No slug", slug="", open_original_link_by_default=True
+        )
         article_feed_no_slug = ArticleFactory(user=user, title="Article feed no slug")
         article_feed_no_slug.feeds.add(feed_no_slug)
 
         articles = (
             Article.objects.get_queryset()  # type: ignore[misc]
             .for_feed_links()
-            .values_list("title", "annot_feed_id", "annot_feed_slug")
+            .values_list(
+                "title", "annot_feed_id", "annot_feed_slug", "annot_open_original_by_default"
+            )
         )
 
         assert list(articles) == [
-            ("Not linked to a feed", None, None),
-            ("One feed", feed.id, feed.slug),
-            ("Two feed", feed.id, feed.slug),
-            ("Article feed no slug", feed_no_slug.id, ""),
+            ("Not linked to a feed", None, None, None),
+            ("One feed", feed.id, feed.slug, False),
+            ("Two feed", feed.id, feed.slug, False),
+            ("Article feed no slug", feed_no_slug.id, "", True),
         ]
 
     def test_for_reading_list_with_tags_basic_include(self, user, django_assert_num_queries):

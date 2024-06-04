@@ -22,7 +22,7 @@
     <div class="card-body">
         <header>
             <h2 class="card-title">
-                {% if article.content %}
+                {% if article.content and not article.annot_open_original_by_default %}
                     <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title | safe }}</a>
                 {% else %}
                     <a class="open-original"

@@ -29,6 +29,7 @@ class TestSubscribeToFeedView:
         self.sample_payload = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.BIHOURLY.name,
+            "open_original_link_by_default": True,
         }
         self.existing_tag = TagFactory(user=user)
         self.sample_payload_with_tags = {
@@ -70,8 +71,8 @@ class TestSubscribeToFeedView:
                 message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
-        assert Feed.objects.count() == 1
         assert feed.tags.count() == 0
+        assert feed.open_original_link_by_default
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
@@ -96,7 +97,7 @@ class TestSubscribeToFeedView:
                 message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
-        assert Feed.objects.count() == 1
+        assert not feed.open_original_link_by_default
         assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
         assert Article.objects.count() > 0
         article = Article.objects.first()
