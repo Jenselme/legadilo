@@ -1,6 +1,8 @@
-<div hx-swap-oob="innerHTML:#reading-list-group">{% include "reading/partials/reading_list_group.html" %}</div>
+<div hx-swap-oob="innerHTML:#reading-list-group">
+    {% include "reading/list_of_articles.html#reading-list-group" %}
+</div>
 <div hx-swap-oob="innerHTML:#reading-list-dropdown-menu">
-    {% include "reading/partials/reading_list_dropdown_menu.html" %}
+    {% include "reading/list_of_articles.html#reading-list-group" %}
 </div>
 {% if article.pk %}
     {% include "reading/partials/article_card.html" %}

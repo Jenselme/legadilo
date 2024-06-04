@@ -120,6 +120,7 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount",
     "axes",
     "django_htmx",
+    "template_partials.apps.SimpleAppConfig",
 ]
 LOCAL_APPS = [
     "legadilo.core",
@@ -234,6 +235,15 @@ MEDIA_URL = "/media/"
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
+_BASE_LOADERS = [
+    (
+        "template_partials.loader.Loader",
+        [
+            "django.template.loaders.filesystem.Loader",
+            "django.template.loaders.app_directories.Loader",
+        ],
+    )
+]
 TEMPLATES = [
     {
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
@@ -261,17 +271,11 @@ TEMPLATES = [
             "loaders": [
                 (
                     "django.template.loaders.cached.Loader",
-                    [
-                        "django.template.loaders.filesystem.Loader",
-                        "django.template.loaders.app_directories.Loader",
-                    ],
+                    _BASE_LOADERS,
                 ),
             ]
             if IS_PRODUCTION
-            else [
-                "django.template.loaders.filesystem.Loader",  # type: ignore[list-item]
-                "django.template.loaders.app_directories.Loader",  # type: ignore[list-item]
-            ],
+            else _BASE_LOADERS,
         },
     },
 ]

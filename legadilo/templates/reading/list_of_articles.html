@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n static humanize crispy_forms_tags %}
+{% load i18n static humanize crispy_forms_tags partials %}
 
 {% block title %}
     {{ page_title }}
@@ -14,6 +14,21 @@
             nonce="{{request.csp_nonce}}"
             type="module"></script>
 {% endblock page_js %}
+{% partialdef reading-list-group %}
+<ul class="list-group">
+    {% for reading_list in reading_lists %}
+        <li class="p-0 list-group-item {% if displayed_reading_list_id == reading_list.id %}active{% endif %}">
+            <a href="{{ reading_list|reading_list_url }}"
+               class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                <span>{{ reading_list.title }}</span>
+                {% if count_unread_articles_of_reading_lists|get_item:reading_list.slug > 0 %}
+                    <span class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
+                {% endif %}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+{% endpartialdef %}
 {% block content %}
     <div class="container-fluid px-md-3">
         <div class="row">
@@ -26,17 +41,17 @@
                         type="button"
                         data-bs-toggle="dropdown"
                         aria-expanded="false">{% translate "Reading lists" %}</button>
-                <div id="reading-list-dropdown-menu" class="p-0 dropdown-menu">
-                    {% include "reading/partials/reading_list_dropdown_menu.html" %}
-                </div>
+                <div id="reading-list-dropdown-menu" class="p-0 dropdown-menu">{% partial reading-list-group %}</div>
             </div>
         </div>
     </div>
     <div class="container-fluid list-of-articles-scrollable-container px-0">
         <div id="scrollable-article-list" class="row scrollable px-0 mx-0">
             <div class="col col-md-1"></div>
-            <div id="reading-list-group" class="col col-2 d-none d-md-block">
-                {% include 'reading/partials/reading_list_group.html' with displayed_reading_list_id=displayed_reading_list_id %}
+            <div class="col col-2 d-none d-md-block">
+                <nav id="reading-list-group" class="sticky-top">
+                    {% partial reading-list-group %}
+                </nav>
             </div>
             <div class="col col-12 col-md-8 px-1 px-md-3 mx-0">
                 <div class="row px-0 mx-0">
@@ -89,11 +104,54 @@
                         </div>
                     {% endif %}
                 </div>
-                {% include "reading/partials/article_paginator_page.html" %}
+                {% partialdef article-pagination inline=True %}
+                {% for article in articles_page %}
+                    <div id="{{ article|article_card_id }}" class="article-card-container">
+                        {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
+                    </div>
+                    {% if forloop.last and next_page_number %}
+                        <p class="icon-indicator infinite-scrolling-icon-indicator"
+                           hx-get="?page={{ next_page_number }}"
+                           hx-trigger="intersect once"
+                           hx-swap="outerHTML"
+                           hx-indicator=".infinite-scrolling-icon-indicator">
+                            {% include "core/partials/page_loading_indicator.html" %}
+                        </p>
+                    {% endif %}
+                    {% if forloop.last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
+                        <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
+                    {% endif %}
+                {% empty %}
+                    <p>{% translate "No articles to display." %}</p>
+                {% endfor %}
+            {% endpartialdef %}
+            {% if articles_paginator.num_pages > 1 %}
                 <noscript>
-                    {% include 'reading/partials/articles_list_pagination.html' %}
+                    <nav aria-label="{% translate 'Navigation between articles' %}">
+                        <ul class="pagination">
+                            <li class="page-item">
+                                <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
+                                   {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
+                                    {% translate "Previous" %}
+                                </a>
+                            </li>
+                            {% for page_number in articles_paginator.page_range %}
+                                <li class="page-item">
+                                    <a class="page-link {% if articles_page.number == page_number %}active{% endif %}"
+                                       href="?page={{ page_number }}">{{ page_number }}</a>
+                                </li>
+                            {% endfor %}
+                            <li class="page-item">
+                                <a class="page-link {% if not articles_page.has_next %}disabled{% endif %}"
+                                   {% if articles_page.has_next %}href="?page={{ articles_page.next_page_number }}"{% endif %}>
+                                    {% translate "Next" %}
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </noscript>
-            </div>
+            {% endif %}
         </div>
     </div>
+</div>
 {% endblock content %}

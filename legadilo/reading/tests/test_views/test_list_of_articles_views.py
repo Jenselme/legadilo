@@ -107,7 +107,7 @@ class TestReadingListWithArticlesView:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.template_name == "reading/partials/article_paginator_page.html"
+        assert response.template_name == "reading/list_of_articles.html#article-pagination"
         assert response.context["page_title"] == self.reading_list.title
         assert response.context["displayed_reading_list_id"] == self.reading_list.id
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
