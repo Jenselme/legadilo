@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
     from legadilo.reading.models.reading_list import ReadingList
     from legadilo.reading.models.tag import Tag
-    from legadilo.reading.utils.article_fetching import ArticleData
+    from legadilo.reading.services.article_fetching import ArticleData
     from legadilo.users.models import User
 else:
     TypedModelMeta = object

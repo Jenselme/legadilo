@@ -11,12 +11,12 @@ from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, ReadingListTag
 from legadilo.reading.models.article import _build_filters_from_reading_list
+from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
     ArticleFactory,
     ReadingListFactory,
     TagFactory,
 )
-from legadilo.reading.utils.article_fetching import ArticleData
 from legadilo.utils.time import utcdt, utcnow
 
 

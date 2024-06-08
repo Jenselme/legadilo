@@ -24,7 +24,7 @@ from legadilo.feeds.services.feed_parsing import (
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
-from legadilo.reading.utils.article_fetching import get_fallback_summary_from_content
+from legadilo.reading.services.article_fetching import get_fallback_summary_from_content
 from legadilo.users.models import User
 from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags

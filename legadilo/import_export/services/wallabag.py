@@ -10,7 +10,7 @@ from slugify import slugify
 from legadilo.import_export.services.exceptions import InvalidEntryError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, ArticleTag, Tag
-from legadilo.reading.utils.article_fetching import get_fallback_summary_from_content
+from legadilo.reading.services.article_fetching import get_fallback_summary_from_content
 from legadilo.users.models import User
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 from legadilo.utils.time import safe_datetime_parse, utcnow

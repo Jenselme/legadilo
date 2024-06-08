@@ -2,8 +2,8 @@ from collections.abc import Callable
 
 import pytest
 
+from legadilo.reading.services.article_fetching import get_article_from_url
 from legadilo.reading.tests.fixtures import get_article_fixture_content
-from legadilo.reading.utils.article_fetching import get_article_from_url
 from legadilo.utils.testing import serialize_for_snapshot
 
 

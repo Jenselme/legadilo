@@ -8,11 +8,11 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
-from legadilo.reading.templatetags import article_card_id
-from legadilo.reading.utils.views import (
+from legadilo.reading.services.views import (
     get_from_url_for_article_details,
     get_js_cfg_from_reading_list,
 )
+from legadilo.reading.templatetags import article_card_id
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.urls import add_query_params, validate_referer_url
 

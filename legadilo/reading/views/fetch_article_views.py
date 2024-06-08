@@ -15,11 +15,11 @@ from django.views.decorators.http import require_http_methods
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
-from legadilo.reading.templatetags import article_details_url
-from legadilo.reading.utils.article_fetching import (
+from legadilo.reading.services.article_fetching import (
     ArticleTooBigError,
     get_article_from_url,
 )
+from legadilo.reading.templatetags import article_details_url
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
 from legadilo.utils.exceptions import extract_debug_information, format_exception

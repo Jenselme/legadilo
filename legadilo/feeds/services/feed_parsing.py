@@ -15,7 +15,7 @@ from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
 from legadilo.reading import constants as reading_constants
-from legadilo.reading.utils.article_fetching import (
+from legadilo.reading.services.article_fetching import (
     ArticleData,
     get_fallback_summary_from_content,
     parse_tags_list,

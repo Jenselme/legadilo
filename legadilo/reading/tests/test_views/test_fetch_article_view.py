@@ -101,7 +101,7 @@ class TestAddArticle:
 
     def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
-        mocker.patch("legadilo.reading.utils.article_fetching._get_content", return_value="")
+        mocker.patch("legadilo.reading.services.article_fetching._get_content", return_value="")
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -164,7 +164,7 @@ class TestAddArticle:
 
     def test_content_too_big(self, logged_in_sync_client, httpx_mock, mocker):
         mocker.patch(
-            "legadilo.reading.utils.article_fetching.sys.getsizeof", return_value=2048 * 1024
+            "legadilo.reading.services.article_fetching.sys.getsizeof", return_value=2048 * 1024
         )
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 
