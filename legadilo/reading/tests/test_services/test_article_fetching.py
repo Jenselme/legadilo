@@ -62,7 +62,7 @@ async def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
             "<article>",
         ),
         ("multiple_articles_tags_identify_class.html", "<article>"),
-        ("multiple_articles_tags_identify_section_by_class.html", "\n\n<div>\n<p>\n"),
+        ("multiple_articles_tags_identify_section_by_class.html", "\n<div>\n<p>\n"),
     ],
 )
 async def test_get_article_from_url_weird_content(fixture_file, expected_starts_with, httpx_mock):
@@ -143,6 +143,27 @@ async def test_get_article_from_url_process_fixture(
                 "is_favorite": False,
             },
             id="summary-missing",
+        ),
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "<p>source article title</p>",
+                "title": "<p>Title</p>",
+                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
+                "content": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a><img src="/relative.png" /><img src="https://example.com/image.png" /></p>""",  # noqa: E501
+                "authors": ["<span>me</span>"],
+                "contributors": ["<span>me</span>"],
+                "tags": ["<span>tag</span>"],
+                "link": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "<p>Hi there!</p>",
+                "published_at": None,
+                "updated_at": None,
+                "language": "<span>en</span>",
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="link-correction",
         ),
     ],
 )

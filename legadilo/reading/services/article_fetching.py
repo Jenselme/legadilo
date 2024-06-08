@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -31,6 +32,8 @@ from legadilo.utils.security import (
 )
 from legadilo.utils.time import safe_datetime_parse
 from legadilo.utils.validators import is_url_valid, language_code_validator, normalize_url
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -74,6 +77,8 @@ def build_article_data(  # noqa: PLR0913 too many arguments
     read_at: datetime | None = None,
     is_favorite: bool = False,
 ) -> ArticleData:
+    summary = _resolve_relative_links(link, summary)
+    content = _resolve_relative_links(link, content)
     if not summary and content:
         summary = _get_fallback_summary_from_content(content)
 
@@ -116,6 +121,31 @@ def _sanitize_lists(alist: list[str]) -> list[str]:
             cleaned_list.append(cleaned_item)
 
     return cleaned_list
+
+
+def _resolve_relative_links(article_link: str, content: str) -> str:
+    soup = BeautifulSoup(content, "html.parser")
+    for link in soup.find_all("a"):
+        if (href := link.get("href")) is None:
+            continue
+
+        link["href"] = _normalize_url(article_link, href)
+
+    for image in soup.find_all("img"):
+        if (src := image.get("src")) is None:
+            continue
+
+        image["src"] = _normalize_url(article_link, src)
+
+    return str(soup)
+
+
+def _normalize_url(article_link: str, elt_link: str):
+    try:
+        return normalize_url(article_link, elt_link)
+    except ValueError:
+        logger.exception(f"Failed to normalize url {elt_link=} against {article_link=}")
+        return elt_link
 
 
 class ArticleTooBigError(Exception):

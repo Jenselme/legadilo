@@ -3,7 +3,7 @@
   "authors": [
     "me"
   ],
-  "content": "<p>C <span>?</span> <img src=\"https://example.com/t\"> </p>",
+  "content": "<p><a href=\"https://example.com/relative\" rel=\"noopener noreferrer\">Link 1</a><a href=\"https://example.com/abs\" rel=\"noopener noreferrer\">Link 1</a><img src=\"https://example.com/relative.png\"><img src=\"https://example.com/image.png\"></p>",
   "contributors": [
     "me"
   ],
@@ -16,7 +16,7 @@
   "published_at": null,
   "read_at": null,
   "source_title": "source article title",
-  "summary": "<p>C <span>?</span>  </p>",
+  "summary": "<p><a href=\"https://example.com/relative\" rel=\"noopener noreferrer\">Link 1</a><a href=\"https://example.com/abs\" rel=\"noopener noreferrer\">Link 1</a></p>",
   "tags": [
     "tag"
   ],
