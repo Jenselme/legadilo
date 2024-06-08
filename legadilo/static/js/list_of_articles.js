@@ -64,8 +64,25 @@
 
       // To make sure counters are correct at the end, we run the requests on after the other so the
       // last one to complete has the correct count.
-      readOnScrollSequence = readOnScrollSequence.then(() => htmx.trigger(htmxForm, "submit"));
+      readOnScrollSequence = readOnScrollSequence.then(() => buildReadOnScrollPromise(htmxForm));
     }
+  };
+
+  const buildReadOnScrollPromise = (htmxForm) => {
+    return new Promise((resolve) => {
+      const waitForRequestEnd = (event) => {
+        if (
+          event.detail &&
+          event.detail.pathInfo &&
+          event.detail.pathInfo.requestPath === htmxForm.getAttribute("action")
+        ) {
+          htmx.off("htmx:afterRequest", waitForRequestEnd);
+          resolve();
+        }
+      };
+      htmx.on("htmx:afterRequest", waitForRequestEnd);
+      htmx.trigger(htmxForm, "submit");
+    });
   };
 
   const setupRefresh = () => {
