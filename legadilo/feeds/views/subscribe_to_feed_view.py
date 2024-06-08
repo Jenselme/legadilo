@@ -6,7 +6,6 @@ import httpx
 from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
-from django.db import IntegrityError
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -142,7 +141,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         category = await sync_to_async(FeedCategory.objects.get_first_for_user)(
             request.user, form.cleaned_data.get("category")
         )
-        feed = await sync_to_async(Feed.objects.create_from_metadata)(
+        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_medata,
             request.user,
             form.cleaned_data["refresh_delay"],
@@ -159,9 +158,6 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             ),
         )
         return HTTPStatus.NOT_ACCEPTABLE, form
-    except IntegrityError:
-        messages.error(request, _("You are already subscribed to this feed."))
-        return HTTPStatus.CONFLICT, form
     except NoFeedUrlFoundError:
         messages.error(request, _("Failed to find a feed URL on the supplied page."))
         return HTTPStatus.BAD_REQUEST, form
@@ -192,15 +188,19 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             ),
         )
         return HTTPStatus.BAD_REQUEST, form
-    else:
-        # Empty form after success.
-        form = await _get_subscribe_to_feed_form(data=None, user=request.user)
-        messages.success(
-            request,
-            format_html(
-                str(_("Feed '<a href=\"{}\">{}</a>' added")),
-                str(reverse("feeds:feed_articles", kwargs={"feed_id": feed.id})),
-                feed.title,
-            ),
-        )
-        return HTTPStatus.CREATED, form
+
+    if not created:
+        messages.error(request, _("You are already subscribed to this feed."))
+        return HTTPStatus.CONFLICT, form
+
+    # Empty form after success.
+    form = await _get_subscribe_to_feed_form(data=None, user=request.user)
+    messages.success(
+        request,
+        format_html(
+            str(_("Feed '<a href=\"{}\">{}</a>' added")),
+            str(reverse("feeds:feed_articles", kwargs={"feed_id": feed.id})),
+            feed.title,
+        ),
+    )
+    return HTTPStatus.CREATED, form

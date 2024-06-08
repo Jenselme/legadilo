@@ -4,7 +4,7 @@ from pprint import pprint
 from django.core.management import CommandError
 from django.core.management.base import CommandParser
 
-from legadilo.feeds.services.feed_parsing import build_feed_data, parse_feed
+from legadilo.feeds.services.feed_parsing import build_feed_data_from_parsed_feed, parse_feed
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.validators import is_url_valid
@@ -30,7 +30,7 @@ class Command(AsyncCommand):
     async def run(self, *args, **options):
         file_content = await self._read_feed(options["feed_file"][0])
         parsed_feed = parse_feed(file_content, resolve_relative_uris=True, sanitize_html=False)
-        feed_data = build_feed_data(parsed_feed, options["feed_file"][0])
+        feed_data = build_feed_data_from_parsed_feed(parsed_feed, options["feed_file"][0])
 
         print(  # noqa: T201 print found
             f"Feed {feed_data.title} ({feed_data.feed_type}) about {feed_data.description} "

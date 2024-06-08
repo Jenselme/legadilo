@@ -1,8 +1,9 @@
 from collections.abc import Callable
+from typing import Any
 
 import pytest
 
-from legadilo.reading.services.article_fetching import get_article_from_url
+from legadilo.reading.services.article_fetching import build_article_data, get_article_from_url
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
 
@@ -78,5 +79,58 @@ async def test_get_article_from_url_process_fixture(
     )
 
     article_data = await get_article_from_url(url)
+
+    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
+
+
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "<p>source article title</p>",
+                "title": "<p>Title</p>",
+                "summary": """<p>Summary <span>?</span> <img src="/toto" /> </p>""",
+                "content": """<p>C <span>?</span> <img src="/t" /> <script>alert()</script></p>""",
+                "authors": ["<span>me</span>"],
+                "contributors": ["<span>me</span>"],
+                "tags": ["<span>tag</span>"],
+                "link": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "<p>Hi there!</p>",
+                "published_at": None,
+                "updated_at": None,
+                "language": "<span>en</span>",
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="full-with-required-escaping",
+        ),
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "<p>source article title</p>",
+                "title": "<p>Title</p>",
+                "summary": "",
+                "content": """<p>C <span>?</span> <img src="/t" /> <script>alert()</script></p>""",
+                "authors": ["<span>me</span>"],
+                "contributors": ["<span>me</span>"],
+                "tags": ["<span>tag</span>"],
+                "link": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "<p>Hi there!</p>",
+                "published_at": None,
+                "updated_at": None,
+                "language": "<span>en</span>",
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="summary-missing",
+        ),
+    ],
+)
+def test_build_article_data(parameters: dict[str, Any], snapshot):
+    article_data = build_article_data(**parameters)
 
     snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")

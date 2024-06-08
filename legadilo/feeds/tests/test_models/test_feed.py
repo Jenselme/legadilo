@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 import pytest
 import time_machine
 from asgiref.sync import async_to_sync
-from django.db import IntegrityError
 
 from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
@@ -178,9 +177,32 @@ class TestFeedManager:
 
         assert list(articles_qs) == [article_of_feed]
 
+    def test_recreate_feed_from_data(self, user, django_assert_num_queries):
+        existing_feed = FeedFactory(user=user)
+
+        with django_assert_num_queries(3):
+            feed, created = Feed.objects.create_from_metadata(
+                FeedData(
+                    feed_url=existing_feed.feed_url,
+                    site_url="https://example.com",
+                    title="Awesome website",
+                    description="A description",
+                    feed_type=feeds_constants.SupportedFeedType.atom,
+                    etag="W/etag",
+                    last_modified=None,
+                    articles=[],
+                ),
+                user,
+                feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                [],
+            )
+
+        assert feed == existing_feed
+        assert not created
+
     def test_create_from_feed_data(self, user, django_assert_num_queries):
-        with django_assert_num_queries(12):
-            feed = Feed.objects.create_from_metadata(
+        with django_assert_num_queries(15):
+            feed, created = Feed.objects.create_from_metadata(
                 FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
                     site_url="https://example.com",
@@ -213,6 +235,7 @@ class TestFeedManager:
                 [],
             )
 
+        assert created
         assert Feed.objects.all().count() == self.initial_feed_count + 1
         assert feed.id > 0
         assert feed.tags.count() == 0
@@ -236,8 +259,8 @@ class TestFeedManager:
     def test_create_from_metadata_with_tags(self, user, django_assert_num_queries):
         tag = TagFactory()
 
-        with django_assert_num_queries(15):
-            feed = Feed.objects.create_from_metadata(
+        with django_assert_num_queries(18):
+            feed, _ = Feed.objects.create_from_metadata(
                 FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
                     site_url="https://example.com",
@@ -288,28 +311,6 @@ class TestFeedManager:
         article = Article.objects.first()
         assert article is not None
         assert list(article.tags.all()) == [tag]
-
-    def test_cannot_create_duplicated_feed_for_same_user(self, user):
-        with pytest.raises(IntegrityError) as execinfo:
-            Feed.objects.create_from_metadata(
-                FeedData(
-                    feed_url=self.default_feed_url,
-                    site_url="https://example.com",
-                    title="Awesome website",
-                    description="A description",
-                    feed_type=feeds_constants.SupportedFeedType.atom,
-                    etag="W/etag",
-                    last_modified=None,
-                    articles=[],
-                ),
-                user,
-                feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
-                [],
-            )
-
-        assert 'duplicate key value violates unique constraint "feeds_feed_feed_url_unique"' in str(
-            execinfo.value
-        )
 
     def test_can_create_duplicated_feed_for_different_user(self, user):
         other_user = UserFactory()

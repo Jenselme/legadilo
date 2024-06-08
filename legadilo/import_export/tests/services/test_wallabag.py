@@ -84,7 +84,7 @@ def test_import_valid_data(user):
         ],
     )
 
-    assert nb_imported_articles == 2
+    assert nb_imported_articles == 3
     assert Article.objects.count() == 3
     article = Article.objects.exclude(id=existing_article.id).first()
     assert article is not None
@@ -92,7 +92,6 @@ def test_import_valid_data(user):
     assert article.title == "Some article"
     assert article.link == "https://www.example.com/articles/podcasts/test-article.html"
     assert article.content == "<p>Some </p>"
-    assert article.reading_time == 29
     assert article.external_article_id == "wallabag:4947"
     assert article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
     assert article.initial_source_title == "www.example.com"

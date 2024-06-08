@@ -9,9 +9,7 @@ from urllib.parse import urlparse
 
 import httpx
 from asgiref.sync import async_to_sync, sync_to_async
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from slugify import slugify
 
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
@@ -19,18 +17,18 @@ from legadilo.feeds.services.feed_parsing import (
     FeedFileTooBigError,
     InvalidFeedFileError,
     NoFeedUrlFoundError,
+    build_feed_data,
     get_feed_data,
 )
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
-from legadilo.reading.services.article_fetching import get_fallback_summary_from_content
+from legadilo.reading.services.article_fetching import build_article_data
 from legadilo.users.models import User
 from legadilo.utils.http import get_rss_async_client
-from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
-from legadilo.utils.text import get_nb_words_from_html
+from legadilo.utils.security import full_sanitize
 from legadilo.utils.time import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid, language_code_validator
+from legadilo.utils.validators import is_url_valid
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +117,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
         async with get_rss_async_client() as client:
             feed_data = await get_feed_data(row["feed_url"], client=client)
 
-        feed = await sync_to_async(Feed.objects.create_from_metadata)(
+        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_data,
             user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
@@ -127,7 +125,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
             category=category,
         )
         feed_url_in_file_to_true_feed_url[row["feed_url"]] = feed
-        return feed, True
+        return feed, created
     except (
         httpx.HTTPError,
         NoFeedUrlFoundError,
@@ -138,20 +136,27 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
         logger.error(
             f"Failed to import feed {row["feed_url"]} Created with basic data and disabled."
         )
-        feed, created = await Feed.objects.aget_or_create(
+        feed_data = build_feed_data(
             feed_url=row["feed_url"],
-            user=user,
-            defaults={
-                "site_url": row["feed_site_url"],
-                "title": full_sanitize(row["feed_title"]),
-                "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
-                "description": "",
-                "feed_type": feeds_constants.SupportedFeedType.rss,
-                "category": category,
-                "enabled": False,
-                "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
-            },
+            site_url=row["feed_site_url"],
+            title=row["feed_title"],
+            description="",
+            feed_type=feeds_constants.SupportedFeedType.rss,
+            etag="",
+            last_modified=None,
+            articles=[],
         )
+        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
+            feed_data,
+            user=user,
+            refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+            tags=[],
+            category=category,
+        )
+        if created:
+            feed.disable("Failed to reach feed URL while importing an OPML file.")
+            await feed.asave()
+
         feed_url_in_file_to_true_feed_url[row["feed_url"]] = feed
         return feed, created
     except IntegrityError:
@@ -160,49 +165,37 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
 
 
 def _import_article(user, feed, row):
-    title = full_sanitize(row["article_title"])[: reading_constants.ARTICLE_TITLE_MAX_LENGTH]
-    content = sanitize_keep_safe_tags(row["article_content"])
-
-    try:
-        language = full_sanitize(row["article_lang"])
-        language_code_validator(language)
-    except ValidationError:
-        language = ""
-
-    article, created = Article.objects.get_or_create(
-        user=user,
+    article_data = build_article_data(
+        external_article_id=f"custom_csv:{row["article_id"]}",
+        source_title=feed.title if feed else urlparse(row["article_link"]).netloc,
+        title=row["article_title"],
+        summary="",
+        content=row["article_content"],
+        authors=_safe_json_parse(row["article_authors"], []),
+        contributors=[],
+        tags=_safe_json_parse(row["article_tags"], []),
         link=row["article_link"],
-        defaults={
-            "title": title,
-            "slug": slugify(title),
-            "summary": get_fallback_summary_from_content(content),
-            "content": content,
-            "reading_time": get_nb_words_from_html(content) // user.settings.default_reading_time,
-            "authors": [
-                full_sanitize(author) for author in _safe_json_parse(row["article_authors"], [])
-            ],
-            "external_tags": [
-                full_sanitize(tag) for tag in _safe_json_parse(row["article_tags"], [])
-            ],
-            "published_at": safe_datetime_parse(row["article_date_published"] or None),
-            "updated_at": safe_datetime_parse(row["article_date_updated"] or None),
-            "initial_source_type": reading_constants.ArticleSourceType.FEED
-            if feed
-            else reading_constants.ArticleSourceType.MANUAL,
-            "initial_source_title": feed.title
-            if feed
-            else urlparse(row["article_link"]).netloc[:100],
-            "external_article_id": f"custom_csv:{row["article_id"]}",
-            "read_at": safe_datetime_parse(row["article_read_at"] or None),
-            "is_favorite": _get_bool(row["article_is_favorite"]),
-            "language": language,
-        },
+        preview_picture_url="",
+        preview_picture_alt="",
+        published_at=safe_datetime_parse(row["article_date_published"]),
+        updated_at=safe_datetime_parse(row["article_date_updated"]),
+        language=row["article_lang"],
+        read_at=safe_datetime_parse(row["article_read_at"]),
+        is_favorite=_get_bool(row["article_is_favorite"]),
+    )
+    articles = Article.objects.update_or_create_from_articles_list(
+        user=user,
+        articles_data=[article_data],
+        tags=[],
+        source_type=reading_constants.ArticleSourceType.FEED
+        if feed
+        else reading_constants.ArticleSourceType.MANUAL,
     )
 
     if feed:
-        FeedArticle.objects.get_or_create(feed=feed, article=article)
+        FeedArticle.objects.get_or_create(feed=feed, article=articles[0])
 
-    return created
+    return True
 
 
 def _get_bool(value):

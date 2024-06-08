@@ -10,20 +10,18 @@ from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
-from django.core.exceptions import ValidationError
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 
-from legadilo.reading import constants as reading_constants
 from legadilo.reading.services.article_fetching import (
     ArticleData,
-    get_fallback_summary_from_content,
+    build_article_data,
     parse_tags_list,
 )
-from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
+from legadilo.utils.security import full_sanitize
 
 from ...utils.time import dt_to_http_date
-from ...utils.validators import language_code_validator, normalize_url
+from ...utils.validators import normalize_url
 from .. import constants
 
 logger = logging.getLogger(__name__)
@@ -39,6 +37,29 @@ class FeedData:
     etag: str
     last_modified: datetime | None
     articles: list[ArticleData]
+
+
+def build_feed_data(  # noqa: PLR0913 too many arguments
+    *,
+    feed_url: str,
+    site_url: str,
+    title: str,
+    description: str,
+    feed_type: constants.SupportedFeedType,
+    etag: str,
+    last_modified: datetime | None,
+    articles: list[ArticleData],
+) -> FeedData:
+    return FeedData(
+        feed_url=feed_url,
+        site_url=site_url,
+        title=full_sanitize(title)[: constants.FEED_TITLE_MAX_LENGTH],
+        description=full_sanitize(description),
+        feed_type=feed_type,
+        articles=articles,
+        etag=etag,
+        last_modified=last_modified,
+    )
 
 
 class NoFeedUrlFoundError(Exception):
@@ -83,12 +104,12 @@ async def get_feed_data(
             client, url, etag=etag, last_modified=last_modified
         )
 
-    return build_feed_data(parsed_feed, str(resolved_url))
+    return build_feed_data_from_parsed_feed(parsed_feed, str(resolved_url))
 
 
-def build_feed_data(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
+def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
     feed_title = full_sanitize(parsed_feed.feed.get("title", ""))
-    return FeedData(
+    return build_feed_data(
         feed_url=resolved_url,
         site_url=_normalize_found_link(parsed_feed.feed.get("link", resolved_url)),
         title=feed_title,
@@ -175,9 +196,9 @@ def _parse_articles_in_feed(
             article_link = _get_article_link(feed_url, entry)
             content = _get_article_content(entry)
             articles_data.append(
-                ArticleData(
-                    external_article_id=full_sanitize(entry.get("id", "")),
-                    title=full_sanitize(entry.title),
+                build_article_data(
+                    external_article_id=entry.get("id", ""),
+                    title=entry.title,
                     summary=_get_summary(article_link, entry, content),
                     content=content,
                     authors=_get_article_authors(entry),
@@ -206,12 +227,7 @@ def _get_summary(article_url: str, entry, content: str) -> str:
     if not summary and _is_youtube_link(article_url):
         summary = _get_preview_picture_alt(entry)
 
-    if not summary and content:
-        summary = get_fallback_summary_from_content(content)
-
-    return sanitize_keep_safe_tags(
-        summary, extra_tags_to_cleanup=reading_constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
-    )
+    return summary
 
 
 def _is_youtube_link(link: str) -> bool:
@@ -229,16 +245,16 @@ def _is_youtube_link(link: str) -> bool:
 
 def _get_article_authors(entry):
     if authors := entry.get("authors", []):
-        return [full_sanitize(author["name"]) for author in authors if author.get("name")]
+        return [author["name"] for author in authors if author.get("name")]
 
     if author := entry.get("author", ""):
-        return [full_sanitize(author)]
+        return [author]
 
     return []
 
 
 def _get_article_contributors(entry):
-    return [full_sanitize(contributor["name"]) for contributor in entry.get("contributors", [])]
+    return [contributor["name"] for contributor in entry.get("contributors", [])]
 
 
 def _get_article_content(entry):
@@ -247,7 +263,7 @@ def _get_article_content(entry):
     if content_entry.get("type") == "application/xhtml+xml":
         content_value = unescape(content_value)
 
-    return sanitize_keep_safe_tags(content_value)
+    return content_value
 
 
 def _get_article_content_entry(entry):
@@ -260,17 +276,11 @@ def _get_article_content_entry(entry):
 
 def _get_language(parsed_feed, entry):
     content_entry = _get_article_content_entry(entry)
-    try:
-        language = (
-            content_entry.get("language")
-            or content_entry.get("lang")
-            or parsed_feed["feed"].get("language")
-        )
-        language_code_validator(language)
-    except ValidationError:
-        language = ""
-
-    return language
+    return (
+        content_entry.get("language")
+        or content_entry.get("lang")
+        or parsed_feed["feed"].get("language")
+    )
 
 
 def _get_articles_tags(entry):
@@ -350,7 +360,7 @@ def _get_preview_picture_alt(entry) -> str:
     ):
         preview_picture_alt += f" {media_credit_content}"
 
-    return full_sanitize(preview_picture_alt.strip())
+    return preview_picture_alt.strip()
 
 
 def _feed_time_to_datetime(time_value: time.struct_time):

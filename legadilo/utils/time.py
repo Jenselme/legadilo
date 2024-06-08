@@ -27,7 +27,7 @@ def utcdt(  # noqa: PLR0913,PLR0917 (too many arguments)
 
 
 def safe_datetime_parse(data: Any) -> datetime | None:
-    if data is None:
+    if not data:
         return None
 
     try:

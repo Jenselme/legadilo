@@ -210,7 +210,7 @@
     "is_favorite": false,
     "is_for_later": false,
     "is_read": false,
-    "language": "",
+    "language": "en",
     "link": "https://example.com/articles/with-tags",
     "opened_at": null,
     "preview_picture_alt": "",

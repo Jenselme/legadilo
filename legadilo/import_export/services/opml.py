@@ -123,14 +123,15 @@ async def _process_feed(user, client, outline, category=None):
     try:
         logger.debug(f"Importing feed {outline.feed_url}")
         feed_data = await get_feed_data(outline.feed_url, client=client)
-        await sync_to_async(Feed.objects.create_from_metadata)(
+        _feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_data,
             user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
             tags=[],
             category=category,
         )
-        nb_imported_feeds += 1
+        if created:
+            nb_imported_feeds += 1
         logger.debug(f"Feed {outline.feed_url} imported successfully with all its metadata")
     except httpx.HTTPError:
         logger.exception(

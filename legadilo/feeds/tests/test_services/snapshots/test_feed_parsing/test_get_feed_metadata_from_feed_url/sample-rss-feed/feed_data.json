@@ -1,15 +1,18 @@
 {
   "articles": [
     {
+      "annotations": [],
       "authors": [],
       "content": "",
       "contributors": [],
       "external_article_id": "http://example.org/entry/3",
+      "is_favorite": false,
       "language": "",
       "link": "http://example.org/entry/3",
       "preview_picture_alt": "",
       "preview_picture_url": "",
       "published_at": "2002-09-05T00:00:01+00:00",
+      "read_at": null,
       "source_title": "Sample Feed",
       "summary": "Watch out for <span>nasty\n                tricks</span>",
       "tags": [],

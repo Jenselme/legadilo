@@ -35,7 +35,7 @@ def test_import_empty_file(user):
 
 
 @pytest.mark.django_db()
-@time_machine.travel("2024-05-17 13:00:00")
+@time_machine.travel("2024-05-17 13:00:00", tick=False)
 def test_import_custom_csv(user, httpx_mock, snapshot):
     feed_category = FeedCategoryFactory(
         user=user, title="Existing category", slug="existing-category"
@@ -72,7 +72,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
     )
 
-    assert nb_imported_articles == 5
+    assert nb_imported_articles == 6
     assert nb_imported_feeds == 3
     assert nb_imported_categories == 2
     assert Article.objects.count() == 8

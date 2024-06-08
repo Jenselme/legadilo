@@ -1,5 +1,5 @@
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -33,6 +33,73 @@ class ArticleData:
     published_at: datetime | None
     updated_at: datetime | None
     language: str
+    annotations: list[str] | tuple[str] = field(default_factory=list)
+    read_at: datetime | None = None
+    is_favorite: bool = False
+
+
+def build_article_data(  # noqa: PLR0913 too many arguments
+    *,
+    external_article_id: str,
+    source_title: str,
+    title: str,
+    summary: str,
+    content: str,
+    authors: list[str],
+    contributors: list[str],
+    tags: list[str],
+    link: str,
+    preview_picture_url: str,
+    preview_picture_alt: str,
+    published_at: datetime | None,
+    updated_at: datetime | None,
+    language: str,
+    annotations: list[str] | tuple[str] = (),  # type: ignore[assignment]
+    read_at: datetime | None = None,
+    is_favorite: bool = False,
+) -> ArticleData:
+    if not summary and content:
+        summary = _get_fallback_summary_from_content(content)
+
+    try:
+        language = full_sanitize(language)
+        language_code_validator(language)
+    except (ValidationError, TypeError):
+        language = ""
+
+    return ArticleData(
+        external_article_id=full_sanitize(external_article_id)[
+            : constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH
+        ],
+        source_title=full_sanitize(source_title)[: constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH],
+        title=full_sanitize(title)[: constants.ARTICLE_TITLE_MAX_LENGTH],
+        summary=sanitize_keep_safe_tags(
+            summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
+        ),
+        content=sanitize_keep_safe_tags(content),
+        authors=_sanitize_lists(authors),
+        contributors=_sanitize_lists(contributors),
+        tags=_sanitize_lists(tags),
+        link=link,
+        preview_picture_url=preview_picture_url,
+        preview_picture_alt=full_sanitize(preview_picture_alt),
+        published_at=published_at,
+        updated_at=updated_at,
+        language=full_sanitize(language)[: constants.LANGUAGE_CODE_MAX_LENGTH],
+        annotations=annotations,
+        read_at=read_at,
+        is_favorite=is_favorite,
+    )
+
+
+def _sanitize_lists(alist: list[str]) -> list[str]:
+    cleaned_list = []
+    for item in alist:
+        cleaned_item = full_sanitize(item.strip())
+        if cleaned_item:
+            cleaned_list.append(cleaned_item)
+
+    return cleaned_list
 
 
 class ArticleTooBigError(Exception):
@@ -42,7 +109,7 @@ class ArticleTooBigError(Exception):
 async def get_article_from_url(url: str) -> ArticleData:
     url, soup, content_language = await _get_page_content(url)
 
-    return _build_article_data(
+    return _build_article_data_from_soup(
         url,
         soup,
         content_language,
@@ -89,12 +156,12 @@ def _parse_http_equiv_refresh(value: str) -> str | None:
     return None
 
 
-def _build_article_data(
+def _build_article_data_from_soup(
     fetched_url: str, soup: BeautifulSoup, content_language: str | None
 ) -> ArticleData:
     content = _get_content(soup)
 
-    return ArticleData(
+    return build_article_data(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
         title=_get_title(soup),
@@ -129,7 +196,7 @@ def _get_title(soup: BeautifulSoup) -> str:
     elif (h1_tag := soup.find("h1")) and h1_tag.text:
         title = h1_tag.text
 
-    return full_sanitize(title)
+    return title
 
 
 def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
@@ -141,7 +208,7 @@ def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
     elif (title_tag := soup.find("title")) and title_tag.text:
         site_title = title_tag.text
 
-    return full_sanitize(site_title)
+    return site_title
 
 
 def _get_summary(soup: BeautifulSoup, content: str) -> str:
@@ -159,15 +226,10 @@ def _get_summary(soup: BeautifulSoup, content: str) -> str:
     ) and itemprop_description.get("content"):
         summary = itemprop_description.get("content")
 
-    if not summary and content:
-        summary = get_fallback_summary_from_content(content)
-
-    return sanitize_keep_safe_tags(
-        summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
-    )
+    return summary
 
 
-def get_fallback_summary_from_content(content: str) -> str:
+def _get_fallback_summary_from_content(content: str) -> str:
     return truncatewords_html(
         sanitize_keep_safe_tags(
             content,
@@ -195,7 +257,7 @@ def _get_content(soup: BeautifulSoup) -> str:
 
     for tag_name in ["noscript", "h1", "footer", "header", "nav", "aside"]:
         _extract_tag_from_content(article_content, tag_name)
-    return sanitize_keep_safe_tags(str(article_content))
+    return str(article_content)
 
 
 def _parse_multiple_articles(soup: BeautifulSoup):
@@ -235,8 +297,7 @@ def _get_authors(soup: BeautifulSoup) -> list[str]:
     if (meta_author := soup.find("meta", {"name": "author"})) and meta_author.get("content"):
         authors = [meta_author.get("content")]
 
-    cleaned_authors = [full_sanitize(author.strip()) for author in authors]
-    return [author for author in cleaned_authors if author]
+    return authors
 
 
 def _get_tags(soup: BeautifulSoup) -> list[str]:
@@ -331,11 +392,5 @@ def _get_updated_at(soup: BeautifulSoup) -> datetime | None:
 def _get_lang(soup: BeautifulSoup, content_language: str | None) -> str:
     if not soup.find("html") or (language := soup.find("html").get("lang")) is None:
         language = content_language
-
-    try:
-        language = full_sanitize(language)
-        language_code_validator(language)
-    except (ValidationError, TypeError):
-        language = ""
 
     return language
