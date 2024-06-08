@@ -88,7 +88,12 @@ def _display_list_of_articles(
         "articles_paginator": articles_paginator,
         "from_url": from_url,
     }
-    headers = {"HX-Push-Url": from_url} if must_do_full_reload else {}
+    cached_header = {
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+    }
+    htmx_headers = {"HX-Push-Url": from_url} if must_do_full_reload else {}
+    headers = cached_header | htmx_headers
 
     if request.htmx and not must_do_full_reload:
         return TemplateResponse(
@@ -96,6 +101,7 @@ def _display_list_of_articles(
             "reading/list_of_articles.html#article-pagination",
             response_ctx,
             status=status,
+            headers=headers,
         )
 
     return TemplateResponse(
