@@ -219,7 +219,7 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 # ------------------------------------------------------------------------------
 django = "5.0.6"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.63.2"  # https://github.com/pennersr/django-allauth
+django-allauth = "0.63.3"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.1"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "10.3"  # https://github.com/anymail/django-anymail
@@ -229,7 +229,7 @@ django-extra-checks = "0.14.0"  # https://github.com/kalekseev/django-extra-chec
 django-csp = "3.8"  # https://django-csp.readthedocs.io/en/latest/index.html
 django-axes = "6.4.0"  # https://github.com/jazzband/django-axes
 django-htmx = "1.17.3"  # https://django-htmx.readthedocs.io/en/latest/
-django-template-partials = "24.1"  # https://github.com/carltongibson/django-template-partials
+django-template-partials = "24.2"  # https://github.com/carltongibson/django-template-partials
 
 # Project
 # ------------------------------------------------------------------------------
@@ -248,7 +248,7 @@ python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.2.1"}
+sentry-sdk = {extras = ["django"], version = "^2.5.1"}
 
 
 [tool.poetry.group.dev]
@@ -260,7 +260,7 @@ ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
-pytest = "8.2.1"  # https://github.com/pytest-dev/pytest
+pytest = "8.2.2"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
 pytest-asyncio = "^0.23.7"  # https://github.com/pytest-dev/pytest-asyncio/
@@ -278,13 +278,13 @@ myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
 # Code quality
 # ------------------------------------------------------------------------------
-coverage = "7.5.1"  # https://github.com/nedbat/coveragepy
+coverage = "7.5.3"  # https://github.com/nedbat/coveragepy
 pre-commit = "3.7.1"  # https://github.com/pre-commit/pre-commit
 
 # Django
 # ------------------------------------------------------------------------------
 factory-boy = "3.3.0"  # https://github.com/FactoryBoy/factory_boy
-django-debug-toolbar = "4.3.0"  # https://github.com/jazzband/django-debug-toolbar
+django-debug-toolbar = "4.4.2"  # https://github.com/jazzband/django-debug-toolbar
 django-coverage-plugin = "3.1.0"  # https://github.com/nedbat/django_coverage_plugin
 pytest-django = "4.8.0"  # https://github.com/pytest-dev/pytest-django
 django-browser-reload = "1.12.1"  # https://pypi.org/project/django-browser-reload/
@@ -297,7 +297,7 @@ optional = true
 [tool.poetry.group.typing.dependencies]
 types-python-dateutil = "^2.9.0.20240316"
 mypy = "1.10.0"  # https://github.com/python/mypy
-django-stubs = { extras = ["compatible-mypy"], version = "5.0.0" }  # https://github.com/typeddjango/django-stubs
+django-stubs = { extras = ["compatible-mypy"], version = "5.0.2" }  # https://github.com/typeddjango/django-stubs
 
 [build-system]
 requires = ["poetry-core"]
