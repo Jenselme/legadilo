@@ -61,11 +61,17 @@
     }
   };
 
+  let tooltips = [];
   const setupTooltips = () => {
+    tooltips.forEach((tooltip) => tooltip.dispose());
+
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
+    tooltips = [...tooltipTriggerList].map((tooltipTriggerEl) => {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
   };
 
   window.addEventListener("DOMContentLoaded", setupHtmxConfirmWithPopup);
   window.addEventListener("DOMContentLoaded", setupTooltips);
+  window.addEventListener("htmx:afterOnLoad", setupTooltips);
 })();

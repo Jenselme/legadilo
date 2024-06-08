@@ -93,7 +93,7 @@ def _display_list_of_articles(
     if request.htmx and not must_do_full_reload:
         return TemplateResponse(
             request,
-            "reading/partials/article_paginator_page.html",
+            "reading/list_of_articles.html#article-pagination",
             response_ctx,
             status=status,
         )

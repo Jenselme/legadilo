@@ -84,7 +84,17 @@
         clearTimeout(timeoutId);
       }
 
-      timeoutId = setTimeout(() => location.reload(), timeout);
+      timeoutId = setTimeout(() => {
+        // For desktop.
+        const scrollable = document.querySelector(".scrollable");
+        if (scrollable) {
+          scrollable.scrollTo(0, 0);
+        }
+        // For mobile.
+        window.scroll(0, 0);
+
+        location.reload();
+      }, timeout);
     };
 
     runRefresh();

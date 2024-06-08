@@ -1,7 +1,12 @@
-<div hx-swap-oob="innerHTML:#reading-list-group">{% include "reading/partials/reading_list_group.html" %}</div>
-<div hx-swap-oob="innerHTML:#reading-list-dropdown-menu">
-    {% include "reading/partials/reading_list_dropdown_menu.html" %}
+<div hx-swap-oob="innerHTML:#reading-list-group">
+    {% include "reading/list_of_articles.html#reading-list-group" %}
 </div>
-{% if article.pk %}
+<div hx-swap-oob="innerHTML:#reading-list-dropdown-menu">
+    {% include "reading/list_of_articles.html#reading-list-group" %}
+</div>
+{% if count_articles_of_current_reading_list %}
+    <div hx-swap-oob="innerHTML:#articles-in-total">{% include "reading/list_of_articles.html#articles-in-total" %}</div>
+{% endif %}
+{% if not delete_article_card %}
     {% include "reading/partials/article_card.html" %}
 {% endif %}

@@ -198,19 +198,22 @@ class FeedManager(models.Manager["Feed"]):
         return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids))
 
     @transaction.atomic()
-    def create_from_metadata(
+    def create_from_metadata(  # noqa: PLR0913 too many arguments
         self,
         feed_metadata: FeedData,
         user: User,
         refresh_delay: feeds_constants.FeedRefreshDelays,
         tags: list[Tag],
         category: FeedCategory | None = None,
+        *,
+        open_original_link_by_default=False,
     ) -> Feed:
         feed = self.create(
             feed_url=feed_metadata.feed_url,
             site_url=feed_metadata.site_url,
             title=feed_metadata.title[: feeds_constants.FEED_TITLE_MAX_LENGTH],
             refresh_delay=refresh_delay,
+            open_original_link_by_default=open_original_link_by_default,
             description=feed_metadata.description,
             feed_type=feed_metadata.feed_type,
             category=category,
@@ -275,6 +278,7 @@ class Feed(models.Model):
         max_length=100,
         default=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
+    open_original_link_by_default = models.BooleanField(default=False)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
     category = models.ForeignKey(

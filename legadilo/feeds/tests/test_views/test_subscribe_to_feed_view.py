@@ -29,6 +29,7 @@ class TestSubscribeToFeedView:
         self.sample_payload = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.BIHOURLY.name,
+            "open_original_link_by_default": True,
         }
         self.existing_tag = TagFactory(user=user)
         self.sample_payload_with_tags = {
@@ -63,15 +64,15 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
         messages = list(get_messages(response.wsgi_request))
+        feed = Feed.objects.get()
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Feed 'Sample Feed' added",
+                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
-        assert Feed.objects.count() == 1
-        feed = Feed.objects.get()
         assert feed.tags.count() == 0
+        assert feed.open_original_link_by_default
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
@@ -89,14 +90,14 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.CREATED, response.context["form"].errors
         assert response.template_name == "feeds/subscribe_to_feed.html"
         messages = list(get_messages(response.wsgi_request))
+        feed = Feed.objects.get()
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Feed 'Sample Feed' added",
+                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
-        assert Feed.objects.count() == 1
-        feed = Feed.objects.get()
+        assert not feed.open_original_link_by_default
         assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
         assert Article.objects.count() > 0
         article = Article.objects.first()
@@ -124,14 +125,14 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
         messages = list(get_messages(response.wsgi_request))
+        feed = Feed.objects.get()
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Feed 'Sample Feed' added",
+                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
         assert Feed.objects.count() == 1
-        feed = Feed.objects.get()
         assert feed.tags.count() == 0
         assert feed.category == category
         assert Article.objects.count() > 0
@@ -159,13 +160,13 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
         messages = list(get_messages(response.wsgi_request))
+        feed = Feed.objects.get()
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Feed 'Sample Feed' added",
+                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
-        assert Feed.objects.count() == 1
         assert FeedUpdate.objects.count() == 1
 
     def test_invalid_form(self, logged_in_sync_client):

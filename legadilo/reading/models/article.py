@@ -139,10 +139,24 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             ),
         )
 
+    def for_feed_links(self) -> Self:
+        return self.alias(
+            feed_ids=ArrayAgg("feeds__id", order="id"),
+            feed_slugs=ArrayAgg("feeds__slug", ordering="id"),
+            feed_open_original_link_by_default=ArrayAgg(
+                "feeds__open_original_link_by_default", ordering="id"
+            ),
+        ).annotate(
+            annot_feed_id=models.F("feed_ids__0"),
+            annot_feed_slug=models.F("feed_slugs__0"),
+            annot_open_original_by_default=models.F("feed_open_original_link_by_default__0"),
+        )
+
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
             self.for_user(reading_list.user)
             .for_current_tag_filtering()
+            .for_feed_links()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
             .default_order_by()
@@ -151,6 +165,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_tag(self, tag: Tag) -> Self:
         return (
             self.for_current_tag_filtering()
+            .for_feed_links()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
             .prefetch_related(_build_prefetch_article_tags())
             .default_order_by()
@@ -159,13 +174,18 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_external_tag(self, user: User, tag: str) -> Self:
         return (
             self.for_user(user)
+            .for_feed_links()
             .filter(external_tags__icontains=tag)
             .prefetch_related(_build_prefetch_article_tags())
             .default_order_by()
         )
 
     def for_feed(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags()).default_order_by()
+        return (
+            self.prefetch_related(_build_prefetch_article_tags())
+            .for_feed_links()
+            .default_order_by()
+        )
 
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags())

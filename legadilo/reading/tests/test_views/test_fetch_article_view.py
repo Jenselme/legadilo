@@ -46,14 +46,15 @@ class TestAddArticle:
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
         messages = list(get_messages(response.wsgi_request))
+        article = Article.objects.get()
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Article 'On the 3 musketeers' successfully added!",
+                message=f'Article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'
+                f"On the 3 musketeers</a>' successfully added!",
             )
         ]
         assert Article.objects.count() == 1
-        article = Article.objects.get()
         assert list(article.tags.all()) == []
 
     def test_add_article_with_tags(
@@ -67,14 +68,15 @@ class TestAddArticle:
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
         messages = list(get_messages(response.wsgi_request))
+        article = Article.objects.get()
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Article 'On the 3 musketeers' successfully added!",
+                message=f'Article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'
+                f"On the 3 musketeers</a>' successfully added!",
             )
         ]
         assert Article.objects.count() == 1
-        article = Article.objects.get()
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
             ("existing-tag", constants.TaggingReason.ADDED_MANUALLY),
             ("new", constants.TaggingReason.ADDED_MANUALLY),

@@ -55,7 +55,7 @@ class TestUpdateArticleView:
         assert not self.other_article.is_read
 
     def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
@@ -80,6 +80,96 @@ class TestUpdateArticleView:
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         self.article.refresh_from_db()
         assert self.article.is_read
+        assert b"<article" in response.content
+
+    def test_update_article_view_with_htmx_mark_for_later_reading_list_dont_include_for_later(
+        self, user, logged_in_sync_client, django_assert_num_queries
+    ):
+        reading_list_hide_for_later = ReadingListFactory(
+            user=user, for_later_status=constants.ForLaterStatus.ONLY_NOT_FOR_LATER
+        )
+
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                reverse(
+                    "reading:update_article",
+                    kwargs={
+                        "article_id": self.article.id,
+                        "update_action": constants.UpdateArticleActions.MARK_AS_FOR_LATER.name,
+                    },
+                ),
+                data={"displayed_reading_list_id": str(reading_list_hide_for_later.id)},
+                HTTP_REFERER="http://testserver/reading/",
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_action.html"
+        assert response.context["article"] == self.article
+        assert response.context["delete_article_card"]
+        assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
+        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
+        self.article.refresh_from_db()
+        assert self.article.is_for_later
+        assert b"<article" not in response.content
+
+    def test_update_article_view_with_htmx_mark_not_for_later_reading_list_include_only_for_later(
+        self, user, logged_in_sync_client, django_assert_num_queries
+    ):
+        reading_list_hide_for_later = ReadingListFactory(
+            user=user, for_later_status=constants.ForLaterStatus.ONLY_FOR_LATER
+        )
+
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                reverse(
+                    "reading:update_article",
+                    kwargs={
+                        "article_id": self.article.id,
+                        "update_action": constants.UpdateArticleActions.UNMARK_AS_FOR_LATER.name,
+                    },
+                ),
+                data={"displayed_reading_list_id": str(reading_list_hide_for_later.id)},
+                HTTP_REFERER="http://testserver/reading/",
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_action.html"
+        assert response.context["article"] == self.article
+        assert response.context["delete_article_card"]
+        assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
+        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
+        self.article.refresh_from_db()
+        assert not self.article.is_for_later
+        assert b"<article" not in response.content
+
+    def test_update_article_view_with_htmx_mark_for_later_reading_list_include_all(
+        self, user, logged_in_sync_client, django_assert_num_queries
+    ):
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                reverse(
+                    "reading:update_article",
+                    kwargs={
+                        "article_id": self.article.id,
+                        "update_action": constants.UpdateArticleActions.MARK_AS_FOR_LATER.name,
+                    },
+                ),
+                data={"displayed_reading_list_id": str(self.reading_list.id)},
+                HTTP_REFERER="http://testserver/reading/",
+                HTTP_HX_Request="true",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_action.html"
+        assert response.context["article"] == self.article
+        assert not response.context["delete_article_card"]
+        assert response["HX-Reswap"] == "innerHTML show:none"
+        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
+        self.article.refresh_from_db()
+        assert self.article.is_for_later
+        assert b"<article" in response.content
 
     def test_update_article_view_for_article_details_read_status_action(
         self, logged_in_sync_client, django_assert_num_queries
@@ -155,7 +245,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -180,6 +270,7 @@ class TestDeleteArticleView:
         assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         assert Article.objects.count() == 0
+        assert b"<article" not in response.content
 
     def test_delete_article_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
