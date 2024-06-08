@@ -260,7 +260,7 @@ ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
-pytest = "8.2.1"  # https://github.com/pytest-dev/pytest
+pytest = "8.2.2"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
 pytest-asyncio = "^0.23.7"  # https://github.com/pytest-dev/pytest-asyncio/
