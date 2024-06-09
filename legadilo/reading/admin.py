@@ -40,6 +40,7 @@ class ReadingListTagInline(admin.TabularInline):
 
 class ArticleFetchErrorInline(admin.TabularInline):
     model = ArticleFetchError
+    show_change_link = True
 
     def has_add_permission(self, request, obj=None):
         return False

@@ -42,6 +42,7 @@ class FeedUpdateInline(admin.TabularInline):
     model = FeedUpdate
     readonly_fields = ("created_at",)
     fields = ("created_at", "status", "error_message", "feed_last_modified", "feed_etag")
+    show_change_link = True
 
     def has_add_permission(self, request, obj=None):
         return False
