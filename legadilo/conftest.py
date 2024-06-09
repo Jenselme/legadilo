@@ -22,6 +22,7 @@ from legadilo.users.tests.factories import UserFactory
 
 @pytest.fixture(autouse=True)
 def _setup_settings(settings, tmpdir):
+    settings.IS_PRODUCTION = True
     # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
     settings.MEDIA_URL = "http://media.testserver"
     settings.MEDIA_ROOT = tmpdir.strpath

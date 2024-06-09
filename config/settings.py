@@ -9,6 +9,7 @@ import django
 import environ
 from django.contrib.messages import constants as messages
 from django.utils.translation import gettext_lazy as _
+from template_partials.apps import wrap_loaders
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # legadilo/
@@ -235,19 +236,11 @@ MEDIA_URL = "/media/"
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
-_BASE_LOADERS = [
-    (
-        "template_partials.loader.Loader",
-        [
-            "django.template.loaders.filesystem.Loader",
-            "django.template.loaders.app_directories.Loader",
-        ],
-    )
-]
 TEMPLATES = [
     {
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "NAME": "default-template-backend",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
         "DIRS": [str(APPS_DIR / "templates")],
         "OPTIONS": {
@@ -268,17 +261,10 @@ TEMPLATES = [
                 "feeds": "legadilo.reading.templatetags",
             },
             "debug": DEBUG,
-            "loaders": [
-                (
-                    "django.template.loaders.cached.Loader",
-                    _BASE_LOADERS,
-                ),
-            ]
-            if IS_PRODUCTION
-            else _BASE_LOADERS,
         },
     },
 ]
+wrap_loaders("default-template-backend")
 
 MESSAGE_TAGS = {
     messages.ERROR: "danger",
