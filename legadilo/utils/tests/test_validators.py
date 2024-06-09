@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import pytest
 from django.core.exceptions import ValidationError
 
@@ -78,18 +94,109 @@ def test_is_url_valid(sample_url: str, expected_is_valid: bool):
 
 
 @pytest.mark.parametrize(
-    ("url_to_normalize", "expected_normalized_url"),
+    ("base_url", "url_to_normalize", "expected_normalized_url"),
     [
-        pytest.param("https://example.com/toto", "https://example.com/toto", id="already-full-url"),
-        pytest.param("//example.com/toto", "https://example.com/toto", id="url-without-scheme"),
         pytest.param(
-            "example.com/toto", "https://example.com/toto", id="no-scheme-nor-double-slash"
+            "https://example.com",
+            "#toto",
+            "#toto",
+            id="anchor",
         ),
-        pytest.param("/toto", "https://example.com/toto", id="path-only"),
+        pytest.param(
+            "https://example.com",
+            "gemini://example.com/toto",
+            "gemini://example.com/toto",
+            id="other-protocol",
+        ),
+        pytest.param(
+            "https://example.com",
+            "https://example.com/toto",
+            "https://example.com/toto",
+            id="already-full-url",
+        ),
+        pytest.param(
+            "https://example.com",
+            "//example.com/toto",
+            "https://example.com/toto",
+            id="url-without-scheme",
+        ),
+        pytest.param(
+            "https://example.com",
+            "example.com/toto",
+            "https://example.com/toto",
+            id="no-scheme-nor-double-slash",
+        ),
+        pytest.param("https://example.com", "/toto", "https://example.com/toto", id="path-only"),
+        pytest.param(
+            "https://example.com",
+            "..",
+            "https://example.com/",
+            id="linux-link-dot-not-enough-path",
+        ),
+        pytest.param(
+            "https://example.com/some/article/1",
+            "..",
+            "https://example.com/some/article",
+            id="linux-link-dot",
+        ),
+        pytest.param(
+            "https://example.com/some/article/1/",
+            "..",
+            "https://example.com/some/article/",
+            id="linux-link-dot-trailing-slash",
+        ),
+        pytest.param(
+            "https://example.com/some/article/1",
+            "../toto",
+            "https://example.com/some/article/toto",
+            id="linux-link-dot-extra-path",
+        ),
+        pytest.param(
+            "https://example.com/article/1",
+            "http://example.com/photos/?gallery=Paris&photo=1",
+            "http://example.com/photos/?gallery=Paris&photo=1",
+            id="absolute-with-qs",
+        ),
+        pytest.param(
+            "https://example.com/article/1",
+            "/photos/?gallery=Paris&photo=1",
+            "https://example.com/photos/?gallery=Paris&photo=1",
+            id="relative-with-qs",
+        ),
+        pytest.param(
+            "https://example.com/article/1",
+            "?gallery=Paris&photo=1",
+            "https://example.com/?gallery=Paris&photo=1",
+            id="relative-with-qs-starts-with-?",
+        ),
+        pytest.param(
+            "https://example.com/article/1",
+            "http://example.com/photos/?gallery=Hong Kong 2008-02&photo=1",
+            "http://example.com/photos/?gallery=Hong%20Kong%202008-02&photo=1",
+            id="spaces-in-qs",
+        ),
+        pytest.param(
+            "https://example.com",
+            r"https://example.com\articles\1",
+            "https://example.com/articles/1",
+            id="backslash-instead-of-slash",
+        ),
+        pytest.param(
+            "https://example.com",
+            "https://example.com/articles/1.html",
+            "https://example.com/articles/1.html",
+            id="ends-with-html",
+        ),
+        pytest.param(
+            "https://example.com/toto/article.html",
+            "articles/1.svg",
+            "https://example.com/articles/1.svg",
+            id="no-starting-slash",
+        ),
     ],
 )
-def test_normalize_url(url_to_normalize: str, expected_normalized_url: str):
-    normalized_url = normalize_url("https://example.com", url_to_normalize)
+def test_normalize_url(base_url: str, url_to_normalize: str, expected_normalized_url: str):
+    normalized_url = normalize_url(base_url, url_to_normalize)
 
     assert normalized_url == expected_normalized_url
 

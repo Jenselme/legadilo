@@ -1,15 +1,18 @@
 {
   "articles": [
     {
+      "annotations": [],
       "authors": [],
       "content": "",
       "contributors": [],
       "external_article_id": "",
+      "is_favorite": false,
       "language": "",
       "link": "https://example.com/attack",
       "preview_picture_alt": "",
       "preview_picture_url": "",
       "published_at": null,
+      "read_at": null,
       "source_title": "Test attack",
       "summary": "&amp;ee",
       "tags": [],

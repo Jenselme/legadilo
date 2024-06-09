@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from http import HTTPStatus
 
 import httpx
@@ -58,7 +74,7 @@ class TestSubscribeToFeedView:
     ):
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(26):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -84,7 +100,7 @@ class TestSubscribeToFeedView:
     ):
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
-        with django_assert_num_queries(28):
+        with django_assert_num_queries(31):
             response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED, response.context["form"].errors
@@ -119,7 +135,7 @@ class TestSubscribeToFeedView:
         }
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(26):
             response = logged_in_sync_client.post(self.url, sample_payload_with_category)
 
         assert response.status_code == HTTPStatus.CREATED

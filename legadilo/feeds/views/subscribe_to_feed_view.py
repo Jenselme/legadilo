@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import json
 from http import HTTPMethod, HTTPStatus
 from typing import cast
@@ -6,7 +22,6 @@ import httpx
 from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
-from django.db import IntegrityError
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -142,7 +157,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         category = await sync_to_async(FeedCategory.objects.get_first_for_user)(
             request.user, form.cleaned_data.get("category")
         )
-        feed = await sync_to_async(Feed.objects.create_from_metadata)(
+        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_medata,
             request.user,
             form.cleaned_data["refresh_delay"],
@@ -159,9 +174,6 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             ),
         )
         return HTTPStatus.NOT_ACCEPTABLE, form
-    except IntegrityError:
-        messages.error(request, _("You are already subscribed to this feed."))
-        return HTTPStatus.CONFLICT, form
     except NoFeedUrlFoundError:
         messages.error(request, _("Failed to find a feed URL on the supplied page."))
         return HTTPStatus.BAD_REQUEST, form
@@ -192,15 +204,19 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             ),
         )
         return HTTPStatus.BAD_REQUEST, form
-    else:
-        # Empty form after success.
-        form = await _get_subscribe_to_feed_form(data=None, user=request.user)
-        messages.success(
-            request,
-            format_html(
-                str(_("Feed '<a href=\"{}\">{}</a>' added")),
-                str(reverse("feeds:feed_articles", kwargs={"feed_id": feed.id})),
-                feed.title,
-            ),
-        )
-        return HTTPStatus.CREATED, form
+
+    if not created:
+        messages.error(request, _("You are already subscribed to this feed."))
+        return HTTPStatus.CONFLICT, form
+
+    # Empty form after success.
+    form = await _get_subscribe_to_feed_form(data=None, user=request.user)
+    messages.success(
+        request,
+        format_html(
+            str(_("Feed '<a href=\"{}\">{}</a>' added")),
+            str(reverse("feeds:feed_articles", kwargs={"feed_id": feed.id})),
+            feed.title,
+        ),
+    )
+    return HTTPStatus.CREATED, form

@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 from asyncio import TaskGroup
 from pathlib import Path
@@ -123,14 +139,15 @@ async def _process_feed(user, client, outline, category=None):
     try:
         logger.debug(f"Importing feed {outline.feed_url}")
         feed_data = await get_feed_data(outline.feed_url, client=client)
-        await sync_to_async(Feed.objects.create_from_metadata)(
+        _feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
             feed_data,
             user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
             tags=[],
             category=category,
         )
-        nb_imported_feeds += 1
+        if created:
+            nb_imported_feeds += 1
         logger.debug(f"Feed {outline.feed_url} imported successfully with all its metadata")
     except httpx.HTTPError:
         logger.exception(

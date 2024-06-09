@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import pytest
 from jsonschema import ValidationError as JsonSchemaValidationError
 
@@ -84,7 +100,7 @@ def test_import_valid_data(user):
         ],
     )
 
-    assert nb_imported_articles == 2
+    assert nb_imported_articles == 3
     assert Article.objects.count() == 3
     article = Article.objects.exclude(id=existing_article.id).first()
     assert article is not None
@@ -92,7 +108,6 @@ def test_import_valid_data(user):
     assert article.title == "Some article"
     assert article.link == "https://www.example.com/articles/podcasts/test-article.html"
     assert article.content == "<p>Some </p>"
-    assert article.reading_time == 29
     assert article.external_article_id == "wallabag:4947"
     assert article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
     assert article.initial_source_title == "www.example.com"

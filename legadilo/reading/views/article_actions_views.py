@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
@@ -8,11 +24,11 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
-from legadilo.reading.templatetags import article_card_id
-from legadilo.reading.utils.views import (
+from legadilo.reading.services.views import (
     get_from_url_for_article_details,
     get_js_cfg_from_reading_list,
 )
+from legadilo.reading.templatetags import article_card_id
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.urls import add_query_params, validate_referer_url
 

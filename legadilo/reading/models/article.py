@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import annotations
 
 import logging
@@ -26,7 +42,7 @@ if TYPE_CHECKING:
 
     from legadilo.reading.models.reading_list import ReadingList
     from legadilo.reading.models.tag import Tag
-    from legadilo.reading.utils.article_fetching import ArticleData
+    from legadilo.reading.services.article_fetching import ArticleData
     from legadilo.users.models import User
 else:
     TypedModelMeta = object
@@ -141,10 +157,10 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_feed_links(self) -> Self:
         return self.alias(
-            feed_ids=ArrayAgg("feeds__id", order="id"),
-            feed_slugs=ArrayAgg("feeds__slug", ordering="id"),
+            feed_ids=ArrayAgg("feeds__id", order="feeds__id"),
+            feed_slugs=ArrayAgg("feeds__slug", ordering="feeds__id"),
             feed_open_original_link_by_default=ArrayAgg(
-                "feeds__open_original_link_by_default", ordering="id"
+                "feeds__open_original_link_by_default", ordering="feeds__id"
             ),
         ).annotate(
             annot_feed_id=models.F("feed_ids__0"),
@@ -274,8 +290,8 @@ class ArticleManager(models.Manager["Article"]):
                     self.model(
                         user=user,
                         external_article_id=article_data.external_article_id,
-                        title=article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH],
-                        slug=slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]),
+                        title=article_data.title,
+                        slug=slugify(article_data.title),
                         summary=article_data.summary,
                         content=article_data.content,
                         reading_time=get_nb_words_from_html(article_data.content)
@@ -289,9 +305,11 @@ class ArticleManager(models.Manager["Article"]):
                         published_at=article_data.published_at,
                         updated_at=article_data.updated_at,
                         initial_source_type=source_type,
-                        initial_source_title=article_data.source_title[
-                            : constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH
-                        ],
+                        initial_source_title=article_data.source_title,
+                        language=article_data.language,
+                        annotations=article_data.annotations,
+                        read_at=article_data.read_at,
+                        is_favorite=article_data.is_favorite,
                     )
                 )
 
@@ -416,7 +434,7 @@ class Article(models.Model):
     external_article_id = models.CharField(
         default="",
         blank=True,
-        max_length=512,
+        max_length=constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH,
         help_text=_("The id of the article in the its source."),
     )
     annotations = models.JSONField(
@@ -430,7 +448,7 @@ class Article(models.Model):
     language = models.CharField(
         default="",
         blank=True,
-        max_length=5,
+        max_length=constants.LANGUAGE_CODE_MAX_LENGTH,
         help_text=_("The language code for this article"),
         validators=[language_code_validator],
     )

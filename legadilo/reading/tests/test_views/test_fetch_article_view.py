@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from http import HTTPStatus
 
 import httpx
@@ -101,7 +117,7 @@ class TestAddArticle:
 
     def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
-        mocker.patch("legadilo.reading.utils.article_fetching._get_content", return_value="")
+        mocker.patch("legadilo.reading.services.article_fetching._get_content", return_value="")
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -164,7 +180,7 @@ class TestAddArticle:
 
     def test_content_too_big(self, logged_in_sync_client, httpx_mock, mocker):
         mocker.patch(
-            "legadilo.reading.utils.article_fetching.sys.getsizeof", return_value=2048 * 1024
+            "legadilo.reading.services.article_fetching.sys.getsizeof", return_value=2048 * 1024
         )
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 

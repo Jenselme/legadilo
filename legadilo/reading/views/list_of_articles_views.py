@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import annotations
 
 from http import HTTPStatus
@@ -22,8 +38,8 @@ from legadilo.core.forms.widgets import MultipleTagsWidget
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
+from legadilo.reading.services.views import get_js_cfg_from_reading_list
 from legadilo.reading.templatetags import decode_external_tag
-from legadilo.reading.utils.views import get_js_cfg_from_reading_list
 from legadilo.users.typing import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
 from legadilo.utils.urls import pop_query_param
@@ -88,7 +104,12 @@ def _display_list_of_articles(
         "articles_paginator": articles_paginator,
         "from_url": from_url,
     }
-    headers = {"HX-Push-Url": from_url} if must_do_full_reload else {}
+    cached_header = {
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+    }
+    htmx_headers = {"HX-Push-Url": from_url} if must_do_full_reload else {}
+    headers = cached_header | htmx_headers
 
     if request.htmx and not must_do_full_reload:
         return TemplateResponse(
@@ -96,6 +117,7 @@ def _display_list_of_articles(
             "reading/list_of_articles.html#article-pagination",
             response_ctx,
             status=status,
+            headers=headers,
         )
 
     return TemplateResponse(

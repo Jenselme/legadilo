@@ -1,3 +1,19 @@
+// Legadilo
+// Copyright (C) 2023-2024 by Legadilo contributors.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * This is required to both open the article (HTMX will prevent the default action on links) and
  * allow HTMX to mark the article as opened.
@@ -64,8 +80,25 @@
 
       // To make sure counters are correct at the end, we run the requests on after the other so the
       // last one to complete has the correct count.
-      readOnScrollSequence = readOnScrollSequence.then(() => htmx.trigger(htmxForm, "submit"));
+      readOnScrollSequence = readOnScrollSequence.then(() => buildReadOnScrollPromise(htmxForm));
     }
+  };
+
+  const buildReadOnScrollPromise = (htmxForm) => {
+    return new Promise((resolve) => {
+      const waitForRequestEnd = (event) => {
+        if (
+          event.detail &&
+          event.detail.pathInfo &&
+          event.detail.pathInfo.requestPath === htmxForm.getAttribute("action")
+        ) {
+          htmx.off("htmx:afterRequest", waitForRequestEnd);
+          resolve();
+        }
+      };
+      htmx.on("htmx:afterRequest", waitForRequestEnd);
+      htmx.trigger(htmxForm, "submit");
+    });
   };
 
   const setupRefresh = () => {

@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import httpx
 import pytest
 import time_machine
@@ -35,7 +51,7 @@ def test_import_empty_file(user):
 
 
 @pytest.mark.django_db()
-@time_machine.travel("2024-05-17 13:00:00")
+@time_machine.travel("2024-05-17 13:00:00", tick=False)
 def test_import_custom_csv(user, httpx_mock, snapshot):
     feed_category = FeedCategoryFactory(
         user=user, title="Existing category", slug="existing-category"
@@ -72,7 +88,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
     )
 
-    assert nb_imported_articles == 5
+    assert nb_imported_articles == 6
     assert nb_imported_feeds == 3
     assert nb_imported_categories == 2
     assert Article.objects.count() == 8

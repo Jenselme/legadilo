@@ -1,3 +1,19 @@
+# Legadilo
+# Copyright (C) 2023-2024 by Legadilo contributors.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import annotations
 
 import calendar
@@ -207,21 +223,24 @@ class FeedManager(models.Manager["Feed"]):
         category: FeedCategory | None = None,
         *,
         open_original_link_by_default=False,
-    ) -> Feed:
-        feed = self.create(
-            feed_url=feed_metadata.feed_url,
-            site_url=feed_metadata.site_url,
-            title=feed_metadata.title[: feeds_constants.FEED_TITLE_MAX_LENGTH],
-            refresh_delay=refresh_delay,
-            open_original_link_by_default=open_original_link_by_default,
-            description=feed_metadata.description,
-            feed_type=feed_metadata.feed_type,
-            category=category,
+    ) -> tuple[Feed, bool]:
+        feed, created = self.get_or_create(
             user=user,
+            feed_url=feed_metadata.feed_url,
+            defaults={
+                "site_url": feed_metadata.site_url,
+                "title": feed_metadata.title,
+                "refresh_delay": refresh_delay,
+                "open_original_link_by_default": open_original_link_by_default,
+                "description": feed_metadata.description,
+                "feed_type": feed_metadata.feed_type,
+                "category": category,
+            },
         )
-        FeedTag.objects.associate_feed_with_tags(feed, tags)
-        self.update_feed(feed, feed_metadata)
-        return feed
+        if created:
+            FeedTag.objects.associate_feed_with_tags(feed, tags)
+            self.update_feed(feed, feed_metadata)
+        return feed, created
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_metadata: FeedData):
