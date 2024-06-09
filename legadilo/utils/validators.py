@@ -24,6 +24,7 @@ from django.http import HttpRequest
 from django.utils.deconstruct import deconstructible
 from jsonschema import ValidationError as JsonSchemaValidationError
 from jsonschema import validate as validate_json_schema
+from nh3 import is_html
 
 from legadilo.utils.security import full_sanitize
 
@@ -88,6 +89,9 @@ def is_url_valid(url: str | None) -> bool:
 
 
 def normalize_url(base_url: str, url_to_normalize: str) -> str:
+    if _is_not_potential_http_url(url_to_normalize):
+        return url_to_normalize
+
     if not is_url_valid(url_to_normalize):
         return _build_normalized_url_from_invalid_url(base_url, url_to_normalize)
 
@@ -100,17 +104,75 @@ def normalize_url(base_url: str, url_to_normalize: str) -> str:
     raise ValueError(f"Failed to normalize URL: {url_to_normalize}")
 
 
-def _build_normalized_url_from_invalid_url(base_url: str, url_to_normalize: str) -> str:
-    sanitized_url = full_sanitize(url_to_normalize)
+def _is_not_potential_http_url(url: str) -> bool:
+    invalid_prefixes = {
+        "#",  # anchor
+        "gemini://",  # Other protocol
+        "ftp://",  # Other protocol
+        "mailto:",  # email
+    }
+    return any(url.startswith(invalid_prefix) for invalid_prefix in invalid_prefixes)
+
+
+def _build_normalized_url_from_invalid_url(base_url: str, url_to_normalize: str) -> str:  # noqa: C901,PLR0912 toto complex
+    exception = ValueError(f"Failed to normalize URL: {url_to_normalize}")
+    compiled_starts_with_scheme = re.compile(r"^https?://")
+    if not url_to_normalize:
+        raise exception
+    if (
+        " " in url_to_normalize
+        and not url_to_normalize.startswith("/")
+        and not url_to_normalize.startswith("?")
+        and not compiled_starts_with_scheme.match(url_to_normalize)
+    ):
+        raise exception
+
+    sanitized_url = url_to_normalize
+    if "\\" in sanitized_url:
+        sanitized_url = sanitized_url.replace("\\", "/")
+    if " " in sanitized_url:
+        sanitized_url = sanitized_url.replace(" ", "%20")
+    if is_html(sanitized_url):
+        sanitized_url = full_sanitize(sanitized_url)
+
     parsed_base_url = urlparse(base_url)
     if sanitized_url.startswith("/"):
         normalized_url = urljoin(
             f"{parsed_base_url.scheme}://{parsed_base_url.netloc}", sanitized_url
         )
-    else:
+    elif sanitized_url.startswith("?"):
+        normalized_url = urljoin(
+            f"{parsed_base_url.scheme}://{parsed_base_url.netloc}", f"/{sanitized_url}"
+        )
+    elif sanitized_url.startswith(".."):
+        # It's a unix like relative link. Let's try to resolve it and go one step above the base
+        # URL.
+        base_path_parts = base_url.split("/")
+        if base_url.endswith("/"):
+            base_path_parts.pop()
+        sanitized_url_parts = sanitized_url.split("/")
+        if sanitized_url.endswith("/"):
+            sanitized_url_parts.pop()
+        target_path = base_path_parts[:-1]
+        if len(sanitized_url_parts) > 1:
+            target_path.extend(sanitized_url_parts[1:])
+        normalized_url = urljoin(
+            f"{parsed_base_url.scheme}://{parsed_base_url.netloc}", "/".join(target_path)
+        )
+        if base_url.endswith("/") and not normalized_url.startswith("/"):
+            normalized_url += "/"
+    elif (
+        not compiled_starts_with_scheme.match(sanitized_url)
+        and parsed_base_url.netloc not in sanitized_url
+    ):
+        # Relative URL but without a starting /
+        normalized_url = f"{parsed_base_url.scheme}://{parsed_base_url.netloc}/{sanitized_url}"
+    elif not compiled_starts_with_scheme.match(sanitized_url):
         normalized_url = f"{parsed_base_url.scheme}://{sanitized_url}"
+    else:
+        normalized_url = sanitized_url
 
     if is_url_valid(normalized_url):
         return normalized_url
 
-    raise ValueError(f"Failed to normalize URL: {url_to_normalize}")
+    raise exception
