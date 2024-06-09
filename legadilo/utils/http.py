@@ -27,7 +27,7 @@ def get_async_client() -> httpx.AsyncClient:
 
 def get_rss_async_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(
-        limits=httpx.Limits(max_connections=50, max_keepalive_connections=20, keepalive_expiry=5.0),
+        limits=httpx.Limits(max_connections=20, max_keepalive_connections=10, keepalive_expiry=5.0),
         timeout=FETCH_TIMEOUT,
         follow_redirects=True,
         headers={"User-Agent": "Legadilo RSS"},
