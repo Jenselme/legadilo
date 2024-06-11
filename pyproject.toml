@@ -227,7 +227,7 @@ daphne = "^4.1.2"  # https://github.com/django/daphne
 django-version-checks = "1.11.0"  # https://github.com/adamchainz/django-version-checks
 django-extra-checks = "0.14.0"  # https://github.com/kalekseev/django-extra-checks
 django-csp = "3.8"  # https://django-csp.readthedocs.io/en/latest/index.html
-django-axes = "6.4.0"  # https://github.com/jazzband/django-axes
+django-axes = "6.5.0"  # https://github.com/jazzband/django-axes
 django-htmx = "1.17.3"  # https://django-htmx.readthedocs.io/en/latest/
 django-template-partials = "24.2"  # https://github.com/carltongibson/django-template-partials
 
