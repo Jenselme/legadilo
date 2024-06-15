@@ -70,6 +70,11 @@ class ReadingListTagOperator(TextChoices):
     ANY = "ANY", _("Any")
 
 
+class ReadingListOrderDirection(TextChoices):
+    ASC = "ASC", _("Ascendant")
+    DESC = "DESC", _("Descendant")
+
+
 class UpdateArticleActions(TextChoices):
     DO_NOTHING = "DO_NOTHING", _("Do nothing")
     MARK_AS_FAVORITE = "MARK_AS_FAVORITE", _("Mark as favorite")

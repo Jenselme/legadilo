@@ -175,7 +175,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .for_feed_links()
             .filter(_build_filters_from_reading_list(reading_list))
             .prefetch_related(_build_prefetch_article_tags())
-            .default_order_by()
+            .default_order_by(reading_list.order_direction)
         )
 
     def for_tag(self, tag: Tag) -> Self:
@@ -231,10 +231,22 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             case _:
                 assert_never(action)
 
-    def default_order_by(self):
+    def default_order_by(
+        self,
+        order_direction: constants.ReadingListOrderDirection = constants.ReadingListOrderDirection.DESC,  # noqa: E501
+    ) -> Self:
+        order_expression = models.F("alias_date_field_order")
+        match order_direction:
+            case constants.ReadingListOrderDirection.ASC:
+                order = order_expression.asc(nulls_last=True)
+            case constants.ReadingListOrderDirection.DESC:
+                order = order_expression.desc(nulls_last=True)
+            case _:
+                assert_never(order_direction)
+
         return self.alias(
             alias_date_field_order=Coalesce(models.F("updated_at"), models.F("published_at"))
-        ).order_by(models.F("alias_date_field_order").desc(nulls_last=True))
+        ).order_by(order)
 
 
 class ArticleManager(models.Manager["Article"]):

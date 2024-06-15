@@ -171,6 +171,14 @@ class ReadingList(models.Model):
             "Defines whether the articles must have all or any of the tags to be excluded from the reading list."  # noqa: E501
         ),
     )
+    order_direction = models.CharField(
+        choices=constants.ReadingListOrderDirection.choices,
+        default=constants.ReadingListOrderDirection.DESC,
+        max_length=10,
+        help_text=_(
+            "How to sort the article. ASC will put the most recent articles first. DECS will put the least recent articles first."  # noqa: E501
+        ),
+    )
 
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="reading_lists")
 
@@ -219,6 +227,10 @@ class ReadingList(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_include_tag_operator_valid",
                 check=models.Q(include_tag_operator__in=constants.ReadingListTagOperator.names),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_order_direction_valid",
+                check=models.Q(order_direction__in=constants.ReadingListOrderDirection.names),
             ),
         ]
 

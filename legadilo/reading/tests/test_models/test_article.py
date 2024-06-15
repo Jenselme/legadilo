@@ -793,12 +793,21 @@ class TestArticleQuerySet:
         )
         article_no_dates = ArticleFactory(title="No date", published_at=None, updated_at=None)
 
-        articles = Article.objects.get_queryset().default_order_by()
+        articles_order_desc = Article.objects.get_queryset().default_order_by()
+        articles_order_asc = Article.objects.get_queryset().default_order_by(
+            constants.ReadingListOrderDirection.ASC
+        )
 
-        assert list(articles) == [
+        assert list(articles_order_desc) == [
             article_only_updated_at,
             article_both_dates,
             article_only_published_at,
+            article_no_dates,
+        ]
+        assert list(articles_order_asc) == [
+            article_only_published_at,
+            article_both_dates,
+            article_only_updated_at,
             article_no_dates,
         ]
 
