@@ -204,7 +204,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         )
 
     def for_details(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related(_build_prefetch_article_tags()).for_feed_links()
 
     def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
         # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
