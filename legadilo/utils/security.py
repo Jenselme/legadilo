@@ -18,7 +18,7 @@ from collections.abc import Set
 
 import nh3
 
-ALLOWED_ATTRIBUTES = {
+DEFAULT_ALLOWED_ATTRIBUTES = {
     **nh3.ALLOWED_ATTRIBUTES,
     "img": {"src", "alt"},
 }
@@ -34,6 +34,20 @@ def sanitize_keep_safe_tags(data: str, extra_tags_to_cleanup: Set[str] = frozens
     return nh3.clean(
         data,
         tags=allowed_tags,
-        attributes=ALLOWED_ATTRIBUTES,
+        attributes=_add_attribute_to_allowed_attributes(DEFAULT_ALLOWED_ATTRIBUTES, {"id"}),
         strip_comments=True,
     )
+
+
+def _add_attribute_to_allowed_attributes(
+    allowed_attributes: dict[str, set[str]], attributes_to_add: set[str]
+) -> dict[str, set[str]]:
+    extended_allowed_attributes = {
+        tag: allowed_attr.union(attributes_to_add)
+        for tag, allowed_attr in allowed_attributes.items()
+    }
+    for tag in nh3.ALLOWED_TAGS:
+        if tag not in extended_allowed_attributes:
+            extended_allowed_attributes[tag] = attributes_to_add
+
+    return extended_allowed_attributes
