@@ -903,17 +903,17 @@ tests = ["coverage", "django_coverage_plugin"]
 
 [[package]]
 name = "django-version-checks"
-version = "1.11.0"
+version = "1.12.0"
 description = "System checks for your project's environment."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django_version_checks-1.11.0-py3-none-any.whl", hash = "sha256:9d1a147fab2290e1f567446ba47af3fdd6d50f9491475a06f03178bd73163142"},
-    {file = "django_version_checks-1.11.0.tar.gz", hash = "sha256:4285ac540af107ef8741ad204bdedd239f2ddc0e7dd45fb6e81609aa9f93ca58"},
+    {file = "django_version_checks-1.12.0-py3-none-any.whl", hash = "sha256:7988587b2cdf6c2e489a0997cd96ce66f1015846feba2838c7fd76893bcefd94"},
+    {file = "django_version_checks-1.12.0.tar.gz", hash = "sha256:29fb03837c4dbc4e649c29b37570a3cc7af7019406cfccb560524a3f651be7df"},
 ]
 
 [package.dependencies]
-Django = ">=3.2"
+django = ">=3.2"
 packaging = ">=20.8"
 
 [[package]]
@@ -3264,4 +3264,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "ddc55dd9c2fb4e46fb76d3061b2114754a012da802d1d435b5c9dc8e3f45021b"
+content-hash = "b836b4cb2c9a8c4da6b024f26def07583d904d62502b609a28191962b7778714"
