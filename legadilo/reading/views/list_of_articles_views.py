@@ -79,7 +79,18 @@ def _display_list_of_articles(
     *,
     status: HTTPStatus = HTTPStatus.OK,
 ) -> TemplateResponse:
-    articles_paginator = Paginator(articles_qs, constants.MAX_ARTICLE_PER_PAGE)
+    articles_per_page = (
+        constants.MAX_ARTICLES_PER_PAGE_WITH_READ_ON_SCROLL
+        if page_ctx.get("js_cfg", {}).get("is_reading_on_scroll_enabled")
+        else constants.MAX_ARTICLES_PER_PAGE
+    )
+    articles_paginator = Paginator(
+        articles_qs,
+        articles_per_page,
+        # Prevent pages with less that 10% of the number of articles. Display them on the previous
+        # page instead of as orphans.
+        orphans=int(articles_per_page * constants.ARTICLES_ORPHANS_PERCENTAGE),
+    )
     # If the full_reload params is passed, we render the full template. To avoid issues with
     # following requests, we must remove it from the URL.
     from_url, full_reload_param = pop_query_param(request.get_full_path(), "full_reload")
@@ -102,6 +113,7 @@ def _display_list_of_articles(
         "articles_page": articles_page,
         "next_page_number": articles_page.next_page_number if articles_page.has_next() else None,
         "articles_paginator": articles_paginator,
+        "elided_page_range": articles_paginator.get_elided_page_range(requested_page),
         "from_url": from_url,
     }
     cached_header = {
@@ -114,7 +126,7 @@ def _display_list_of_articles(
     if request.htmx and not must_do_full_reload:
         return TemplateResponse(
             request,
-            "reading/list_of_articles.html#article-pagination",
+            "reading/list_of_articles.html#articles-page",
             response_ctx,
             status=status,
             headers=headers,
