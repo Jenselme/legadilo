@@ -60,8 +60,10 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    search_fields = ["title"]
+    search_fields = ["title", "initial_source_title", "link"]
     autocomplete_fields = ["user"]
+    list_display = ["__str__", "obj_created_at", "obj_updated_at"]
+    list_filter = ["is_read", "is_favorite", "is_for_later", "initial_source_type"]
     inlines = [
         ArticleTagInline,
         ArticleFetchErrorInline,
@@ -80,6 +82,7 @@ class ReadingListAdmin(admin.ModelAdmin):
 
 @admin.register(ArticleFetchError)
 class ArticleFetchErrorAdmin(admin.ModelAdmin):
-    search_fields = ["article__title"]
+    search_fields = ["article__title", "article__link"]
     readonly_fields = ("article",)
+    list_display = ["__str__", "created_at"]
     formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
