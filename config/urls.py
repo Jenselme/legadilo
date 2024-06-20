@@ -26,6 +26,7 @@ urlpatterns = [  # noqa: RUF005 concatenation
     # Your stuff: custom urls includes go here
     path("feeds/", include("legadilo.feeds.urls", namespace="feeds")),
     path("reading/", include("legadilo.reading.urls", namespace="reading")),
+    path("import-export/", include("legadilo.import_export.urls", namespace="import_export")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

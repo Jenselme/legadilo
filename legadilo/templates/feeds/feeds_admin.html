@@ -7,9 +7,13 @@
 {% endblock title %}
 {% block content %}
     <h1>{% translate "Feeds admin" %}</h1>
-    <a class="btn btn-outline-secondary"
+    <a class="btn btn-outline-primary"
        href="{% url 'feeds:subscribe_to_feed' %}"
        role="button">{% translate "Subscribe to a feed" %}</a>
+    <a class="btn btn-outline-secondary"
+       href="{% url 'import_export:export_feeds' %}"
+       role="button"
+       download="{% translate 'feeds.opml' %}">{% translate "Export all feeds" %}</a>
     <div id="feeds-by-categories-accordion" class="accordion mt-3">
         {% for category_title, feeds in feeds_by_categories.items %}
             <div class="accordion-item">

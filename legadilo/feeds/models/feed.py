@@ -184,8 +184,8 @@ class FeedManager(models.Manager["Feed"]):
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def get_by_categories(self, user: User) -> dict[str, list[Feed]]:
-        feeds_by_categories: dict[str, list[Feed]] = {}
+    def get_by_categories(self, user: User) -> dict[str | None, list[Feed]]:
+        feeds_by_categories: dict[str | None, list[Feed]] = {}
         for feed in (
             self.get_queryset()
             .for_user(user)
