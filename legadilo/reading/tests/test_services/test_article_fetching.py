@@ -126,6 +126,27 @@ async def test_get_article_from_url_process_fixture(
         pytest.param(
             {
                 "external_article_id": "<p>external article id",
+                "source_title": "",
+                "title": "",
+                "summary": """<p>Summary <span>?</span> <img src="/toto" /> </p>""",
+                "content": """<p>C <span>?</span> <img src="/t" /> <script>alert()</script></p>""",
+                "authors": ["<span>me</span>"],
+                "contributors": ["<span>me</span>"],
+                "tags": ["<span>tag</span>"],
+                "link": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "<p>Hi there!</p>",
+                "published_at": None,
+                "updated_at": None,
+                "language": "<span>en</span>",
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="title-missing",
+        ),
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
                 "source_title": "<p>source article title</p>",
                 "title": "<p>Title</p>",
                 "summary": "",
