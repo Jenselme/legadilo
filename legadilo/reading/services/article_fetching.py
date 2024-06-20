@@ -88,12 +88,20 @@ def build_article_data(  # noqa: PLR0913 too many arguments
     except (ValidationError, TypeError):
         language = ""
 
+    title = full_sanitize(title)[: constants.ARTICLE_TITLE_MAX_LENGTH]
+    if not title:
+        title = urlparse(link).netloc
+
+    source_title = full_sanitize(source_title)[: constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH]
+    if not source_title:
+        source_title = urlparse(link).netloc
+
     return ArticleData(
         external_article_id=full_sanitize(external_article_id)[
             : constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH
         ],
-        source_title=full_sanitize(source_title)[: constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH],
-        title=full_sanitize(title)[: constants.ARTICLE_TITLE_MAX_LENGTH],
+        source_title=source_title,
+        title=title,
         summary=sanitize_keep_safe_tags(
             summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
         ),

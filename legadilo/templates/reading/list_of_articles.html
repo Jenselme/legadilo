@@ -108,52 +108,45 @@
                         </div>
                     {% endif %}
                 </div>
-                {% partialdef article-pagination inline=True %}
+                {% partialdef articles-page inline=True %}
                     {% for article in articles_page %}
                         <div id="{{ article|article_card_id }}" class="article-card-container">
                             {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
                         </div>
-                        {% if forloop.last and next_page_number %}
-                            <p class="icon-indicator infinite-scrolling-icon-indicator"
-                               hx-get="?page={{ next_page_number }}"
-                               hx-trigger="intersect once"
-                               hx-swap="outerHTML"
-                               hx-indicator=".infinite-scrolling-icon-indicator">
-                                {% include "core/partials/page_loading_indicator.html" %}
+                        {% if forloop.last and js_cfg.is_reading_on_scroll_enabled %}
+                            <p class="read-on-scroll-even-bottom" aria-hidden="true">
+                                {% if next_page_number %}
+                                    {% translate "You have too many articles to read on scroll. Please refresh the page to view the others." %}
+                                {% endif %}
                             </p>
-                        {% endif %}
-                        {% if forloop.last and not next_page_number and js_cfg.is_reading_on_scroll_enabled %}
-                            <p class="read-on-scroll-even-bottom" aria-hidden="true"></p>
                         {% endif %}
                     {% empty %}
                         <p>{% translate "No articles to display." %}</p>
                     {% endfor %}
                 {% endpartialdef %}
                 {% if articles_paginator.num_pages > 1 %}
-                    <noscript>
-                        <nav aria-label="{% translate 'Navigation between articles' %}">
-                            <ul class="pagination">
+                    <nav aria-label="{% translate 'Navigation between articles' %}">
+                        <ul class="pagination d-flex justify-content-center">
+                            <li class="page-item">
+                                <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
+                                   {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
+                                    {% translate "Previous" %}
+                                </a>
+                            </li>
+                            {% for page_number in elided_page_range %}
                                 <li class="page-item">
-                                    <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
-                                       {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
-                                        {% translate "Previous" %}
-                                    </a>
+                                    <a class="page-link {% if articles_page.number == page_number %}active{% endif %}{% if page_number == '…' %}disabled{% endif %}"
+                                       href="?page={{ page_number }}">{{ page_number }}</a>
                                 </li>
-                                {% for page_number in articles_paginator.page_range %}
-                                    <li class="page-item">
-                                        <a class="page-link {% if articles_page.number == page_number %}active{% endif %}"
-                                           href="?page={{ page_number }}">{{ page_number }}</a>
-                                    </li>
-                                {% endfor %}
-                                <li class="page-item">
-                                    <a class="page-link {% if not articles_page.has_next %}disabled{% endif %}"
-                                       {% if articles_page.has_next %}href="?page={{ articles_page.next_page_number }}"{% endif %}>
-                                        {% translate "Next" %}
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </noscript>
+                            {% endfor %}
+                            <li class="page-item">
+                                <a class="page-link {% if not articles_page.has_next %}disabled{% endif %}"
+                                   {% if articles_page.has_next %}href="?page={{ articles_page.next_page_number }}"{% endif %}>
+                                    {% translate "Next" %}
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 {% endif %}
             </div>
         </div>

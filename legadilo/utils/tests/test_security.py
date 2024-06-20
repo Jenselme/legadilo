@@ -46,6 +46,16 @@ def test_full_sanitize(data, clean_data):
         pytest.param(
             "<script>alert('hell')</script><p>Coucou</p>", "<p>Coucou</p>", id="with-script"
         ),
+        pytest.param(
+            """<p><img src="/img" alt="My image" height="900">Test</p>""",
+            """<p><img src="/img" alt="My image">Test</p>""",
+            id="image",
+        ),
+        pytest.param(
+            """<p id="my-id" class="some-class" data-stuff="test">Test</p>""",
+            """<p id="my-id">Test</p>""",
+            id="with-attributes",
+        ),
     ],
 )
 def test_sanitize_keep_safe_tags(data: str, clean_data: str):

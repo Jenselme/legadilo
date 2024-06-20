@@ -70,6 +70,11 @@ class ReadingListTagOperator(TextChoices):
     ANY = "ANY", _("Any")
 
 
+class ReadingListOrderDirection(TextChoices):
+    ASC = "ASC", _("Ascendant")
+    DESC = "DESC", _("Descendant")
+
+
 class UpdateArticleActions(TextChoices):
     DO_NOTHING = "DO_NOTHING", _("Do nothing")
     MARK_AS_FAVORITE = "MARK_AS_FAVORITE", _("Mark as favorite")
@@ -94,7 +99,9 @@ class ArticleSourceType(TextChoices):
 
 
 MAX_ARTICLE_FILE_SIZE = 1024 * 1024  # 1MiB in bytes.
-MAX_ARTICLE_PER_PAGE = 50
+MAX_ARTICLES_PER_PAGE = 100
+MAX_ARTICLES_PER_PAGE_WITH_READ_ON_SCROLL = 5 * MAX_ARTICLES_PER_PAGE
+ARTICLES_ORPHANS_PERCENTAGE = 0.1  # 10%
 ARTICLE_TITLE_MAX_LENGTH = 300
 ARTICLE_SOURCE_TITLE_MAX_LENGTH = 300
 ARTICLES_LIST_MIN_REFRESH_TIMEOUT = 5 * 60  # In seconds

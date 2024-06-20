@@ -267,5 +267,5 @@ class TestRefetchArticleView:
         assert response.status_code == HTTPStatus.FOUND
         assert (
             response["Location"]
-            == f"/reading/articles/{self.article.id}-initial-slug/?from_url=%2Ftoto%2F"
+            == f"/reading/articles/{self.article.id}-www-example-com/?from_url=%2Ftoto%2F"
         )

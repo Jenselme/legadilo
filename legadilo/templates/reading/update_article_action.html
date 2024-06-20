@@ -4,7 +4,7 @@
 <div hx-swap-oob="innerHTML:#reading-list-dropdown-menu">
     {% include "reading/list_of_articles.html#reading-list-group" %}
 </div>
-{% if count_articles_of_current_reading_list %}
+{% if count_articles_of_current_reading_list is not None %}
     <div hx-swap-oob="innerHTML:#articles-in-total">{% include "reading/list_of_articles.html#articles-in-total" %}</div>
 {% endif %}
 {% if not delete_article_card %}
