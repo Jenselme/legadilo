@@ -14,6 +14,9 @@
        href="{% url 'import_export:export_feeds' %}"
        role="button"
        download="{% translate 'feeds.opml' %}">{% translate "Export all feeds" %}</a>
+    <a class="btn btn-outline-secondary"
+       href="{% url 'import_export:import_feeds' %}"
+       role="button">{% translate "Import feeds" %}</a>
     <div id="feeds-by-categories-accordion" class="accordion mt-3">
         {% for category_title, feeds in feeds_by_categories.items %}
             <div class="accordion-item">

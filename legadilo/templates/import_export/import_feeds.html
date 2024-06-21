@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load i18n static crispy_forms_tags %}
+
+{% block title %}
+    {% translate "Import feeds" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Import feeds" %}</h1>
+    <form method="post"
+          action="{% url 'import_export:import_feeds' %}"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">{% translate "Import" %}</button>
+    </form>
+{% endblock content %}

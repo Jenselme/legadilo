@@ -76,11 +76,14 @@ class OutlineElt:
         return is_url_valid(self.feed_url) and is_url_valid(self.site_url) and self.text
 
 
-def import_opml_file(user: User, path_to_file: str | Path) -> tuple[int, int]:
-    with Path(path_to_file).open() as f:
-        tree = parse(f)
-        root = tree.getroot()
-        return async_to_sync(_process_opml_data)(user, root)
+def import_opml_file_sync(user: User, file: str | Path) -> tuple[int, int]:
+    return async_to_sync(import_opml_file)(user, file)
+
+
+async def import_opml_file(user: User, file: str | Path) -> tuple[int, int]:
+    tree = parse(file)
+    root = tree.getroot()
+    return await _process_opml_data(user, root)
 
 
 async def _process_opml_data(user, root) -> tuple[int, int]:

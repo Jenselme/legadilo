@@ -14,13 +14,4 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.urls import URLPattern, path
-
-from . import views
-
-app_name = "import_export"
-
-urlpatterns: list[URLPattern] = [
-    path("feeds/export/", views.export_feeds_view, name="export_feeds"),
-    path("feeds/import/", views.import_feeds_view, name="import_feeds"),
-]
+MAX_SIZE_OPML_FILE = 1024 * 1024  # 1MiB in bytes.
