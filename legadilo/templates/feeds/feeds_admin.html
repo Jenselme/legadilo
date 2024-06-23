@@ -55,7 +55,7 @@
                                             <a href="{{ feed.feed_url }}">{% translate "Link to feed" %}</a>
                                         </div>
                                         <div class="col">
-                                            <a>{% translate "Edit feed" %}</a>
+                                            <a href="{% url 'feeds:edit_feed' feed_id=feed.id %}">{% translate "Edit/Delete feed" %}</a>
                                         </div>
                                         <div class="col">
                                             {% if feed.slug %}

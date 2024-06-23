@@ -23,6 +23,13 @@ app_name = "feeds"
 urlpatterns = [
     path("", views.feeds_admin_view, name="feeds_admin"),
     path("subscribe/", views.subscribe_to_feed_view, name="subscribe_to_feed"),
+    path("categories/", views.feed_category_admin_view, name="feed_category_admin"),
+    path("categories/create/", views.create_feed_category_view, name="create_feed_category"),
+    path(
+        "categories/<int:category_id>/",
+        views.edit_feed_category_view,
+        name="edit_feed_category",
+    ),
     path(
         "articles/<int:feed_id>-<slug:feed_slug>/",
         views.feed_articles_view,

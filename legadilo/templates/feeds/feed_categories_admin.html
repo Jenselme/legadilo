@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Feed categories admin" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Feed categories admin" %}</h1>
+    <a class="btn btn-outline-secondary"
+       href="{% url 'feeds:create_feed_category' %}"
+       role="button">{% translate "Create a new category" %}</a>
+    <ul class="list-group mt-3">
+        {% for category in categories %}
+            <li class="list-group-item container">
+                <div class="row">
+                    <div class="col">{{ category.title }}</div>
+                    <div class="col">
+                        <a href="{% url 'feeds:edit_feed_category' category_id=category.id %}">{% translate "Edit/Delete category" %}</a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock content %}
