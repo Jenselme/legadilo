@@ -32,7 +32,7 @@ from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time import utcdt
+from legadilo.utils.time import utcdt, utcnow
 
 from ... import constants as feeds_constants
 from ...models import Feed
@@ -476,3 +476,32 @@ class TestFeedManager:
         assert feeds[1]["category_id"] == feed_category.id
         assert feeds[1]["feed_id"] == feed_with_category.id
         snapshot.assert_match(serialize_for_snapshot(feeds), "exports.json")
+
+
+class TestFeedModel:
+    def test_disable(self):
+        feed = FeedFactory.build(enabled=True, disabled_at=None, disabled_reason="")
+
+        feed.disable()
+
+        assert not feed.enabled
+        assert feed.disabled_at is not None
+        assert not feed.disabled_reason
+
+    def test_disable_with_reason(self):
+        feed = FeedFactory.build(enabled=True, disabled_at=None, disabled_reason="")
+
+        feed.disable(reason="Some reason")
+
+        assert not feed.enabled
+        assert feed.disabled_at is not None
+        assert feed.disabled_reason == "Some reason"
+
+    def test_enable(self):
+        feed = FeedFactory.build(enabled=False, disabled_at=utcnow(), disabled_reason="Test")
+
+        feed.enable()
+
+        assert feed.enabled
+        assert feed.disabled_at is None
+        assert not feed.disabled_reason

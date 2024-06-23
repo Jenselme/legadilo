@@ -21,10 +21,10 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
+from legadilo.reading.models.tag import Tag
+
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
-
-    from legadilo.reading.models.tag import Tag
 
     from .feed import Feed
 else:
@@ -41,9 +41,26 @@ class FeedTagManager(models.Manager["FeedTag"]):
     def get_queryset(self) -> FeedTagQuerySet:
         return FeedTagQuerySet(model=self.model, using=self._db, hints=self._hints)
 
+    def get_selected_values(self) -> list[str]:
+        return list(
+            self.get_queryset()
+            .select_related("tag")
+            .annotate(slug=models.F("tag__slug"))
+            .values_list("slug", flat=True)
+        )
+
     def associate_feed_with_tags(self, feed: Feed, tags: Iterable[Tag]):
         feed_tags = [self.model(feed=feed, tag=tag) for tag in tags]
         self.bulk_create(feed_tags, ignore_conflicts=True, unique_fields=["feed_id", "tag_id"])
+
+    def associate_feed_with_tag_slugs(
+        self, feed: Feed, tag_slugs: list[str], *, clear_existing=False
+    ):
+        if clear_existing:
+            feed.feed_tags.all().delete()
+        self.associate_feed_with_tags(
+            feed, Tag.objects.get_or_create_from_list(feed.user, tag_slugs)
+        )
 
 
 class FeedTag(models.Model):

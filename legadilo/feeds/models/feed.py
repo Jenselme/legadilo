@@ -384,3 +384,8 @@ class Feed(models.Model):
         self.disabled_reason = reason
         self.disabled_at = utcnow()
         self.enabled = False
+
+    def enable(self):
+        self.disabled_reason = ""
+        self.disabled_at = None
+        self.enabled = True
