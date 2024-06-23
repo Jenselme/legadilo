@@ -14,24 +14,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-MAX_SIZE_OPML_FILE = 1024 * 1024  # 1MiB in bytes.
-MAX_ARTICLES_FILE = 10 * 1024 * 1024  # 10MiB in bytes.
-CSV_HEADER_FIELDS = (
-    "category_id",
-    "category_title",
-    "feed_id",
-    "feed_title",
-    "feed_url",
-    "feed_site_url",
-    "article_id",
-    "article_title",
-    "article_link",
-    "article_content",
-    "article_date_published",
-    "article_date_updated",
-    "article_authors",
-    "article_tags",
-    "article_read_at",
-    "article_is_favorite",
-    "article_lang",
-)
+import contextlib
+from tempfile import NamedTemporaryFile
+
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
+
+
+@contextlib.contextmanager
+def ensure_file_on_disk(django_file: TemporaryUploadedFile | InMemoryUploadedFile):
+    if hasattr(django_file, "temporary_file_path"):
+        yield django_file.temporary_file_path()
+        return
+
+    with NamedTemporaryFile() as f:
+        f.write(django_file.read())
+        f.flush()
+        yield f.name

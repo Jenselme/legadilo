@@ -54,28 +54,28 @@ csv.field_size_limit(sys.maxsize)
 
 
 def import_custom_csv_file_sync(user: User, path_to_file: str | Path) -> tuple[int, int, int]:
-    with Path(path_to_file).open() as f:
-        return async_to_sync(import_custom_csv_file)(user, f)
+    return async_to_sync(import_custom_csv_file)(user, path_to_file)
 
 
-async def import_custom_csv_file(user: User, file) -> tuple[int, int, int]:
+async def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, int]:
     nb_imported_articles = 0
     nb_imported_feeds = 0
     nb_imported_categories = 0
 
-    dict_reader = csv.DictReader(file)
-    # This is used to cache feed values: the URL in the file may not be the latest available URL
-    # To avoid making too many HTTP requests, we cache the result to reuse the latest URL as
-    # soon as possible.
-    feed_url_in_file_to_true_feed_url: dict[str, Feed] = {}
-    for row in dict_reader:
-        _check_keys_in_row(row)
-        nb_articles, nb_feeds, nb_categories = await _process_row(
-            user, row, feed_url_in_file_to_true_feed_url
-        )
-        nb_imported_articles += nb_articles
-        nb_imported_feeds += nb_feeds
-        nb_imported_categories += nb_categories
+    with Path(path_to_file).open() as f:  # noqa: ASYNC101 async functions calling open
+        dict_reader = csv.DictReader(f)
+        # This is used to cache feed values: the URL in the file may not be the latest available URL
+        # To avoid making too many HTTP requests, we cache the result to reuse the latest URL as
+        # soon as possible.
+        feed_url_in_file_to_true_feed_url: dict[str, Feed] = {}
+        for row in dict_reader:
+            _check_keys_in_row(row)
+            nb_articles, nb_feeds, nb_categories = await _process_row(
+                user, row, feed_url_in_file_to_true_feed_url
+            )
+            nb_imported_articles += nb_articles
+            nb_imported_feeds += nb_feeds
+            nb_imported_categories += nb_categories
 
     return nb_imported_articles, nb_imported_feeds, nb_imported_categories
 

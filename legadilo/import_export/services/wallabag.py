@@ -19,6 +19,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from django.core.files import File
 from jsonschema import validate as validate_json_schema
 
 from legadilo.import_export.services.exceptions import InvalidEntryError
@@ -32,11 +33,15 @@ from legadilo.utils.validators import is_url_valid
 logger = logging.getLogger(__name__)
 
 
-def import_wallabag_json_file(user: User, path_to_file: str) -> int:
+def import_wallabag_json_file_path(user: User, path_to_file: str) -> int:
     with Path(path_to_file).open("rb") as f:
         data = json.load(f)
 
     return _import_wallabag_data(user, data)
+
+
+def import_wallabag_file(user: User, file: File) -> int:
+    return _import_wallabag_data(user, json.load(file))
 
 
 def _import_wallabag_data(user: User, data: list[dict]) -> int:
