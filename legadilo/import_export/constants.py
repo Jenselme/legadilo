@@ -15,3 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 MAX_SIZE_OPML_FILE = 1024 * 1024  # 1MiB in bytes.
+CSV_HEADER_FIELDS = (
+    "category_id",
+    "category_title",
+    "feed_id",
+    "feed_title",
+    "feed_url",
+    "feed_site_url",
+    "article_id",
+    "article_title",
+    "article_link",
+    "article_content",
+    "article_date_published",
+    "article_date_updated",
+    "article_authors",
+    "article_tags",
+    "article_read_at",
+    "article_is_favorite",
+    "article_lang",
+)

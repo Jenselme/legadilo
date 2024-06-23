@@ -1,0 +1,63 @@
+[
+  [
+    {
+      "article_authors": "[\"Author 1\", \"Author 2\"]",
+      "article_content": "",
+      "article_date_published": "2024-06-23T12:00:00+00:00",
+      "article_date_updated": "2024-06-23T12:00:00+00:00",
+      "article_id": 1,
+      "article_is_favorite": true,
+      "article_lang": "",
+      "article_link": "https://example.com/article/feed-article/",
+      "article_read_at": "2024-06-25T12:00:00+00:00",
+      "article_tags": "",
+      "article_title": "Article from feed",
+      "category_id": "",
+      "category_title": "",
+      "feed_id": "2",
+      "feed_site_url": "https://example.com",
+      "feed_title": "Feed without category",
+      "feed_url": "https://example.com/feeds/without_cat.xml"
+    },
+    {
+      "article_authors": "",
+      "article_content": "",
+      "article_date_published": "2024-06-23T12:00:00+00:00",
+      "article_date_updated": "2024-06-23T12:00:00+00:00",
+      "article_id": 2,
+      "article_is_favorite": false,
+      "article_lang": "",
+      "article_link": "https://example.com/article/multiple-feeds-article/",
+      "article_read_at": "",
+      "article_tags": "",
+      "article_title": "Article with 2 feeds",
+      "category_id": "1",
+      "category_title": "Feed category",
+      "feed_id": "1",
+      "feed_site_url": "https://example.com",
+      "feed_title": "Feed with category",
+      "feed_url": "https://example.com/feeds/with_cat.xml"
+    }
+  ],
+  [
+    {
+      "article_authors": "",
+      "article_content": "",
+      "article_date_published": "2024-06-23T12:00:00+00:00",
+      "article_date_updated": "2024-06-23T12:00:00+00:00",
+      "article_id": 3,
+      "article_is_favorite": true,
+      "article_lang": "",
+      "article_link": "https://example.com/article/independant-article/",
+      "article_read_at": "",
+      "article_tags": "",
+      "article_title": "Article",
+      "category_id": "",
+      "category_title": "",
+      "feed_id": "",
+      "feed_site_url": "",
+      "feed_title": "",
+      "feed_url": ""
+    }
+  ]
+]

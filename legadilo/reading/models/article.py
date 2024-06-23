@@ -16,14 +16,16 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import math
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
@@ -205,6 +207,53 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags()).for_feed_links()
+
+    def for_export(self, user: User) -> Self:
+        return (
+            self.for_user(user)
+            .alias(
+                feed_category_ids=ArrayAgg("feeds__category__id", order="feeds__id"),
+                feed_category_titles=ArrayAgg("feeds__category__title", order="feeds__id"),
+                feed_ids=ArrayAgg("feeds__id", order="feeds__id"),
+                feed_titles=ArrayAgg("feeds__title", order="feeds__id"),
+                feed_urls=ArrayAgg("feeds__feed_url", order="feeds__id"),
+                feed_site_urls=ArrayAgg("feeds__site_url", order="feeds__id"),
+            )
+            .annotate(
+                annot_feed_category_id=Coalesce(
+                    Cast(models.F("feed_category_ids__0"), output_field=models.TextField()),
+                    models.Value(""),
+                    output_field=models.TextField(),
+                ),
+                annot_feed_cateory_title=Coalesce(
+                    Cast(models.F("feed_category_titles__0"), output_field=models.TextField()),
+                    models.Value(""),
+                    output_field=models.TextField(),
+                ),
+                annot_feed_id=Coalesce(
+                    Cast(models.F("feed_ids__0"), output_field=models.TextField()),
+                    models.Value(""),
+                    output_field=models.TextField(),
+                ),
+                annot_feed_title=Coalesce(
+                    Cast(models.F("feed_titles__0"), output_field=models.TextField()),
+                    models.Value(""),
+                    output_field=models.TextField(),
+                ),
+                annot_feed_url=Coalesce(
+                    Cast(models.F("feed_urls__0"), output_field=models.TextField()),
+                    models.Value(""),
+                    output_field=models.TextField(),
+                ),
+                annot_feed_site_url=Coalesce(
+                    Cast(models.F("feed_site_urls__0"), output_field=models.TextField()),
+                    models.Value(""),
+                    output_field=models.TextField(),
+                ),
+            )
+            .prefetch_related(_build_prefetch_article_tags())
+            .order_by("id")
+        )
 
     def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
         # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
@@ -413,6 +462,45 @@ class ArticleManager(models.Manager["Article"]):
 
     def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
         return self.get_queryset().for_external_tag(user, tag)
+
+    async def export(self, user: User):
+        articles_qs = self.get_queryset().for_export(user)
+        nb_pages = math.ceil(await articles_qs.acount() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
+        for page in range(nb_pages):
+            articles = []
+            start_index = page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
+            end_index = (
+                page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
+                + constants.MAX_EXPORT_ARTICLES_PER_PAGE
+            )
+            async for article in articles_qs[start_index:end_index]:
+                articles.append({
+                    "category_id": article.annot_feed_category_id,  # type: ignore[attr-defined]
+                    "category_title": article.annot_feed_cateory_title,  # type: ignore[attr-defined]
+                    "feed_id": article.annot_feed_id,  # type: ignore[attr-defined]
+                    "feed_title": article.annot_feed_title,  # type: ignore[attr-defined]
+                    "feed_url": article.annot_feed_url,  # type: ignore[attr-defined]
+                    "feed_site_url": article.annot_feed_site_url,  # type: ignore[attr-defined]
+                    "article_id": article.id,
+                    "article_title": article.title,
+                    "article_link": article.link,
+                    "article_content": article.content,
+                    "article_date_published": article.published_at.isoformat()
+                    if article.published_at
+                    else "",
+                    "article_date_updated": article.updated_at.isoformat()
+                    if article.updated_at
+                    else "",
+                    "article_authors": json.dumps(article.authors) if article.authors else "",
+                    "article_tags": json.dumps([tag.title for tag in article.tags_to_display])  # type: ignore[attr-defined]
+                    if article.tags_to_display  # type: ignore[attr-defined]
+                    else "",
+                    "article_read_at": article.read_at.isoformat() if article.read_at else "",
+                    "article_is_favorite": article.is_favorite,
+                    "article_lang": article.language,
+                })
+
+            yield articles
 
 
 class Article(models.Model):

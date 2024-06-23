@@ -26,6 +26,11 @@
                        href="{% url 'users:update_settings' %}"
                        role="button">{% translate "My settings" %}</a>
                 </div>
+                <div class="col-sm-12 mt-1">
+                    <a class="btn btn-primary"
+                       href="{% url 'import_export:import_export_articles' %}"
+                       role="button">{% translate "Import/Export articles" %}</a>
+                </div>
             </div>
             <!-- End Action buttons -->
         {% endif %}

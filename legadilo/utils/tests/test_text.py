@@ -16,7 +16,7 @@
 
 import pytest
 
-from legadilo.utils.text import get_nb_words_from_html
+from legadilo.utils.text import ClearableStringIO, get_nb_words_from_html
 
 
 @pytest.mark.parametrize(
@@ -41,3 +41,19 @@ def test_get_nb_words_from_html(input_text: str, expected_nb_words: int):
     nb_words = get_nb_words_from_html(input_text)
 
     assert nb_words == expected_nb_words
+
+
+class TestClearableStringIO:
+    def test_multiple_get_value(self):
+        buffer = ClearableStringIO()
+
+        buffer.write("Line 1\n")
+        buffer.write("Line 2\n")
+        assert buffer.getvalue() == "Line 1\nLine 2\n"
+
+        buffer.write("Line 3\n")
+        buffer.clear()
+        assert not buffer.getvalue()
+
+        buffer.write("Line 4\n")
+        assert buffer.getvalue() == "Line 4\n"

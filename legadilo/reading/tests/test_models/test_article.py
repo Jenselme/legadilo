@@ -17,13 +17,15 @@
 from datetime import UTC, datetime
 from random import choice
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 import time_machine
+from asgiref.sync import async_to_sync
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
-from legadilo.feeds.tests.factories import FeedFactory
+from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, ReadingListTag
 from legadilo.reading.models.article import _build_filters_from_reading_list
@@ -33,6 +35,7 @@ from legadilo.reading.tests.factories import (
     ReadingListFactory,
     TagFactory,
 )
+from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time import utcdt, utcnow
 
 
@@ -1182,6 +1185,79 @@ class TestArticleManager:
         assert article.title == initial_article.title
         assert article.tags.count() == 0
         assert article.article_fetch_errors.count() == 1
+
+    @patch.object(constants, "MAX_EXPORT_ARTICLES_PER_PAGE", 2)
+    def test_export(self, user, other_user, snapshot, django_assert_num_queries):
+        ArticleFactory(id=10, user=other_user)
+        feed_category = FeedCategoryFactory(id=1, user=user, title="Feed category")
+        feed_with_category = FeedFactory(
+            id=1,
+            user=user,
+            title="Feed with category",
+            category=feed_category,
+            feed_url="https://example.com/feeds/with_cat.xml",
+        )
+        feed_without_category = FeedFactory(
+            id=2,
+            user=user,
+            title="Feed without category",
+            feed_url="https://example.com/feeds/without_cat.xml",
+        )
+        article_from_feed = ArticleFactory(
+            id=1,
+            user=user,
+            title="Article from feed",
+            link="https://example.com/article/feed-article/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+            authors=["Author 1", "Author 2"],
+            contributors=["Contributor 1", "Contributor 2"],
+            external_tags=["Tag 1", "Tag 2"],
+            read_at=utcdt(2024, 6, 25, 12, 0, 0),
+            opened_at=utcdt(2024, 6, 25, 12, 0, 0),
+            is_favorite=True,
+            is_for_later=True,
+        )
+        article_from_feed.feeds.add(feed_without_category)
+        article_two_feeds = ArticleFactory(
+            id=2,
+            user=user,
+            title="Article with 2 feeds",
+            link="https://example.com/article/multiple-feeds-article/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
+        article_two_feeds.feeds.add(feed_with_category, feed_without_category)
+        article_no_feed = ArticleFactory(
+            id=3,
+            user=user,
+            is_favorite=True,
+            title="Article",
+            link="https://example.com/article/independant-article/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
+
+        with django_assert_num_queries(5):
+            articles = async_to_sync(self._export_all_articles)(user)
+
+        assert len(articles) == 2
+        assert len(articles[0]) == 2
+        assert len(articles[1]) == 1
+        assert articles[0][0]["article_id"] == article_from_feed.id
+        assert articles[0][0]["feed_id"] == str(feed_without_category.id)
+        assert articles[0][1]["article_id"] == article_two_feeds.id
+        assert articles[0][1]["feed_id"] == str(feed_with_category.id)
+        assert articles[0][1]["category_id"] == str(feed_category.id)
+        assert articles[1][0]["article_id"] == article_no_feed.id
+        snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
+
+    async def _export_all_articles(self, user):
+        all_articles = []
+        async for articles in Article.objects.export(user):
+            all_articles.append(articles)
+
+        return all_articles
 
 
 class TestArticleModel:

@@ -15,9 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
+from asgiref.sync import async_to_sync
 
 from legadilo.feeds.models import FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory
+from legadilo.utils.testing import serialize_for_snapshot
 
 
 @pytest.mark.django_db()
@@ -53,3 +55,14 @@ class TestFeedCategoryManager:
 
         assert found_category == feed_category_user
         assert inexistant_slug is None
+
+    def test_export(self, user, other_user, snapshot, django_assert_num_queries):
+        feed_category_user = FeedCategoryFactory(user=user, id=1, title="Slug", slug="slug")
+        FeedCategoryFactory(user=other_user, title="Slug", slug="slug")
+
+        with django_assert_num_queries(1):
+            exports = async_to_sync(FeedCategory.objects.export)(user)
+
+        assert len(exports) == 1
+        assert exports[0]["category_id"] == feed_category_user.id
+        snapshot.assert_match(serialize_for_snapshot(exports), "categories.json")

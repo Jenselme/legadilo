@@ -6,7 +6,7 @@
   </head>
   <body>
     
-    <outline type="rss" text="Feed without a category" xmlUrl="https://example.com/feeds/71.xml" htmlUrl="https://example.com" />
+    <outline type="rss" text="Feed without a category" xmlUrl="https://example.com/feeds/no_cat.xml" htmlUrl="https://example.com" />
     
     
     <outline text="My Category">

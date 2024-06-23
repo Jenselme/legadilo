@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% load i18n static crispy_forms_tags %}
+
+{% block title %}
+    {% translate "Import/Export articles" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Import/Export articles" %}</h1>
+    <h2>{% translate "Export articles into a CSV" %}</h2>
+    <a class="btn btn-outline-primary"
+       href="{% url 'import_export:export_articles' %}"
+       role="button"
+       download="{% translate 'articles.csv' %}">{% translate "Export all articles" %}</a>
+    <h2>{% translate "Import custom CSV" %}</h2>
+    <form method="post"
+          action="{% url 'import_export:import_feeds' %}"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ import_custom_csv_form|crispy }}
+        <button type="submit" class="btn btn-primary">{% translate "Import" %}</button>
+    </form>
+{% endblock content %}

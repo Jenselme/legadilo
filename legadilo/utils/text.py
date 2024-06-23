@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import string
+from io import StringIO
 
 from legadilo.utils.security import full_sanitize
 
@@ -27,3 +28,19 @@ def get_nb_words_from_html(text: str) -> int:
             nb_words += 1
 
     return nb_words
+
+
+class ClearableStringIO:
+    def __init__(self):
+        self.buffer = StringIO()
+
+    def write(self, value):
+        self.buffer.write(value)
+
+    def getvalue(self):
+        value = self.buffer.getvalue()
+        self.clear()
+        return value
+
+    def clear(self):
+        self.buffer = StringIO()
