@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Reading lists admin" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Reading list admin" %}</h1>
+    <a class="btn btn-outline-secondary"
+       href="{% url 'reading:create_reading_list' %}"
+       role="button">{% translate "Create a new reading list" %}</a>
+    <ul class="list-group mt-3">
+        {% for reading_list in reading_lists %}
+            <li class="list-group-item container">
+                <div class="row">
+                    <div class="col">{{ reading_list.title }}</div>
+                    <div class="col">
+                        <a href="{% url 'reading:edit_reading_list' reading_list_id=reading_list.id %}">{% translate "Edit/Delete reading list" %}</a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock content %}

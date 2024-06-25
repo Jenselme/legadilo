@@ -25,12 +25,20 @@ from .list_of_articles_views import (
     reading_list_with_articles_view,
     tag_with_articles_view,
 )
+from .manage_reading_lists_views import (
+    reading_list_admin_view,
+    reading_list_create_view,
+    reading_list_edit_view,
+)
 
 __all__ = [
     "add_article_view",
     "article_details_view",
     "delete_article_view",
     "external_tag_with_articles_view",
+    "reading_list_admin_view",
+    "reading_list_create_view",
+    "reading_list_edit_view",
     "reading_list_with_articles_view",
     "refetch_article_view",
     "tag_with_articles_view",

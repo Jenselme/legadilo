@@ -49,6 +49,17 @@ class TestReadingListManager:
 
         assert reading_list == reading_list_to_get
 
+    def test_make_default(self, user):
+        initial_default_reading_list = ReadingListFactory(user=user, is_default=True)
+        reading_list = ReadingListFactory(user=user, is_default=False)
+
+        ReadingList.objects.make_default(reading_list)
+
+        reading_list.refresh_from_db()
+        initial_default_reading_list.refresh_from_db()
+        assert reading_list.is_default
+        assert not initial_default_reading_list.is_default
+
 
 @pytest.mark.django_db()
 class TestReadingListModel:
