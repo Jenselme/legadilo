@@ -138,7 +138,7 @@ class TestImportFeeds:
             size=100,
             charset="utf-8",
         )
-        Path(temp_file.file.name).write_text("stuff")  # type: ignore[union-attr]
+        Path(temp_file.file.name).write_text("stuff", encoding="utf-8")  # type: ignore[union-attr]
 
         response = logged_in_sync_client.post(
             self.url,
@@ -219,7 +219,7 @@ class TestImportFeeds:
                 "r", encoding="utf-8"
             ) as in_,
         ):
-            Path(temp_file.file.name).write_text(in_.read())  # type: ignore[union-attr]
+            Path(temp_file.file.name).write_text(in_.read(), encoding="utf-8")  # type: ignore[union-attr]
 
         response = logged_in_sync_client.post(
             self.url,

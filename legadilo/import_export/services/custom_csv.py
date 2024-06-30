@@ -62,7 +62,7 @@ async def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, in
     nb_imported_feeds = 0
     nb_imported_categories = 0
 
-    with Path(path_to_file).open() as f:  # noqa: ASYNC101 async functions calling open
+    with Path(path_to_file).open(encoding="utf-8") as f:  # noqa: ASYNC101 async functions calling open
         dict_reader = csv.DictReader(f)
         # This is used to cache feed values: the URL in the file may not be the latest available URL
         # To avoid making too many HTTP requests, we cache the result to reuse the latest URL as

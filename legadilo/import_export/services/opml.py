@@ -45,7 +45,8 @@ class OutlineElt:
     @property
     def children_outline(self):
         if not self.is_category:
-            return []
+            yield []
+            return
 
         for outline_node in self._node.findall("outline"):
             yield OutlineElt(outline_node)

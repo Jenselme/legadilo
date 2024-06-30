@@ -45,7 +45,7 @@ else:
     TypedModelMeta = object
 
 
-def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911 too complex
+def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911, PLR0912 too complex
     now = utcnow()
     last_day_of_month = calendar.monthrange(now.year, now.month)[1]
     base_filters = models.Q(refresh_delay=refresh_delay)

@@ -52,7 +52,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:
+def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:  # noqa: C901 too complex
     filters = models.Q()
 
     if reading_list.read_status == constants.ReadStatus.ONLY_READ:

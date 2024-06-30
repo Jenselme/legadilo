@@ -207,7 +207,7 @@ class TestImportCustomCSV:
         with Path(
             settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
         ).open("r", encoding="utf-8") as in_:
-            Path(temp_file.file.name).write_text(in_.read())  # type: ignore[union-attr]
+            Path(temp_file.file.name).write_text(in_.read(), encoding="utf-8")  # type: ignore[union-attr]
 
         response = logged_in_sync_client.post(
             self.url,
