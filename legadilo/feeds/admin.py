@@ -59,7 +59,7 @@ class FeedAdmin(admin.ModelAdmin):
     search_fields = ["title", "category__title", "feed_url", "site_url"]
     autocomplete_fields = ["user", "category"]
     list_filter = ["enabled", "feed_type"]
-    list_display = ["__str__", "feed_url", "site_url", "created_at", "modified_at"]
+    list_display = ["__str__", "feed_url", "site_url", "created_at", "updated_at"]
     inlines = [
         FeedTagInline,
         FeedUpdateInline,
