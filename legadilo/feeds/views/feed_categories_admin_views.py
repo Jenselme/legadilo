@@ -20,10 +20,22 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.feeds.models import FeedCategory
 from legadilo.users.typing import AuthenticatedHttpRequest
+
+
+@require_GET
+@login_required
+def feed_category_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+    return TemplateResponse(
+        request,
+        "feeds/feed_categories_admin.html",
+        {
+            "categories": FeedCategory.objects.get_queryset().for_user(request.user),
+        },
+    )
 
 
 class FeedCategoryForm(forms.ModelForm):

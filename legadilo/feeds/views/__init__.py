@@ -15,10 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .feed_articles_view import feed_articles_view
-from .feed_category_admin_view import feed_category_admin_view
-from .feed_category_views import create_feed_category_view, edit_feed_category_view
-from .feeds_admin_view import feeds_admin_view
-from .manage_feeds_views import edit_feed_view
+from .feed_categories_admin_views import (
+    create_feed_category_view,
+    edit_feed_category_view,
+    feed_category_admin_view,
+)
+from .feeds_admin_view import edit_feed_view, feeds_admin_view
 from .subscribe_to_feed_view import subscribe_to_feed_view
 
 __all__ = [

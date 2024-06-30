@@ -23,6 +23,28 @@ from legadilo.feeds.models import FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory
 
 
+class TestCategoryFeedAdminView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self):
+        self.url = reverse("feeds:feed_category_admin")
+
+    def test_not_logged_in(self, client):
+        response = client.get(self.url)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == f"/accounts/login/?next={self.url}"
+
+    def test_get_page(self, logged_in_sync_client, user, other_user):
+        feed_category = FeedCategoryFactory(user=user)
+        FeedCategoryFactory(user=other_user)
+
+        response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/feed_categories_admin.html"
+        assert list(response.context["categories"]) == [feed_category]
+
+
 class TestCreateFeedCategoryView:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
