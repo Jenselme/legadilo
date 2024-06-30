@@ -25,7 +25,7 @@ def format_exception(exception: Exception) -> str:
     return exception.__class__.__name__
 
 
-def extract_debug_information(exception: httpx.HTTPError) -> dict | None:
+def extract_debug_information(exception: Exception) -> dict | None:
     request: httpx.Request | None = None
     try:
         # Request may not be set or access may raise a RuntimeError. Prevent errors with a try/catch
