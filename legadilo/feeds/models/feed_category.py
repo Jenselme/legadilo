@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -36,6 +36,9 @@ class FeedCategoryQuerySet(models.QuerySet["FeedCategory"]):
     def for_user(self, user: User) -> Self:
         return self.filter(user=user)
 
+    def for_export(self, user: User):
+        return self.for_user(user).order_by("id")
+
 
 class FeedCategoryManager(models.Manager["FeedCategory"]):
     _hints: dict
@@ -54,6 +57,31 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
 
     def get_first_for_user(self, user: User, slug: str) -> FeedCategory | None:
         return self.get_queryset().filter(user=user, slug=slug).first()
+
+    async def export(self, user: User) -> list[dict[str, Any]]:
+        feed_categories = []
+        async for feed_category in self.get_queryset().for_export(user):
+            feed_categories.append({
+                "category_id": feed_category.id,
+                "category_title": feed_category.title,
+                "feed_id": "",
+                "feed_title": "",
+                "feed_url": "",
+                "feed_site_url": "",
+                "article_id": "",
+                "article_title": "",
+                "article_link": "",
+                "article_content": "",
+                "article_date_published": "",
+                "article_date_updated": "",
+                "article_authors": "",
+                "article_tags": "",
+                "article_read_at": "",
+                "article_is_favorite": "",
+                "article_lang": "",
+            })
+
+        return feed_categories
 
 
 class FeedCategory(models.Model):

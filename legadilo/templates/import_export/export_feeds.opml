@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<opml version="1.0">
+  <head>
+    <dateCreated>{{ export_date|date:"r" }}</dateCreated>
+    <title>Legadilo feeds export</title>
+  </head>
+  <body>
+    {% for feed in feeds_without_category %}
+    <outline type="rss" text="{{ feed.title }}" xmlUrl="{{ feed.feed_url }}" htmlUrl="{{ feed.site_url }}" />
+    {% endfor %}
+    {% for category, feeds in feeds_by_categories.items %}
+    <outline text="{{ category.title }}">
+      {% for feed in feeds %}
+      <outline type="rss" text="{{ feed.title }}" xmlUrl="{{ feed.feed_url }}" htmlUrl="{{ feed.site_url }}" />
+      {% endfor %}
+    </outline>
+    {% endfor %}
+  </body>
+</opml>

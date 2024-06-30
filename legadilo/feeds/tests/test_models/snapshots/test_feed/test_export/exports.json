@@ -1,0 +1,40 @@
+[
+  {
+    "article_authors": "",
+    "article_content": "",
+    "article_date_published": "",
+    "article_date_updated": "",
+    "article_id": "",
+    "article_is_favorite": "",
+    "article_lang": "",
+    "article_link": "",
+    "article_read_at": "",
+    "article_tags": "",
+    "article_title": "",
+    "category_id": "",
+    "category_title": "",
+    "feed_id": 1,
+    "feed_site_url": "https://example.com",
+    "feed_title": "Default feed",
+    "feed_url": "https://example.com/feeds/atom.exsiting.xml"
+  },
+  {
+    "article_authors": "",
+    "article_content": "",
+    "article_date_published": "",
+    "article_date_updated": "",
+    "article_id": "",
+    "article_is_favorite": "",
+    "article_lang": "",
+    "article_link": "",
+    "article_read_at": "",
+    "article_tags": "",
+    "article_title": "",
+    "category_id": 1,
+    "category_title": "Some category",
+    "feed_id": 2,
+    "feed_site_url": "https://example.com",
+    "feed_title": "Feed with category",
+    "feed_url": "https://example.com/feeds/with_category.xml"
+  }
+]

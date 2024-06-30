@@ -32,8 +32,10 @@ if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
 
     from legadilo.reading.models.article import Article, ArticleQuerySet
+    from legadilo.reading.models.reading_list import ReadingList
 else:
     TypedModelMeta = object
+    ReadingList = object
 
 
 class TagQuerySet(models.QuerySet["Tag"]):
@@ -223,6 +225,46 @@ class ArticleTag(models.Model):
         )
 
 
+class ReadingListTagQuerySet(models.QuerySet["ReadingListTag"]):
+    def for_reading_list(self, filter_type: constants.ReadingListTagFilterType):
+        return (
+            self.select_related("tag")
+            .filter(filter_type=filter_type)
+            .annotate(title=models.F("tag__title"), slug=models.F("tag__slug"))
+        )
+
+
+class ReadingListTagManager(models.Manager["ReadingListTag"]):
+    _hints: dict
+
+    def get_queryset(self) -> ReadingListTagQuerySet:
+        return ReadingListTagQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    def get_selected_values(self, filter_type: constants.ReadingListTagFilterType) -> list[str]:
+        return list(
+            self.get_queryset().for_reading_list(filter_type).values_list("slug", flat=True)
+        )
+
+    @transaction.atomic()
+    def associate_reading_list_with_tag_slugs(
+        self,
+        reading_list: ReadingList,
+        tag_slugs: list[str],
+        filter_type: constants.ReadingListTagFilterType,
+    ):
+        tags = Tag.objects.get_or_create_from_list(reading_list.user, tag_slugs)
+        reading_list_tags = [
+            self.model(reading_list=reading_list, tag=tag, filter_type=filter_type) for tag in tags
+        ]
+        reading_list.reading_list_tags.filter(filter_type=filter_type).delete()
+        self.bulk_create(
+            reading_list_tags,
+            update_conflicts=True,
+            update_fields=["filter_type"],
+            unique_fields=["reading_list", "tag"],
+        )
+
+
 class ReadingListTag(models.Model):
     reading_list = models.ForeignKey(
         "reading.ReadingList", related_name="reading_list_tags", on_delete=models.CASCADE
@@ -236,6 +278,8 @@ class ReadingListTag(models.Model):
         default=constants.ReadingListTagFilterType.INCLUDE,
         max_length=100,
     )
+
+    objects = ReadingListTagManager()
 
     class Meta(TypedModelMeta):
         constraints = [

@@ -22,7 +22,7 @@ from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
 from legadilo.feeds.services.feed_parsing import FeedFileTooBigError
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
-from legadilo.import_export.services.opml import import_opml_file
+from legadilo.import_export.services.opml import import_opml_file_sync
 from legadilo.reading.models import Article
 
 
@@ -36,7 +36,7 @@ from legadilo.reading.models import Article
     ],
 )
 def test_import_empty_files(user, file_name: str):
-    nb_imported_feeds, nb_imported_categories = import_opml_file(
+    nb_imported_feeds, nb_imported_categories = import_opml_file_sync(
         user, settings.APPS_DIR / "import_export/tests/fixtures/opml" / file_name
     )
 
@@ -57,7 +57,7 @@ def test_import_valid_files(user, httpx_mock):
         content=get_feed_fixture_content("sample_atom.xml"),
     )
 
-    nb_imported_feeds, nb_imported_categories = import_opml_file(
+    nb_imported_feeds, nb_imported_categories = import_opml_file_sync(
         user, settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
     )
 
@@ -89,7 +89,7 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
     FeedFactory(user=user, feed_url="https://www.example.com/feeds/all.rss.xml")
     FeedCategoryFactory(user=user, title="Category 1", slug="category-1")
 
-    nb_imported_feeds, nb_imported_categories = import_opml_file(
+    nb_imported_feeds, nb_imported_categories = import_opml_file_sync(
         user, settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
     )
 
@@ -119,7 +119,7 @@ def test_import_valid_files_with_network_errors(user, httpx_mock):
         url="https://www.example.eu/feeds/all.atom.xml",
     )
 
-    nb_imported_feeds, nb_imported_categories = import_opml_file(
+    nb_imported_feeds, nb_imported_categories = import_opml_file_sync(
         user, settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
     )
 

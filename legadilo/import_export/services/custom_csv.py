@@ -46,16 +46,23 @@ from legadilo.utils.security import full_sanitize
 from legadilo.utils.time import safe_datetime_parse
 from legadilo.utils.validators import is_url_valid
 
+from .. import constants
+
 logger = logging.getLogger(__name__)
 
 csv.field_size_limit(sys.maxsize)
 
 
-def import_custom_csv_file(user: User, path_to_file: str | Path) -> tuple[int, int, int]:
+def import_custom_csv_file_sync(user: User, path_to_file: str | Path) -> tuple[int, int, int]:
+    return async_to_sync(import_custom_csv_file)(user, path_to_file)
+
+
+async def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, int]:
     nb_imported_articles = 0
     nb_imported_feeds = 0
     nb_imported_categories = 0
-    with Path(path_to_file).open() as f:
+
+    with Path(path_to_file).open(encoding="utf-8") as f:  # noqa: ASYNC101 async functions calling open
         dict_reader = csv.DictReader(f)
         # This is used to cache feed values: the URL in the file may not be the latest available URL
         # To avoid making too many HTTP requests, we cache the result to reuse the latest URL as
@@ -63,7 +70,7 @@ def import_custom_csv_file(user: User, path_to_file: str | Path) -> tuple[int, i
         feed_url_in_file_to_true_feed_url: dict[str, Feed] = {}
         for row in dict_reader:
             _check_keys_in_row(row)
-            nb_articles, nb_feeds, nb_categories = _process_row(
+            nb_articles, nb_feeds, nb_categories = await _process_row(
                 user, row, feed_url_in_file_to_true_feed_url
             )
             nb_imported_articles += nb_articles
@@ -74,43 +81,26 @@ def import_custom_csv_file(user: User, path_to_file: str | Path) -> tuple[int, i
 
 
 def _check_keys_in_row(row: dict):
-    if not {
-        "category_id",
-        "category_title",
-        "feed_id",
-        "feed_title",
-        "feed_url",
-        "feed_site_url",
-        "article_id",
-        "article_title",
-        "article_link",
-        "article_content",
-        "article_date_published",
-        "article_date_updated",
-        "article_authors",
-        "article_tags",
-        "article_read_at",
-        "article_is_favorite",
-    }.issubset(row.keys()):
+    if not set(constants.CSV_HEADER_FIELDS).issubset(row.keys()):
         raise DataImportError
 
 
-def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url: dict[str, Feed]):
+async def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url: dict[str, Feed]):
     category = None
     created_category = False
     if row["category_title"]:
-        category, created_category = _import_category(user, row)
+        category, created_category = await _import_category(user, row)
 
     feed = None
     created_feed = False
     if row["feed_url"] and is_url_valid(row["feed_url"]) and is_url_valid(row["feed_site_url"]):
-        feed, created_feed = async_to_sync(_import_feed)(
+        feed, created_feed = await _import_feed(
             user, category, row, feed_url_in_file_to_true_feed_url
         )
 
     created_article = False
     if row["article_link"] and is_url_valid(row["article_link"]):
-        created_article = _import_article(user, feed, row)
+        created_article = await _import_article(user, feed, row)
 
     return (
         1 if created_article else 0,
@@ -119,8 +109,10 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url: dict[
     )
 
 
-def _import_category(user, row):
-    return FeedCategory.objects.get_or_create(user=user, title=full_sanitize(row["category_title"]))
+async def _import_category(user, row):
+    return await FeedCategory.objects.aget_or_create(
+        user=user, title=full_sanitize(row["category_title"])
+    )
 
 
 async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
@@ -180,7 +172,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
         return None, False
 
 
-def _import_article(user, feed, row):
+async def _import_article(user, feed, row):
     article_data = build_article_data(
         external_article_id=f"custom_csv:{row["article_id"]}",
         source_title=feed.title if feed else urlparse(row["article_link"]).netloc,
@@ -199,7 +191,7 @@ def _import_article(user, feed, row):
         read_at=safe_datetime_parse(row["article_read_at"]),
         is_favorite=_get_bool(row["article_is_favorite"]),
     )
-    articles = Article.objects.update_or_create_from_articles_list(
+    articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
         user=user,
         articles_data=[article_data],
         tags=[],
@@ -209,7 +201,7 @@ def _import_article(user, feed, row):
     )
 
     if feed:
-        FeedArticle.objects.get_or_create(feed=feed, article=articles[0])
+        await FeedArticle.objects.aget_or_create(feed=feed, article=articles[0])
 
     return True
 

@@ -17,8 +17,8 @@
 import pytest
 
 from legadilo.reading import constants
-from legadilo.reading.models import ArticleTag, Tag
-from legadilo.reading.tests.factories import ArticleFactory, TagFactory
+from legadilo.reading.models import ArticleTag, ReadingListTag, Tag
+from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
 
 
 @pytest.mark.django_db()
@@ -230,3 +230,68 @@ class TestArticleTagManager:
             (self.tag2.slug, constants.TaggingReason.DELETED),
             (self.tag3.slug, constants.TaggingReason.DELETED),
         ]
+
+
+@pytest.mark.django_db()
+class TestReadingListTagManager:
+    def test_get_selected_values(self, user):
+        reading_list = ReadingListFactory(user=user)
+        tag1 = TagFactory(user=user)
+        tag2 = TagFactory(user=user)
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag1,
+            filter_type=constants.ReadingListTagFilterType.INCLUDE,
+        )
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag2,
+            filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+        )
+
+        included_tags = reading_list.reading_list_tags.get_selected_values(
+            constants.ReadingListTagFilterType.INCLUDE
+        )
+        excluded_tags = reading_list.reading_list_tags.get_selected_values(
+            constants.ReadingListTagFilterType.EXCLUDE
+        )
+
+        assert included_tags == [tag1.slug]
+        assert excluded_tags == [tag2.slug]
+
+    def test_associate_reading_list_with_tag_slugs(self, user):
+        reading_list = ReadingListFactory(user=user)
+        tag1 = TagFactory(user=user)
+        tag2 = TagFactory(user=user)
+        tag3 = TagFactory(user=user)
+        tag4 = TagFactory(user=user)
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag1,
+            filter_type=constants.ReadingListTagFilterType.INCLUDE,
+        )
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag3,
+            filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+        )
+        ReadingListTag.objects.create(
+            reading_list=reading_list,
+            tag=tag4,
+            filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+        )
+
+        ReadingListTag.objects.associate_reading_list_with_tag_slugs(
+            reading_list,
+            [tag2.slug, tag3.slug, "new-tag"],
+            constants.ReadingListTagFilterType.INCLUDE,
+        )
+
+        reading_list.refresh_from_db()
+        assert list(reading_list.reading_list_tags.values_list("tag__slug", "filter_type")) == [
+            ("new-tag", constants.ReadingListTagFilterType.INCLUDE),
+            (tag2.slug, constants.ReadingListTagFilterType.INCLUDE),
+            (tag3.slug, constants.ReadingListTagFilterType.INCLUDE),
+            (tag4.slug, constants.ReadingListTagFilterType.EXCLUDE),
+        ]
+        assert Tag.objects.count() == 5

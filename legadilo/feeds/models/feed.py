@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import calendar
 from datetime import timedelta
-from typing import TYPE_CHECKING, assert_never, cast
+from typing import TYPE_CHECKING, Any, assert_never, cast
 
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
@@ -45,7 +45,7 @@ else:
     TypedModelMeta = object
 
 
-def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911 too complex
+def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911, PLR0912 too complex
     now = utcnow()
     last_day_of_month = calendar.monthrange(now.year, now.month)[1]
     base_filters = models.Q(refresh_delay=refresh_delay)
@@ -177,6 +177,9 @@ class FeedQuerySet(models.QuerySet["Feed"]):
     def for_user_ids(self, user_id: list[int]):
         return self.filter(user_id__in=user_id)
 
+    def for_export(self, user: User):
+        return self.for_user(user).select_related("category").order_by("id")
+
 
 class FeedManager(models.Manager["Feed"]):
     _hints: dict
@@ -184,8 +187,8 @@ class FeedManager(models.Manager["Feed"]):
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def get_by_categories(self, user: User) -> dict[str, list[Feed]]:
-        feeds_by_categories: dict[str, list[Feed]] = {}
+    def get_by_categories(self, user: User) -> dict[str | None, list[Feed]]:
+        feeds_by_categories: dict[str | None, list[Feed]] = {}
         for feed in (
             self.get_queryset()
             .for_user(user)
@@ -279,6 +282,32 @@ class FeedManager(models.Manager["Feed"]):
             feed=feed,
         )
 
+    async def export(self, user: User) -> list[dict[str, Any]]:
+        feeds = []
+        async for feed in self.get_queryset().for_export(user):
+            feed_category = feed.category
+            feeds.append({
+                "category_id": feed_category.id if feed_category else "",
+                "category_title": feed_category.title if feed_category else "",
+                "feed_id": feed.id if feed else "",
+                "feed_title": feed.title if feed else "",
+                "feed_url": feed.feed_url if feed else "",
+                "feed_site_url": feed.site_url if feed else "",
+                "article_id": "",
+                "article_title": "",
+                "article_link": "",
+                "article_content": "",
+                "article_date_published": "",
+                "article_date_updated": "",
+                "article_authors": "",
+                "article_tags": "",
+                "article_read_at": "",
+                "article_is_favorite": "",
+                "article_lang": "",
+            })
+
+        return feeds
+
 
 class Feed(models.Model):
     feed_url = models.URLField()
@@ -355,3 +384,8 @@ class Feed(models.Model):
         self.disabled_reason = reason
         self.disabled_at = utcnow()
         self.enabled = False
+
+    def enable(self):
+        self.disabled_reason = ""
+        self.disabled_at = None
+        self.enabled = True

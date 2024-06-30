@@ -31,7 +31,8 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.users.tests.factories import UserFactory
-from legadilo.utils.time import utcdt
+from legadilo.utils.testing import serialize_for_snapshot
+from legadilo.utils.time import utcdt, utcnow
 
 from ... import constants as feeds_constants
 from ...models import Feed
@@ -151,7 +152,9 @@ class TestFeedManager:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.default_feed_url = "https://example.com/feeds/atom.exsiting.xml"
-        self.feed = FeedFactory(feed_url=self.default_feed_url, user=user)
+        self.feed = FeedFactory(
+            id=1, feed_url=self.default_feed_url, user=user, title="Default feed"
+        )
         self.initial_feed_count = 1
 
     def test_get_feeds_by_categories_no_categories(self, other_user):
@@ -452,3 +455,53 @@ class TestFeedManager:
         assert list(feed_updates_to_cleanup) == [
             feed_update_to_cleanup,
         ]
+
+    def test_export(self, user, other_user, snapshot, django_assert_num_queries):
+        feed_category = FeedCategoryFactory(user=user, id=1, title="Some category")
+        feed_with_category = FeedFactory(
+            user=user,
+            id=2,
+            category=feed_category,
+            title="Feed with category",
+            feed_url="https://example.com/feeds/with_category.xml",
+        )
+        Feed(user=other_user, title="Feed other user")
+
+        with django_assert_num_queries(1):
+            feeds = async_to_sync(Feed.objects.export)(user)
+
+        assert len(feeds) == 2
+        assert not feeds[0]["category_id"]
+        assert feeds[0]["feed_id"] == self.feed.id
+        assert feeds[1]["category_id"] == feed_category.id
+        assert feeds[1]["feed_id"] == feed_with_category.id
+        snapshot.assert_match(serialize_for_snapshot(feeds), "exports.json")
+
+
+class TestFeedModel:
+    def test_disable(self):
+        feed = FeedFactory.build(enabled=True, disabled_at=None, disabled_reason="")
+
+        feed.disable()
+
+        assert not feed.enabled
+        assert feed.disabled_at is not None
+        assert not feed.disabled_reason
+
+    def test_disable_with_reason(self):
+        feed = FeedFactory.build(enabled=True, disabled_at=None, disabled_reason="")
+
+        feed.disable(reason="Some reason")
+
+        assert not feed.enabled
+        assert feed.disabled_at is not None
+        assert feed.disabled_reason == "Some reason"
+
+    def test_enable(self):
+        feed = FeedFactory.build(enabled=False, disabled_at=utcnow(), disabled_reason="Test")
+
+        feed.enable()
+
+        assert feed.enabled
+        assert feed.disabled_at is None
+        assert not feed.disabled_reason

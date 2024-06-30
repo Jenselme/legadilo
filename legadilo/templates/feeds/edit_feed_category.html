@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% load i18n crispy_forms_tags %}
+
+{% block title %}
+    {% if category %}
+        {% blocktranslate with category_title=category.title %}
+            Editing feed category '{{ category_title }}'
+        {% endblocktranslate %}
+    {% else %}
+        {% translate "Create a feed category" %}
+    {% endif %}
+{% endblock title %}
+{% block content %}
+    <form id="delete-category-form"
+          method="post"
+          hx-boost="true"
+          hx-push-url="true"
+          hx-confirm="Delete?">
+        {% csrf_token %}
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {% if category %}
+            <button form="delete-category-form"
+                    data-modal-id="danger-modal"
+                    data-modal-title="{% translate 'Confirm category deletion' %}"
+                    data-modal-body="{% blocktranslate with category_title=category.title %}Are you sure you want to delete the category '{{ category_title }}'?{% endblocktranslate %}"
+                    class="btn btn-danger"
+                    type="submit"
+                    name="delete">{% translate "Delete" %}</button>
+            <button class="btn btn-primary" type="submit">{% translate "Update" %}</button>
+        {% else %}
+            <button class="btn btn-primary" type="submit">{% translate "Create" %}</button>
+        {% endif %}
+    </form>
+{% endblock content %}

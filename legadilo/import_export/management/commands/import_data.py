@@ -25,10 +25,10 @@ from django.core.management.base import CommandError, CommandParser
 from django.db import transaction
 from jsonschema import ValidationError as JsonSchemaValidationError
 
-from legadilo.import_export.services.custom_csv import import_custom_csv_file
+from legadilo.import_export.services.custom_csv import import_custom_csv_file_sync
 from legadilo.import_export.services.exceptions import DataImportError
-from legadilo.import_export.services.opml import import_opml_file
-from legadilo.import_export.services.wallabag import import_wallabag_json_file
+from legadilo.import_export.services.opml import import_opml_file_sync
+from legadilo.import_export.services.wallabag import import_wallabag_json_file_path
 from legadilo.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -85,10 +85,12 @@ class Command(BaseCommand):
         user = User.objects.get(id=options["user_id"])
         match options["source_type"]:
             case "wallabag":
-                nb_imported_articles = import_wallabag_json_file(user, options["file_to_import"][0])
+                nb_imported_articles = import_wallabag_json_file_path(
+                    user, options["file_to_import"][0]
+                )
                 logger.info(f"Imported {nb_imported_articles} articles")
             case "opml":
-                nb_imported_feeds, nb_imported_categories = import_opml_file(
+                nb_imported_feeds, nb_imported_categories = import_opml_file_sync(
                     user, options["file_to_import"][0]
                 )
                 logger.info(
@@ -97,7 +99,7 @@ class Command(BaseCommand):
                 )
             case "custom_csv":
                 nb_imported_articles, nb_imported_feeds, nb_imported_categories = (
-                    import_custom_csv_file(user, options["file_to_import"][0])
+                    import_custom_csv_file_sync(user, options["file_to_import"][0])
                 )
                 logger.info(
                     f"Imported {nb_imported_articles} articles, {nb_imported_feeds} feeds "

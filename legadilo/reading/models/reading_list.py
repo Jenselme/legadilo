@@ -102,6 +102,16 @@ class ReadingListManager(models.Manager["ReadingList"]):
             self.filter(user=user).select_related("user").prefetch_related("reading_list_tags")
         )
 
+    @transaction.atomic()
+    def make_default(self, reading_list: ReadingList):
+        current_default_reading_list = self.get_reading_list(
+            reading_list.user, reading_list_slug=None
+        )
+        current_default_reading_list.is_default = False
+        current_default_reading_list.save()
+        reading_list.is_default = True
+        reading_list.save()
+
 
 class ReadingList(models.Model):
     title = models.CharField(max_length=255)
