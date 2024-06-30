@@ -337,10 +337,10 @@ class ArticleManager(models.Manager["Article"]):
                     article_data, force_update=force_update
                 )
                 if source_type == constants.ArticleSourceType.MANUAL:
-                    if article_to_update.initial_source_type == constants.ArticleSourceType.FEED:
+                    if article_to_update.main_source_type == constants.ArticleSourceType.FEED:
                         # We force the source type to manual if we manually add it so prevent any
                         # cleanup later one.
-                        article_to_update.initial_source_type = constants.ArticleSourceType.MANUAL
+                        article_to_update.main_source_type = constants.ArticleSourceType.MANUAL
                     article_to_update.read_at = None
                     was_updated = True
                     article_to_update.obj_updated_at = utcnow()
@@ -365,8 +365,8 @@ class ArticleManager(models.Manager["Article"]):
                         preview_picture_alt=article_data.preview_picture_alt,
                         published_at=article_data.published_at,
                         updated_at=article_data.updated_at,
-                        initial_source_type=source_type,
-                        initial_source_title=article_data.source_title,
+                        main_source_type=source_type,
+                        main_source_title=article_data.source_title,
                         language=article_data.language,
                         annotations=article_data.annotations,
                         read_at=article_data.read_at,
@@ -391,7 +391,7 @@ class ArticleManager(models.Manager["Article"]):
                 "external_tags",
                 "updated_at",
                 "read_at",
-                "initial_source_type",
+                "main_source_type",
                 "obj_updated_at",
             ],
         )
@@ -576,12 +576,12 @@ class Article(models.Model):
 
     user = models.ForeignKey("users.User", related_name="articles", on_delete=models.CASCADE)
 
-    initial_source_type = models.CharField(
+    main_source_type = models.CharField(
         default=constants.ArticleSourceType.FEED,
         choices=constants.ArticleSourceType.choices,
         max_length=100,
     )
-    initial_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
+    main_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
 
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")
@@ -607,9 +607,9 @@ class Article(models.Model):
                 "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
             ),
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_initial_source_type_valid",
+                name="%(app_label)s_%(class)s_main_source_type_valid",
                 check=models.Q(
-                    initial_source_type__in=constants.ArticleSourceType.names,
+                    main_source_type__in=constants.ArticleSourceType.names,
                 ),
             ),
         ]
@@ -621,8 +621,8 @@ class Article(models.Model):
 
     def __str__(self):
         return (
-            f"Article(title={self.title}, initial_source_type={self.initial_source_type}, "
-            f"initial_source_title={self.initial_source_title}, published_at={self.published_at})"
+            f"Article(title={self.title}, main_source_type={self.main_source_type}, "
+            f"main_source_title={self.main_source_title}, published_at={self.published_at})"
         )
 
     def save(self, *args, **kwargs):
@@ -673,4 +673,4 @@ class Article(models.Model):
 
     @property
     def is_from_feed(self):
-        return self.initial_source_type == constants.ArticleSourceType.FEED
+        return self.main_source_type == constants.ArticleSourceType.FEED

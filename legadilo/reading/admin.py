@@ -60,10 +60,10 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    search_fields = ["title", "initial_source_title", "link"]
+    search_fields = ["title", "main_source_title", "link"]
     autocomplete_fields = ["user"]
     list_display = ["__str__", "obj_created_at", "obj_updated_at"]
-    list_filter = ["is_read", "is_favorite", "is_for_later", "initial_source_type"]
+    list_filter = ["is_read", "is_favorite", "is_for_later", "main_source_type"]
     inlines = [
         ArticleTagInline,
         ArticleFetchErrorInline,

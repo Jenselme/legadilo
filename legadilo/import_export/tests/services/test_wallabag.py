@@ -109,8 +109,8 @@ def test_import_valid_data(user):
     assert article.link == "https://www.example.com/articles/podcasts/test-article.html"
     assert article.content == "<p>Some </p>"
     assert article.external_article_id == "wallabag:4947"
-    assert article.initial_source_type == reading_constants.ArticleSourceType.MANUAL
-    assert article.initial_source_title == "www.example.com"
+    assert article.main_source_type == reading_constants.ArticleSourceType.MANUAL
+    assert article.main_source_title == "www.example.com"
     assert article.annotations == ["Some stuff"]
     assert article.language == "en"
     assert list(article.tags.values_list("title", "slug")) == [

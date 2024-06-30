@@ -828,7 +828,7 @@ class TestArticleManager:
             external_article_id="existing-article-feed",
             updated_at=utcdt(2023, 4, 20),
             read_at=utcnow(),
-            initial_source_type=constants.ArticleSourceType.FEED,
+            main_source_type=constants.ArticleSourceType.FEED,
         )
         existing_article_to_keep = ArticleFactory(
             title="Title to keep",
@@ -922,7 +922,7 @@ class TestArticleManager:
         assert existing_article_to_update.slug == "article-updated"
         assert existing_article_to_update.updated_at == now_dt
         assert existing_article_to_update.read_at is None
-        assert existing_article_to_update.initial_source_type == constants.ArticleSourceType.MANUAL
+        assert existing_article_to_update.main_source_type == constants.ArticleSourceType.MANUAL
         assert existing_article_to_update.obj_created_at == utcdt(2024, 6, 1, 12, 0)
         assert existing_article_to_update.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
         existing_article_to_keep.refresh_from_db()
@@ -1426,6 +1426,6 @@ class TestArticleModel:
         ],
     )
     def test_is_from_feed(self, source_type, is_from_feed):
-        article = ArticleFactory.build(initial_source_type=source_type)
+        article = ArticleFactory.build(main_source_type=source_type)
 
         assert article.is_from_feed == is_from_feed
