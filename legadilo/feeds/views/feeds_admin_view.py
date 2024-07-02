@@ -112,6 +112,8 @@ def edit_feed_view(
     feed = _get_feed(request.user, feed_id)
     tag_choices = Tag.objects.get_all_choices(request.user)
     category_choices = FeedCategory.objects.get_all_choices(request.user)
+    form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
+
     if request.method == "POST" and "delete" in request.POST:
         feed.delete()
         return HttpResponseRedirect(reverse("feeds:feeds_admin"))
@@ -133,8 +135,6 @@ def edit_feed_view(
             # Update the list of tag choices. We may have created some new one.
             tag_choices = Tag.objects.get_all_choices(request.user)
             form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
-    else:
-        form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
 
     return TemplateResponse(
         request,
