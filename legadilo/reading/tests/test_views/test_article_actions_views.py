@@ -86,7 +86,7 @@ class TestUpdateArticleView:
         assert response.context["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 1
         }
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
@@ -277,7 +277,7 @@ class TestDeleteArticleView:
         assert response.context["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
         }
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,

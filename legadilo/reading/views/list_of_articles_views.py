@@ -66,7 +66,7 @@ def reading_list_with_articles_view(
         Article.objects.get_articles_of_reading_list(displayed_reading_list),
         {
             "page_title": displayed_reading_list.title,
-            "displayed_reading_list_id": displayed_reading_list.id,
+            "displayed_reading_list": displayed_reading_list,
             "js_cfg": get_js_cfg_from_reading_list(displayed_reading_list),
         },
     )
@@ -186,7 +186,7 @@ def list_or_update_articles(
         articles_qs,
         {
             "page_title": page_title,
-            "displayed_reading_list_id": None,
+            "displayed_reading_list": None,
             "js_cfg": {},
             "update_articles_form": form,
         },

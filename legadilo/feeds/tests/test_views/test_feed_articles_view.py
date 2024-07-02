@@ -55,7 +55,7 @@ class TestFeedArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == f"Articles of feed '{self.feed.title}'"
-        assert response.context["displayed_reading_list_id"] is None
+        assert response.context["displayed_reading_list"] is None
         assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)
         assert response.context["articles_page"].object_list == [self.article]

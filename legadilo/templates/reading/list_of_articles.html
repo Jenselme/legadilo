@@ -17,31 +17,47 @@
 {% partialdef reading-list-group %}
     <ul class="list-group">
         {% for reading_list in reading_lists %}
-            <li class="p-0 list-group-item {% if displayed_reading_list_id == reading_list.id %}active{% endif %}">
+            <li class="p-0 list-group-item {% if displayed_reading_list.id == reading_list.id %}active{% endif %}">
                 <a href="{{ reading_list|reading_list_url }}"
                    class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
                     <span>{{ reading_list.title }}</span>
                     {% if count_unread_articles_of_reading_lists|get_item:reading_list.slug > 0 %}
-                        <span class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
+                        <span>
+                            <span class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
+                        </span>
                     {% endif %}
                 </a>
             </li>
         {% endfor %}
     </ul>
 {% endpartialdef %}
+{% block center_navbar %}
+    <div id="reading-list-dropdown-menu"
+         class="col col-5 d-md-none dropdown d-flex justify-content-center">
+        {% partialdef reading-list-dropdown-menu inline=True %}
+            <button class="btn btn-secondary dropdown-toggle mw-100 d-flex align-items-center"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                {% if displayed_reading_list %}
+                    <span class="text-truncate d-inline-block">{{ displayed_reading_list.title }}</span>
+                    {% if count_unread_articles_of_reading_lists|get_item:displayed_reading_list.slug > 0 %}
+                        <span class="badge text-bg-info mx-1">{{ count_unread_articles_of_reading_lists|get_item:displayed_reading_list.slug }}</span>
+                    {% endif %}
+                {% else %}
+                    {% translate "Reading lists" %}
+                {% endif %}
+            </button>
+            <div class="p-0 dropdown-menu">{% partial reading-list-group %}</div>
+        {% endpartialdef %}
+    </div>
+{% endblock center_navbar %}
 {% block content %}
     <div class="container-fluid px-md-3">
         <div class="row">
             <div class="col col-3 d-none d-md-block"></div>
             <div class="col col-7 col-md-8 px-1 px-md-3">
                 <h1>{{ page_title }}</h1>
-            </div>
-            <div class="col col-5 d-md-none dropdown">
-                <button class="btn btn-secondary dropdown-toggle"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">{% translate "Reading lists" %}</button>
-                <div id="reading-list-dropdown-menu" class="p-0 dropdown-menu">{% partial reading-list-group %}</div>
             </div>
         </div>
     </div>
@@ -111,7 +127,7 @@
                 {% partialdef articles-page inline=True %}
                     {% for article in articles_page %}
                         <div id="{{ article|article_card_id }}" class="article-card-container">
-                            {% include 'reading/partials/article_card.html' with displayed_reading_list_id=displayed_reading_list_id %}
+                            {% include 'reading/partials/article_card.html' %}
                         </div>
                         {% if forloop.last and js_cfg.is_reading_on_scroll_enabled %}
                             <p class="read-on-scroll-even-bottom" aria-hidden="true">

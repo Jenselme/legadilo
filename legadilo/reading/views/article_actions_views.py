@@ -113,18 +113,21 @@ def _update_article_card(
     from_url = get_from_url_for_article_details(request, request.POST)
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
-        reading_list = ReadingList.objects.select_related("user").get(id=displayed_reading_list_id)
+        displayed_reading_list = ReadingList.objects.select_related("user").get(
+            id=displayed_reading_list_id
+        )
         count_articles_of_current_reading_list = Article.objects.get_articles_of_reading_list(
-            reading_list
+            displayed_reading_list
         ).count()
-        js_cfg = get_js_cfg_from_reading_list(reading_list)
+        js_cfg = get_js_cfg_from_reading_list(displayed_reading_list)
         for_later_but_excluded_from_list = (
             update_action == constants.UpdateArticleActions.MARK_AS_FOR_LATER
-            and reading_list.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER
+            and displayed_reading_list.for_later_status
+            == constants.ForLaterStatus.ONLY_NOT_FOR_LATER
         )
         not_for_later_but_excluded_from_list = (
             update_action == constants.UpdateArticleActions.UNMARK_AS_FOR_LATER
-            and reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER
+            and displayed_reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER
         )
         delete_article_card = (
             delete_article_card
@@ -132,7 +135,7 @@ def _update_article_card(
             or not_for_later_but_excluded_from_list
         )
     except (ValueError, TypeError, ReadingList.DoesNotExist):
-        displayed_reading_list_id = None
+        displayed_reading_list = None
         count_articles_of_current_reading_list = None
         js_cfg = {}
 
@@ -147,7 +150,7 @@ def _update_article_card(
             "article": article,
             "reading_lists": reading_lists,
             "count_unread_articles_of_reading_lists": count_unread_articles_of_reading_lists,
-            "displayed_reading_list_id": displayed_reading_list_id,
+            "displayed_reading_list": displayed_reading_list,
             "js_cfg": js_cfg,
             "from_url": from_url,
             "count_articles_of_current_reading_list": count_articles_of_current_reading_list,

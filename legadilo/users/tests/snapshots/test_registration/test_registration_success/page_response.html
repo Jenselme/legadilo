@@ -95,6 +95,67 @@
                                     aria-label="Toggle navigation">
                                 <span class="navbar-toggler-icon"></span>
                             </button>
+                            
+    <div id="reading-list-dropdown-menu"
+         class="col col-5 d-md-none dropdown d-flex justify-content-center">
+        
+            <button class="btn btn-secondary dropdown-toggle mw-100 d-flex align-items-center"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                
+                    <span class="text-truncate d-inline-block">Unread</span>
+                    
+                
+            </button>
+            <div class="p-0 dropdown-menu">
+    <ul class="list-group">
+        
+            <li class="p-0 list-group-item ">
+                <a href="/reading/lists/all-articles/"
+                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                    <span>All articles</span>
+                    
+                </a>
+            </li>
+        
+            <li class="p-0 list-group-item active">
+                <a href="/reading/"
+                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                    <span>Unread</span>
+                    
+                </a>
+            </li>
+        
+            <li class="p-0 list-group-item ">
+                <a href="/reading/lists/recent/"
+                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                    <span>Recent</span>
+                    
+                </a>
+            </li>
+        
+            <li class="p-0 list-group-item ">
+                <a href="/reading/lists/favorite/"
+                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                    <span>Favorite</span>
+                    
+                </a>
+            </li>
+        
+            <li class="p-0 list-group-item ">
+                <a href="/reading/lists/for-later/"
+                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
+                    <span>For later</span>
+                    
+                </a>
+            </li>
+        
+    </ul>
+</div>
+        
+    </div>
+
                             <a class="navbar-brand" href="/reading/">Legadilo</a>
                             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                                 <ul class="navbar-nav me-auto">
@@ -169,57 +230,6 @@
             <div class="col col-3 d-none d-md-block"></div>
             <div class="col col-7 col-md-8 px-1 px-md-3">
                 <h1>Unread</h1>
-            </div>
-            <div class="col col-5 d-md-none dropdown">
-                <button class="btn btn-secondary dropdown-toggle"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">Reading lists</button>
-                <div id="reading-list-dropdown-menu" class="p-0 dropdown-menu">
-    <ul class="list-group">
-        
-            <li class="p-0 list-group-item ">
-                <a href="/reading/lists/all-articles/"
-                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                    <span>All articles</span>
-                    
-                </a>
-            </li>
-        
-            <li class="p-0 list-group-item active">
-                <a href="/reading/"
-                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                    <span>Unread</span>
-                    
-                </a>
-            </li>
-        
-            <li class="p-0 list-group-item ">
-                <a href="/reading/lists/recent/"
-                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                    <span>Recent</span>
-                    
-                </a>
-            </li>
-        
-            <li class="p-0 list-group-item ">
-                <a href="/reading/lists/favorite/"
-                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                    <span>Favorite</span>
-                    
-                </a>
-            </li>
-        
-            <li class="p-0 list-group-item ">
-                <a href="/reading/lists/for-later/"
-                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                    <span>For later</span>
-                    
-                </a>
-            </li>
-        
-    </ul>
-</div>
             </div>
         </div>
     </div>

@@ -14,7 +14,7 @@
     {% else %}
         <input type="hidden"
                name="displayed_reading_list_id"
-               value="{{ displayed_reading_list_id }}" />
+               value="{{ displayed_reading_list.id }}" />
     {% endif %}
 </form>
 {% if not article.was_opened and not for_article_details %}
@@ -31,7 +31,7 @@
         {% csrf_token %}
         <input type="hidden"
                name="displayed_reading_list_id"
-               value="{{ displayed_reading_list_id }}" />
+               value="{{ displayed_reading_list.id }}" />
         <input type="hidden" name="from_url" value="{{ from_url }}" />
     </form>
 {% endif %}

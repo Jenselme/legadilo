@@ -83,7 +83,7 @@ class TestReadingListWithArticlesView:
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == self.default_reading_list.title
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
-        assert response.context["displayed_reading_list_id"] == self.default_reading_list.id
+        assert response.context["displayed_reading_list"] == self.default_reading_list
         assert response.context["js_cfg"] == {
             "articles_list_min_refresh_timeout": 300,
             "auto_refresh_interval": 0,
@@ -100,7 +100,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == self.reading_list.title
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
@@ -125,7 +125,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html#articles-page"
         assert response.context["page_title"] == self.reading_list.title
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
@@ -151,7 +151,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == self.reading_list.title
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
@@ -199,7 +199,7 @@ class TestTagWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == f"Articles with tag '{self.tag_to_display.title}'"
-        assert response.context["displayed_reading_list_id"] is None
+        assert response.context["displayed_reading_list"] is None
         assert response.context["reading_lists"] == []
         assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)
@@ -324,7 +324,7 @@ class TestExternalTagWithArticleView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == "Articles with tag 'External tag'"
-        assert response.context["displayed_reading_list_id"] is None
+        assert response.context["displayed_reading_list"] is None
         assert response.context["reading_lists"] == []
         assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)
