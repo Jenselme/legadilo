@@ -33,6 +33,7 @@ from legadilo.feeds.services.feed_parsing import (
 from legadilo.users.models import User
 from legadilo.utils.http import get_rss_async_client
 from legadilo.utils.security import full_sanitize
+from legadilo.utils.time import utcnow
 from legadilo.utils.validators import is_url_valid
 
 logger = logging.getLogger(__name__)
@@ -167,7 +168,7 @@ async def _process_feed(user, client, outline, category=None):
                 "description": "",
                 "feed_type": feeds_constants.SupportedFeedType.rss,
                 "category": category,
-                "enabled": False,
+                "disabled_at": utcnow(),
                 "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
             },
         )

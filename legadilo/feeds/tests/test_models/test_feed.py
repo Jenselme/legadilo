@@ -61,7 +61,7 @@ class TestFeedQuerySet:
             title="Disabled feed",
             user=user,
             refresh_delay=feeds_constants.FeedRefreshDelays.HOURLY,
-            enabled=False,
+            disabled_at=utcnow(),
         )
         with time_machine.travel("2024-05-08 10:00:00"):
             FeedUpdateFactory(feed=disabled_feed_updated_more_than_one_hour_ago)
@@ -123,24 +123,24 @@ class TestFeedQuerySet:
         assert list(feeds_to_update) == []
 
     def test_only_with_ids(self):
-        feed1 = FeedFactory(enabled=True)
-        FeedFactory(enabled=True)
+        feed1 = FeedFactory(disabled_at=None)
+        FeedFactory(disabled_at=None)
 
         feeds = list(Feed.objects.get_queryset().only_with_ids([feed1.id]))
 
         assert feeds == [feed1]
 
     def test_only_enabled(self):
-        feed1 = FeedFactory(enabled=True)
-        FeedFactory(enabled=False)
+        feed1 = FeedFactory(disabled_at=None)
+        FeedFactory(disabled_at=utcnow())
 
         feeds = list(Feed.objects.get_queryset().only_enabled())
 
         assert feeds == [feed1]
 
     def test_for_user_ids(self):
-        feed1 = FeedFactory(enabled=True)
-        FeedFactory(enabled=True)
+        feed1 = FeedFactory(disabled_at=None)
+        FeedFactory(disabled_at=None)
 
         feeds = list(Feed.objects.get_queryset().for_user_ids([feed1.user.id]))
 
@@ -480,7 +480,7 @@ class TestFeedManager:
 
 class TestFeedModel:
     def test_disable(self):
-        feed = FeedFactory.build(enabled=True, disabled_at=None, disabled_reason="")
+        feed = FeedFactory.build(disabled_at=None, disabled_reason="")
 
         feed.disable()
 
@@ -489,7 +489,7 @@ class TestFeedModel:
         assert not feed.disabled_reason
 
     def test_disable_with_reason(self):
-        feed = FeedFactory.build(enabled=True, disabled_at=None, disabled_reason="")
+        feed = FeedFactory.build(disabled_at=None, disabled_reason="")
 
         feed.disable(reason="Some reason")
 
@@ -498,7 +498,7 @@ class TestFeedModel:
         assert feed.disabled_reason == "Some reason"
 
     def test_enable(self):
-        feed = FeedFactory.build(enabled=False, disabled_at=utcnow(), disabled_reason="Test")
+        feed = FeedFactory.build(disabled_at=utcnow(), disabled_reason="Test")
 
         feed.enable()
 
