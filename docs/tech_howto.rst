@@ -1,7 +1,7 @@
 How To - Project Documentation
 ======================================================================
 
-Get Started
+Start writing doc
 ----------------------------------------------------------------------
 
 Documentation can be written as rst files in `legadilo/docs`.

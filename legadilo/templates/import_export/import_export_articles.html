@@ -11,7 +11,7 @@
     <a class="btn btn-outline-primary"
        href="{% url 'import_export:export_articles' %}"
        role="button"
-       download="{% translate 'articles.csv' %}">{% translate "Export all articles" %}</a>
+       download="{% translate 'articles.csv' %}">{% translate "Export all articles, feeds, categories and tags" %}</a>
     <h2>{% translate "Import custom CSV" %}</h2>
     <form method="post"
           action="{% url 'import_export:import_export_articles' %}"
