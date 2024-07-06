@@ -1,20 +1,30 @@
-.list-of-articles-scrollable-container {
-  height: calc(100vh - 116px);
+:root {
+  --content-footer-height: 104px;
 }
 
-@media (width < 768px) {
-  .list-of-articles-scrollable-container {
-    height: 100%;
-  }
+.content-body {
+  display: grid;
+  grid-template: "main" 1fr "footer" var(--content-footer-height) / 1fr;
+  min-height: 100vh;
 }
 
-.article-details-scrollable-container {
-  height: calc(100vh - 64px);
+.content-footer {
+  height: var(--content-footer-height);
 }
 
-.scrollable {
-  max-height: 100%;
-  overflow: auto;
+.content-body > .content-main-container {
+  grid-area: main;
+  padding-bottom: 2rem;
+}
+
+.content-body > .content-footer {
+  grid-area: footer;
+}
+
+#reading-list-group,
+#article-side-actions {
+  position: fixed;
+  width: 15.5%;
 }
 
 .bi {

@@ -61,6 +61,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 ASGI_APPLICATION = "config.asgi.application"
+VERSION = env.str("VERSION", "")
 
 
 # DATABASES
@@ -255,6 +256,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "legadilo.users.context_processors.allauth_settings",
+                "legadilo.core.context_processors.provide_global_context",
             ],
             "libraries": {
                 "util_tags": "legadilo.core.template_tags.util_tags",

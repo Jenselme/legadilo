@@ -61,113 +61,129 @@
             {% endblock page_js %}
         {% endblock javascript %}
     </head>
-    <body>
-        <div id="danger-modal"
-             class="modal fade"
-             tabindex="-1"
-             aria-labelledby=""
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5"></h1>
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% translate "No" %}</button>
-                        <button type="button" class="btn btn-danger proceed">{% translate "Yes" %}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% if not base.hide_header %}
-            <div class="mb-1 sticky-top">
-                <nav class="navbar navbar-expand-md navbar-light bg-light">
-                    <div class="container-fluid">
-                        <button class="navbar-toggler navbar-toggler-right"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#navbarSupportedContent"
-                                aria-controls="navbarSupportedContent"
-                                aria-expanded="false"
-                                aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <a class="navbar-brand" href="{% url 'reading:default_reading_list' %}">Legadilo</a>
-                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                            <ul class="navbar-nav me-auto">
-                                <li class="nav-item active">
-                                    <a class="nav-link" href="{% url 'reading:default_reading_list' %}">{% translate "Default reading list" %}</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'website:about' %}">{% translate "About" %}</a>
-                                </li>
-                            </ul>
-                            <ul class="navbar-nav">
-                                {% if request.user.is_authenticated %}
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'reading:add_article' %}">
-                                            {% include "core/partials/bs-icons/add_article.html" %}
-                                            {% translate "Add an article" %}
-                                        </a>
-                                    </li>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle"
-                                           href="#"
-                                           role="button"
-                                           data-bs-toggle="dropdown"
-                                           data-bs-reference="parent"
-                                           aria-expanded="false">
-                                            {% include "core/partials/bs-icons/profile_menu_icon.html" %}
-                                            <span class="visually-hidden">{% translate "Profile menu" %}</span>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            <a class="dropdown-item" href="{% url 'feeds:feeds_admin' %}">{% translate "Feeds admin" %}</a>
-                                            <a class="dropdown-item" href="{% url 'feeds:feed_category_admin' %}">{% translate "Feed categories admin" %}</a>
-                                            <a class="dropdown-item" href="{% url 'reading:reading_lists_admin' %}">{% translate "Reading lists admin" %}</a>
-                                            <a class="dropdown-item" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
-                                            {# URL provided by django-allauth/account/urls.py #}
-                                            <a class="dropdown-item" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
-                                        </div>
-                                    </li>
-                                {% else %}
-                                    {% if ACCOUNT_ALLOW_REGISTRATION %}
-                                        <li class="nav-item">
-                                            {# URL provided by django-allauth/account/urls.py #}
-                                            <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
-                                        </li>
-                                    {% endif %}
-                                    <li class="nav-item">
-                                        {# URL provided by django-allauth/account/urls.py #}
-                                        <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        {% endif %}
-        <div class="{% if base.fluid_content %}container-fluid px-0{% else %}container{% endif %}">
-            {% if messages %}
-                <div class="container-lg">
-                    {% for message in messages %}
-                        <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                            {{ message }}
+    <body class="content-body">
+        <div class="content-main-container">
+            <div id="danger-modal"
+                 class="modal fade"
+                 tabindex="-1"
+                 aria-labelledby=""
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5"></h1>
                             <button type="button"
                                     class="btn-close"
-                                    data-bs-dismiss="alert"
+                                    data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                         </div>
-                    {% endfor %}
+                        <div class="modal-body"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% translate "No" %}</button>
+                            <button type="button" class="btn btn-danger proceed">{% translate "Yes" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if not base.hide_header %}
+                <div class="mb-1 sticky-top">
+                    <nav class="navbar navbar-expand-md navbar-light bg-light">
+                        <div class="container-fluid">
+                            <button class="navbar-toggler navbar-toggler-right"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#navbarSupportedContent"
+                                    aria-controls="navbarSupportedContent"
+                                    aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <a class="navbar-brand" href="{% url 'reading:default_reading_list' %}">Legadilo</a>
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                <ul class="navbar-nav me-auto">
+                                    <li class="nav-item active">
+                                        <a class="nav-link" href="{% url 'reading:default_reading_list' %}">{% translate "Default reading list" %}</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'website:about' %}">{% translate "About" %}</a>
+                                    </li>
+                                </ul>
+                                <ul class="navbar-nav">
+                                    {% if request.user.is_authenticated %}
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'reading:add_article' %}">
+                                                {% include "core/partials/bs-icons/add_article.html" %}
+                                                {% translate "Add an article" %}
+                                            </a>
+                                        </li>
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle"
+                                               href="#"
+                                               role="button"
+                                               data-bs-toggle="dropdown"
+                                               data-bs-reference="parent"
+                                               aria-expanded="false">
+                                                {% include "core/partials/bs-icons/profile_menu_icon.html" %}
+                                                <span class="visually-hidden">{% translate "Profile menu" %}</span>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="{% url 'feeds:feeds_admin' %}">{% translate "Feeds admin" %}</a>
+                                                <a class="dropdown-item" href="{% url 'feeds:feed_category_admin' %}">{% translate "Feed categories admin" %}</a>
+                                                <a class="dropdown-item" href="{% url 'reading:reading_lists_admin' %}">{% translate "Reading lists admin" %}</a>
+                                                <a class="dropdown-item" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
+                                                {# URL provided by django-allauth/account/urls.py #}
+                                                <a class="dropdown-item" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+                                            </div>
+                                        </li>
+                                    {% else %}
+                                        {% if ACCOUNT_ALLOW_REGISTRATION %}
+                                            <li class="nav-item">
+                                                {# URL provided by django-allauth/account/urls.py #}
+                                                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+                                            </li>
+                                        {% endif %}
+                                        <li class="nav-item">
+                                            {# URL provided by django-allauth/account/urls.py #}
+                                            <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
                 </div>
             {% endif %}
-            {% block content %}
-            {% endblock content %}
+            <div class="{% if base.fluid_content %}container-fluid px-0{% else %}container{% endif %}">
+                {% if messages %}
+                    <div class="container-lg">
+                        {% for message in messages %}
+                            <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                                {{ message }}
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}
+                {% endblock content %}
+            </div>
         </div>
+        <footer class="content-footer d-flex align-items-center flex-column bg-dark text-white py-4">
+            <p class="mb-1">
+                {% if VERSION %}
+                    {% blocktranslate with version=VERSION %}
+                        Legadilo version {{ version }}
+                    {% endblocktranslate %}
+                {% else %}
+                    Legadilo
+                {% endif %}
+            </p>
+            <p class="mb-1">
+                <a class="text-white" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug" %}</a>
+            </p>
+        </footer>
     </body>
 </html>
