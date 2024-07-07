@@ -1,0 +1,12 @@
+[
+  {
+    "is_archived": 0,
+    "is_starred": 0,
+    "is_public": false,
+    "id": 4947,
+    "given_url": "https://www.shorst.com/article/1-article",
+    "content": "<p>Some data <script>With dangerous things</script></p>",
+    "created_at": "2024-04-19T19:18:29+02:00",
+    "updated_at": "2024-04-20T19:17:54+02:00"
+  }
+]

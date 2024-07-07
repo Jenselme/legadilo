@@ -22,6 +22,11 @@ from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUpload
 
 @contextlib.contextmanager
 def ensure_file_on_disk(django_file: TemporaryUploadedFile | InMemoryUploadedFile):
+    """Ensure the uploaded file is on the disk.
+
+    For TemporaryUploadedFile it yields the file and for InMemoryUploadedFile it saves the content
+    into a temporary file.
+    """
     if hasattr(django_file, "temporary_file_path"):
         yield django_file.temporary_file_path()
         return

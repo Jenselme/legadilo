@@ -17,7 +17,7 @@
     "category__title": null,
     "description": "",
     "disabled_at": "2024-05-17T13:00:00+00:00",
-    "disabled_reason": "Failed to reach feed URL while importing an OPML file.",
+    "disabled_reason": "Failed to reach feed URL while importing from custom CSV.",
     "enabled": false,
     "feed_type": "rss",
     "feed_url": "https://example.com/rss8.xml",

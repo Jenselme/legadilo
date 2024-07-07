@@ -1,5 +1,5 @@
 {
-  "name": "Legadilo",
+  "name": "legadilo",
   "version": "1.0.0",
   "dependencies": {
     "@popperjs/core": "^2.11.8",

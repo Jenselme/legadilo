@@ -35,6 +35,11 @@ logger = logging.getLogger(__name__)
 
 
 class Command(AsyncCommand):
+    help = """Update all feeds.
+
+    To do this, we check the feed file from its source, parse it and run debug code.
+    """
+
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--feed-ids",
@@ -109,16 +114,14 @@ class Command(AsyncCommand):
                 await sync_to_async(Feed.objects.log_error)(
                     feed, format_exception(e), extract_debug_information(e)
                 )
-            return
         except HTTPError as e:
             logger.exception("Failed to update feed %s", feed)
             await sync_to_async(Feed.objects.log_error)(
                 feed, format_exception(e), extract_debug_information(e)
             )
-            return
         except Exception as e:
             logger.exception("Failed to update feed %s", feed)
             await sync_to_async(Feed.objects.log_error)(feed, format_exception(e))
-
-        await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
-        logger.info("Updated feed %s", feed)
+        else:
+            await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
+            logger.info("Updated feed %s", feed)

@@ -67,11 +67,11 @@ async def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, in
         # This is used to cache feed values: the URL in the file may not be the latest available URL
         # To avoid making too many HTTP requests, we cache the result to reuse the latest URL as
         # soon as possible.
-        feed_url_in_file_to_true_feed_url: dict[str, Feed] = {}
+        feed_url_in_file_to_true_feed: dict[str, Feed] = {}
         for row in dict_reader:
             _check_keys_in_row(row)
             nb_articles, nb_feeds, nb_categories = await _process_row(
-                user, row, feed_url_in_file_to_true_feed_url
+                user, row, feed_url_in_file_to_true_feed
             )
             nb_imported_articles += nb_articles
             nb_imported_feeds += nb_feeds
@@ -85,7 +85,7 @@ def _check_keys_in_row(row: dict):
         raise DataImportError
 
 
-async def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url: dict[str, Feed]):
+async def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str, Feed]):
     category = None
     created_category = False
     if row["category_title"]:
@@ -94,9 +94,7 @@ async def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed_url:
     feed = None
     created_feed = False
     if row["feed_url"] and is_url_valid(row["feed_url"]) and is_url_valid(row["feed_site_url"]):
-        feed, created_feed = await _import_feed(
-            user, category, row, feed_url_in_file_to_true_feed_url
-        )
+        feed, created_feed = await _import_feed(user, category, row, feed_url_in_file_to_true_feed)
 
     created_article = False
     if row["article_link"] and is_url_valid(row["article_link"]):
@@ -115,8 +113,8 @@ async def _import_category(user, row):
     )
 
 
-async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
-    feed = feed_url_in_file_to_true_feed_url.get(row["feed_url"])
+async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
+    feed = feed_url_in_file_to_true_feed.get(row["feed_url"])
 
     if feed:
         return feed, False
@@ -132,7 +130,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
             tags=[],
             category=category,
         )
-        feed_url_in_file_to_true_feed_url[row["feed_url"]] = feed
+        feed_url_in_file_to_true_feed[row["feed_url"]] = feed
         return feed, created
     except (
         httpx.HTTPError,
@@ -162,10 +160,10 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed_url):
             category=category,
         )
         if created:
-            feed.disable("Failed to reach feed URL while importing an OPML file.")
+            feed.disable("Failed to reach feed URL while importing from custom CSV.")
             await feed.asave()
 
-        feed_url_in_file_to_true_feed_url[row["feed_url"]] = feed
+        feed_url_in_file_to_true_feed[row["feed_url"]] = feed
         return feed, created
     except IntegrityError:
         logger.info(f"You are already subscribed to {row["feed_url"]}")

@@ -51,9 +51,11 @@ def language_code_validator(value: Any):
     if not value or not isinstance(value, str):
         raise ValidationError("Value must be a string")
 
+    # To catch 'fr', 'de', …
     if len(value) == 2 and re.match(r"[a-z]{2}", value.lower()):  # noqa: PLR2004 Magic value used in comparison
         return
 
+    # To catch 'fr-FR', 'en_US', …
     if len(value) == 5 and re.match(r"[a-z]{2}[_-][a-z]{2}", value.lower()):  # noqa: PLR2004 Magic value used in comparison
         return
 
@@ -89,6 +91,14 @@ def is_url_valid(url: str | None) -> bool:
 
 
 def normalize_url(base_url: str, url_to_normalize: str) -> str:
+    """Normalize HTTP URLs.
+
+    Any links that's not HTTP(S) (like FTP, email…) or page anchors will be left untouched.
+    If only the protocol is missing, we will add https in front of it.
+    If the URL is relative, we will make it absolute. If it contains invalid characters, we will
+    escape them. We will preserve query strings.
+    See the test suite for a full look at supported cases.
+    """
     if _is_not_potential_http_url(url_to_normalize):
         return url_to_normalize
 

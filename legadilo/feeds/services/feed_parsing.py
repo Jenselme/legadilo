@@ -215,7 +215,7 @@ def _parse_articles_in_feed(
                 build_article_data(
                     external_article_id=entry.get("id", ""),
                     title=entry.title,
-                    summary=_get_summary(article_link, entry, content),
+                    summary=_get_summary(article_link, entry),
                     content=content,
                     authors=_get_article_authors(entry),
                     contributors=_get_article_contributors(entry),
@@ -235,7 +235,7 @@ def _parse_articles_in_feed(
     return articles_data
 
 
-def _get_summary(article_url: str, entry, content: str) -> str:
+def _get_summary(article_url: str, entry) -> str:
     summary = ""
     if proper_summary := entry.get("summary"):
         summary = proper_summary

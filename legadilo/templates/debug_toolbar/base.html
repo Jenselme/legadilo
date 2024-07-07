@@ -2,6 +2,7 @@
 
 {% load static %}
 
+{# Required to have a nonce on loaded static files. Otherwise the won't load because of CSP. #}
 {% block css %}
     <link rel="stylesheet"
           href="{% static 'debug_toolbar/css/print.css' %}"

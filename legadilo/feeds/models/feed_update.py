@@ -22,8 +22,6 @@ from typing import TYPE_CHECKING
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
-from legadilo.feeds.constants import FEED_ERRORS_TIME_WINDOW
-
 from ...utils.time import utcnow
 from .. import constants
 
@@ -67,7 +65,7 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
         aggregation = (
             self.get_queryset()
             .for_feed(feed)
-            .filter(created_at__gt=datetime.now(UTC) - FEED_ERRORS_TIME_WINDOW)
+            .filter(created_at__gt=datetime.now(UTC) - constants.FEED_ERRORS_TIME_WINDOW)
             .aggregate(
                 nb_errors=models.Count(
                     "id", filter=models.Q(status=constants.FeedUpdateStatus.FAILURE)

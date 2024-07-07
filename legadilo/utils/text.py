@@ -31,6 +31,8 @@ def get_nb_words_from_html(text: str) -> int:
 
 
 class ClearableStringIO:
+    """A buffer we can write to that resets on every read."""
+
     def __init__(self):
         self.buffer = StringIO()
 

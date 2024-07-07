@@ -76,14 +76,14 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_default_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.get(self.default_reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == self.default_reading_list.title
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
-        assert response.context["displayed_reading_list_id"] == self.default_reading_list.id
+        assert response.context["displayed_reading_list"] == self.default_reading_list
         assert response.context["js_cfg"] == {
             "articles_list_min_refresh_timeout": 300,
             "auto_refresh_interval": 0,
@@ -94,13 +94,13 @@ class TestReadingListWithArticlesView:
         assert response.context.get("update_articles_form") is None
 
     def test_reading_list_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == self.reading_list.title
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
@@ -116,7 +116,7 @@ class TestReadingListWithArticlesView:
         assert response.context.get("update_articles_form") is None
 
     def test_reading_list_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.get(
                 self.reading_list_url,
                 HTTP_HX_Request="true",
@@ -125,7 +125,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html#articles-page"
         assert response.context["page_title"] == self.reading_list.title
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
@@ -142,7 +142,7 @@ class TestReadingListWithArticlesView:
     def test_reading_list_view_with_htmx_full_reload(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.get(
                 f"{self.reading_list_url}?full_reload=true",
                 HTTP_HX_Request="true",
@@ -151,7 +151,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == self.reading_list.title
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["reading_lists"] == [self.default_reading_list, self.reading_list]
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
@@ -193,13 +193,13 @@ class TestTagWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
         assert response.context["page_title"] == f"Articles with tag '{self.tag_to_display.title}'"
-        assert response.context["displayed_reading_list_id"] is None
+        assert response.context["displayed_reading_list"] is None
         assert response.context["reading_lists"] == []
         assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)
@@ -240,7 +240,7 @@ class TestUpdateArticlesFromTagWithArticlesView:
         }
 
     def test_only_article_update_action(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(
                 self.url, {"update_action": constants.UpdateArticleActions.MARK_AS_READ}
             )
@@ -257,7 +257,7 @@ class TestUpdateArticlesFromTagWithArticlesView:
         assert self.article_not_in_list.tags.count() == 2
 
     def test_with_tag_actions(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(26):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -318,13 +318,13 @@ class TestExternalTagWithArticleView:
         assert list(response.context["articles_page"].object_list) == []
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
-        assert response.context["page_title"] == "Articles with tag 'External tag'"
-        assert response.context["displayed_reading_list_id"] is None
+        assert response.context["page_title"] == "Articles with external tag 'External tag'"
+        assert response.context["displayed_reading_list"] is None
         assert response.context["reading_lists"] == []
         assert response.context["js_cfg"] == {}
         assert isinstance(response.context["articles_paginator"], Paginator)

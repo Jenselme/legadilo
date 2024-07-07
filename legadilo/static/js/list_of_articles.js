@@ -57,15 +57,8 @@
       return;
     }
 
-    const scrollableContainer = document.querySelector("#scrollable-article-list");
-    if (!scrollableContainer) {
-      return;
-    }
-
+    // Wait before reading on scroll: the user may scroll up again!
     const readOnScrollDebounced = debounce(readOnScroll, 1000);
-    // On desktop, we scroll within the container.
-    scrollableContainer.addEventListener("scrollend", readOnScrollDebounced);
-    // On mobile, we scroll on the document to have more room for articles.
     document.addEventListener("scrollend", readOnScrollDebounced);
   };
 
@@ -130,6 +123,11 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
+    // Force a scroll to top after reloading the page: previously read articles won’t be there
+    // anymore and the back button of the browser will preserve scroll. We may end up marking some
+    // articles as read when we shouldn’t. Clicking the back button on the details page doesn’t have
+    // this issue.
+    window.scroll(0, 0);
     setupReadAction();
     setupReadOnScroll();
     setupRefresh();

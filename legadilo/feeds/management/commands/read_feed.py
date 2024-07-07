@@ -27,7 +27,7 @@ from legadilo.utils.validators import is_url_valid
 
 
 class Command(AsyncCommand):
-    """Read a feed and prints some data about it.
+    help = """Read a feed and print the data we parsed from it.
 
     It's only useful for quickly debugging a feed or checking CPU and memory usage on big feed
     files.

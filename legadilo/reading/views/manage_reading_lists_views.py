@@ -96,6 +96,8 @@ class ReadingListForm(forms.ModelForm):
 
     def create(self, user: User):
         create_data = self.cleaned_data.copy()
+        # Tags are managed with a many-to-many relationship and thus must be created independently
+        # and cannot be passed to .create
         create_data.pop("tags_to_include")
         create_data.pop("tags_to_exclude")
         reading_list = ReadingList.objects.create(**create_data, user=user)

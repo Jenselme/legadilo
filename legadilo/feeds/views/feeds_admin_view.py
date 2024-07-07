@@ -29,7 +29,6 @@ from legadilo.users.typing import AuthenticatedHttpRequest
 from ...core.forms import FormChoices
 from ...core.forms.fields import MultipleTagsField
 from ...reading.models import Tag
-from ...users.models import User
 from .. import constants
 
 
@@ -46,10 +45,7 @@ def feeds_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
 
 class EditFeedForm(forms.ModelForm):
-    feed_url = forms.URLField(
-        assume_scheme="https",
-        disabled=True,
-    )
+    feed_url = forms.URLField(assume_scheme="https", disabled=True)
     site_url = forms.URLField(assume_scheme="https", disabled=True)
     refresh_delay = forms.ChoiceField(
         required=True,
@@ -109,7 +105,11 @@ class EditFeedForm(forms.ModelForm):
 def edit_feed_view(
     request: AuthenticatedHttpRequest, feed_id: int
 ) -> TemplateResponse | HttpResponseRedirect:
-    feed = _get_feed(request.user, feed_id)
+    feed = get_object_or_404(
+        Feed.objects.get_queryset().select_related("category", "user").prefetch_related("tags"),
+        id=feed_id,
+        user=request.user,
+    )
     tag_choices = Tag.objects.get_all_choices(request.user)
     category_choices = FeedCategory.objects.get_all_choices(request.user)
     form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
@@ -143,14 +143,6 @@ def edit_feed_view(
             "feed": feed,
             "form": form,
         },
-    )
-
-
-def _get_feed(user: User, feed_id: int) -> Feed:
-    return get_object_or_404(
-        Feed.objects.get_queryset().select_related("category", "user").prefetch_related("tags"),
-        id=feed_id,
-        user=user,
     )
 
 

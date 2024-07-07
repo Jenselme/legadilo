@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import csv
 from http import HTTPStatus
 from json import JSONDecodeError
@@ -27,6 +26,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 from jsonschema import ValidationError as JsonSchemaValidationError
+from jsonschema.exceptions import ValidationError as JsonValidationError
 
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.users.models import User
@@ -127,7 +127,7 @@ async def _import_wallabag(request: AuthenticatedHttpRequest):
         nb_imported_articles = await sync_to_async(import_wallabag_file)(
             await request.auser(), import_wallabag_form.cleaned_data["wallabag_file"]
         )
-    except (JSONDecodeError, UnicodeDecodeError):
+    except (JSONDecodeError, UnicodeDecodeError, JsonValidationError):
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
     else:

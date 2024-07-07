@@ -58,7 +58,7 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_article_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url, HTTP_REFERER="http://testserver/reading/"
             )
@@ -71,7 +71,7 @@ class TestUpdateArticleView:
         assert not self.other_article.is_read
 
     def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
@@ -86,7 +86,7 @@ class TestUpdateArticleView:
         assert response.context["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 1
         }
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
@@ -105,7 +105,7 @@ class TestUpdateArticleView:
             user=user, for_later_status=constants.ForLaterStatus.ONLY_NOT_FOR_LATER
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -136,7 +136,7 @@ class TestUpdateArticleView:
             user=user, for_later_status=constants.ForLaterStatus.ONLY_FOR_LATER
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -163,7 +163,7 @@ class TestUpdateArticleView:
     def test_update_article_view_with_htmx_mark_for_later_reading_list_include_all(
         self, user, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -190,7 +190,7 @@ class TestUpdateArticleView:
     def test_update_article_view_for_article_details_read_status_action(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"for_article_details": "True"},
@@ -205,7 +205,7 @@ class TestUpdateArticleView:
     def test_update_article_view_for_article_details_favorite_status_action(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(
                 self.mark_as_favorite_url,
                 data={"for_article_details": "True"},
@@ -213,8 +213,9 @@ class TestUpdateArticleView:
                 HTTP_HX_Request="true",
             )
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == "http://testserver/reading/articles/1"
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_details_actions.html"
+        assert response.headers["HX-Reswap"] == "none show:none"
 
 
 @pytest.mark.django_db()
@@ -245,7 +246,7 @@ class TestDeleteArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_delete(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -253,7 +254,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(self.url, {"from_url": self.reading_list_url})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -261,7 +262,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -277,7 +278,7 @@ class TestDeleteArticleView:
         assert response.context["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
         }
-        assert response.context["displayed_reading_list_id"] == self.reading_list.id
+        assert response.context["displayed_reading_list"] == self.reading_list
         assert response.context["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
@@ -291,7 +292,7 @@ class TestDeleteArticleView:
     def test_delete_article_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )

@@ -35,6 +35,11 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    help = """Import any data format we support and files of any files.
+
+    Can be used to import feeds, categories and articles.
+    """
+
     def add_arguments(self, parser: CommandParser):
         parser.add_argument(
             "--source-type",

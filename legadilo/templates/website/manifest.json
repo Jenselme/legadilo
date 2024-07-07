@@ -7,7 +7,7 @@
     "display": "standalone",
     "background_color": "#FFF",
     "theme_color": "##0d6efd",
-    "description": "{% translate 'Read your RSS feeds & other saved articles!' %}",
+    "description": "{% translate 'Read your RSS feeds & save other articles!' %}",
     "dir": "ltr",
     "lang": "en-US",
     "orientation": "portrait-primary",
