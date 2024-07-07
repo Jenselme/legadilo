@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% load static i18n crispy_forms_tags %}
+{% load static i18n crispy_forms_tags partials %}
 
 {% block page_js %}
     <script src="{% static 'js/tag_edition.js' %}"
@@ -30,10 +30,12 @@
             <div class="col col-1"></div>
             <aside class="col col-2 d-none d-md-block">
                 <div id="article-side-actions">
-                    <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
-                    <div class="mt-5">
-                        {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
-                    </div>
+                    {% partialdef article-side-actions inline=True %}
+                        <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
+                        <div class="mt-5">
+                            {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
+                        </div>
+                    {% endpartialdef %}
                 </div>
             </aside>
             <article class="col col-12 col-md-7">
@@ -111,15 +113,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="d-flex d-md-none justify-content-center mt-2 mb-4">
-                    {% include 'reading/partials/article_actions.html' with for_article_details=True %}
+                <div id="article-mobile-actions"
+                     class="d-flex d-md-none justify-content-center mt-2 mb-4">
+                    {% partialdef article-mobile-actions inline=True %}
+                        {% include 'reading/partials/article_actions.html' with for_article_details=True %}
+                    {% endpartialdef %}
                 </div>
                 <main class="mt-3">
                     {{ article.content | safe }}
                 </main>
                 <footer>
-                    <div class="d-flex justify-content-center mt-2 mb-4">
-                        {% include 'reading/partials/article_actions.html' with for_article_details=True %}
+                    <div id="article-bottom-actions"
+                         class="d-flex justify-content-center mt-2 mb-4">
+                        {% partialdef article-bottom-actions inline=True %}
+                            {% include 'reading/partials/article_actions.html' with for_article_details=True %}
+                        {% endpartialdef %}
                     </div>
                 </footer>
             </article>

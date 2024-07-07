@@ -213,8 +213,9 @@ class TestUpdateArticleView:
                 HTTP_HX_Request="true",
             )
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == "http://testserver/reading/articles/1"
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_details_actions.html"
+        assert response.headers["HX-Reswap"] == "none show:none"
 
 
 @pytest.mark.django_db()

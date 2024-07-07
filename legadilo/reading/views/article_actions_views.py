@@ -84,9 +84,7 @@ def update_article_view(
     if for_article_details:
         if is_read_status_update:
             return _redirect_to_reading_list(request)
-        return HttpResponseRedirect(
-            validate_referer_url(request, reverse("reading:default_reading_list"))
-        )
+        return _update_article_details_actions(request, article)
 
     if not request.htmx:
         return HttpResponseRedirect(
@@ -99,6 +97,20 @@ def update_article_view(
         update_action,
         hx_target=f"#{article_card_id(article)}",
         delete_article_card=False,
+    )
+
+
+def _update_article_details_actions(
+    request: AuthenticatedHttpRequest, article: Article
+) -> TemplateResponse:
+    return TemplateResponse(
+        request,
+        "reading/update_article_details_actions.html",
+        {
+            "article": article,
+            "from_url": get_from_url_for_article_details(request, request.POST),
+        },
+        headers={"HX-Reswap": "none show:none"},
     )
 
 
