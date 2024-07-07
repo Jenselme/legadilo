@@ -53,86 +53,87 @@
             
         
     </head>
-    <body>
-        <div id="danger-modal"
-             class="modal fade"
-             tabindex="-1"
-             aria-labelledby=""
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5"></h1>
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                        <button type="button" class="btn btn-danger proceed">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-            <div class="mb-1 sticky-top">
-                <nav class="navbar navbar-expand-md navbar-light bg-light">
-                    <div class="container-fluid">
-                        <button class="navbar-toggler navbar-toggler-right"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#navbarSupportedContent"
-                                aria-controls="navbarSupportedContent"
-                                aria-expanded="false"
-                                aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <a class="navbar-brand" href="/reading/">Legadilo</a>
-                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                            <ul class="navbar-nav me-auto">
-                                <li class="nav-item active">
-                                    <a class="nav-link" href="/reading/">Default reading list</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/about/">About</a>
-                                </li>
-                            </ul>
-                            <ul class="navbar-nav">
-                                
-                                    
-                                        <li class="nav-item">
-                                            
-                                            <a id="sign-up-link" class="nav-link" href="/accounts/signup/">Sign Up</a>
-                                        </li>
-                                    
-                                    <li class="nav-item">
-                                        
-                                        <a id="log-in-link" class="nav-link" href="/accounts/login/">Sign In</a>
-                                    </li>
-                                
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-        
-        <div class="container">
-            
-                <div class="container-lg">
-                    
-                        <div class="alert alert-dismissible alert-success">
-                            You have confirmed tester@legadilo.eu.
+    <body class="content-body">
+        <div class="content-main-container">
+            <div id="danger-modal"
+                 class="modal fade"
+                 tabindex="-1"
+                 aria-labelledby=""
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5"></h1>
                             <button type="button"
                                     class="btn-close"
-                                    data-bs-dismiss="alert"
+                                    data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                         </div>
-                    
+                        <div class="modal-body"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <button type="button" class="btn btn-danger proceed">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+                <div class="mb-1 sticky-top">
+                    <nav class="navbar navbar-expand-md navbar-light bg-light">
+                        <div class="container-fluid">
+                            <button class="navbar-toggler navbar-toggler-right"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#navbarSupportedContent"
+                                    aria-controls="navbarSupportedContent"
+                                    aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <a class="navbar-brand" href="/reading/">Legadilo</a>
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                <ul class="navbar-nav me-auto">
+                                    <li class="nav-item active">
+                                        <a class="nav-link" href="/reading/">Default reading list</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/">About</a>
+                                    </li>
+                                </ul>
+                                <ul class="navbar-nav">
+                                    
+                                        
+                                            <li class="nav-item">
+                                                
+                                                <a id="sign-up-link" class="nav-link" href="/accounts/signup/">Sign Up</a>
+                                            </li>
+                                        
+                                        <li class="nav-item">
+                                            
+                                            <a id="log-in-link" class="nav-link" href="/accounts/login/">Sign In</a>
+                                        </li>
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
                 </div>
             
-            
+            <div class="container">
+                
+                    <div class="container-lg">
+                        
+                            <div class="alert alert-dismissible alert-success">
+                                You have confirmed tester@legadilo.eu.
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                            </div>
+                        
+                    </div>
+                
+                
     <div class="row">
         <div class="col-md-6 offset-md-3">
             
@@ -166,6 +167,17 @@
         </div>
     </div>
 
+            </div>
         </div>
+        <footer class="content-footer d-flex align-items-center flex-column bg-dark text-white py-4">
+            <p class="mb-1">
+                
+                    Legadilo
+                
+            </p>
+            <p class="mb-1">
+                <a class="text-white" href="https://github.com/Jenselme/legadilo/issues">Report a bug</a>
+            </p>
+        </footer>
     </body>
 </html>

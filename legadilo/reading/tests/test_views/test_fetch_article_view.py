@@ -180,19 +180,21 @@ class TestAddArticle:
 
     def test_content_too_big(self, logged_in_sync_client, httpx_mock, mocker):
         mocker.patch(
-            "legadilo.reading.services.article_fetching.sys.getsizeof", return_value=2048 * 1024
+            "legadilo.reading.services.article_fetching.sys.getsizeof",
+            return_value=10 * 2048 * 1024,
         )
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="The article you are trying to fetch is too big and cannot be processed.",
+                level=DEFAULT_LEVELS["WARNING"],
+                message="The article you are trying to fetch is too big and cannot be processed. "
+                "We added its URL directly.",
             )
         ]
 

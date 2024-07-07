@@ -58,7 +58,7 @@ class Command(AsyncCommand):
     async def _read_feed(self, feed_file):
         file_path = Path(feed_file)
         if file_path.exists() and file_path.is_file():
-            with file_path.open("r", encoding="utf-8") as f:  # noqa: ASYNC101 async functions calling open
+            with file_path.open("r", encoding="utf-8") as f:  # noqa: ASYNC230 async functions calling open
                 return f.read()
 
         if is_url_valid(feed_file):

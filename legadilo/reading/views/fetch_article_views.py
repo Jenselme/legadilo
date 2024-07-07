@@ -149,7 +149,7 @@ async def _handle_save(
                 force_update=force_update,
             )
         )[0]
-    except httpx.HTTPError as e:
+    except (httpx.HTTPError, ArticleTooBigError) as e:
         article, created = await sync_to_async(Article.objects.create_invalid_article)(
             request.user,
             article_link,
@@ -157,12 +157,21 @@ async def _handle_save(
             error_message=format_exception(e),
             technical_debug_data=extract_debug_information(e),
         )
-        if created:
+        if created and isinstance(e, httpx.HTTPError):
             messages.warning(
                 request,
                 _(
                     "Failed to fetch the article. Please check that the URL you entered is "
                     "correct, that the article exists and is accessible. We added its URL directly."
+                ),
+            )
+            return HTTPStatus.CREATED, form
+        if created:
+            messages.warning(
+                request,
+                _(
+                    "The article you are trying to fetch is too big and cannot be processed. "
+                    "We added its URL directly."
                 ),
             )
             return HTTPStatus.CREATED, form
@@ -173,11 +182,6 @@ async def _handle_save(
                 "correct, that the article exists and is accessible. It was added before, "
                 "please check its link."
             ),
-        )
-        return HTTPStatus.BAD_REQUEST, form
-    except ArticleTooBigError:
-        messages.error(
-            request, _("The article you are trying to fetch is too big and cannot be processed.")
         )
         return HTTPStatus.BAD_REQUEST, form
 

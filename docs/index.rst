@@ -10,11 +10,12 @@ Welcome to Legadilo's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   howto
+   introduction
+   deploy
+   import_export
    pycharm/configuration
-   users
    adrs/index.rst
-   techo_howto
+   tech_howto
 
 
 

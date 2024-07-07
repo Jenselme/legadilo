@@ -102,14 +102,14 @@
   };
 
   const setupRefresh = () => {
+    const timeout = jsCfg.auto_refresh_interval * 1000;
     if (
       !Number.isInteger(jsCfg.auto_refresh_interval) ||
-      jsCfg.auto_refresh_interval < jsCfg.articles_list_min_refresh_timeout
+      timeout < jsCfg.articles_list_min_refresh_timeout
     ) {
       return;
     }
 
-    const timeout = jsCfg.auto_refresh_interval * 1000;
     let timeoutId = null;
 
     const runRefresh = () => {
@@ -118,14 +118,7 @@
       }
 
       timeoutId = setTimeout(() => {
-        // For desktop.
-        const scrollable = document.querySelector(".scrollable");
-        if (scrollable) {
-          scrollable.scrollTo(0, 0);
-        }
-        // For mobile.
         window.scroll(0, 0);
-
         location.reload();
       }, timeout);
     };

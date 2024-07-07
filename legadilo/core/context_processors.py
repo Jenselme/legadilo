@@ -14,15 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.urls import path
-from django.views.generic import TemplateView
+from django.conf import settings
 
-from . import views
 
-app_name = "website"
-
-urlpatterns = [
-    path("", TemplateView.as_view(template_name="website/home.html"), name="home"),
-    path("manifest.json", views.manifest_view, name="manifest"),
-    path("favicon.ico", views.default_favicon_view, name="favicon"),
-]
+def provide_global_context(request):
+    return {
+        "VERSION": settings.VERSION,
+    }

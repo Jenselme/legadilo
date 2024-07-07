@@ -24,7 +24,7 @@ COPY poetry.lock .
 RUN pip install -U pip && \
     pip install poetry==1.8.2 && \
     poetry config virtualenvs.create false && \
-    poetry install --with dev --with typing
+    poetry install --with dev --with typing --with doc
 
 COPY ./devops/compose/local/docs/start.sh /start-docs.sh
 RUN chmod +x /start-docs.sh

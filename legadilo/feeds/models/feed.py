@@ -312,7 +312,13 @@ class FeedManager(models.Manager["Feed"]):
 class Feed(models.Model):
     feed_url = models.URLField()
     site_url = models.URLField()
-    enabled = models.BooleanField(default=True)
+    enabled = models.GeneratedField(
+        expression=models.Case(
+            models.When(models.Q(disabled_at__isnull=True), then=True), default=False
+        ),
+        output_field=models.BooleanField(),
+        db_persist=True,
+    )
     disabled_reason = models.TextField(blank=True)
     disabled_at = models.DateTimeField(null=True, blank=True)
 
@@ -343,7 +349,7 @@ class Feed(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = FeedManager()
 

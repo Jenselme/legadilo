@@ -25,11 +25,11 @@
             {% csrf_token %}
         </form>
     {% endif %}
-    <div class="container-fluid article-details-scrollable-container px-0">
-        <div class="mt-1 mt-md-2 row px-0 mx-0 scrollable">
+    <div class="container-fluid px-0">
+        <div class="mt-1 mt-md-2 row px-0 mx-0">
             <div class="col col-1"></div>
             <aside class="col col-2 d-none d-md-block">
-                <div class="sticky-top">
+                <div id="article-side-actions">
                     <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
                     <div class="mt-5">
                         {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}

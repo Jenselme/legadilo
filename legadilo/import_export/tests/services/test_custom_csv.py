@@ -113,7 +113,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
             list(
                 Feed.objects.order_by("title").values(
                     *all_model_fields_except(
-                        Feed, {"id", "user", "category", "created_at", "modified_at"}
+                        Feed, {"id", "user", "category", "created_at", "updated_at"}
                     ),
                     "category__title",
                 )
@@ -126,7 +126,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
             list(
                 FeedCategory.objects.order_by("title").values(
                     *all_model_fields_except(
-                        FeedCategory, {"id", "user", "created_at", "modified_at"}
+                        FeedCategory, {"id", "user", "created_at", "updated_at"}
                     )
                 )
             )
