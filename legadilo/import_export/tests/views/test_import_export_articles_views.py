@@ -32,6 +32,7 @@ from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory
+from legadilo.utils.testing import all_model_fields_except, serialize_for_snapshot
 from legadilo.utils.time import utcdt
 
 
@@ -235,7 +236,7 @@ class TestImportWallabag:
     def _setup_data(self):
         self.url = reverse("import_export:import_export_articles")
 
-    def test_import_invalid_file(self, logged_in_sync_client):
+    def test_import_invalid_data(self, logged_in_sync_client):
         buffer = BytesIO(b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01")
         file = InMemoryUploadedFile(
             buffer,
@@ -265,3 +266,77 @@ class TestImportWallabag:
                 message="The file you supplied is not valid.",
             )
         ]
+
+    def test_import_invalid_file(self, logged_in_sync_client):
+        with Path(
+            settings.APPS_DIR / "import_export/tests/fixtures/wallabag/invalid_wallabag.json"
+        ).open("r", encoding="utf-8") as f:
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "wallabag_file": InMemoryUploadedFile(
+                        f,
+                        "some_file",
+                        "file.png",
+                        content_type="application/json",
+                        size=100,
+                        charset="utf-8",
+                    ),
+                },
+            )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "import_export/import_export_articles.html"
+        assert response.context["form"].errors == {}
+        assert Feed.objects.count() == 0
+        assert Article.objects.count() == 0
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message="The file you supplied is not valid.",
+            )
+        ]
+
+    def test_import_valid_file(self, logged_in_sync_client, snapshot):
+        with Path(
+            settings.APPS_DIR / "import_export/tests/fixtures/wallabag/valid_wallabag.json"
+        ).open("r", encoding="utf-8") as f:
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "wallabag_file": InMemoryUploadedFile(
+                        f,
+                        "some_file",
+                        "file.png",
+                        content_type="application/json",
+                        size=100,
+                        charset="utf-8",
+                    ),
+                },
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "import_export/import_export_articles.html"
+        assert response.context["form"].errors == {}
+        assert Feed.objects.count() == 0
+        assert Article.objects.count() > 0
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["SUCCESS"],
+                message="Successfully imported 1 articles",
+            )
+        ]
+        snapshot.assert_match(
+            serialize_for_snapshot(
+                list(
+                    Article.objects.order_by("link").values(
+                        *all_model_fields_except(
+                            Article, {"id", "user", "obj_created_at", "obj_updated_at"}
+                        )
+                    )
+                )
+            ),
+            "walabag_articles.json",
+        )

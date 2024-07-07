@@ -1,0 +1,43 @@
+[
+  {
+    "is_archived": 0,
+    "is_starred": 0,
+    "tags": [
+      "programming"
+    ],
+    "is_public": false,
+    "id": 4947,
+    "title": "Refactoring with AI",
+    "url": "https://www.example.com/article/1-article",
+    "given_url": "https://www.shorst.com/article/1-article",
+    "content": "<p>Some data <script>With dangerous things</script></p>",
+    "created_at": "2024-04-19T19:18:29+02:00",
+    "updated_at": "2024-04-20T19:17:54+02:00",
+    "published_by": [
+      ""
+    ],
+    "annotations": [],
+    "mimetype": "text/html;charset=utf-8",
+    "language": "en",
+    "reading_time": 29,
+    "domain_name": "www.thoughtworks.com",
+    "preview_picture": "https://examplec.com/preview.png",
+    "http_status": "200",
+    "headers": {
+      "content-type": "text/html;charset=utf-8",
+      "content-length": "388555",
+      "connection": "keep-alive",
+      "date": "Thu, 18 Apr 2024 14:29:44 GMT",
+      "server": "Apache",
+      "x-vhost": "publish",
+      "x-content-type-options": "nosniff",
+      "last-modified": "Thu, 18 Apr 2024 14:29:44 GMT",
+      "accept-ranges": "bytes",
+      "x-xss-protection": "1",
+      "age": "96524",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "content-security-policy": "default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob: filesystem:;frame-ancestors 'self' https://experience.adobe.com;object-src 'none'",
+      "strict-transport-security": "max-age=31536000; includeSubDomains"
+    }
+  }
+]
