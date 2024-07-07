@@ -672,5 +672,5 @@ class Article(models.Model):
         self.reading_time = reading_time
 
     @property
-    def is_from_feed(self):
+    def is_from_feed(self) -> bool:
         return self.main_source_type == constants.ArticleSourceType.FEED

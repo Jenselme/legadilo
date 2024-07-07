@@ -51,7 +51,7 @@ def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> 
     base_filters = models.Q(refresh_delay=refresh_delay)
 
     # Notes: cron will run each hour. Since it will take time to complete, we use 45m instead
-    # in 1h in our tests.
+    # in 1h in our conditions.
     match refresh_delay:
         case feeds_constants.FeedRefreshDelays.HOURLY:
             return models.When(
@@ -147,9 +147,9 @@ class FeedQuerySet(models.QuerySet["Feed"]):
             self.alias(
                 # We need to filter for update only on the latest FeedUpdate object. If we have
                 # entries that are too old, we don't want to include them or the feed will be
-                # refreshed even if according to its rules it should: by default, we do a left join
-                # of FeedUpdate thus getting on the whole history. We only want to run our test on
-                # the latest entry to check whether it's too old and thus must be updated or not.
+                # refreshed even if according to its rules it should not: by default, we do a left
+                # join of FeedUpdate thus getting on the whole history. We only want to run our test
+                # on the latest entry to check whether it's too old and thus must be updated or not.
                 latest_feed_update=models.FilteredRelation(
                     "feed_updates",
                     condition=models.Q(

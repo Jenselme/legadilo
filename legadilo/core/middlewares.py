@@ -19,6 +19,11 @@ from django.conf import settings
 
 
 class CSPMiddleware(DjangoCSPMiddleware):
+    """Override the default middleware to allow usage of self for script and style on admin pages.
+
+    It's the easiest solution and avoid having to override many templates with the nonce.
+    """
+
     def build_policy(self, request, response):
         if request.path.startswith(f"/{settings.ADMIN_URL}"):
             response._csp_replace = {

@@ -53,6 +53,7 @@ urlpatterns = [
     path("article/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     path("list/create/", views.reading_list_create_view, name="create_reading_list"),
+    # To clearly differentiate from the view that list articles.
     path(
         "list/edit/<int:reading_list_id>/", views.reading_list_edit_view, name="edit_reading_list"
     ),

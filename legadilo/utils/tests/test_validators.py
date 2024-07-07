@@ -55,6 +55,7 @@ class TestLanguageCodeValidator:
         [
             "fr",
             "en_GB",
+            "en-US",
         ],
     )
     def test_valid_codes(self, code):

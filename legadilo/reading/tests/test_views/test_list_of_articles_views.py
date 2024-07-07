@@ -323,7 +323,7 @@ class TestExternalTagWithArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/list_of_articles.html"
-        assert response.context["page_title"] == "Articles with tag 'External tag'"
+        assert response.context["page_title"] == "Articles with external tag 'External tag'"
         assert response.context["displayed_reading_list"] is None
         assert response.context["reading_lists"] == []
         assert response.context["js_cfg"] == {}

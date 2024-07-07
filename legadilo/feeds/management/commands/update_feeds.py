@@ -35,6 +35,11 @@ logger = logging.getLogger(__name__)
 
 
 class Command(AsyncCommand):
+    help = """Update all feeds.
+
+    To do this, we check the feed file from its source, parse it and run debug code.
+    """
+
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--feed-ids",

@@ -21,7 +21,7 @@ from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import aget_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -93,9 +93,7 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
 @require_http_methods(["POST"])
 @alogin_required
 async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    article = await sync_to_async(get_object_or_404)(
-        Article, link=request.POST.get("url"), user=request.user
-    )
+    article = await aget_object_or_404(Article, link=request.POST.get("url"), user=request.user)
     await _handle_save(
         request,
         [],

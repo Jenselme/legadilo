@@ -83,7 +83,7 @@ def build_article_data(  # noqa: PLR0913 too many arguments
         summary = _get_fallback_summary_from_content(content)
 
     try:
-        language = full_sanitize(language)
+        language = full_sanitize(language)[: constants.LANGUAGE_CODE_MAX_LENGTH]
         language_code_validator(language)
     except (ValidationError, TypeError):
         language = ""
@@ -114,7 +114,7 @@ def build_article_data(  # noqa: PLR0913 too many arguments
         preview_picture_alt=full_sanitize(preview_picture_alt),
         published_at=published_at,
         updated_at=updated_at,
-        language=full_sanitize(language)[: constants.LANGUAGE_CODE_MAX_LENGTH],
+        language=language,
         annotations=annotations,
         read_at=read_at,
         is_favorite=is_favorite,

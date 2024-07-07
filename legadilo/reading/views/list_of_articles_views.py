@@ -168,7 +168,7 @@ def external_tag_with_articles_view(
     return list_or_update_articles(
         request,
         Article.objects.get_articles_with_external_tag(request.user, tag_title),
-        _("Articles with tag '%(tag_title)s'") % {"tag_title": tag_title},
+        _("Articles with external tag '%(tag_title)s'") % {"tag_title": tag_title},
     )
 
 

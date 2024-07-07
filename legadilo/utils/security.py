@@ -25,10 +25,16 @@ DEFAULT_ALLOWED_ATTRIBUTES = {
 
 
 def full_sanitize(data: str) -> str:
+    """Remove all HTML tags from the input string."""
     return nh3.clean(data, tags=set(), strip_comments=True)
 
 
 def sanitize_keep_safe_tags(data: str, extra_tags_to_cleanup: Set[str] = frozenset()) -> str:
+    """Remove HTML tags and attribute that are not considered safe.
+
+    You can pass a set of extra tags to remove to adapt it to your usage (for instance to also clean
+    img tag).
+    """
     allowed_tags = nh3.ALLOWED_TAGS - extra_tags_to_cleanup
 
     return nh3.clean(

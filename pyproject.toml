@@ -213,7 +213,6 @@ argon2-cffi = "23.1.0"  # https://github.com/hynek/argon2_cffi
 whitenoise = "6.7.0"  # https://github.com/evansd/whitenoise
 psycopg = { extras = ["binary"], version = "3.2.1" }  # https://github.com/psycopg/psycopg
 rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
-defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 
 # Django
 # ------------------------------------------------------------------------------
@@ -242,6 +241,7 @@ beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/
 nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.22.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
+defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 
 
 [tool.poetry.group.prod]
