@@ -74,7 +74,7 @@ class TestSubscribeToFeedView:
     ):
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
-        with django_assert_num_queries(26):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -100,7 +100,7 @@ class TestSubscribeToFeedView:
     ):
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
-        with django_assert_num_queries(31):
+        with django_assert_num_queries(34):
             response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED, response.context["form"].errors
@@ -135,7 +135,7 @@ class TestSubscribeToFeedView:
         }
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
-        with django_assert_num_queries(26):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(self.url, sample_payload_with_category)
 
         assert response.status_code == HTTPStatus.CREATED

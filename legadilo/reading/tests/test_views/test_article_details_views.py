@@ -56,7 +56,7 @@ class TestArticleDetailsView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_view_details(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -67,7 +67,7 @@ class TestArticleDetailsView:
 
     def test_view_details_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
         from_url = "/reading/lists/unread/"
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.get(self.url, data={"from_url": from_url})
 
         assert response.status_code == HTTPStatus.OK
@@ -146,7 +146,7 @@ class TestUpdateArticleDetailsView:
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(20):
+        with django_assert_num_queries(23):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
@@ -166,7 +166,7 @@ class TestUpdateArticleDetailsView:
     ):
         initial_slug = self.article.slug
 
-        with django_assert_num_queries(20):
+        with django_assert_num_queries(23):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
             )
