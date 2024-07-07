@@ -42,7 +42,7 @@
                     data-modal-title="{% translate 'Confirm reading list deletion' %}"
                     data-modal-body="{% blocktranslate with reading_list_title=reading_list.title %}Are you sure you want to delete the reading list '{{ reading_list_title }}'?{% endblocktranslate %}"
                     class="btn btn-danger"
-                    type="submit"
+                    type="button"
                     name="delete">{% translate "Delete" %}</button>
             {% if not reading_list.is_default %}
                 <button class="btn btn-outline-secondary" type="submit" name="make-default">{% translate "Make default" %}</button>

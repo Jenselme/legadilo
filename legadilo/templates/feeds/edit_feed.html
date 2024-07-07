@@ -28,12 +28,12 @@
                 data-modal-title="{% translate 'Confirm feed deletion' %}"
                 data-modal-body="{% blocktranslate with feed_title=feed.title %}Are you sure you want to delete the feed '{{ feed_title }}'?{% endblocktranslate %}"
                 class="btn btn-danger"
-                type="submit"
+                type="button"
                 name="delete">{% translate "Delete" %}</button>
         {% if feed.enabled %}
-            <button class="btn btn-outline-secondary" type="submit" name="disable">{% translate "Disable feed" %}</button>
+            <button class="btn btn-outline-secondary" type="button" name="disable">{% translate "Disable feed" %}</button>
         {% else %}
-            <button class="btn btn-outline-secondary" type="submit" name="enable">{% translate "Reenable feed" %}</button>
+            <button class="btn btn-outline-secondary" type="button" name="enable">{% translate "Reenable feed" %}</button>
         {% endif %}
         <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
     </form>
