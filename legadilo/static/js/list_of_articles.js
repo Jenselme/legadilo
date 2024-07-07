@@ -130,6 +130,11 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
+    // Force a scroll to top after reloading the page: previously read articles won’t be there
+    // anymore and the back button of the browser will preserve scroll. We may end up marking some
+    // articles as read when we shouldn’t. Clicking the back button on the details page doesn’t have
+    // this issue.
+    window.scroll(0, 0);
     setupReadAction();
     setupReadOnScroll();
     setupRefresh();
