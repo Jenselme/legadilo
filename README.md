@@ -15,9 +15,10 @@ Your [ideas](https://github.com/Jenselme/legadilo/issues/new), [contributions](h
 
 ### Start the project locally
 
-1. Ensure you have [Docker](https://www.docker.com/) installed.
-2. Run `docker compose -f local.yml up`
-3. The site should be accessible at http://localhost:8000
+1. Ensure you have [Docker](https://www.docker.com/) and [node](https://nodejs.org/en) installed.
+2. Run `npm install` to install our few JS deps.
+3. Run `docker compose -f local.yml up`
+4. The site should be accessible at http://localhost:8000
 
 ### Using VSCode
 
@@ -27,7 +28,7 @@ You will have to start Django with the provided run target.
 
 ### Using Pycharm
 
-By default, everything is set up to develop locally with Pycharm. So you will need docker (for the database), poetry and Python 3.12 installed for this to work. Django will be started automatically.
+By default, everything is set up to develop locally with Pycharm. So you will need docker (for the database), poetry, Python 3.12 and nodeJS 20+ installed for this to work. Django will be started automatically. On the first run, you must run `npm install` to install a few JS deps.
 
 You should also be able to use devcontainers but the support is more recent and isn’t as good as in VSCode according to my tests. See [here](https://www.jetbrains.com/help/pycharm/connect-to-devcontainer.html) for more.
 
