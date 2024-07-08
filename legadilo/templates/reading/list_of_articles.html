@@ -142,7 +142,7 @@
                 {% endpartialdef %}
                 {% if articles_paginator.num_pages > 1 %}
                     <nav aria-label="{% translate 'Navigation between articles' %}">
-                        <ul class="pagination d-flex justify-content-center">
+                        <ul class="pagination d-flex justify-content-center flex-wrap">
                             <li class="page-item">
                                 <a class="page-link {% if not articles_page.has_previous %}disabled{% endif %}"
                                    {% if articles_page.has_previous %}href="?page={{ articles_page.previous_page_number }}"{% endif %}>
