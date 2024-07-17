@@ -289,7 +289,7 @@ django-extensions = "3.2.3"  # https://github.com/django-extensions/django-exten
 optional = true
 
 [tool.poetry.group.doc.dependencies]
-sphinx = "7.3.7"  # https://github.com/sphinx-doc/sphinx
+sphinx = "7.4.5"  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild = "2024.4.16"  # https://github.com/GaretJax/sphinx-autobuild
 myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
