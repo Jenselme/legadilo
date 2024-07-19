@@ -24,7 +24,7 @@ from legadilo.reading.models import ReadingList, ReadingListTag
 from legadilo.reading.tests.factories import ReadingListFactory, TagFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestReadingListsAdminView:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
@@ -47,7 +47,7 @@ class TestReadingListsAdminView:
         assert list(response.context["reading_lists"]) == [reading_list]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestCreateReadingListView:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
@@ -106,7 +106,7 @@ class TestCreateReadingListView:
             assert getattr(reading_list, field) == value
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestReadingListEditView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

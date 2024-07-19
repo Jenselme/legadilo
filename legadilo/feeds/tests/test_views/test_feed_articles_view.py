@@ -26,7 +26,7 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.tests.factories import ArticleFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedArticlesView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

@@ -31,7 +31,7 @@ from ... import constants
 from ..fixtures import get_feed_fixture_content
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestUpdateFeedsCommand:
     def test_update_feed_command_no_feed(self):
         call_command("update_feeds")

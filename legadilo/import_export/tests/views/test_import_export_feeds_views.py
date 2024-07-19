@@ -31,7 +31,7 @@ from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestExportFeeds:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
@@ -74,7 +74,7 @@ class TestExportFeeds:
         snapshot.assert_match(response.content, "feeds.opml")
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestImportFeeds:
     @pytest.fixture(autouse=True)
     def _setup_data(self):

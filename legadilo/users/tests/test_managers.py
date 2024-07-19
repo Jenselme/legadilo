@@ -24,7 +24,7 @@ from django.db import IntegrityError
 from legadilo.users.models import User
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestUserManager:
     def test_create_user(self):
         user = User.objects.create_user(
@@ -70,7 +70,7 @@ class TestUserManager:
             User.objects.create(email="hacker@example.com")
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_createsuperuser_command():
     """Ensure createsuperuser command works with our custom manager."""
     out = StringIO()

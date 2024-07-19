@@ -26,7 +26,7 @@ from legadilo.import_export.services.opml import import_opml_file_sync
 from legadilo.reading.models import Article
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     "file_name",
     [

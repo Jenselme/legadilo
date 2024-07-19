@@ -217,7 +217,7 @@ class FeedManager(models.Manager["Feed"]):
         return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids))
 
     @transaction.atomic()
-    def create_from_metadata(  # noqa: PLR0913 too many arguments
+    def create_from_metadata(
         self,
         feed_metadata: FeedData,
         user: User,

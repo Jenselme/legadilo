@@ -26,7 +26,7 @@ from ... import constants
 from ..factories import FeedFactory, FeedUpdateFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedUpdateQuerySet:
     def test_only_latest(self):
         feed = FeedFactory()
@@ -64,7 +64,7 @@ class TestFeedUpdateQuerySet:
         assert list(feed_updates_to_cleanup) == [feed_update_to_cleanup]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedUpdateManager:
     def test_get_latest_for_feed(self):
         feed = FeedFactory()

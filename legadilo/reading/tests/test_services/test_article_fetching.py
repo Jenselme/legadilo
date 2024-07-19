@@ -24,7 +24,7 @@ from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_get_article_from_url(httpx_mock, snapshot):
     url = "https://www.example.com/posts/en/1-super-article/"
     httpx_mock.add_response(url=url, text=get_article_fixture_content("sample_blog_article.html"))
@@ -34,7 +34,7 @@ async def test_get_article_from_url(httpx_mock, snapshot):
     snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "fixture_file",
     ["htm_redirection_invalid_http_equiv.html", "html_redirection.html"],
@@ -53,7 +53,7 @@ async def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
     assert article_data.title == "On the 3 musketeers"
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("fixture_file", "expected_starts_with"),
     [
@@ -76,7 +76,7 @@ async def test_get_article_from_url_weird_content(fixture_file, expected_starts_
     assert "Lorem ipsum dolor sit amet" in article_data.content
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "process_fn",
     [

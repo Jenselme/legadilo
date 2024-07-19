@@ -38,7 +38,7 @@ from ... import constants as feeds_constants
 from ...models import Feed
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedQuerySet:
     def test_for_user(self, user, other_user):
         feed = FeedFactory(user=user)
@@ -147,7 +147,7 @@ class TestFeedQuerySet:
         assert feeds == [feed1]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedManager:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

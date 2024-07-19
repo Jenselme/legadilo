@@ -32,9 +32,9 @@ from ... import constants as feeds_constants
 from ..fixtures import get_feed_fixture_content, get_page_for_feed_subscription_content
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestSubscribeToFeedView:
-    @pytest.fixture()
+    @pytest.fixture
     def sample_rss_feed(self):
         return get_feed_fixture_content("sample_rss.xml")
 

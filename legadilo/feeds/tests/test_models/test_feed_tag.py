@@ -22,7 +22,7 @@ from legadilo.reading.models import Tag
 from legadilo.reading.tests.factories import TagFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedTagManager:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
