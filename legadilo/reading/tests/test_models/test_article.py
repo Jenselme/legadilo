@@ -158,7 +158,7 @@ def test_build_filters_from_reading_list(
     assert filters == expected_filter
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestArticleQuerySet:
     def test_for_user(self, user, other_user):
         article = ArticleFactory(user=user)
@@ -815,7 +815,7 @@ class TestArticleQuerySet:
         ]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestArticleManager:
     @time_machine.travel("2024-06-01 12:00:00", tick=False)
     def test_update_and_create_articles(self, user, django_assert_num_queries):
@@ -1261,7 +1261,7 @@ class TestArticleManager:
 
 
 class TestArticleModel:
-    @pytest.mark.django_db()
+    @pytest.mark.django_db
     def test_generated_fields(self):
         article = ArticleFactory(opened_at=None, read_at=None)
         assert not article.is_read

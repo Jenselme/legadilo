@@ -114,6 +114,9 @@ You can create cryptahpicaly sure secrets in Python with `python3 -c "import sec
 | `DJANGO_EMAIL_SUBJECT_PREFIX`           | `[Legadilo]`       | Each email will be prefixed by this.                                                   |
 | `EMAIL_HOST`                            | `mailpit`          | On which host to connect to send an email. Leave the default to not send in production |
 | `EMAIL_PORT`                            | 1025               | On which port to connect to send an email.                                             |
+| `EMAIL_HOST_USER`                       | Empty string       | Username to use for the SMTP server defined in `EMAIL_HOST`                            |
+| `EMAIL_HOST_PASSWORD`                   | Empty string       | The password associated with the above username                                        |
 | `EMAIL_TIMEOUT`                         | 30                 | Max time to wait for when trying to send an email before failing.                      |
+| `EMAIL_USE_TLS`                         | False              | Whether to use TLS to send email with SMTP                                             |
 | `SENTRY_DSN`                            | `None`             | To enable error monitoring with Sentry (leave empty to leave it deactivated).          |
 

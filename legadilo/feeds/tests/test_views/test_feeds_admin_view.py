@@ -25,7 +25,7 @@ from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.reading.tests.factories import TagFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedsAdminView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

@@ -24,7 +24,7 @@ from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestArticleDetailsView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -77,7 +77,7 @@ class TestArticleDetailsView:
         assert "edit_article_form" in response.context
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestUpdateArticleDetailsView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

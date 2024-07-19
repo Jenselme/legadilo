@@ -28,7 +28,7 @@ from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory,
 from legadilo.utils.time import utcnow
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestReadingListWithArticlesView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user, other_user):
@@ -167,7 +167,7 @@ class TestReadingListWithArticlesView:
         assert response["HX-Push-Url"] == self.reading_list_url
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestTagWithArticlesView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -209,7 +209,7 @@ class TestTagWithArticlesView:
         assert response.context["update_articles_form"] is not None
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestUpdateArticlesFromTagWithArticlesView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

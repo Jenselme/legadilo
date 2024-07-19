@@ -36,23 +36,23 @@ def _setup_settings(settings, tmpdir):
     settings.TEMPLATES[0]["OPTIONS"]["debug"] = True
 
 
-@pytest.fixture()
+@pytest.fixture
 def user(db) -> User:
     return UserFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def other_user(db) -> User:
     return UserFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def logged_in_sync_client(user, client):
     client.force_login(user)
     return client
 
 
-@pytest.fixture()
+@pytest.fixture
 def logged_in_other_user_sync_client(other_user, client):
     client.force_login(other_user)
     return client

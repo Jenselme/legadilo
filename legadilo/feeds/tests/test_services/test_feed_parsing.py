@@ -166,7 +166,7 @@ class TestFindFeedUrl:
 
 
 class TestGetFeedMetadata:
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         ("feed_url", "feed_content", "feed_type"),
         [
@@ -196,7 +196,7 @@ class TestGetFeedMetadata:
         assert feed_data.feed_type == feed_type
         snapshot.assert_match(serialize_for_snapshot(feed_data), "feed_data.json")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_get_feed_metadata_from_page_url(self, httpx_mock, snapshot):
         page_content = get_page_for_feed_subscription_content({
             "feed_links": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
@@ -212,7 +212,7 @@ class TestGetFeedMetadata:
         assert feed_data.feed_type == SupportedFeedType.atom10
         snapshot.assert_match(serialize_for_snapshot(feed_data), "feed_data.json")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_feed_file_too_big(self, httpx_mock, mocker):
         mocker.patch(
             "legadilo.feeds.services.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
@@ -226,7 +226,7 @@ class TestGetFeedMetadata:
             async with httpx.AsyncClient() as client:
                 await get_feed_data("https://www.jujens.eu/feed/rss.xml", client=client)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_feed_file_is_an_attack(self, httpx_mock, snapshot):
         feed_url = "https://example.com/feed.xml"
         httpx_mock.add_response(text=get_feed_fixture_content("attack_feed.xml"), url=feed_url)

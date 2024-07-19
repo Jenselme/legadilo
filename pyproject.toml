@@ -216,12 +216,12 @@ rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 
 # Django
 # ------------------------------------------------------------------------------
-django = "5.0.6"  # https://www.djangoproject.com/
+django = "5.0.7"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.63.3"  # https://github.com/pennersr/django-allauth
+django-allauth = "0.63.6"  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.2"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
-django-anymail = "11.0"  # https://github.com/anymail/django-anymail
+django-anymail = "11.0.1"  # https://github.com/anymail/django-anymail
 daphne = "^4.1.2"  # https://github.com/django/daphne
 django-version-checks = "1.12.0"  # https://github.com/adamchainz/django-version-checks
 django-extra-checks = "0.15.0"  # https://github.com/kalekseev/django-extra-checks
@@ -239,7 +239,7 @@ feedparser = {git = "https://github.com/Jenselme/feedparser.git", rev = "correct
 httpx = "^0.27.0"  # https://www.python-httpx.org/
 beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
-jsonschema = "^4.22.0"  # https://github.com/python-jsonschema/jsonschema
+jsonschema = "^4.23.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 
@@ -248,14 +248,14 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.7.1"}
+sentry-sdk = {extras = ["django"], version = "^2.10.0"}
 
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-pudb = "2024.1"  # https://documen.tician.de/pudb/
+pudb = "2024.1.1"  # https://documen.tician.de/pudb/
 ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
@@ -263,7 +263,7 @@ ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 pytest = "8.2.2"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
-pytest-asyncio = "^0.23.7"  # https://github.com/pytest-dev/pytest-asyncio/
+pytest-asyncio = "^0.23.8"  # https://github.com/pytest-dev/pytest-asyncio/
 pytest-mock = "^3.14.0"    # https://pytest-mock.readthedocs.io/en/latest/
 pytest-socket = "0.7.0"  # https://github.com/miketheman/pytest-socket
 pytest-env = "1.1.3"  # https://github.com/pytest-dev/pytest-env
@@ -272,13 +272,13 @@ time-machine = "2.14.2"  #  https://github.com/adamchainz/time-machine
 
 # Code quality
 # ------------------------------------------------------------------------------
-coverage = "7.5.4"  # https://github.com/nedbat/coveragepy
+coverage = "7.6.0"  # https://github.com/nedbat/coveragepy
 pre-commit = "3.7.1"  # https://github.com/pre-commit/pre-commit
 
 # Django
 # ------------------------------------------------------------------------------
 factory-boy = "3.3.0"  # https://github.com/FactoryBoy/factory_boy
-django-debug-toolbar = "4.4.5"  # https://github.com/jazzband/django-debug-toolbar
+django-debug-toolbar = "4.4.6"  # https://github.com/jazzband/django-debug-toolbar
 django-coverage-plugin = "3.1.0"  # https://github.com/nedbat/django_coverage_plugin
 pytest-django = "4.8.0"  # https://github.com/pytest-dev/pytest-django
 django-browser-reload = "1.13.0"  # https://pypi.org/project/django-browser-reload/
@@ -289,7 +289,7 @@ django-extensions = "3.2.3"  # https://github.com/django-extensions/django-exten
 optional = true
 
 [tool.poetry.group.doc.dependencies]
-sphinx = "7.3.7"  # https://github.com/sphinx-doc/sphinx
+sphinx = "7.4.6"  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild = "2024.4.16"  # https://github.com/GaretJax/sphinx-autobuild
 myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 

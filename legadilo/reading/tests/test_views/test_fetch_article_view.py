@@ -28,7 +28,7 @@ from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestAddArticle:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -199,7 +199,7 @@ class TestAddArticle:
         ]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestRefetchArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

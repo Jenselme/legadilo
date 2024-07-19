@@ -21,7 +21,7 @@ from legadilo.reading.models.reading_list import ReadingList
 from legadilo.reading.tests.factories import ReadingListFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestReadingListManager:
     def test_create_default_lists(self, user, other_user):
         ReadingList.objects.create_default_lists(user)
@@ -61,7 +61,7 @@ class TestReadingListManager:
         assert not initial_default_reading_list.is_default
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestReadingListModel:
     def test_cannot_create_multiple_default_lists_for_one_user(self, user):
         ReadingListFactory(user=user, is_default=True)

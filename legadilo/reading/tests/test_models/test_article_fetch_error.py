@@ -21,7 +21,7 @@ from legadilo.reading.models import ArticleFetchError
 from legadilo.reading.tests.factories import ArticleFetchErrorFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestArticleFetchErrorQuerySet:
     def test_for_cleanup(self):
         with time_machine.travel("2024-03-15 12:00:00"):

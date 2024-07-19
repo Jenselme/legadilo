@@ -21,7 +21,7 @@ from legadilo.reading.models import ArticleTag, ReadingListTag, Tag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestTagManager:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -68,7 +68,7 @@ class TestTagManager:
         assert tags[0] == self.tag1
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestArticleTagQuerySet:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user, other_user):
@@ -114,7 +114,7 @@ class TestArticleTagQuerySet:
         assert article_tags_marked_as_deleted == [self.article_tag2]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestArticleTagManager:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -232,7 +232,7 @@ class TestArticleTagManager:
         ]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestReadingListTagManager:
     def test_get_selected_values(self, user):
         reading_list = ReadingListFactory(user=user)

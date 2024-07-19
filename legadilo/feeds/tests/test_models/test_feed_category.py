@@ -22,7 +22,7 @@ from legadilo.feeds.tests.factories import FeedCategoryFactory
 from legadilo.utils.testing import serialize_for_snapshot
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedCategoryQuerySet:
     def test_for_user(self, user):
         feed_category = FeedCategoryFactory(user=user)
@@ -33,7 +33,7 @@ class TestFeedCategoryQuerySet:
         assert list(categories_for_user) == [feed_category]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestFeedCategoryManager:
     def test_get_all_choices(self, user):
         feed_category = FeedCategoryFactory(user=user)

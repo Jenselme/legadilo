@@ -36,7 +36,7 @@ def test_import_invalid_custom_csv(user):
         )
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_import_empty_file(user):
     nb_imported_articles, nb_imported_feeds, nb_imported_categories = import_custom_csv_file_sync(
         user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/empty_file.csv"
@@ -50,7 +50,7 @@ def test_import_empty_file(user):
     assert FeedCategory.objects.count() == 0
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @time_machine.travel("2024-05-17 13:00:00", tick=False)
 def test_import_custom_csv(user, httpx_mock, snapshot):
     feed_category = FeedCategoryFactory(

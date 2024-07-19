@@ -24,7 +24,7 @@ from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestUpdateArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -218,7 +218,7 @@ class TestUpdateArticleView:
         assert response.headers["HX-Reswap"] == "none show:none"
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestDeleteArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
