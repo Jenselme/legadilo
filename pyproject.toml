@@ -248,7 +248,7 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.10.0"}
+sentry-sdk = {extras = ["django"], version = "^2.12.0"}
 
 
 [tool.poetry.group.dev]
