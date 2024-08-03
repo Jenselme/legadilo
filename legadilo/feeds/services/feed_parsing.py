@@ -36,7 +36,7 @@ from legadilo.reading.services.article_fetching import (
 )
 from legadilo.utils.security import full_sanitize
 
-from ...utils.time import dt_to_http_date
+from ...utils.time_utils import dt_to_http_date
 from ...utils.validators import normalize_url
 from .. import constants
 

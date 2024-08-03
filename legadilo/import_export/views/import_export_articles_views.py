@@ -30,7 +30,7 @@ from jsonschema.exceptions import ValidationError as JsonValidationError
 
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.users.models import User
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
 
 from ...feeds.models import Feed, FeedCategory

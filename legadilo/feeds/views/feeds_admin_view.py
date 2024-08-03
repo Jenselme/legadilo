@@ -24,7 +24,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.feeds.models import Feed, FeedCategory, FeedTag
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 
 from ...core.forms import FormChoices
 from ...core.forms.fields import MultipleTagsField

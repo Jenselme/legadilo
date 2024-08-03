@@ -25,7 +25,7 @@ from legadilo.feeds.models import Feed
 from legadilo.reading.views.list_of_articles_views import (
     list_or_update_articles,
 )
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 
 
 @require_http_methods(["GET", "POST"])

@@ -28,8 +28,8 @@ from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.exceptions import extract_debug_information, format_exception
-from legadilo.utils.http import get_rss_async_client
-from legadilo.utils.time import utcnow
+from legadilo.utils.http_utils import get_rss_async_client
+from legadilo.utils.time_utils import utcnow
 
 logger = logging.getLogger(__name__)
 

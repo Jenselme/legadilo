@@ -22,7 +22,7 @@ from django.core.management.base import CommandParser
 
 from legadilo.feeds.services.feed_parsing import build_feed_data_from_parsed_feed, parse_feed
 from legadilo.utils.command import AsyncCommand
-from legadilo.utils.http import get_rss_async_client
+from legadilo.utils.http_utils import get_rss_async_client
 from legadilo.utils.validators import is_url_valid
 
 

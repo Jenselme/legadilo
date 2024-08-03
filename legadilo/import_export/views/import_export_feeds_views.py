@@ -28,9 +28,9 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.feeds.models import Feed
 from legadilo.import_export.services.opml import import_opml_file
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
-from legadilo.utils.time import utcnow
+from legadilo.utils.time_utils import utcnow
 
 from .. import constants
 

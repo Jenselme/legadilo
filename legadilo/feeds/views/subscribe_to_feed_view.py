@@ -34,8 +34,8 @@ from legadilo.reading.models import Tag
 from legadilo.utils.decorators import alogin_required
 
 from ...users.models import User
-from ...users.typing import AuthenticatedHttpRequest
-from ...utils.http import get_rss_async_client
+from ...users.user_types import AuthenticatedHttpRequest
+from ...utils.http_utils import get_rss_async_client
 from .. import constants
 from ..models import Feed, FeedCategory
 from ..services.feed_parsing import (

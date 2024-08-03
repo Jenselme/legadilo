@@ -36,7 +36,7 @@ from legadilo.reading.tests.factories import (
     TagFactory,
 )
 from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time import utcdt, utcnow
+from legadilo.utils.time_utils import utcdt, utcnow
 
 
 @pytest.mark.parametrize(

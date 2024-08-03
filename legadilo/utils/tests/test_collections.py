@@ -16,8 +16,8 @@
 
 import pytest
 
-from legadilo.utils.collections import max_or_none, min_or_none
-from legadilo.utils.time import utcdt
+from legadilo.utils.collections_utils import max_or_none, min_or_none
+from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.parametrize(

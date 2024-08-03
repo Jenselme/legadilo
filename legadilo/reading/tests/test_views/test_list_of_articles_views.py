@@ -25,7 +25,7 @@ from django.urls import reverse
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
-from legadilo.utils.time import utcnow
+from legadilo.utils.time_utils import utcnow
 
 
 @pytest.mark.django_db

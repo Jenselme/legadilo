@@ -36,7 +36,7 @@ from legadilo.reading.services.article_fetching import (
     get_article_from_url,
 )
 from legadilo.reading.templatetags import article_details_url
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.decorators import alogin_required
 from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.urls import add_query_params, pop_query_param, validate_referer_url

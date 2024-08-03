@@ -31,10 +31,10 @@ from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
-from legadilo.utils.collections import max_or_none, min_or_none
+from legadilo.utils.collections_utils import max_or_none, min_or_none
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
-from legadilo.utils.time import utcnow
+from legadilo.utils.time_utils import utcnow
 from legadilo.utils.validators import language_code_validator, list_of_strings_json_schema_validator
 
 from .article_fetch_error import ArticleFetchError

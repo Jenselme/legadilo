@@ -32,7 +32,7 @@ from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time import utcdt, utcnow
+from legadilo.utils.time_utils import utcdt, utcnow
 
 from ... import constants as feeds_constants
 from ...models import Feed

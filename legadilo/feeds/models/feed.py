@@ -30,7 +30,7 @@ from legadilo.reading.models.article import Article, ArticleQuerySet
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
-from ...utils.time import utcnow
+from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle

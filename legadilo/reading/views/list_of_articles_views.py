@@ -40,7 +40,7 @@ from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
 from legadilo.reading.services.views import get_js_cfg_from_reading_list
 from legadilo.reading.templatetags import decode_external_tag
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
 from legadilo.utils.urls import pop_query_param
 from legadilo.utils.validators import get_page_number_from_request

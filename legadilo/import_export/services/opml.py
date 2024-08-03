@@ -31,9 +31,9 @@ from legadilo.feeds.services.feed_parsing import (
     get_feed_data,
 )
 from legadilo.users.models import User
-from legadilo.utils.http import get_rss_async_client
+from legadilo.utils.http_utils import get_rss_async_client
 from legadilo.utils.security import full_sanitize
-from legadilo.utils.time import utcnow
+from legadilo.utils.time_utils import utcnow
 from legadilo.utils.validators import is_url_valid
 
 logger = logging.getLogger(__name__)
