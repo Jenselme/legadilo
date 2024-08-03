@@ -28,7 +28,7 @@
                     data-modal-title="{% translate 'Confirm category deletion' %}"
                     data-modal-body="{% blocktranslate with category_title=category.title %}Are you sure you want to delete the category '{{ category_title }}'?{% endblocktranslate %}"
                     class="btn btn-danger"
-                    type="button"
+                    type="submit"
                     name="delete">{% translate "Delete" %}</button>
             <button class="btn btn-primary" type="submit">{% translate "Update" %}</button>
         {% else %}
