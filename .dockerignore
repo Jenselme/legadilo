@@ -13,3 +13,4 @@ venv
 devops/envs/
 .pytest_cache/
 staticfiles/
+node_modules/

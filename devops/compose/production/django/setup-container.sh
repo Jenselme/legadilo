@@ -16,7 +16,7 @@ apt-get install --no-install-recommends -y gettext
 
 if [[ "${BUILD_ENV}" == "local" ]]; then
     # devcontainer dependencies and utils
-    apt-get install --no-install-recommends -y sudo git bash-completion nano ssh
+    apt-get install --no-install-recommends -y sudo git bash-completion nano ssh nodejs
     # Create devcontainer user and add it to sudoers
     groupadd --gid 1000 dev-user
     useradd --uid 1000 --gid dev-user --shell /bin/bash --create-home dev-user

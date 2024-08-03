@@ -1,3 +1,10 @@
+FROM node:lts-slim AS node
+
+COPY ./package.json /
+COPY ./package-lock.json /
+
+RUN cd / && npm install
+
 FROM python:3.12-slim-bookworm
 
 ARG BUILD_ENVIRONMENT=production
@@ -37,6 +44,7 @@ COPY --chown=django:django ./devops/compose/production/django/setup-django.sh /
 
 # copy application code to WORKDIR
 COPY --chown=django:django . ${APP_HOME}
+COPY --from=node --chown=django:django /node_modules/ ${APP_HOME}/node_modules/
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
