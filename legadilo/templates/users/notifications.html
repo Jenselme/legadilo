@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Notifications" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Notifications" %}</h1>
+    <form method="post" hx-boost="true" hx-push-url="false">
+        {% csrf_token %}
+        <button class="btn btn-outline-primary mb-3" type="submit">{% translate "Mark all as read" %}</button>
+    </form>
+    {% for notification in notifications %}
+        <div class="card mb-2 {% if notification.is_read %}opacity-50{% endif %}">
+            <div class="card-body">
+                <h2 class="card-title">{{ notification.title }}</h2>
+                <p class="card-text">{{ notification.content }}</p>
+                <form method="post" hx-boost="true" hx-push-url="false">
+                    {% csrf_token %}
+                    <input name="notification_id" type="hidden" value="{{ notification.id }}" />
+                    {% if notification.is_read %}
+                        <button class="btn btn-primary" name="mark-as-unread" type="submit">{% translate "Mark as unread" %}</button>
+                    {% else %}
+                        <button class="btn btn-primary" type="submit">{% translate "Mark as read" %}</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock content %}

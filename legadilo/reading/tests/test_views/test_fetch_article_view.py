@@ -56,7 +56,7 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -78,7 +78,7 @@ class TestAddArticle:
     ):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(19):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED

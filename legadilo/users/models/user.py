@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from functools import cached_property
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -50,3 +51,7 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"pk": self.id})
+
+    @cached_property
+    def has_unread_notifications(self) -> bool:
+        return self.notifications.has_unread(self)

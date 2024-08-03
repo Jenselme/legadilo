@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .notifications_views import list_notifications_view
 from .user_views import (
     user_detail_view,
     user_redirect_view,
@@ -22,6 +23,7 @@ from .user_views import (
 )
 
 __all__ = [
+    "list_notifications_view",
     "user_detail_view",
     "user_redirect_view",
     "user_update_settings_view",

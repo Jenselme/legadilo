@@ -24,4 +24,5 @@ urlpatterns = [
     path("~update/", view=views.user_update_view, name="update"),
     path("~settings/", view=views.user_update_settings_view, name="update_settings"),
     path("<int:pk>/", view=views.user_detail_view, name="detail"),
+    path("notifications/", views.list_notifications_view, name="list_notifications"),
 ]
