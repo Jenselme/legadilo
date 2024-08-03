@@ -30,6 +30,7 @@ from legadilo.reading.models.article import Article, ArticleQuerySet
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
+from ...users.models import Notification
 from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
@@ -273,8 +274,12 @@ class FeedManager(models.Manager["Feed"]):
             technical_debug_data=technical_debug_data,
         )
         if FeedUpdate.objects.must_disable_feed(feed):
-            feed.disable(_("We failed too many times to fetch the feed"))
+            message = _("We failed too many times to fetch the feed")
+            feed.disable(message)
             feed.save()
+            Notification.objects.create(
+                user=feed.user, title=_("Feed '%s' was disabled") % feed.title, content=str(message)
+            )
 
     def log_not_modified(self, feed: Feed):
         FeedUpdate.objects.create(

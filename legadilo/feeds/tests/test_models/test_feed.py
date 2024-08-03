@@ -30,6 +30,7 @@ from legadilo.feeds.tests.factories import (
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
+from legadilo.users.models import Notification
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt, utcnow
@@ -366,6 +367,10 @@ class TestFeedManager:
         feed_update = self.feed.feed_updates.last()
         assert feed_update.status == feeds_constants.FeedUpdateStatus.FAILURE
         assert feed_update.error_message == "Something went wrong"
+        notification = Notification.objects.get()
+        assert not notification.is_read
+        assert notification.title == f"Feed '{self.feed.title}' was disabled"
+        assert notification.content == "We failed too many times to fetch the feed"
 
     def test_update_feed(self, django_assert_num_queries):
         existing_article = ArticleFactory(
