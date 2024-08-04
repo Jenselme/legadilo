@@ -14,8 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from legadilo.users.models import User
+from .user_views import (
+    user_detail_view,
+    user_redirect_view,
+    user_update_settings_view,
+    user_update_view,
+)
 
-
-def test_user_get_absolute_url(user: User):
-    assert user.get_absolute_url() == f"/users/{user.pk}/"
+__all__ = [
+    "user_detail_view",
+    "user_redirect_view",
+    "user_update_settings_view",
+    "user_update_view",
+]

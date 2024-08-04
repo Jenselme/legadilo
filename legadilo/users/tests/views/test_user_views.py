@@ -31,14 +31,12 @@ from legadilo.users.forms import UserAdminChangeForm
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory
 from legadilo.users.views import (
-    UserRedirectView,
-    UserUpdateView,
     user_detail_view,
 )
+from legadilo.users.views.user_views import UserRedirectView, UserUpdateView
 
-pytestmark = pytest.mark.django_db
 
-
+@pytest.mark.django_db
 class TestUserUpdateView:
     def dummy_get_response(self, request: HttpRequest):
         return None
@@ -81,6 +79,7 @@ class TestUserUpdateView:
         assert messages_sent == [_("Information successfully updated")]
 
 
+@pytest.mark.django_db
 class TestUserRedirectView:
     def test_get_redirect_url(self, user: User, rf: RequestFactory):
         view = UserRedirectView()
@@ -91,6 +90,7 @@ class TestUserRedirectView:
         assert view.get_redirect_url() == "/reading/"
 
 
+@pytest.mark.django_db
 class TestUserDetailView:
     def test_authenticated(self, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
@@ -110,6 +110,7 @@ class TestUserDetailView:
         assert response.url == f"{login_url}?next=/fake-url/"
 
 
+@pytest.mark.django_db
 class TestUserUpdateSettingsView:
     def setup_method(self):
         self.url = reverse("users:update_settings")

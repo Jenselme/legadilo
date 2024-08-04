@@ -13,15 +13,3 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from django.urls import path
-
-from . import views
-
-app_name = "users"
-urlpatterns = [
-    path("~redirect/", view=views.user_redirect_view, name="redirect"),
-    path("~update/", view=views.user_update_view, name="update"),
-    path("~settings/", view=views.user_update_settings_view, name="update_settings"),
-    path("<int:pk>/", view=views.user_detail_view, name="detail"),
-]
