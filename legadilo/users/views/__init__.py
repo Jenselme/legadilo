@@ -14,15 +14,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.urls import path
+from .notifications_views import list_notifications_view
+from .user_views import (
+    user_detail_view,
+    user_redirect_view,
+    user_update_settings_view,
+    user_update_view,
+)
 
-from . import views
-
-app_name = "users"
-urlpatterns = [
-    path("~redirect/", view=views.user_redirect_view, name="redirect"),
-    path("~update/", view=views.user_update_view, name="update"),
-    path("~settings/", view=views.user_update_settings_view, name="update_settings"),
-    path("<int:pk>/", view=views.user_detail_view, name="detail"),
-    path("notifications/", views.list_notifications_view, name="list_notifications"),
+__all__ = [
+    "list_notifications_view",
+    "user_detail_view",
+    "user_redirect_view",
+    "user_update_settings_view",
+    "user_update_view",
 ]

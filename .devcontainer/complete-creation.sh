@@ -11,6 +11,8 @@ pip install esbonio
 python manage.py createcachetable
 python manage.py migrate
 
+npm install
+
 cat .devcontainer/bashrc.override.sh >> ~/.bashrc
 
 function setup-pre-commit() {

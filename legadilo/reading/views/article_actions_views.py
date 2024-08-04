@@ -29,7 +29,7 @@ from legadilo.reading.services.views import (
     get_js_cfg_from_reading_list,
 )
 from legadilo.reading.templatetags import article_card_id
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.urls import add_query_params, validate_referer_url
 
 

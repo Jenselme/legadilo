@@ -27,7 +27,7 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.services.article_fetching import build_article_data
 from legadilo.users.models import User
-from legadilo.utils.time import safe_datetime_parse
+from legadilo.utils.time_utils import safe_datetime_parse
 from legadilo.utils.validators import is_url_valid
 
 logger = logging.getLogger(__name__)

@@ -118,6 +118,15 @@
                                                 {% translate "Add an article" %}
                                             </a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'users:list_notifications' %}">
+                                                {% if user.has_unread_notifications %}
+                                                    {% include "core/partials/bs-icons/new_notifications.html" %}
+                                                {% else %}
+                                                    {% include "core/partials/bs-icons/no_notifications.html" %}
+                                                {% endif %}
+                                            </a>
+                                        </li>
                                         <li class="nav-item dropdown">
                                             <a class="nav-link dropdown-toggle"
                                                href="#"

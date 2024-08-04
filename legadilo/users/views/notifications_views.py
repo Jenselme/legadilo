@@ -14,39 +14,31 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from csp.decorators import csp_update
+from django import forms
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
-from legadilo.feeds.models import Feed
-from legadilo.reading.views.list_of_articles_views import (
-    list_or_update_articles,
-)
+from legadilo.users.models import Notification
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
 
-@require_http_methods(["GET", "POST"])
-@login_required
-@csp_update(IMG_SRC="https:")
-def feed_articles_view(
-    request: AuthenticatedHttpRequest, feed_id: int, feed_slug: str | None = None
-) -> TemplateResponse:
-    kwargs_to_get_feed = {
-        "id": feed_id,
-        "user": request.user,
-    }
-    if feed_slug:
-        kwargs_to_get_feed["slug"] = feed_slug
-    feed = get_object_or_404(
-        Feed,
-        **kwargs_to_get_feed,
-    )
+class ToggleNotificationStatusForm(forms.Form):
+    notification_id = forms.IntegerField(required=False)
 
-    return list_or_update_articles(
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def list_notifications_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+    if request.method == "POST":
+        form = ToggleNotificationStatusForm(request.POST)
+        if form.is_valid() and "mark-as-unread" in request.POST:
+            Notification.objects.mark_as_unread(request.user, form.cleaned_data["notification_id"])
+        elif form.is_valid():
+            Notification.objects.mark_as_read(request.user, form.cleaned_data["notification_id"])
+
+    return TemplateResponse(
         request,
-        Feed.objects.get_articles(feed),
-        _("Articles of feed '%(feed_title)s'") % {"feed_title": feed.title},
+        "users/notifications.html",
+        {"notifications": Notification.objects.list_all_for_user(request.user)},
     )

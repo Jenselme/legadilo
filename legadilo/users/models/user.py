@@ -13,8 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from typing import TYPE_CHECKING
+from functools import cached_property
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -22,11 +21,6 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.managers import UserManager
-
-if TYPE_CHECKING:
-    from django_stubs_ext.db.models import TypedModelMeta
-else:
-    TypedModelMeta = object
 
 
 class User(AbstractUser):
@@ -58,21 +52,6 @@ class User(AbstractUser):
         """
         return reverse("users:detail", kwargs={"pk": self.id})
 
-
-class UserSettings(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="settings")
-
-    default_reading_time = models.PositiveIntegerField(
-        default=200,
-        help_text=_(
-            "Number of words you read in minutes. Used to calculate the reading time of articles."
-        ),
-    )
-
-    class Meta(TypedModelMeta):
-        constraints = [
-            models.UniqueConstraint("user", name="%(app_label)s_%(class)s_unique_per_user"),
-        ]
-
-    def __str__(self):
-        return f"UserSettings(user={self.user})"
+    @cached_property
+    def has_unread_notifications(self) -> bool:
+        return self.notifications.has_unread(self)

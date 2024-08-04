@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from legadilo.reading import constants
-from legadilo.utils.time import utcnow
+from legadilo.utils.time_utils import utcnow
 
 
 class ArticleFetchErrorQuerySet(models.QuerySet["ArticleFetchError"]):

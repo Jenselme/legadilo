@@ -18,7 +18,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from legadilo.utils.time import dt_to_http_date, safe_datetime_parse, utcdt
+from legadilo.utils.time_utils import dt_to_http_date, safe_datetime_parse, utcdt
 
 
 def test_dt_to_http_date():

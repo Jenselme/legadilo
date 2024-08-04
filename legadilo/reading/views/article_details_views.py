@@ -30,7 +30,7 @@ from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.reading.services.views import get_from_url_for_article_details
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 
 
 class EditArticleForm(forms.Form):

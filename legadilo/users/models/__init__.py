@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from legadilo.users.models import User
+from .notification import Notification
+from .user import User
+from .user_settings import UserSettings
 
-
-def test_user_get_absolute_url(user: User):
-    assert user.get_absolute_url() == f"/users/{user.pk}/"
+__all__ = ["Notification", "User", "UserSettings"]

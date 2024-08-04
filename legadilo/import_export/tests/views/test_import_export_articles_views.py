@@ -33,7 +33,7 @@ from legadilo.feeds.tests.fixtures import get_feed_fixture_content
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory
 from legadilo.utils.testing import all_model_fields_except, serialize_for_snapshot
-from legadilo.utils.time import utcdt
+from legadilo.utils.time_utils import utcdt
 
 
 class TestExportArticlesView:

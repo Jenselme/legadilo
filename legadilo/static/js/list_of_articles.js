@@ -54,12 +54,24 @@
 
   const setupReadOnScroll = () => {
     if (!jsCfg.is_reading_on_scroll_enabled) {
+      console.log("Read on scroll is not enabled for this reading list."); // eslint-disable-line no-console
       return;
     }
 
+    // Force a scroll to top after reloading the page: previously read articles won’t be there
+    // anymore and the back button of the browser will preserve scroll. We may end up marking some
+    // articles as read when we shouldn’t. Clicking the back button on the details page doesn’t have
+    // this issue.
+    // Note: using the back button of the browser or the back button of the page or a soft refresh
+    // correctly triggers the scroll to top code. However, when the browser is reopened, it did not.
+    // it seems that the browser is restoring the scroll with a little delay after the scroll to
+    // top had run. Hence, this timeout block. Improve this if you have a cleaner solution.
+    setTimeout(() => window.scroll(0, 0), 500);
+
     // Wait before reading on scroll: the user may scroll up again!
     const readOnScrollDebounced = debounce(readOnScroll, 1000);
-    document.addEventListener("scrollend", readOnScrollDebounced);
+    document.addEventListener("scrollend", readOnScrollDebounced); // eslint-disable-line no-console
+    console.log("Read on scroll setup!"); // eslint-disable-line no-console
   };
 
   const readOnScroll = () => {
@@ -73,11 +85,13 @@
 
       // To make sure counters are correct at the end, we run the requests on after the other so the
       // last one to complete has the correct count.
+      console.log(`Adding ${htmxForm.action} to the promise chain.`); // eslint-disable-line no-console
       readOnScrollSequence = readOnScrollSequence.then(() => buildReadOnScrollPromise(htmxForm));
     }
   };
 
   const buildReadOnScrollPromise = (htmxForm) => {
+    console.log(`Previous promise resolved, starting ${htmxForm.action}`); // eslint-disable-line no-console
     return new Promise((resolve) => {
       const waitForRequestEnd = (event) => {
         if (
@@ -85,6 +99,7 @@
           event.detail.pathInfo &&
           event.detail.pathInfo.requestPath === htmxForm.getAttribute("action")
         ) {
+          console.log(`Done for ${htmxForm.action}, resolving promise.`); // eslint-disable-line no-console
           htmx.off("htmx:afterRequest", waitForRequestEnd);
           resolve();
         }
@@ -121,13 +136,8 @@
     window.addEventListener("scrollend", runRefresh);
   };
 
-  window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("load", () => {
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
-    // Force a scroll to top after reloading the page: previously read articles won’t be there
-    // anymore and the back button of the browser will preserve scroll. We may end up marking some
-    // articles as read when we shouldn’t. Clicking the back button on the details page doesn’t have
-    // this issue.
-    window.scroll(0, 0);
     setupReadAction();
     setupReadOnScroll();
     setupRefresh();

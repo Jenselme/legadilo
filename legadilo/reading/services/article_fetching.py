@@ -25,12 +25,12 @@ from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatewords_html
 
 from legadilo.reading import constants
-from legadilo.utils.http import get_async_client
+from legadilo.utils.http_utils import get_async_client
 from legadilo.utils.security import (
     full_sanitize,
     sanitize_keep_safe_tags,
 )
-from legadilo.utils.time import safe_datetime_parse
+from legadilo.utils.time_utils import safe_datetime_parse
 from legadilo.utils.validators import is_url_valid, language_code_validator, normalize_url
 
 logger = logging.getLogger(__name__)

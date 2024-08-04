@@ -25,7 +25,8 @@ from django.core.management import call_command
 from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article
-from legadilo.utils.time import utcdt
+from legadilo.users.models import Notification
+from legadilo.utils.time_utils import utcdt
 
 from ... import constants
 from ..fixtures import get_feed_fixture_content
@@ -121,7 +122,7 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
-            django_assert_num_queries(6),
+            django_assert_num_queries(7),
         ):
             call_command("update_feeds")
 
@@ -137,3 +138,4 @@ class TestUpdateFeedsCommand:
         assert not feed_update.feed.enabled
         assert feed_update.feed.disabled_reason == "We failed too many times to fetch the feed"
         assert feed_update.feed.disabled_at == utcdt(2023, 12, 31, 12)
+        assert Notification.objects.count() == 1

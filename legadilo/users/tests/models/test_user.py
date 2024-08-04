@@ -86,3 +86,7 @@ def test_createsuperuser_command():
     assert out.getvalue() == "Superuser created successfully.\n"
     user = User.objects.get(email="henry@example.com")
     assert not user.has_usable_password()
+
+
+def test_user_get_absolute_url(user: User):
+    assert user.get_absolute_url() == f"/users/{user.pk}/"

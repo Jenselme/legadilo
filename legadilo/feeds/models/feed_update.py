@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
-from ...utils.time import utcnow
+from ...utils.time_utils import utcnow
 from .. import constants
 
 if TYPE_CHECKING:

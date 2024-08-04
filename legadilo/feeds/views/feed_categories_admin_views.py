@@ -23,7 +23,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.feeds.models import FeedCategory
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 
 
 @require_GET

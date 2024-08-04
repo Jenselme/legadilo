@@ -18,10 +18,10 @@ from collections.abc import Sequence
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from factory import Faker, post_generation
+from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from legadilo.users.models import UserSettings
+from legadilo.users.models import Notification, UserSettings
 
 
 class UserFactory(DjangoModelFactory):
@@ -60,3 +60,10 @@ class UserFactory(DjangoModelFactory):
 class UserSettingsFactory(DjangoModelFactory):
     class Meta:
         model = UserSettings
+
+
+class NotificationFactory(DjangoModelFactory):
+    user = SubFactory(UserFactory)
+
+    class Meta:
+        model = Notification

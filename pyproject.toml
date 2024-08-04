@@ -184,12 +184,13 @@ layers = [
     "legadilo.import_export",
     "legadilo.feeds",
     "legadilo.reading",
-    "legadilo.users",
     "legadilo.core",
+    "legadilo.users",
     "legadilo.utils",
 ]
 ignore_imports = [
-    "legadilo.reading.tests.test_models.test_article -> legadilo.feeds.tests.factories"
+    "legadilo.reading.tests.test_models.test_article -> legadilo.feeds.tests.factories",
+    "legadilo.users.tests.test_registration -> legadilo.core.middlewares",
 ]
 
 
@@ -218,8 +219,8 @@ rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 # ------------------------------------------------------------------------------
 django = "5.0.7"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = "0.63.6"  # https://github.com/pennersr/django-allauth
-django-crispy-forms = "2.2"  # https://github.com/django-crispy-forms/django-crispy-forms
+django-allauth = "64.0.0"  # https://github.com/pennersr/django-allauth
+django-crispy-forms = "2.3"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "11.0.1"  # https://github.com/anymail/django-anymail
 daphne = "^4.1.2"  # https://github.com/django/daphne
@@ -248,19 +249,19 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.10.0"}
+sentry-sdk = {extras = ["django"], version = "^2.12.0"}
 
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-pudb = "2024.1.1"  # https://documen.tician.de/pudb/
+pudb = "2024.1.2"  # https://documen.tician.de/pudb/
 ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
-pytest = "8.2.2"  # https://github.com/pytest-dev/pytest
+pytest = "8.3.2"  # https://github.com/pytest-dev/pytest
 pytest-sugar = "1.0.0"  # https://github.com/Frozenball/pytest-sugar
 pytest-httpx = "^0.30.0"  # https://colin-b.github.io/pytest_httpx/
 pytest-asyncio = "^0.23.8"  # https://github.com/pytest-dev/pytest-asyncio/
@@ -273,7 +274,7 @@ time-machine = "2.14.2"  #  https://github.com/adamchainz/time-machine
 # Code quality
 # ------------------------------------------------------------------------------
 coverage = "7.6.0"  # https://github.com/nedbat/coveragepy
-pre-commit = "3.7.1"  # https://github.com/pre-commit/pre-commit
+pre-commit = "3.8.0"  # https://github.com/pre-commit/pre-commit
 
 # Django
 # ------------------------------------------------------------------------------
@@ -289,7 +290,7 @@ django-extensions = "3.2.3"  # https://github.com/django-extensions/django-exten
 optional = true
 
 [tool.poetry.group.doc.dependencies]
-sphinx = "7.4.6"  # https://github.com/sphinx-doc/sphinx
+sphinx = "7.4.7"  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild = "2024.4.16"  # https://github.com/GaretJax/sphinx-autobuild
 myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 

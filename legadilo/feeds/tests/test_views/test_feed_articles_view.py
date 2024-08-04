@@ -62,7 +62,7 @@ class TestFeedArticlesView:
         assert response.context["update_articles_form"] is not None
 
     def test_only_article_update_action(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.post(
                 self.url, {"update_action": reading_constants.UpdateArticleActions.MARK_AS_READ}
             )

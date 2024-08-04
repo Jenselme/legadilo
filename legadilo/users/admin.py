@@ -22,7 +22,7 @@ from django.db.models.functions import Collate
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.forms import UserAdminChangeForm, UserAdminCreationForm
-from legadilo.users.models import UserSettings
+from legadilo.users.models import Notification, UserSettings
 
 User = get_user_model()
 
@@ -82,3 +82,8 @@ class UserAdmin(auth_admin.UserAdmin):
         return (
             super().get_queryset(request).alias(email_deterministic=Collate("email", "und-x-icu"))
         )
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    pass

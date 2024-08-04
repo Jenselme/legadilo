@@ -25,7 +25,7 @@ from django.urls import reverse
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
-from legadilo.utils.time import utcnow
+from legadilo.utils.time_utils import utcnow
 
 
 @pytest.mark.django_db
@@ -76,7 +76,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_default_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.get(self.default_reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
@@ -94,7 +94,7 @@ class TestReadingListWithArticlesView:
         assert response.context.get("update_articles_form") is None
 
     def test_reading_list_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
@@ -142,7 +142,7 @@ class TestReadingListWithArticlesView:
     def test_reading_list_view_with_htmx_full_reload(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.get(
                 f"{self.reading_list_url}?full_reload=true",
                 HTTP_HX_Request="true",
@@ -193,7 +193,7 @@ class TestTagWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -240,7 +240,7 @@ class TestUpdateArticlesFromTagWithArticlesView:
         }
 
     def test_only_article_update_action(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.post(
                 self.url, {"update_action": constants.UpdateArticleActions.MARK_AS_READ}
             )
@@ -257,7 +257,7 @@ class TestUpdateArticlesFromTagWithArticlesView:
         assert self.article_not_in_list.tags.count() == 2
 
     def test_with_tag_actions(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(29):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -318,7 +318,7 @@ class TestExternalTagWithArticleView:
         assert list(response.context["articles_page"].object_list) == []
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK

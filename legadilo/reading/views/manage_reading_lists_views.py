@@ -31,7 +31,7 @@ from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
 from legadilo.reading.models import ReadingList, ReadingListTag, Tag
 from legadilo.users.models import User
-from legadilo.users.typing import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticatedHttpRequest
 
 
 @require_GET
