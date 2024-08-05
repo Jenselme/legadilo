@@ -292,7 +292,7 @@ optional = true
 [tool.poetry.group.doc.dependencies]
 sphinx = "7.4.7"  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild = "2024.4.16"  # https://github.com/GaretJax/sphinx-autobuild
-myst-parser = "3.0.1"  # https://myst-parser.readthedocs.io/en/stable/intro.html
+myst-parser = "4.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 
 [tool.poetry.group.typing]
 optional = true
