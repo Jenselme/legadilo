@@ -72,7 +72,11 @@
       return htmxEvent.target;
     }
 
-    if (htmxEvent.explicitOriginalTarget.dataset.modalId) {
+    if (
+      htmxEvent.explicitOriginalTarget &&
+      htmxEvent.explicitOriginalTarget.dataset &&
+      htmxEvent.explicitOriginalTarget.dataset.modalId
+    ) {
       return htmxEvent.explicitOriginalTarget;
     }
   };
