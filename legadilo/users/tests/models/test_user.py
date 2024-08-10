@@ -21,7 +21,26 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
 
+from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.users.models import User
+
+
+@pytest.mark.django_db
+class TestUserQuerySet:
+    def test_with_feeds(self, user, other_user):
+        FeedFactory(user=user)
+
+        users = list(User.objects.get_queryset().with_feeds(None))
+
+        assert users == [user]
+
+    def test_with_feeds_and_user_ids_limits(self, user, other_user):
+        FeedFactory(user=user)
+        FeedFactory(user=other_user)
+
+        users = list(User.objects.get_queryset().with_feeds([user.id]))
+
+        assert users == [user]
 
 
 @pytest.mark.django_db

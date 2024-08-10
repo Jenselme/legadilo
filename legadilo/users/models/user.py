@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from functools import cached_property
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -55,3 +56,7 @@ class User(AbstractUser):
     @cached_property
     def has_unread_notifications(self) -> bool:
         return self.notifications.has_unread(self)
+
+    @cached_property
+    def tzinfo(self) -> ZoneInfo:
+        return ZoneInfo(self.settings.timezone.name)

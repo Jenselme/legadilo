@@ -17,8 +17,9 @@
 from __future__ import annotations
 
 import calendar
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, assert_never, cast
+from zoneinfo import ZoneInfo
 
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
@@ -46,8 +47,10 @@ else:
     TypedModelMeta = object
 
 
-def _build_refresh_filters(refresh_delay: feeds_constants.FeedRefreshDelays) -> models.When:  # noqa: C901, PLR0911, PLR0912 too complex
-    now = utcnow()
+def _build_refresh_filters(  # noqa: C901, PLR0911, PLR0912 too complex
+    tzinfo: ZoneInfo, refresh_delay: feeds_constants.FeedRefreshDelays
+) -> models.When:
+    now = datetime.now(tzinfo)
     last_day_of_month = calendar.monthrange(now.year, now.month)[1]
     base_filters = models.Q(refresh_delay=refresh_delay)
 
@@ -143,7 +146,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
     def only_enabled(self):
         return self.filter(enabled=True)
 
-    def for_update(self):
+    def for_update(self, user: User):
         return (
             self.alias(
                 # We need to filter for update only on the latest FeedUpdate object. If we have
@@ -161,7 +164,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
                 ),
                 must_update=models.Case(
                     *[
-                        _build_refresh_filters(refresh_delay)
+                        _build_refresh_filters(user.tzinfo, refresh_delay)
                         for refresh_delay in feeds_constants.FeedRefreshDelays
                     ],
                     default=False,
@@ -174,9 +177,6 @@ class FeedQuerySet(models.QuerySet["Feed"]):
 
     def for_user(self, user: User):
         return self.filter(user=user)
-
-    def for_user_ids(self, user_id: list[int]):
-        return self.filter(user_id__in=user_id)
 
     def for_export(self, user: User):
         return self.for_user(user).select_related("category").order_by("id")
