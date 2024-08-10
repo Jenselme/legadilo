@@ -120,6 +120,7 @@ def _is_not_potential_http_url(url: str) -> bool:
         "gemini://",  # Other protocol
         "ftp://",  # Other protocol
         "mailto:",  # email
+        "data:",  # base64
     }
     return any(url.startswith(invalid_prefix) for invalid_prefix in invalid_prefixes)
 
