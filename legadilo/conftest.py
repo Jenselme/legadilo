@@ -50,9 +50,15 @@ def other_user(db) -> User:
 
 
 @pytest.fixture
-def admin_user(admin_user) -> User:
-    timezone, _created = Timezone.objects.get_or_create(name="UTC")
-    admin_user.settings = UserSettingsFactory(user=admin_user, timezone=timezone)
+def utc_tz(db) -> Timezone:
+    # The Timezone table will be filled when the db is created from migrations and deleted at the
+    # end of the test suite. So we have to use get_or_create here.
+    return Timezone.objects.get_or_create(name="UTC")[0]
+
+
+@pytest.fixture
+def admin_user(admin_user, utc_tz) -> User:
+    admin_user.settings = UserSettingsFactory(user=admin_user, timezone=utc_tz)
     admin_user.save()
     return admin_user
 

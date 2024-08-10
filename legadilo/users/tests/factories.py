@@ -44,7 +44,7 @@ class UserFactory(DjangoModelFactory):
     @post_generation
     def user_settings(self, create: bool, extracted: Sequence[Any]):
         if self.pk:
-            timezone, _created = Timezone.objects.get_or_create(name="UTC")
+            timezone, _ = Timezone.objects.get_or_create(name="UTC")
             self.settings = UserSettingsFactory(user=self, timezone=timezone)
 
     @classmethod

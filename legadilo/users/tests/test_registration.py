@@ -39,11 +39,10 @@ class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.
 
-    def test_registration_success(self, client, mocker, snapshot):
+    def test_registration_success(self, client, utc_tz, mocker, snapshot):
         self.client = client
         self.mocker = mocker
         self.snapshot = snapshot
-        self.default_tz, _ = Timezone.objects.get_or_create(name="UTC")
         self.registration_tz, _ = Timezone.objects.get_or_create(name="Europe/Paris")
         # For some reason, reset_sequences=True will reset the values of the site object.
         # Let's reput ours.

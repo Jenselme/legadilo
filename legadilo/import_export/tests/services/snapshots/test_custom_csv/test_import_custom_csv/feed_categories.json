@@ -1,14 +1,14 @@
 [
   {
+    "slug": "existing-category",
+    "title": "Existing category"
+  },
+  {
     "slug": "category-1",
     "title": "Category 1"
   },
   {
     "slug": "category-4",
     "title": "Category 4"
-  },
-  {
-    "slug": "existing-category",
-    "title": "Existing category"
   }
 ]
