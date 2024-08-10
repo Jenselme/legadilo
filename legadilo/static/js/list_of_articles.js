@@ -93,6 +93,9 @@
   const buildReadOnScrollPromise = (htmxForm) => {
     console.log(`Previous promise resolved, starting ${htmxForm.action}`); // eslint-disable-line no-console
     return new Promise((resolve) => {
+      // Sometimes it can get stuck because of a weird bug in FF. Force a resolution after 10s to
+      // try to at least mark the other articles as read. See #195
+      const forceResolutionTimer = setTimeout(() => resolve(), 10 * 1000);
       const waitForRequestEnd = (event) => {
         if (
           event.detail &&
@@ -101,6 +104,7 @@
         ) {
           console.log(`Done for ${htmxForm.action}, resolving promise.`); // eslint-disable-line no-console
           htmx.off("htmx:afterRequest", waitForRequestEnd);
+          clearTimeout(forceResolutionTimer);
           resolve();
         }
       };
