@@ -20,6 +20,7 @@ import pytest
 import time_machine
 from asgiref.sync import async_to_sync
 
+from legadilo.core.models import Timezone
 from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
 from legadilo.feeds.tests.factories import (
@@ -98,12 +99,59 @@ class TestFeedQuerySet:
             refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
         )
 
-        feeds_to_update = Feed.objects.get_queryset().for_update()
+        feeds_to_update = Feed.objects.get_queryset().for_update(user)
 
         assert list(feeds_to_update) == [
             feed_updated_more_than_one_hour_ago,
             feed_not_yet_updated_this_morning,
             feed_no_feed_update_object,
+        ]
+
+    @time_machine.travel("2024-05-08 11:00:00")
+    def test_for_update_non_utc_user_nothing_to_update(self, user):
+        user.settings.timezone, _ = Timezone.objects.get_or_create(name="Europe/Paris")
+        user.settings.save()
+
+        feed_updated_more_than_one_hour_ago = FeedFactory(
+            title="Updated more than one hour ago",
+            user=user,
+            refresh_delay=feeds_constants.FeedRefreshDelays.HOURLY,
+        )
+        with time_machine.travel("2024-05-08 10:00:00"):
+            FeedUpdateFactory(feed=feed_updated_more_than_one_hour_ago)
+        feed_not_yet_updated_this_morning = FeedFactory(
+            title="Not yet updated this morning",
+            user=user,
+            refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
+        )
+        with time_machine.travel("2024-05-07 10:00:00"):
+            FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
+
+        # Morning feed update time passed in user TZ (but not in UTC).
+        feeds_to_update = Feed.objects.get_queryset().for_update(user)
+
+        assert list(feeds_to_update) == [
+            feed_updated_more_than_one_hour_ago,
+        ]
+
+    @time_machine.travel("2024-05-08 09:00:00")
+    def test_for_update_non_utc_user(self, user):
+        user.settings.timezone, _ = Timezone.objects.get_or_create(name="Europe/Paris")
+        user.settings.save()
+
+        feed_not_yet_updated_this_morning = FeedFactory(
+            title="Not yet updated this morning",
+            user=user,
+            refresh_delay=feeds_constants.FeedRefreshDelays.EVERY_MORNING,
+        )
+        with time_machine.travel("2024-05-07 10:00:00"):
+            FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
+
+        # Morning feed can be updated in user TZ (although not yet in UTC).
+        feeds_to_update = Feed.objects.get_queryset().for_update(user)
+
+        assert list(feeds_to_update) == [
+            feed_not_yet_updated_this_morning,
         ]
 
     @time_machine.travel("2024-05-08 13:00:00")
@@ -119,7 +167,7 @@ class TestFeedQuerySet:
         with time_machine.travel("2024-05-07 10:00:00"):
             FeedUpdateFactory(feed=feed_not_yet_updated_this_morning)
 
-        feeds_to_update = Feed.objects.get_queryset().for_update()
+        feeds_to_update = Feed.objects.get_queryset().for_update(user)
 
         assert list(feeds_to_update) == []
 
@@ -136,14 +184,6 @@ class TestFeedQuerySet:
         FeedFactory(disabled_at=utcnow())
 
         feeds = list(Feed.objects.get_queryset().only_enabled())
-
-        assert feeds == [feed1]
-
-    def test_for_user_ids(self):
-        feed1 = FeedFactory(disabled_at=None)
-        FeedFactory(disabled_at=None)
-
-        feeds = list(Feed.objects.get_queryset().for_user_ids([feed1.user.id]))
 
         assert feeds == [feed1]
 

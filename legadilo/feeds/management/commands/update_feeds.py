@@ -26,6 +26,7 @@ from httpx import HTTPError, HTTPStatusError
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
+from legadilo.users.models import User
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.http_utils import get_rss_async_client
@@ -77,25 +78,33 @@ class Command(AsyncCommand):
             get_rss_async_client() as client,
             TaskGroup() as tg,
         ):
-            async for feed in self._build_feed_qs(options):
-                tg.create_task(self._update_feed(client, feed))
+            # Some updates (like the every morning ones) must run in the user TZ. So, we look at
+            # users with feed and find the feeds to update based on their TZ from settings.
+            async for user in (
+                User.objects.get_queryset()
+                .with_feeds(options["user_ids"])
+                .select_related("settings", "settings__timezone")
+            ):
+                async for feed in self._build_feed_qs(user, options):
+                    tg.create_task(self._update_feed(client, feed))
 
         duration = utcnow() - start_time
         logger.info("Completed feed update in %s", duration)
 
-    def _build_feed_qs(self, options: dict[str, Any]) -> FeedQuerySet:
-        feeds_qs = Feed.objects.get_queryset().select_related("user", "user__settings", "category")
+    def _build_feed_qs(self, user: User, options: dict[str, Any]) -> FeedQuerySet:
+        feeds_qs = (
+            Feed.objects.get_queryset()
+            .select_related("user", "user__settings", "category")
+            .filter(user=user)
+        )
 
         if options["feed_ids"]:
             feeds_qs = feeds_qs.only_with_ids(options["feed_ids"])
 
-        if options["user_ids"]:
-            feeds_qs = feeds_qs.only_with_ids(options["user_ids"])
-
         if options["force"]:  # noqa: SIM108 Use ternary operator
             feeds_qs = feeds_qs.only_enabled()
         else:
-            feeds_qs = feeds_qs.for_update()
+            feeds_qs = feeds_qs.for_update(user)
 
         return feeds_qs
 

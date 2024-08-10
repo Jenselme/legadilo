@@ -21,6 +21,7 @@ from django.contrib.auth import get_user_model
 from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
+from legadilo.core.models import Timezone
 from legadilo.users.models import Notification, UserSettings
 
 
@@ -43,7 +44,8 @@ class UserFactory(DjangoModelFactory):
     @post_generation
     def user_settings(self, create: bool, extracted: Sequence[Any]):
         if self.pk:
-            self.settings = UserSettingsFactory(user=self)
+            timezone, _ = Timezone.objects.get_or_create(name="UTC")
+            self.settings = UserSettingsFactory(user=self, timezone=timezone)
 
     @classmethod
     def _after_postgeneration(cls, instance, create, results=None):

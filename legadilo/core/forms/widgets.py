@@ -25,7 +25,20 @@ class MultipleTagsWidget(widgets.SelectMultiple):
 
     def __init__(self, attrs=None, choices=(), *, allow_new: bool = True):
         attrs = attrs or {}
-        attrs["allow_new"] = allow_new
+        attrs["data-bs5-tags"] = "true"
+        if allow_new:
+            attrs["data-allow-new"] = "true"
+        super().__init__(attrs, choices)
+
+
+class AutocompleteSelectWidget(widgets.Select):
+    template_name = "core/widgets/select_autocomplete.html"
+
+    def __init__(self, attrs=None, choices=(), *, allow_new: bool = True):
+        attrs = attrs or {}
+        attrs["data-bs5-tags"] = "true"
+        if allow_new:
+            attrs["data-allow-new"] = "true"
         super().__init__(attrs, choices)
 
 

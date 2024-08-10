@@ -49,7 +49,7 @@ LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 LANGUAGES = [
     ("en", _("English")),
-    # ("fr", _("French")),
+    ("fr", _("French")),
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
@@ -189,6 +189,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "legadilo.core.middlewares.TimezoneMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     # AxesMiddleware should be the last middleware in the MIDDLEWARE list.
     # It only formats user lockout messages and renders Axes lockout responses

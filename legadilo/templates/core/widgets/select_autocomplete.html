@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<select name="{{ widget.name }}"
+        {% include "bootstrap5/layout/attrs.html" %}
+        class="visually-hidden">
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+        {% for choice in group_choices %}
+            <option value="{{ choice.value }}"
+                    {% if choice.selected %}selected{% endif %}>{{ choice.label }}</option>
+        {% endfor %}
+    {% endfor %}
+</select>

@@ -16,12 +16,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.core.validators import validate_email
+from django.db import models
 
 if TYPE_CHECKING:
     from .models import User
@@ -29,8 +30,22 @@ else:
     User = AbstractUser
 
 
+class UserQuerySet(models.QuerySet):
+    def with_feeds(self, user_ids: list[int] | None) -> Self:
+        qs = self.filter(feeds__isnull=False)
+        if user_ids:
+            qs = qs.filter(id__in=user_ids)
+
+        return qs.distinct()
+
+
 class UserManager(DjangoUserManager[User]):
     """Custom manager for the User model."""
+
+    _hints: dict
+
+    def get_queryset(self) -> UserQuerySet:
+        return UserQuerySet(self.model, using=self._db, hints=self._hints)
 
     def _create_user(self, email: str, password: str | None, **extra_fields):
         """Create and save a user with the given email and password."""
@@ -58,3 +73,6 @@ class UserManager(DjangoUserManager[User]):
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
+
+    def get(self, *args, **kwargs):
+        return self.select_related("settings", "settings__timezone").get(*args, **kwargs)

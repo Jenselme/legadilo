@@ -15,17 +15,17 @@
   },
   {
     "category__title": null,
-    "description": "",
-    "disabled_at": "2024-05-17T13:00:00+00:00",
-    "disabled_reason": "Failed to reach feed URL while importing from custom CSV.",
-    "enabled": false,
-    "feed_type": "rss",
-    "feed_url": "https://example.com/rss8.xml",
+    "description": "For documentation only",
+    "disabled_at": null,
+    "disabled_reason": "",
+    "enabled": true,
+    "feed_type": "rss20",
+    "feed_url": "https://example.com/rss2.xml",
     "open_original_link_by_default": false,
     "refresh_delay": "DAILY_AT_NOON",
-    "site_url": "https://example8.com/",
-    "slug": "feed-8",
-    "title": "Feed 8"
+    "site_url": "http://example.org/",
+    "slug": "sample-feed",
+    "title": "Sample Feed"
   },
   {
     "category__title": "Category 4",
@@ -43,16 +43,16 @@
   },
   {
     "category__title": null,
-    "description": "For documentation only",
-    "disabled_at": null,
-    "disabled_reason": "",
-    "enabled": true,
-    "feed_type": "rss20",
-    "feed_url": "https://example.com/rss2.xml",
+    "description": "",
+    "disabled_at": "2024-05-17T13:00:00+00:00",
+    "disabled_reason": "Failed to reach feed URL while importing from custom CSV.",
+    "enabled": false,
+    "feed_type": "rss",
+    "feed_url": "https://example.com/rss8.xml",
     "open_original_link_by_default": false,
     "refresh_delay": "DAILY_AT_NOON",
-    "site_url": "http://example.org/",
-    "slug": "sample-feed",
-    "title": "Sample Feed"
+    "site_url": "https://example8.com/",
+    "slug": "feed-8",
+    "title": "Feed 8"
   }
 ]

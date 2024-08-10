@@ -14,10 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.apps import AppConfig
-from django.utils.translation import gettext_lazy as _
+from django.contrib import admin
+
+from legadilo.core.models import Timezone
 
 
-class UsersConfig(AppConfig):
-    name = "legadilo.users"
-    verbose_name = _("Users")
+@admin.register(Timezone)
+class TimezoneAdmin(admin.ModelAdmin):
+    search_fields = ["name"]

@@ -99,7 +99,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     snapshot.assert_match(
         serialize_for_snapshot(
             list(
-                Article.objects.order_by("link").values(
+                Article.objects.order_by("id").values(
                     *all_model_fields_except(
                         Article, {"id", "user", "obj_created_at", "obj_updated_at"}
                     )
@@ -111,7 +111,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     snapshot.assert_match(
         serialize_for_snapshot(
             list(
-                Feed.objects.order_by("title").values(
+                Feed.objects.order_by("id").values(
                     *all_model_fields_except(
                         Feed, {"id", "user", "category", "created_at", "updated_at"}
                     ),
@@ -124,7 +124,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     snapshot.assert_match(
         serialize_for_snapshot(
             list(
-                FeedCategory.objects.order_by("title").values(
+                FeedCategory.objects.order_by("id").values(
                     *all_model_fields_except(
                         FeedCategory, {"id", "user", "created_at", "updated_at"}
                     )

@@ -18,8 +18,9 @@ from http import HTTPStatus
 import pytest
 from django.urls import reverse
 
+from legadilo.core.models import Timezone
 from legadilo.users.models import User
-from legadilo.users.tests.factories import UserFactory
+from legadilo.users.tests.factories import UserFactory, UserSettingsFactory
 
 
 @pytest.fixture(autouse=True)
@@ -46,6 +47,20 @@ def user(db) -> User:
 @pytest.fixture
 def other_user(db) -> User:
     return UserFactory()
+
+
+@pytest.fixture
+def utc_tz(db) -> Timezone:
+    # The Timezone table will be filled when the db is created from migrations and deleted at the
+    # end of the test suite. So we have to use get_or_create here.
+    return Timezone.objects.get_or_create(name="UTC")[0]
+
+
+@pytest.fixture
+def admin_user(admin_user, utc_tz) -> User:
+    admin_user.settings = UserSettingsFactory(user=admin_user, timezone=utc_tz)
+    admin_user.save()
+    return admin_user
 
 
 @pytest.fixture

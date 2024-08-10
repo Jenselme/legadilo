@@ -24,6 +24,7 @@ from django.core import mail
 from django.urls import reverse
 
 from legadilo.core.middlewares import CSPMiddleware
+from legadilo.core.models import Timezone
 from legadilo.users.admin import User
 from legadilo.users.models import UserSettings
 
@@ -38,10 +39,11 @@ class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.
 
-    def test_registration_success(self, client, mocker, snapshot):
+    def test_registration_success(self, client, utc_tz, mocker, snapshot):
         self.client = client
         self.mocker = mocker
         self.snapshot = snapshot
+        self.registration_tz, _ = Timezone.objects.get_or_create(name="Europe/Paris")
         # For some reason, reset_sequences=True will reset the values of the site object.
         # Let's reput ours.
         site = Site.objects.get_current()
@@ -62,6 +64,7 @@ class TestUserRegistration:
             "/accounts/signup/",
             {
                 "email": self.user_email,
+                "timezone": self.registration_tz.id,
                 "password1": self.password,
                 "password2": self.password,
             },
@@ -76,6 +79,8 @@ class TestUserRegistration:
         user_settings = UserSettings.objects.get()
         assert user.email == self.user_email
         assert user.settings == user_settings
+        assert user.settings.default_reading_time == 200
+        assert user.settings.timezone == self.registration_tz
         assert user.reading_lists.count() > 1
         assert user.reading_lists.filter(is_default=True).count() == 1
 

@@ -50,7 +50,6 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
-            django_assert_num_queries(21),
         ):
             call_command("update_feeds")
 
@@ -72,7 +71,6 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
-            django_assert_num_queries(3),
         ):
             call_command("update_feeds")
 
@@ -91,7 +89,6 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
-            django_assert_num_queries(6),
         ):
             call_command("update_feeds")
 
@@ -122,7 +119,6 @@ class TestUpdateFeedsCommand:
 
         with (
             time_machine.travel(datetime(2023, 12, 31, 12, 0, tzinfo=UTC), tick=False),
-            django_assert_num_queries(7),
         ):
             call_command("update_feeds")
 

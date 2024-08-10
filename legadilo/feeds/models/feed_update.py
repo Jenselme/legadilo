@@ -16,8 +16,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -62,10 +61,11 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
         self,
         feed: Feed,
     ) -> bool:
+        time_window = self._get_feed_deactivation_error_time_window(feed)
         aggregation = (
             self.get_queryset()
             .for_feed(feed)
-            .filter(created_at__gt=datetime.now(UTC) - constants.FEED_ERRORS_TIME_WINDOW)
+            .filter(created_at__gt=utcnow() - time_window)
             .aggregate(
                 nb_errors=models.Count(
                     "id", filter=models.Q(status=constants.FeedUpdateStatus.FAILURE)
@@ -77,6 +77,36 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
         )
 
         return aggregation["nb_errors"] > 0 and aggregation["nb_success"] == 0
+
+    def _get_feed_deactivation_error_time_window(self, feed: Feed) -> relativedelta:
+        # The idea is to find a compromise to not keep trying to update a feed that's broken and is
+        # likely to stay broken and the frequency of updates. We give longer times to feeds that we
+        # don't fetch often and less for others.
+        refresh_delay: constants.FeedRefreshDelays = constants.FeedRefreshDelays(feed.refresh_delay)
+        match refresh_delay:
+            case constants.FeedRefreshDelays.HOURLY | constants.FeedRefreshDelays.BIHOURLY:
+                return relativedelta(weeks=2)
+            case (
+                constants.FeedRefreshDelays.EVERY_MORNING
+                | constants.FeedRefreshDelays.DAILY_AT_NOON
+                | constants.FeedRefreshDelays.EVERY_EVENING
+            ):
+                return relativedelta(weeks=2)
+            case (
+                constants.FeedRefreshDelays.ON_MONDAYS
+                | constants.FeedRefreshDelays.ON_THURSDAYS
+                | constants.FeedRefreshDelays.TWICE_A_WEEK
+            ):
+                return relativedelta(months=2)
+            case (
+                constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH
+                | constants.FeedRefreshDelays.MIDDLE_OF_THE_MONTH
+                | constants.FeedRefreshDelays.END_OF_THE_MONTH
+                | constants.FeedRefreshDelays.THRICE_A_MONTH
+            ):
+                return relativedelta(months=4)
+            case _:
+                assert_never(refresh_delay)
 
 
 class FeedUpdate(models.Model):
