@@ -20,6 +20,7 @@ import pytest
 from django.core.paginator import Paginator
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds.models import FeedArticle
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.reading import constants as reading_constants
@@ -41,8 +42,7 @@ class TestFeedArticlesView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_article_not_found(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url)

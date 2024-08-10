@@ -70,7 +70,7 @@ VERSION = env.str("VERSION", "")
 DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60 if IS_PRODUCTION else 0)
 # https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
-DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000"}
+DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -468,7 +468,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="article",
             constraint=models.CheckConstraint(
-                check=models.Q(("initial_source_type__in", ["FEED", "MANUAL"])),
+                condition=models.Q(("initial_source_type__in", ["FEED", "MANUAL"])),
                 name="reading_article_initial_source_type_valid",
             ),
         ),
@@ -490,7 +490,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q((
+                condition=models.Q((
                     "articles_max_age_unit__in",
                     ["UNSET", "HOURS", "DAYS", "WEEKS", "MONTHS"],
                 )),
@@ -500,7 +500,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q((
+                condition=models.Q((
                     "articles_reading_time_operator__in",
                     ["UNSET", "MORE_THAN", "LESS_THAN"],
                 )),
@@ -510,7 +510,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q((
+                condition=models.Q((
                     "favorite_status__in",
                     ["ALL", "ONLY_FAVORITE", "ONLY_NON_FAVORITE"],
                 )),
@@ -520,14 +520,14 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q(("read_status__in", ["ALL", "ONLY_UNREAD", "ONLY_READ"])),
+                condition=models.Q(("read_status__in", ["ALL", "ONLY_UNREAD", "ONLY_READ"])),
                 name="reading_readinglist_read_status_valid",
             ),
         ),
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q((
+                condition=models.Q((
                     "for_later_status__in",
                     ["ALL", "ONLY_FOR_LATER", "ONLY_NOT_FOR_LATER"],
                 )),
@@ -537,14 +537,14 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q(("exclude_tag_operator__in", ["ALL", "ANY"])),
+                condition=models.Q(("exclude_tag_operator__in", ["ALL", "ANY"])),
                 name="reading_readinglist_exclude_tag_operator_valid",
             ),
         ),
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q(("include_tag_operator__in", ["ALL", "ANY"])),
+                condition=models.Q(("include_tag_operator__in", ["ALL", "ANY"])),
                 name="reading_readinglist_include_tag_operator_valid",
             ),
         ),
@@ -565,14 +565,17 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglisttag",
             constraint=models.CheckConstraint(
-                check=models.Q(("filter_type__in", ["INCLUDE", "EXCLUDE"])),
+                condition=models.Q(("filter_type__in", ["INCLUDE", "EXCLUDE"])),
                 name="reading_readinglisttag_filter_type_valid",
             ),
         ),
         migrations.AddConstraint(
             model_name="articletag",
             constraint=models.CheckConstraint(
-                check=models.Q(("tagging_reason__in", ["ADDED_MANUALLY", "FROM_FEED", "DELETED"])),
+                condition=models.Q((
+                    "tagging_reason__in",
+                    ["ADDED_MANUALLY", "FROM_FEED", "DELETED"],
+                )),
                 name="reading_articletag_tagging_reason_valid",
             ),
         ),

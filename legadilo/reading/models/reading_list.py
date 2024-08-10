@@ -206,41 +206,41 @@ class ReadingList(models.Model):
             models.UniqueConstraint(
                 "slug", "user", name="%(app_label)s_%(class)s_enforce_slug_unicity"
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_articles_max_age_unit_valid",
-                check=models.Q(
+                condition=models.Q(
                     articles_max_age_unit__in=constants.ArticlesMaxAgeUnit.names,
                 ),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_articles_reading_time_operator_valid",
-                check=models.Q(
+                condition=models.Q(
                     articles_reading_time_operator__in=constants.ArticlesReadingTimeOperator.names
                 ),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_favorite_status_valid",
-                check=models.Q(favorite_status__in=constants.FavoriteStatus.names),
+                condition=models.Q(favorite_status__in=constants.FavoriteStatus.names),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_read_status_valid",
-                check=models.Q(read_status__in=constants.ReadStatus.names),
+                condition=models.Q(read_status__in=constants.ReadStatus.names),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_for_later_status_valid",
-                check=models.Q(for_later_status__in=constants.ForLaterStatus.names),
+                condition=models.Q(for_later_status__in=constants.ForLaterStatus.names),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_exclude_tag_operator_valid",
-                check=models.Q(exclude_tag_operator__in=constants.ReadingListTagOperator.names),
+                condition=models.Q(exclude_tag_operator__in=constants.ReadingListTagOperator.names),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_include_tag_operator_valid",
-                check=models.Q(include_tag_operator__in=constants.ReadingListTagOperator.names),
+                condition=models.Q(include_tag_operator__in=constants.ReadingListTagOperator.names),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_order_direction_valid",
-                check=models.Q(order_direction__in=constants.ReadingListOrderDirection.names),
+                condition=models.Q(order_direction__in=constants.ReadingListOrderDirection.names),
             ),
         ]
 

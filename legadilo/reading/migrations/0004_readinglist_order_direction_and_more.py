@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="readinglist",
             constraint=models.CheckConstraint(
-                check=models.Q(("order_direction__in", ["ASC", "DESC"])),
+                condition=models.Q(("order_direction__in", ["ASC", "DESC"])),
                 name="reading_readinglist_order_direction_valid",
             ),
         ),

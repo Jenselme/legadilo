@@ -22,6 +22,7 @@ import httpx
 from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -31,7 +32,6 @@ from django.views.decorators.http import require_http_methods
 from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading.models import Tag
-from legadilo.utils.decorators import alogin_required
 
 from ...users.models import User
 from ...users.user_types import AuthenticatedHttpRequest
@@ -124,8 +124,8 @@ class SubscribeToFeedForm(forms.Form):
         return self.cleaned_data.get("feed_choices") or self.cleaned_data["url"]
 
 
-@require_http_methods(["GET", "POST"])
-@alogin_required
+@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@login_required
 async def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
     if request.method == HTTPMethod.GET:
         status = HTTPStatus.OK

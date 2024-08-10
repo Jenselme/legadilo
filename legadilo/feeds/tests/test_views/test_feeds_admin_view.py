@@ -19,6 +19,7 @@ from http import HTTPStatus
 import pytest
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
@@ -44,8 +45,7 @@ class TestFeedsAdminView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_feeds_admin_view_no_data(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url)
@@ -75,8 +75,7 @@ class TestEditFeedView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_edit_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url)

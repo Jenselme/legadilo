@@ -26,6 +26,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUpload
 from django.test import override_settings
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds.models import Feed, FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
@@ -40,8 +41,7 @@ class TestExportFeeds:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_export_no_feed(self, snapshot, logged_in_sync_client):
         with time_machine.travel("2024-06-20 22:00:00", tick=False):
@@ -83,7 +83,7 @@ class TestImportFeeds:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert_redirected_to_login_page(response)
 
     def test_import_empty_file(self, logged_in_sync_client):
         temp_file = TemporaryUploadedFile(

@@ -19,6 +19,7 @@ from http import HTTPStatus
 import pytest
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading import constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory
@@ -49,8 +50,7 @@ class TestUpdateArticleView:
     def test_cannot_access_if_not_logged_in(self, client):
         response = client.post(self.mark_as_read_url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_cannot_update_article_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.post(self.mark_as_read_url)
@@ -237,8 +237,7 @@ class TestDeleteArticleView:
     def test_cannot_access_if_not_logged_in(self, client):
         response = client.post(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_cannot_delete_article_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.post(self.url)
