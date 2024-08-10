@@ -53,6 +53,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.PROTECT,
                 related_name="user_settings",
                 to="core.timezone",
+                help_text="Used to display times and updated feeds at a convenient time.",
             ),
         ),
     ]

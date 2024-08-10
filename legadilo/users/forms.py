@@ -18,9 +18,11 @@ from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
-from django.forms import EmailField, ModelForm
+from django.forms import EmailField, ModelChoiceField, ModelForm
 from django.utils.translation import gettext_lazy as _
 
+from legadilo.core.forms.widgets import AutocompleteSelectWidget
+from legadilo.core.models import Timezone
 from legadilo.users.models import UserSettings
 
 User = get_user_model()
@@ -64,6 +66,10 @@ class UserSocialSignupForm(SocialSignupForm):
 
 
 class UserSettingsForm(ModelForm):
+    timezone = ModelChoiceField(
+        Timezone.objects.all(), required=True, widget=AutocompleteSelectWidget()
+    )
+
     class Meta:
         model = UserSettings
-        fields = ("default_reading_time",)
+        fields = ("default_reading_time", "timezone")

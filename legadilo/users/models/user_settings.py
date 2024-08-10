@@ -37,7 +37,10 @@ class UserSettings(models.Model):
         ),
     )
     timezone = models.ForeignKey(
-        "core.Timezone", on_delete=models.PROTECT, related_name="user_settings"
+        "core.Timezone",
+        on_delete=models.PROTECT,
+        related_name="user_settings",
+        help_text=_("Used to display times and updated feeds at a convenient time."),
     )
 
     class Meta(TypedModelMeta):
