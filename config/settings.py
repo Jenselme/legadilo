@@ -49,7 +49,7 @@ LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 LANGUAGES = [
     ("en", _("English")),
-    # ("fr", _("French")),
+    ("fr", _("French")),
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
