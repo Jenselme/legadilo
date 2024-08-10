@@ -50,7 +50,7 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         assert self.request.user.is_authenticated  # noqa: S101 assert used
         return self.request.user.get_absolute_url()
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         return self.request.user
 
 

@@ -24,6 +24,10 @@ else:
     TypedModelMeta = object
 
 
+class FeedArticleManager(models.Manager):
+    pass
+
+
 class FeedArticle(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_articles", on_delete=models.CASCADE)
     article = models.ForeignKey(
@@ -32,6 +36,8 @@ class FeedArticle(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = FeedArticleManager()
 
     class Meta(TypedModelMeta):
         constraints = [

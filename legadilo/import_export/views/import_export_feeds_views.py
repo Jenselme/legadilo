@@ -29,7 +29,6 @@ from django.views.decorators.http import require_GET, require_http_methods
 from legadilo.feeds.models import Feed
 from legadilo.import_export.services.opml import import_opml_file
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.decorators import alogin_required
 from legadilo.utils.time_utils import utcnow
 
 from .. import constants
@@ -67,8 +66,8 @@ class ImportFeedsForm(forms.Form):
         return self.cleaned_data["opml_file"]
 
 
-@require_http_methods(["GET", "POST"])
-@alogin_required
+@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@login_required
 async def import_feeds_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     form = ImportFeedsForm()
     status = HTTPStatus.OK

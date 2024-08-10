@@ -22,6 +22,7 @@ from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
@@ -45,7 +46,7 @@ class TestAddArticle:
     def test_access_if_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert_redirected_to_login_page(response)
 
     def test_get_form(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url)
@@ -113,7 +114,7 @@ class TestAddArticle:
         assert article is not None
         assert article.user == other_user
         assert article.tags.count() == 3
-        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}
+        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}  # type: ignore[misc]
 
     def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
@@ -225,7 +226,7 @@ class TestRefetchArticleView:
     def test_access_if_not_logged_in(self, client):
         response = client.post(self.url)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert_redirected_to_login_page(response)
 
     def test_access_if_logged_in_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.post(self.url, self.sample_payload)

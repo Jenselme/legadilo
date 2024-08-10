@@ -95,9 +95,9 @@ class FeedUpdate(models.Model):
     class Meta(TypedModelMeta):
         ordering = ["-created_at"]
         constraints = [
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_status_valid",
-                check=models.Q(status__in=constants.FeedUpdateStatus.names),
+                condition=models.Q(status__in=constants.FeedUpdateStatus.names),
             )
         ]
 

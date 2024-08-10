@@ -19,6 +19,7 @@ from http import HTTPStatus
 import pytest
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.utils.time_utils import utcnow
 
 from ..factories import NotificationFactory
@@ -34,8 +35,7 @@ class TestListNotificationsView:
     def test_list_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_list(self, user, other_user, logged_in_sync_client, django_assert_num_queries):
         NotificationFactory(user=other_user)

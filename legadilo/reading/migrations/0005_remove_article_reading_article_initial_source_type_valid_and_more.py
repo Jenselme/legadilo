@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="article",
             constraint=models.CheckConstraint(
-                check=models.Q(("main_source_type__in", ["FEED", "MANUAL"])),
+                condition=models.Q(("main_source_type__in", ["FEED", "MANUAL"])),
                 name="reading_article_main_source_type_valid",
             ),
         ),

@@ -364,21 +364,21 @@ class Feed(models.Model):
             models.UniqueConstraint(
                 "feed_url", "user", name="%(app_label)s_%(class)s_feed_url_unique"
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_feed_type_valid",
-                check=models.Q(
+                condition=models.Q(
                     feed_type__in=feeds_constants.SupportedFeedType.names,
                 ),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_refresh_delay_type_valid",
-                check=models.Q(
+                condition=models.Q(
                     refresh_delay__in=feeds_constants.FeedRefreshDelays.names,
                 ),
             ),
-            models.CheckConstraint(
+            models.CheckConstraint(  # type: ignore[call-arg]
                 name="%(app_label)s_%(class)s_disabled_reason_disabled_at_empty_when_enabled",
-                check=models.Q(
+                condition=models.Q(
                     disabled_reason="",
                     disabled_at__isnull=True,
                     enabled=True,

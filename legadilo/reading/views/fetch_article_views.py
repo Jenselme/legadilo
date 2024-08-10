@@ -20,6 +20,7 @@ import httpx
 from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import aget_object_or_404
 from django.template.response import TemplateResponse
@@ -37,7 +38,6 @@ from legadilo.reading.services.article_fetching import (
 )
 from legadilo.reading.templatetags import article_details_url
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.decorators import alogin_required
 from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.urls import add_query_params, pop_query_param, validate_referer_url
 
@@ -63,8 +63,8 @@ class FetchArticleForm(forms.Form):
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
 
 
-@require_http_methods(["GET", "POST"])
-@alogin_required
+@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@login_required
 async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     tag_choices = await sync_to_async(Tag.objects.get_all_choices)(request.user)
     form = FetchArticleForm(tag_choices=tag_choices)
@@ -90,8 +90,8 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
     )
 
 
-@require_http_methods(["POST"])
-@alogin_required
+@require_http_methods(["POST"])  # type: ignore[type-var]
+@login_required
 async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
     article = await aget_object_or_404(Article, link=request.POST.get("url"), user=request.user)
     await _handle_save(

@@ -27,6 +27,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUpload
 from django.test import override_settings
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds.models import Feed
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
@@ -44,7 +45,7 @@ class TestExportArticlesView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert_redirected_to_login_page(response)
 
     def test_export_no_data(self, logged_in_sync_client, snapshot):
         response = logged_in_sync_client.get(self.url)
@@ -88,7 +89,7 @@ class TestImportExportArticlesView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert_redirected_to_login_page(response)
 
     def test_import_unsupported_file(self, logged_in_sync_client):
         buffer = BytesIO(b"stuff")

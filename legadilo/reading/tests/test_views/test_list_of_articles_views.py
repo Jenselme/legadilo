@@ -22,6 +22,7 @@ from django.core.paginator import Paginator
 from django.template.defaultfilters import urlencode
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
@@ -184,8 +185,7 @@ class TestTagWithArticlesView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_cannot_access_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url)
@@ -308,8 +308,7 @@ class TestExternalTagWithArticleView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert reverse("account_login") in response["Location"]
+        assert_redirected_to_login_page(response)
 
     def test_cannot_access_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url)

@@ -20,6 +20,7 @@ from json import JSONDecodeError
 from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import StreamingHttpResponse
 from django.template.response import TemplateResponse
@@ -31,7 +32,6 @@ from jsonschema.exceptions import ValidationError as JsonValidationError
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.decorators import alogin_required
 
 from ...feeds.models import Feed, FeedCategory
 from ...reading.models import Article
@@ -62,8 +62,8 @@ class ImportWallabagForm(forms.Form):
         return self.cleaned_data["wallabag_file"]
 
 
-@require_http_methods(["GET", "POST"])
-@alogin_required
+@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@login_required
 async def import_export_articles_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     import_custom_csv_form = ImportCustomCsvForm()
     import_wallabag_form = ImportWallabagForm()
@@ -138,8 +138,8 @@ async def _import_wallabag(request: AuthenticatedHttpRequest):
     return status, import_wallabag_form
 
 
-@require_GET
-@alogin_required
+@require_GET  # type: ignore[type-var]
+@login_required
 async def export_articles_view(request: AuthenticatedHttpRequest) -> StreamingHttpResponse:
     user = await request.auser()
     return StreamingHttpResponse(

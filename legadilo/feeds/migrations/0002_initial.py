@@ -126,7 +126,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="feed",
             constraint=models.CheckConstraint(
-                check=models.Q((
+                condition=models.Q((
                     "feed_type__in",
                     [
                         "rss090",
@@ -153,7 +153,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="feed",
             constraint=models.CheckConstraint(
-                check=models.Q((
+                condition=models.Q((
                     "refresh_delay__in",
                     [
                         "HOURLY",
@@ -176,7 +176,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="feed",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     models.Q(("disabled_reason", ""), ("enabled", True)),
                     ("enabled", False),
                     _connector="OR",
@@ -193,7 +193,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="feedupdate",
             constraint=models.CheckConstraint(
-                check=models.Q(("status__in", ["SUCCESS", "FAILURE", "NOT_MODIFIED"])),
+                condition=models.Q(("status__in", ["SUCCESS", "FAILURE", "NOT_MODIFIED"])),
                 name="feeds_feedupdate_status_valid",
             ),
         ),

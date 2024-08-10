@@ -13,8 +13,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from http import HTTPStatus
 
 import pytest
+from django.urls import reverse
 
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory
@@ -56,3 +58,8 @@ def logged_in_sync_client(user, client):
 def logged_in_other_user_sync_client(other_user, client):
     client.force_login(other_user)
     return client
+
+
+def assert_redirected_to_login_page(response):
+    assert response.status_code == HTTPStatus.FOUND  # noqa: S101 use of assert detected
+    assert reverse("account_login") in response["Location"]  # noqa: S101 use of assert detected

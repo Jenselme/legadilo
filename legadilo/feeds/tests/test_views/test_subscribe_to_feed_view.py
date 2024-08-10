@@ -22,6 +22,7 @@ from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
+from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.reading import constants as reading_constants
@@ -62,7 +63,7 @@ class TestSubscribeToFeedView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert_redirected_to_login_page(response)
 
     def test_get_form(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url)
@@ -114,7 +115,7 @@ class TestSubscribeToFeedView:
             )
         ]
         assert not feed.open_original_link_by_default
-        assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
+        assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]  # type: ignore[misc]
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
@@ -334,11 +335,11 @@ class TestSubscribeToFeedView:
         assert feed is not None
         assert feed.user == other_user
         assert feed.tags.count() == 2
-        assert set(feed.tags.values_list("user_id", flat=True)) == {other_user.id}
+        assert set(feed.tags.values_list("user_id", flat=True)) == {other_user.id}  # type: ignore[misc]
         assert feed.category == category
         assert category.user == other_user
         assert Article.objects.count() == Article.objects.filter(user=other_user).count()
         article = Article.objects.first()
         assert article is not None
         assert article.tags.count() == 2
-        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}
+        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}  # type: ignore[misc]
