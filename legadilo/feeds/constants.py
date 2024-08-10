@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from dateutil.relativedelta import relativedelta
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
 
@@ -41,7 +40,6 @@ class SupportedFeedType(TextChoices):
 
 
 class FeedRefreshDelays(TextChoices):
-    pass
     HOURLY = "HOURLY", _("Hourly")
     BIHOURLY = "BIHOURLY", _("Bihourly")
     EVERY_MORNING = "EVERY_MORNING", _("Every Morning")
@@ -62,7 +60,6 @@ class FeedUpdateStatus(TextChoices):
     NOT_MODIFIED = "NOT_MODIFIED", _("Not Modified")
 
 
-FEED_ERRORS_TIME_WINDOW = relativedelta(weeks=2)
 HTTP_TIMEOUT = 20  # In seconds.
 MAX_FEED_FILE_SIZE = 10 * 1024 * 1024  # 10MiB in bytes.
 FEED_TITLE_MAX_LENGTH = 300
