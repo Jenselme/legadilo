@@ -29,9 +29,12 @@ from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.utils.command import AsyncCommand
 from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.http_utils import get_rss_async_client
+from legadilo.utils.loggers import unlink_logger_from_sentry
 from legadilo.utils.time_utils import utcnow
 
 logger = logging.getLogger(__name__)
+
+unlink_logger_from_sentry(logger)
 
 
 class Command(AsyncCommand):
