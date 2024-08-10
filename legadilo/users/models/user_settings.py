@@ -36,6 +36,9 @@ class UserSettings(models.Model):
             "Number of words you read in minutes. Used to calculate the reading time of articles."
         ),
     )
+    timezone = models.ForeignKey(
+        "core.Timezone", on_delete=models.PROTECT, related_name="user_settings"
+    )
 
     class Meta(TypedModelMeta):
         constraints = [

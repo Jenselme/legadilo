@@ -14,15 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from allauth.account.signals import user_signed_up
+from .timezone import Timezone
 
-from legadilo.core.models import Timezone
-from legadilo.users.models import UserSettings
-
-
-def create_user_settings_on_user_registration(sender, user, **kwargs):
-    utc_tz = Timezone.objects.get(name="UTC")
-    UserSettings.objects.create(user=user, timezone=utc_tz)
-
-
-user_signed_up.connect(create_user_settings_on_user_registration)
+__all__ = ["Timezone"]

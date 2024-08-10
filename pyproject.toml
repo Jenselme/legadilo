@@ -184,8 +184,8 @@ layers = [
     "legadilo.import_export",
     "legadilo.feeds",
     "legadilo.reading",
-    "legadilo.core",
     "legadilo.users",
+    "legadilo.core",
     "legadilo.utils",
 ]
 ignore_imports = [

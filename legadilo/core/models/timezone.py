@@ -14,15 +14,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from allauth.account.signals import user_signed_up
+from typing import TYPE_CHECKING
 
-from legadilo.core.models import Timezone
-from legadilo.users.models import UserSettings
+from django.db import models
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
 
 
-def create_user_settings_on_user_registration(sender, user, **kwargs):
-    utc_tz = Timezone.objects.get(name="UTC")
-    UserSettings.objects.create(user=user, timezone=utc_tz)
+class Timezone(models.Model):
+    name = models.CharField()
 
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint("name", name="%(app_label)s_%(class)s_unique_tz_name"),
+        ]
 
-user_signed_up.connect(create_user_settings_on_user_registration)
+    def __str__(self):
+        return f"Timezone(name={self.name})"

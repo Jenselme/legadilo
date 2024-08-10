@@ -24,6 +24,7 @@ from django.core import mail
 from django.urls import reverse
 
 from legadilo.core.middlewares import CSPMiddleware
+from legadilo.core.models import Timezone
 from legadilo.users.admin import User
 from legadilo.users.models import UserSettings
 
@@ -42,6 +43,7 @@ class TestUserRegistration:
         self.client = client
         self.mocker = mocker
         self.snapshot = snapshot
+        Timezone.objects.get_or_create(name="UTC")
         # For some reason, reset_sequences=True will reset the values of the site object.
         # Let's reput ours.
         site = Site.objects.get_current()
