@@ -58,3 +58,6 @@ class UserManager(DjangoUserManager[User]):
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
+
+    def get(self, *args, **kwargs):
+        return self.select_related("settings", "settings__timezone").get(*args, **kwargs)

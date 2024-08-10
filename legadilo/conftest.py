@@ -18,8 +18,9 @@ from http import HTTPStatus
 import pytest
 from django.urls import reverse
 
+from legadilo.core.models import Timezone
 from legadilo.users.models import User
-from legadilo.users.tests.factories import UserFactory
+from legadilo.users.tests.factories import UserFactory, UserSettingsFactory
 
 
 @pytest.fixture(autouse=True)
@@ -46,6 +47,14 @@ def user(db) -> User:
 @pytest.fixture
 def other_user(db) -> User:
     return UserFactory()
+
+
+@pytest.fixture
+def admin_user(admin_user) -> User:
+    timezone, _created = Timezone.objects.get_or_create(name="UTC")
+    admin_user.settings = UserSettingsFactory(user=admin_user, timezone=timezone)
+    admin_user.save()
+    return admin_user
 
 
 @pytest.fixture

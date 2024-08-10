@@ -13,9 +13,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from zoneinfo import ZoneInfo
 
 from csp.middleware import CSPMiddleware as DjangoCSPMiddleware
 from django.conf import settings
+from django.utils import timezone
 
 
 class CSPMiddleware(DjangoCSPMiddleware):
@@ -31,3 +33,16 @@ class CSPMiddleware(DjangoCSPMiddleware):
                 "style-src": "'self'",
             }
         return super().build_policy(request, response)
+
+
+class TimezoneMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            timezone.activate(ZoneInfo(request.user.settings.timezone.name))
+        else:
+            timezone.activate(ZoneInfo("UTC"))
+
+        return self.get_response(request)
