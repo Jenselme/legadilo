@@ -41,7 +41,7 @@ class TimezoneMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            timezone.activate(ZoneInfo(request.user.settings.timezone.name))
+            timezone.activate(request.user.tzinfo)
         else:
             timezone.activate(ZoneInfo("UTC"))
 
