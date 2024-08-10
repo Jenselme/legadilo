@@ -2,9 +2,7 @@
 
 <select name="{{ widget.name }}"
         {% include "bootstrap5/layout/attrs.html" %}
-        class="visually-hidden"
-        data-bs5-tags="true"
-        {% if widget.attrs.allow_new %}data-allow-new="true"{% endif %}>
+        class="visually-hidden">
     <option disabled hidden value="">{% translate "Choose tags" %}</option>
     {% for group_name, group_choices, group_index in widget.optgroups %}
         <option value="{{ group_choices.0.value }}"
