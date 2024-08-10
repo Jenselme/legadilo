@@ -24,13 +24,21 @@ else:
     TypedModelMeta = object
 
 
+class TimezoneManager(models.Manager):
+    def get_default(self):
+        return self.get_queryset().get(name="UTC")
+
+
 class Timezone(models.Model):
     name = models.CharField()
+
+    objects = TimezoneManager()
 
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint("name", name="%(app_label)s_%(class)s_unique_tz_name"),
         ]
+        ordering = ["name"]
 
     def __str__(self):
         return self.name

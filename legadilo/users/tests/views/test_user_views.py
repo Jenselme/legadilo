@@ -27,6 +27,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from legadilo.core.models import Timezone
 from legadilo.users.forms import UserAdminChangeForm
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory
@@ -114,6 +115,7 @@ class TestUserDetailView:
 class TestUserUpdateSettingsView:
     def setup_method(self):
         self.url = reverse("users:update_settings")
+        self.new_tz, _ = Timezone.objects.get_or_create(name="Europe/Paris")
 
     def test_get_for_current_user(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url)
@@ -121,8 +123,11 @@ class TestUserUpdateSettingsView:
         assert response.status_code == HTTPStatus.OK
 
     def test_update(self, user, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, data={"default_reading_time": 0})
+        response = logged_in_sync_client.post(
+            self.url, data={"default_reading_time": 0, "timezone": self.new_tz.id}
+        )
 
         assert response.status_code == HTTPStatus.OK
         user.settings.refresh_from_db()
         assert user.settings.default_reading_time == 0
+        assert user.settings.timezone.id == self.new_tz.id

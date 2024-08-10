@@ -43,7 +43,8 @@ class TestUserRegistration:
         self.client = client
         self.mocker = mocker
         self.snapshot = snapshot
-        Timezone.objects.get_or_create(name="UTC")
+        self.default_tz, _ = Timezone.objects.get_or_create(name="UTC")
+        self.registration_tz, _ = Timezone.objects.get_or_create(name="Europe/Paris")
         # For some reason, reset_sequences=True will reset the values of the site object.
         # Let's reput ours.
         site = Site.objects.get_current()
@@ -64,6 +65,7 @@ class TestUserRegistration:
             "/accounts/signup/",
             {
                 "email": self.user_email,
+                "timezone": self.registration_tz.id,
                 "password1": self.password,
                 "password2": self.password,
             },
@@ -78,6 +80,8 @@ class TestUserRegistration:
         user_settings = UserSettings.objects.get()
         assert user.email == self.user_email
         assert user.settings == user_settings
+        assert user.settings.default_reading_time == 200
+        assert user.settings.timezone == self.registration_tz
         assert user.reading_lists.count() > 1
         assert user.reading_lists.filter(is_default=True).count() == 1
 

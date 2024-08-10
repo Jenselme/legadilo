@@ -56,6 +56,17 @@ class UserSignupForm(SignupForm):
     Check UserSocialSignupForm for accounts created from social.
     """
 
+    timezone = ModelChoiceField(
+        Timezone.objects.all(),
+        required=True,
+        widget=AutocompleteSelectWidget(),
+        help_text=_("Used to display times and updated feeds at a convenient time."),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial["timezone"] = Timezone.objects.get_default()
+
 
 class UserSocialSignupForm(SocialSignupForm):
     """Renders the form when user has signed up using social accounts.
@@ -67,7 +78,10 @@ class UserSocialSignupForm(SocialSignupForm):
 
 class UserSettingsForm(ModelForm):
     timezone = ModelChoiceField(
-        Timezone.objects.all(), required=True, widget=AutocompleteSelectWidget()
+        Timezone.objects.all(),
+        required=True,
+        widget=AutocompleteSelectWidget(),
+        help_text=_("Used to display times and updated feeds at a convenient time."),
     )
 
     class Meta:

@@ -57,4 +57,8 @@ class Migration(migrations.Migration):
                 models.F("name"), name="core_timezone_unique_tz_name"
             ),
         ),
+        migrations.AlterModelOptions(
+            name="timezone",
+            options={"ordering": ["name"]},
+        ),
     ]
