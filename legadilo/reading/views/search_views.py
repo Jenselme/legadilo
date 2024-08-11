@@ -23,6 +23,7 @@ from django.views.decorators.http import require_GET
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article
+from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.security import full_sanitize
 
@@ -164,9 +165,8 @@ async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     articles: list[Article] = []
     total_results = 0
     if form.is_valid():
-        articles, total_results = await Article.objects.search(
-            request.user, form.cleaned_data["q"], form.cleaned_data["search_type"]
-        )
+        query = ArticleFullTextSearchQuery(**form.cleaned_data, tags=[])
+        articles, total_results = await Article.objects.search(request.user, query)
 
     return TemplateResponse(
         request,

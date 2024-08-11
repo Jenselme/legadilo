@@ -21,7 +21,8 @@ import json
 import logging
 import math
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal, Self, assert_never
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -64,72 +65,123 @@ SEARCH_VECTOR = (
 )
 
 
-def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:  # noqa: C901 too complex
+@dataclass(frozen=True)
+class ArticleTagSearch:
+    filter_type: constants.ReadingListTagFilterType
+    tag_id: int
+
+
+@dataclass(frozen=True)
+class ArticleSearchQuery:
+    read_status: constants.ReadStatus = constants.ReadStatus.ALL
+    favorite_status: constants.FavoriteStatus = constants.FavoriteStatus.ALL
+    for_later_status: constants.ForLaterStatus = constants.ForLaterStatus.ALL
+    articles_max_age_value: int = 0
+    articles_max_age_unit: constants.ArticlesMaxAgeUnit = constants.ArticlesMaxAgeUnit.UNSET
+    articles_reading_time: int = 0
+    articles_reading_time_operator: constants.ArticlesReadingTimeOperator = (
+        constants.ArticlesReadingTimeOperator.UNSET
+    )
+    include_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
+    exclude_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
+    tags: Iterable[ArticleTagSearch] = ()
+
+    @classmethod
+    def from_reading_list(cls, reading_list: ReadingList):
+        return cls(
+            read_status=constants.ReadStatus(reading_list.read_status),
+            favorite_status=constants.FavoriteStatus(reading_list.favorite_status),
+            for_later_status=constants.ForLaterStatus(reading_list.for_later_status),
+            articles_max_age_unit=constants.ArticlesMaxAgeUnit(reading_list.articles_max_age_unit),
+            articles_max_age_value=reading_list.articles_max_age_value,
+            articles_reading_time_operator=constants.ArticlesReadingTimeOperator(
+                reading_list.articles_reading_time_operator
+            ),
+            articles_reading_time=reading_list.articles_reading_time,
+            include_tag_operator=constants.ReadingListTagOperator(
+                reading_list.include_tag_operator
+            ),
+            exclude_tag_operator=constants.ReadingListTagOperator(
+                reading_list.exclude_tag_operator
+            ),
+            tags=[
+                ArticleTagSearch(
+                    filter_type=constants.ReadingListTagFilterType(reading_list_tag.filter_type),
+                    tag_id=reading_list_tag.tag_id,
+                )
+                for reading_list_tag in reading_list.reading_list_tags.all()
+            ],
+        )
+
+
+@dataclass(frozen=True)
+class ArticleFullTextSearchQuery(ArticleSearchQuery):
+    q: str = ""
+    search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
+
+
+def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901 too complex
     filters = models.Q()
 
-    if reading_list.read_status == constants.ReadStatus.ONLY_READ:
+    if search_query.read_status == constants.ReadStatus.ONLY_READ:
         filters &= models.Q(is_read=True)
-    elif reading_list.read_status == constants.ReadStatus.ONLY_UNREAD:
+    elif search_query.read_status == constants.ReadStatus.ONLY_UNREAD:
         filters &= models.Q(is_read=False)
 
-    if reading_list.favorite_status == constants.FavoriteStatus.ONLY_FAVORITE:
+    if search_query.favorite_status == constants.FavoriteStatus.ONLY_FAVORITE:
         filters &= models.Q(is_favorite=True)
-    elif reading_list.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
+    elif search_query.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
         filters &= models.Q(is_favorite=False)
 
-    if reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER:
+    if search_query.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER:
         filters &= models.Q(is_for_later=True)
-    elif reading_list.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER:
+    elif search_query.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER:
         filters &= models.Q(is_for_later=False)
 
-    if reading_list.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
+    if search_query.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
         filters &= models.Q(
             published_at__gt=utcnow()
             - relativedelta(**{  # type: ignore[arg-type]
-                reading_list.articles_max_age_unit.lower(): reading_list.articles_max_age_value
+                search_query.articles_max_age_unit.lower(): search_query.articles_max_age_value
             })
         )
 
-    articles_reading_time_operator = cast(
-        constants.ArticlesReadingTimeOperator, reading_list.articles_reading_time_operator
-    )
-    match articles_reading_time_operator:
+    match search_query.articles_reading_time_operator:
         case constants.ArticlesReadingTimeOperator.UNSET:
             pass
         case constants.ArticlesReadingTimeOperator.MORE_THAN:
-            filters &= models.Q(reading_time__gte=reading_list.articles_reading_time)
+            filters &= models.Q(reading_time__gte=search_query.articles_reading_time)
         case constants.ArticlesReadingTimeOperator.LESS_THAN:
-            filters &= models.Q(reading_time__lte=reading_list.articles_reading_time)
+            filters &= models.Q(reading_time__lte=search_query.articles_reading_time)
         case _:
-            assert_never(reading_list.articles_reading_time_operator)
+            assert_never(search_query.articles_reading_time_operator)
 
-    filters &= _get_tags_filters(reading_list)
+    filters &= _get_tags_filters(search_query)
 
     return filters
 
 
-def _get_tags_filters(reading_list: ReadingList) -> models.Q:
+def _get_tags_filters(search_query: ArticleSearchQuery) -> models.Q:
     filters = models.Q()
     tags_to_include = []
     tags_to_exclude = []
-    for reading_list_tag in reading_list.reading_list_tags.all():
-        filter_type = cast(constants.ReadingListTagFilterType, reading_list_tag.filter_type)
-        match filter_type:
+    for tag in search_query.tags:
+        match tag.filter_type:
             case constants.ReadingListTagFilterType.INCLUDE:
-                tags_to_include.append(reading_list_tag.tag_id)
+                tags_to_include.append(tag.tag_id)
             case constants.ReadingListTagFilterType.EXCLUDE:
-                tags_to_exclude.append(reading_list_tag.tag_id)
+                tags_to_exclude.append(tag.tag_id)
             case _:
-                assert_never(reading_list_tag.filter_type)
+                assert_never(tag.filter_type)
 
     if tags_to_include:
         operator = _get_reading_list_tags_sql_operator(
-            constants.ReadingListTagOperator(reading_list.include_tag_operator)
+            constants.ReadingListTagOperator(search_query.include_tag_operator)
         )
         filters &= models.Q(**{f"alias_tag_ids_for_article__{operator}": tags_to_include})
     if tags_to_exclude:
         operator = _get_reading_list_tags_sql_operator(
-            constants.ReadingListTagOperator(reading_list.exclude_tag_operator)
+            constants.ReadingListTagOperator(search_query.exclude_tag_operator)
         )
         filters &= ~models.Q(**{f"alias_tag_ids_for_article__{operator}": tags_to_exclude})
     return filters
@@ -187,7 +239,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_user(reading_list.user)
             .for_current_tag_filtering()
             .for_feed_links()
-            .filter(_build_filters_from_reading_list(reading_list))
+            .filter(
+                _build_filters_from_reading_list(ArticleSearchQuery.from_reading_list(reading_list))
+            )
             .prefetch_related(_build_prefetch_article_tags())
             .default_order_by(reading_list.order_direction)
         )
@@ -309,12 +363,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             alias_date_field_order=Coalesce(models.F("updated_at"), models.F("published_at"))
         ).order_by(order)
 
-    def for_search(self, user: User, query: SearchQuery) -> Self:
+    def for_search(self, query: SearchQuery) -> Self:
         return (
-            self.for_user(user)
-            .for_feed_links()
-            .prefetch_related(_build_prefetch_article_tags())
-            .alias(search=SEARCH_VECTOR, rank=SearchRank(SEARCH_VECTOR, query))
+            self.alias(search=SEARCH_VECTOR, rank=SearchRank(SEARCH_VECTOR, query))
             .filter(search=query)
             .order_by("-rank", "id")
         )
@@ -465,7 +516,9 @@ class ArticleManager(models.Manager["Article"]):
         aggregation = {
             reading_list.slug: models.Count(
                 "id",
-                filter=_build_filters_from_reading_list(reading_list),
+                filter=_build_filters_from_reading_list(
+                    ArticleSearchQuery.from_reading_list(reading_list)
+                ),
             )
             for reading_list in reading_lists
         }
@@ -525,10 +578,20 @@ class ArticleManager(models.Manager["Article"]):
             yield articles
 
     async def search(
-        self, user: User, qs: str, search_type: constants.ArticleSearchType
+        self, user: User, search_query: ArticleFullTextSearchQuery
     ) -> tuple[list[Article], int]:
-        query = SearchQuery(qs, search_type=search_type.value, config="english")
-        articles_qs = self.get_queryset().for_search(user, query)
+        articles_qs = (
+            self.get_queryset()
+            .for_user(user)
+            .for_feed_links()
+            .prefetch_related(_build_prefetch_article_tags())
+            .filter(_build_filters_from_reading_list(search_query))
+        )
+        if search_query.q:
+            full_text_search_query = SearchQuery(
+                search_query.q, search_type=search_query.search_type.value, config="english"
+            )
+            articles_qs = articles_qs.for_search(full_text_search_query)
 
         return await asyncio.gather(
             alist(articles_qs[: constants.MAX_ARTICLES_PER_PAGE]), articles_qs.acount()
