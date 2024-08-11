@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import AsyncIterable, Iterable
 from typing import TypeVar
 
 T = TypeVar("T")
@@ -41,3 +41,11 @@ def max_or_none(
     collection: Iterable[T],
 ) -> T | None:
     return _select_item_from_collection(max, collection)
+
+
+async def alist(collection: AsyncIterable[T]) -> list[T]:
+    output = []
+    async for item in collection:
+        output.append(item)
+
+    return output

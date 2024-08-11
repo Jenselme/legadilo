@@ -23,6 +23,7 @@ import pytest
 import time_machine
 from asgiref.sync import async_to_sync
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.search import SearchQuery
 from django.db import models
 
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
@@ -814,6 +815,31 @@ class TestArticleQuerySet:
             article_no_dates,
         ]
 
+    def test_for_search(self, user, other_user):
+        ArticleFactory(title="Claudius other user", user=other_user)
+        search_in_title = ArticleFactory(user=user, title="Claudius")
+        ArticleFactory(title="Does not match search", user=user)
+        search_in_authors = ArticleFactory(
+            title="Search in authors", user=user, authors=["Claudius"]
+        )
+        search_in_main_source_title = ArticleFactory(
+            title="Search in main source title", user=user, main_source_title="Claudius"
+        )
+        search_in_content = ArticleFactory(title="Search in content", user=user, content="Claudius")
+        search_in_summary = ArticleFactory(title="Search in summary", user=user, summary="Claudius")
+
+        searched_articles = list(
+            Article.objects.get_queryset().for_search(user, SearchQuery("Claudius"))
+        )
+
+        assert searched_articles == [
+            search_in_title,
+            search_in_summary,
+            search_in_authors,
+            search_in_content,
+            search_in_main_source_title,
+        ]
+
 
 @pytest.mark.django_db
 class TestArticleManager:
@@ -1258,6 +1284,17 @@ class TestArticleManager:
             all_articles.append(articles)
 
         return all_articles
+
+    def test_search(self, user, other_user):
+        ArticleFactory(title="Claudius other user", user=other_user)
+        search_in_title = ArticleFactory(user=user, title="Claudius")
+
+        found_articles, total_found = async_to_sync(Article.objects.search)(
+            user, "Claudius", constants.ArticleSearchType.PLAIN
+        )
+
+        assert total_found == 1
+        assert found_articles == [search_in_title]
 
 
 class TestArticleModel:

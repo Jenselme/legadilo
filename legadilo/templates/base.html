@@ -113,6 +113,20 @@
                                 <ul class="navbar-nav">
                                     {% if request.user.is_authenticated %}
                                         <li class="nav-item">
+                                            <form action="{% url 'reading:search' %}" method="get">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
+                                                    <input type="text"
+                                                           class="form-control"
+                                                           name="q"
+                                                           placeholder="{% translate 'Search articles here...' %}"
+                                                           minlength="3"
+                                                           required />
+                                                </div>
+                                                <button class="visually-hidden" type="submit">{% translate "Search" %}</button>
+                                            </form>
+                                        </li>
+                                        <li class="nav-item">
                                             <a class="nav-link" href="{% url 'reading:add_article' %}">
                                                 {% include "core/partials/bs-icons/add_article.html" %}
                                                 {% translate "Add an article" %}

@@ -30,6 +30,7 @@ from .manage_reading_lists_views import (
     reading_list_create_view,
     reading_list_edit_view,
 )
+from .search_views import search_view
 
 __all__ = [
     "add_article_view",
@@ -41,6 +42,7 @@ __all__ = [
     "reading_list_edit_view",
     "reading_list_with_articles_view",
     "refetch_article_view",
+    "search_view",
     "tag_with_articles_view",
     "update_article_view",
 ]

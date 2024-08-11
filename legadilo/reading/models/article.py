@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import math
@@ -24,6 +25,8 @@ from typing import TYPE_CHECKING, Literal, Self, assert_never, cast
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models, transaction
 from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
@@ -31,7 +34,7 @@ from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
-from legadilo.utils.collections_utils import max_or_none, min_or_none
+from legadilo.utils.collections_utils import alist, max_or_none, min_or_none
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time_utils import utcnow
@@ -50,6 +53,15 @@ else:
     TypedModelMeta = object
 
 logger = logging.getLogger(__name__)
+
+
+SEARCH_VECTOR = (
+    SearchVector("title", config="english", weight="A")
+    + SearchVector("summary", config="english", weight="B")
+    + SearchVector("content", config="english", weight="C")
+    + SearchVector("authors", config="english", weight="C")
+    + SearchVector("main_source_title", config="english", weight="D")
+)
 
 
 def _build_filters_from_reading_list(reading_list: ReadingList) -> models.Q:  # noqa: C901 too complex
@@ -297,6 +309,16 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             alias_date_field_order=Coalesce(models.F("updated_at"), models.F("published_at"))
         ).order_by(order)
 
+    def for_search(self, user: User, query: SearchQuery) -> Self:
+        return (
+            self.for_user(user)
+            .for_feed_links()
+            .prefetch_related(_build_prefetch_article_tags())
+            .alias(search=SEARCH_VECTOR, rank=SearchRank(SEARCH_VECTOR, query))
+            .filter(search=query)
+            .order_by("-rank", "id")
+        )
+
 
 class ArticleManager(models.Manager["Article"]):
     _hints: dict
@@ -502,6 +524,16 @@ class ArticleManager(models.Manager["Article"]):
 
             yield articles
 
+    async def search(
+        self, user: User, qs: str, search_type: constants.ArticleSearchType
+    ) -> tuple[list[Article], int]:
+        query = SearchQuery(qs, search_type=search_type.value, config="english")
+        articles_qs = self.get_queryset().for_search(user, query)
+
+        return await asyncio.gather(
+            alist(articles_qs[: constants.MAX_ARTICLES_PER_PAGE]), articles_qs.acount()
+        )
+
 
 class Article(models.Model):
     title = models.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
@@ -616,6 +648,10 @@ class Article(models.Model):
         indexes = [
             models.Index(
                 fields=["user", "is_read", "is_favorite", "is_for_later"],
+            ),
+            GinIndex(
+                SEARCH_VECTOR,
+                name="%(app_label)s_%(class)s_search_vector",
             ),
         ]
 
