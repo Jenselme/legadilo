@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Recovery Codes" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Recovery Codes" %}</h1>
+    <p>
+        {% blocktranslate count unused_count=unused_codes|length %}
+            There is {{ unused_count }} out of {{ total_count }} recovery codes available.
+        {% plural %}
+            There are {{ unused_count }} out of {{ total_count }} recovery codes available.
+        {% endblocktranslate %}
+    </p>
+    <ul>
+        {% for code in unused_codes %}
+            <li>
+                <code>{{ code }}</code>
+            </li>
+        {% endfor %}
+    </ul>
+    <p>
+        <a class="btn btn-primary"
+           role="button"
+           href="{% url 'mfa_download_recovery_codes' %}">{% translate "Download" %}</a>
+        <a class="btn btn-warning"
+           role="button"
+           href="{% url 'mfa_generate_recovery_codes' %}">{% translate "Generate" %}</a>
+    </p>
+{% endblock content %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% load i18n crispy_forms_tags %}
+
+{% block title %}
+    {% translate "Recovery Codes" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Recovery Codes" %}</h1>
+    <p>
+        {% blocktranslate %}You are about to generate a new set of recovery codes for your account.{% endblocktranslate %}
+        {% if unused_code_count %}
+            {% blocktranslate %}This action will invalidate your existing codes.{% endblocktranslate %}
+        {% endif %}
+        {% blocktranslate %}Are you sure?{% endblocktranslate %}
+    </p>
+    <form method="post" action="{% url 'mfa_generate_recovery_codes' %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button class="btn {% if unused_code_count %}btn-danger{% else %}btn-primary{% endif %}"
+                type="submit">{% translate "Generate" %}</button>
+    </form>
+{% endblock content %}
