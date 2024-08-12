@@ -30,17 +30,17 @@
         <div class="accordion mb-3" id="advanced-search-container">
             <div class="accordion-item">
                 <div class="accordion-header">
-                    <button class="accordion-button collapsed p-2"
+                    <button class="accordion-button {% if not form.errors %}collapsed{% endif %} p-2"
                             type="button"
                             data-bs-toggle="collapse"
                             data-bs-target="#advanced-search-fields"
-                            aria-expanded="false"
+                            aria-expanded="{% if form.errors %}true{% else %}false{% endif %}"
                             aria-controls="advanced-search-fields">
                         {% translate "View advanced search fields" %}
                     </button>
                 </div>
                 <div id="advanced-search-fields"
-                     class="accordion-collapse collapse"
+                     class="accordion-collapse collapse {% if form.errors %}show{% endif %}"
                      data-bs-parent="#advanced-search-container">
                     <div class="accordion-body row">
                         <div class="row">
