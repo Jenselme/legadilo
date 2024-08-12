@@ -1290,9 +1290,8 @@ class TestArticleManager:
         search_in_title = ArticleFactory(user=user, title="Claudius")
         search_query = ArticleFullTextSearchQuery(q="Claudius")
 
-        found_articles, total_found = async_to_sync(Article.objects.search)(user, search_query)
+        found_articles = list(Article.objects.search(user, search_query))
 
-        assert total_found == 1
         assert found_articles == [search_in_title]
 
     def test_search_with_advanced_filters(self, user, other_user):
@@ -1302,9 +1301,8 @@ class TestArticleManager:
             q="Claudius", read_status=constants.ReadStatus.ONLY_UNREAD
         )
 
-        found_articles, total_found = async_to_sync(Article.objects.search)(user, search_query)
+        found_articles = list(Article.objects.search(user, search_query))
 
-        assert total_found == 1
         assert found_articles == [search_in_title]
 
 

@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from http import HTTPStatus
+from urllib.parse import urlencode
 
 import pytest
 from django.urls import reverse
@@ -214,6 +215,53 @@ class TestSearchView:
             },
         )
 
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context["form"].is_valid()
+        assert response.context["articles"] == [article_with_tag_to_include]
+        assert response.context["total_results"] == 1
+
+    def test_update_search(self, user, logged_in_sync_client):
+        ArticleFactory(user=user, title="Claudius")
+        tag_to_include = TagFactory(user=user)
+        tag_to_exclude = TagFactory(user=user)
+        article_with_tag_to_include = ArticleFactory(user=user, title="Claudius")
+        ArticleTag.objects.create(
+            article=article_with_tag_to_include,
+            tag=tag_to_include,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        article_with_tag_to_exclude = ArticleFactory(user=user, title="Claudius")
+        ArticleTag.objects.create(
+            article=article_with_tag_to_exclude,
+            tag=tag_to_exclude,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        get_data = urlencode(
+            {
+                "q": "Claudius",
+                "tags_to_include": [tag_to_include.slug],
+                "tags_to_exclude": [tag_to_exclude.slug],
+            },
+            doseq=True,
+        )
+
+        response = logged_in_sync_client.post(
+            f"{self.url}?{get_data}",
+            data={
+                "update_action": constants.UpdateArticleActions.MARK_AS_READ.value,
+                "add_tags": ["New tag"],
+            },
+        )
+
+        article_with_tag_to_include.refresh_from_db()
+        assert article_with_tag_to_include.is_read
+        assert list(
+            article_with_tag_to_include.tags.order_by("slug").values_list("slug", flat=True)
+        ) == [
+            "new-tag",
+            tag_to_include.slug,
+        ]
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/search.html"
         assert response.context["form"].is_valid()

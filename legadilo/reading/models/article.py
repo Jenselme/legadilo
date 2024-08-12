@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import math
@@ -35,7 +34,7 @@ from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
-from legadilo.utils.collections_utils import alist, max_or_none, min_or_none
+from legadilo.utils.collections_utils import max_or_none, min_or_none
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time_utils import utcnow
@@ -577,9 +576,7 @@ class ArticleManager(models.Manager["Article"]):
 
             yield articles
 
-    async def search(
-        self, user: User, search_query: ArticleFullTextSearchQuery
-    ) -> tuple[list[Article], int]:
+    def search(self, user: User, search_query: ArticleFullTextSearchQuery) -> ArticleQuerySet:
         articles_qs = (
             self.get_queryset()
             .for_user(user)
@@ -594,9 +591,7 @@ class ArticleManager(models.Manager["Article"]):
             )
             articles_qs = articles_qs.for_search(full_text_search_query)
 
-        return await asyncio.gather(
-            alist(articles_qs[: constants.MAX_ARTICLES_PER_PAGE]), articles_qs.acount()
-        )
+        return articles_qs
 
 
 class Article(models.Model):
