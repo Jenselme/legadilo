@@ -584,6 +584,7 @@ class ArticleManager(models.Manager["Article"]):
             self.get_queryset()
             .for_user(user)
             .for_feed_links()
+            .for_current_tag_filtering()
             .prefetch_related(_build_prefetch_article_tags())
             .filter(_build_filters_from_reading_list(search_query))
         )

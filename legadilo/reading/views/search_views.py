@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -21,9 +21,12 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 
+from legadilo.core.forms import FormChoices
+from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.widgets import MultipleTagsWidget
 from legadilo.reading import constants
-from legadilo.reading.models import Article
-from legadilo.reading.models.article import ArticleFullTextSearchQuery
+from legadilo.reading.models import Article, Tag
+from legadilo.reading.models.article import ArticleFullTextSearchQuery, ArticleTagSearch
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.security import full_sanitize
 
@@ -62,6 +65,36 @@ class SearchForm(forms.Form):
         choices=constants.ArticlesReadingTimeOperator.choices,
         initial=constants.ArticlesReadingTimeOperator.UNSET,
     )
+    # Tags
+    include_tag_operator = forms.ChoiceField(
+        required=False,
+        choices=constants.ReadingListTagOperator.choices,
+        initial=constants.ReadingListTagOperator.ALL,
+        help_text=_("Articles to include must have all or any of the supplied tags."),
+    )
+    tags_to_include = MultipleTagsField(
+        required=False,
+        choices=[],
+        help_text=_("Articles with these tags will be included in the search."),
+        widget=MultipleTagsWidget(allow_new=False),
+    )
+    exclude_tag_operator = forms.ChoiceField(
+        required=False,
+        choices=constants.ReadingListTagOperator.choices,
+        initial=constants.ReadingListTagOperator.ALL,
+        help_text=_("Articles to exclude must have all or any of the supplied tags."),
+    )
+    tags_to_exclude = MultipleTagsField(
+        required=False,
+        choices=[],
+        help_text=_("Articles with these tags will be excluded from the search."),
+        widget=MultipleTagsWidget(allow_new=False),
+    )
+
+    def __init__(self, data=None, *, tag_choices: FormChoices):
+        super().__init__(data)
+        self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
 
     def clean_q(self):
         q = self.cleaned_data["q"]
@@ -109,6 +142,18 @@ class SearchForm(forms.Form):
         return constants.ArticlesReadingTimeOperator(
             self.cleaned_data["articles_reading_time_operator"]
         )
+
+    def clean_include_tag_operator(self):
+        if not self.cleaned_data.get("include_tag_operator"):
+            return constants.ReadingListTagOperator.ALL
+
+        return constants.ReadingListTagOperator(self.cleaned_data["include_tag_operator"])
+
+    def clean_exclude_tag_operator(self):
+        if not self.cleaned_data.get("exclude_tag_operator"):
+            return constants.ReadingListTagOperator.ALL
+
+        return constants.ReadingListTagOperator(self.cleaned_data["exclude_tag_operator"])
 
     def clean(self):
         super().clean()
@@ -161,11 +206,24 @@ class SearchForm(forms.Form):
 @require_GET  # type: ignore[type-var]
 @login_required
 async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    form = SearchForm(request.GET)
+    tag_choices = await sync_to_async(Tag.objects.get_all_choices)(request.user)
+    form = SearchForm(request.GET, tag_choices=tag_choices)
     articles: list[Article] = []
     total_results = 0
     if form.is_valid():
-        query = ArticleFullTextSearchQuery(**form.cleaned_data, tags=[])
+        tags_to_include = form.cleaned_data.pop("tags_to_include", [])
+        tags_to_exclude = form.cleaned_data.pop("tags_to_exclude", [])
+        all_slugs = {
+            *(tag_slug for tag_slug in tags_to_include),
+            *(tag_slug for tag_slug in tags_to_exclude),
+        }
+        tag_slugs_to_ids = await sync_to_async(Tag.objects.get_slugs_to_ids)(
+            request.user, all_slugs
+        )
+        query = ArticleFullTextSearchQuery(
+            **form.cleaned_data,
+            tags=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),
+        )
         articles, total_results = await Article.objects.search(request.user, query)
 
     return TemplateResponse(
@@ -177,3 +235,26 @@ async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
             "total_results": total_results,
         },
     )
+
+
+def _build_tags(
+    tag_slugs_to_ids: dict[str, int], tags_to_include: list[str], tags_to_exclude: list[str]
+) -> list[ArticleTagSearch]:
+    return [
+        *(
+            ArticleTagSearch(
+                filter_type=constants.ReadingListTagFilterType.INCLUDE,
+                tag_id=tag_slugs_to_ids[tag_slug],
+            )
+            for tag_slug in tags_to_include
+            if tag_slug in tag_slugs_to_ids
+        ),
+        *(
+            ArticleTagSearch(
+                filter_type=constants.ReadingListTagFilterType.EXCLUDE,
+                tag_id=tag_slugs_to_ids[tag_slug],
+            )
+            for tag_slug in tags_to_exclude
+            if tag_slug in tag_slugs_to_ids
+        ),
+    ]

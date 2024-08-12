@@ -21,19 +21,20 @@ from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading import constants
-from legadilo.reading.tests.factories import ArticleFactory
+from legadilo.reading.models import ArticleTag
+from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.views.search_views import SearchForm
 
 
 class TestSearchForm:
     def test_without_data(self):
-        form = SearchForm({})
+        form = SearchForm({}, tag_choices=[])
 
         assert not form.is_valid()
         assert form.errors == {"q": ["This field is required."]}
 
     def test_with_only_q(self):
-        form = SearchForm({"q": "Claudius"})
+        form = SearchForm({"q": "Claudius"}, tag_choices=[])
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -46,10 +47,14 @@ class TestSearchForm:
             "articles_max_age_unit": constants.ArticlesMaxAgeUnit.UNSET,
             "articles_reading_time": None,
             "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.UNSET,
+            "include_tag_operator": constants.ReadingListTagOperator.ALL,
+            "tags_to_include": [],
+            "exclude_tag_operator": constants.ReadingListTagOperator.ALL,
+            "tags_to_exclude": [],
         }
 
     def test_q_cleaning(self):
-        form = SearchForm({"q": "<span>Claudius</span>"})
+        form = SearchForm({"q": "<span>Claudius</span>"}, tag_choices=[])
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -62,10 +67,14 @@ class TestSearchForm:
             "articles_max_age_unit": constants.ArticlesMaxAgeUnit.UNSET,
             "articles_reading_time": None,
             "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.UNSET,
+            "include_tag_operator": constants.ReadingListTagOperator.ALL,
+            "tags_to_include": [],
+            "exclude_tag_operator": constants.ReadingListTagOperator.ALL,
+            "tags_to_exclude": [],
         }
 
     def test_q_cleaning_result_too_small_after_cleaning(self):
-        form = SearchForm({"q": "<span>C</span>"})
+        form = SearchForm({"q": "<span>C</span>"}, tag_choices=[])
 
         assert not form.is_valid()
         assert form.errors == {
@@ -73,11 +82,14 @@ class TestSearchForm:
         }
 
     def test_advanced_values_set_unit_and_operator_unset(self):
-        form = SearchForm({
-            "q": "Claudius",
-            "articles_max_age_value": 12,
-            "articles_reading_time": 12,
-        })
+        form = SearchForm(
+            {
+                "q": "Claudius",
+                "articles_max_age_value": 12,
+                "articles_reading_time": 12,
+            },
+            tag_choices=[],
+        )
 
         assert not form.is_valid()
         assert form.errors == {
@@ -88,11 +100,14 @@ class TestSearchForm:
         }
 
     def test_advanced_values_unset_unit_and_operator_set(self):
-        form = SearchForm({
-            "q": "Claudius",
-            "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
-            "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,
-        })
+        form = SearchForm(
+            {
+                "q": "Claudius",
+                "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
+            },
+            tag_choices=[],
+        )
 
         assert not form.is_valid()
         assert form.errors == {
@@ -103,17 +118,24 @@ class TestSearchForm:
         }
 
     def test_everything_filled(self):
-        form = SearchForm({
-            "q": "Claudius",
-            "search_type": constants.ArticleSearchType.PHRASE,
-            "read_status": constants.ReadStatus.ONLY_READ.value,
-            "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE.value,
-            "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER.value,
-            "articles_max_age_value": 12,
-            "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
-            "articles_reading_time": 12,
-            "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,
-        })
+        form = SearchForm(
+            {
+                "q": "Claudius",
+                "search_type": constants.ArticleSearchType.PHRASE,
+                "read_status": constants.ReadStatus.ONLY_READ.value,
+                "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE.value,
+                "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER.value,
+                "articles_max_age_value": 12,
+                "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
+                "articles_reading_time": 12,
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
+                "include_tag_operator": constants.ReadingListTagOperator.ALL.value,
+                "tags_to_include": ["some-tag"],
+                "exclude_tag_operator": constants.ReadingListTagOperator.ANY.value,
+                "tags_to_exclude": ["other-tag"],
+            },
+            tag_choices=[("some-tag", "Some tag"), ("other-tag", "Other tag")],
+        )
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -126,6 +148,10 @@ class TestSearchForm:
             "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS,
             "articles_reading_time": 12,
             "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN,
+            "include_tag_operator": constants.ReadingListTagOperator.ALL,
+            "tags_to_include": ["some-tag"],
+            "exclude_tag_operator": constants.ReadingListTagOperator.ANY,
+            "tags_to_exclude": ["other-tag"],
         }
 
 
@@ -160,4 +186,36 @@ class TestSearchView:
         assert response.template_name == "reading/search.html"
         assert response.context["form"].is_valid()
         assert response.context["articles"] == [article]
+        assert response.context["total_results"] == 1
+
+    def test_search_with_tags(self, user, logged_in_sync_client):
+        ArticleFactory(user=user, title="Claudius")
+        tag_to_include = TagFactory(user=user)
+        tag_to_exclude = TagFactory(user=user)
+        article_with_tag_to_include = ArticleFactory(user=user, title="Claudius")
+        ArticleTag.objects.create(
+            article=article_with_tag_to_include,
+            tag=tag_to_include,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        article_with_tag_to_exclude = ArticleFactory(user=user, title="Claudius")
+        ArticleTag.objects.create(
+            article=article_with_tag_to_exclude,
+            tag=tag_to_exclude,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+
+        response = logged_in_sync_client.get(
+            self.url,
+            data={
+                "q": "Claudius",
+                "tags_to_include": [tag_to_include.slug],
+                "tags_to_exclude": [tag_to_exclude.slug],
+            },
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context["form"].is_valid()
+        assert response.context["articles"] == [article_with_tag_to_include]
         assert response.context["total_results"] == 1

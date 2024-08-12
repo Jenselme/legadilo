@@ -67,6 +67,15 @@ class TestTagManager:
         assert Tag.objects.count() == 4
         assert tags[0] == self.tag1
 
+    def test_get_slugs_to_ids(self, user, other_user):
+        tag = TagFactory(user=user, slug="some-slug")
+        TagFactory(user=user)
+        TagFactory(user=other_user, slug=tag.slug)
+
+        slugs_to_ids = Tag.objects.get_slugs_to_ids(user, [tag.slug])
+
+        assert slugs_to_ids == {tag.slug: tag.id}
+
 
 @pytest.mark.django_db
 class TestArticleTagQuerySet:

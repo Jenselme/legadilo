@@ -5,6 +5,11 @@
 {% block title %}
     {% translate "Searching articles..." %}
 {% endblock title %}
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{request.csp_nonce}}"
+            type="module"></script>
+{% endblock page_js %}
 {% block content %}
     <h1>{% translate "Searching articles..." %}</h1>
     <form method="get">
@@ -48,6 +53,12 @@
                             <div class="col col-md-3 col-12">{{ form.articles_max_age_unit|as_crispy_field }}</div>
                             <div class="col col-md-3 col-12">{{ form.articles_reading_time|as_crispy_field }}</div>
                             <div class="col col-md-3 col-12">{{ form.articles_reading_time_operator|as_crispy_field }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-md-4 col-12">{{ form.include_tag_operator|as_crispy_field }}</div>
+                            <div class="col col-md-8 col-12">{{ form.tags_to_include|as_crispy_field }}</div>
+                            <div class="col col-md-4 col-12">{{ form.exclude_tag_operator|as_crispy_field }}</div>
+                            <div class="col col-md-8 col-12">{{ form.tags_to_exclude|as_crispy_field }}</div>
                         </div>
                     </div>
                 </div>
