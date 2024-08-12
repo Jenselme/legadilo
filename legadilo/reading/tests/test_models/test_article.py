@@ -23,12 +23,16 @@ import pytest
 import time_machine
 from asgiref.sync import async_to_sync
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.search import SearchQuery
 from django.db import models
 
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, ReadingListTag
-from legadilo.reading.models.article import _build_filters_from_reading_list
+from legadilo.reading.models.article import (
+    ArticleFullTextSearchQuery,
+    _build_filters_from_reading_list,
+)
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
     ArticleFactory,
@@ -40,7 +44,7 @@ from legadilo.utils.time_utils import utcdt, utcnow
 
 
 @pytest.mark.parametrize(
-    ("reading_list_kwargs", "expected_filter"),
+    ("search_query_kwargs", "expected_filter"),
     [
         pytest.param(
             {"read_status": constants.ReadStatus.ONLY_UNREAD},
@@ -148,12 +152,12 @@ from legadilo.utils.time_utils import utcdt, utcnow
     ],
 )
 def test_build_filters_from_reading_list(
-    user, reading_list_kwargs: dict[str, Any], expected_filter: models.Q
+    user, search_query_kwargs: dict[str, Any], expected_filter: models.Q
 ):
-    reading_list = ReadingListFactory(**reading_list_kwargs, user=user)
+    search_query = ArticleFullTextSearchQuery(**search_query_kwargs)
 
     with time_machine.travel("2024-03-19 21:08:00"):
-        filters = _build_filters_from_reading_list(reading_list)
+        filters = _build_filters_from_reading_list(search_query)
 
     assert filters == expected_filter
 
@@ -814,6 +818,28 @@ class TestArticleQuerySet:
             article_no_dates,
         ]
 
+    def test_for_search(self, user):
+        search_in_title = ArticleFactory(user=user, title="Claudius")
+        ArticleFactory(title="Does not match search", user=user)
+        search_in_authors = ArticleFactory(
+            title="Search in authors", user=user, authors=["Claudius"]
+        )
+        search_in_main_source_title = ArticleFactory(
+            title="Search in main source title", user=user, main_source_title="Claudius"
+        )
+        search_in_content = ArticleFactory(title="Search in content", user=user, content="Claudius")
+        search_in_summary = ArticleFactory(title="Search in summary", user=user, summary="Claudius")
+
+        searched_articles = list(Article.objects.get_queryset().for_search(SearchQuery("Claudius")))
+
+        assert searched_articles == [
+            search_in_title,
+            search_in_summary,
+            search_in_authors,
+            search_in_content,
+            search_in_main_source_title,
+        ]
+
 
 @pytest.mark.django_db
 class TestArticleManager:
@@ -1258,6 +1284,26 @@ class TestArticleManager:
             all_articles.append(articles)
 
         return all_articles
+
+    def test_search(self, user, other_user):
+        ArticleFactory(title="Claudius other user", user=other_user)
+        search_in_title = ArticleFactory(user=user, title="Claudius")
+        search_query = ArticleFullTextSearchQuery(q="Claudius")
+
+        found_articles = list(Article.objects.search(user, search_query))
+
+        assert found_articles == [search_in_title]
+
+    def test_search_with_advanced_filters(self, user, other_user):
+        ArticleFactory(user=user, title="Claudius read", read_at=utcnow())
+        search_in_title = ArticleFactory(user=user, title="Claudius", read_at=None)
+        search_query = ArticleFullTextSearchQuery(
+            q="Claudius", read_status=constants.ReadStatus.ONLY_UNREAD
+        )
+
+        found_articles = list(Article.objects.search(user, search_query))
+
+        assert found_articles == [search_in_title]
 
 
 class TestArticleModel:

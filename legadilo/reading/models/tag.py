@@ -55,6 +55,15 @@ class TagManager(models.Manager["Tag"]):
     def get_all_choices(self, user: User) -> FormChoices:
         return list(self.get_queryset().for_user(user).values_list("slug", "title"))
 
+    def get_slugs_to_ids(self, user: User, slugs: Iterable[str]) -> dict[str, int]:
+        return {
+            slug: id_
+            for id_, slug in self.get_queryset()
+            .for_user(user)
+            .for_slugs(slugs)
+            .values_list("id", "slug")
+        }
+
     @transaction.atomic()
     def get_or_create_from_list(self, user: User, titles_or_slugs: list[str]) -> list[Tag]:
         existing_tags = list(

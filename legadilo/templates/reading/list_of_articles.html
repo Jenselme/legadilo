@@ -95,33 +95,7 @@
                         </h2>
                     {% endif %}
                     {% if update_articles_form %}
-                        <div class="accordion mb-2 col-md-8" id="search-actions">
-                            <div class="accordion-item">
-                                <div class="accordion-header">
-                                    <button class="accordion-button {% if not update_articles_form.errors %}collapsed{% endif %}"
-                                            type="button"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#search-actions-form"
-                                            aria-expanded="{% if update_articles_form.errors %}true{% else %}false{% endif %}"
-                                            aria-controls="search-actions-form">
-                                        {% translate "View search actions" %}
-                                    </button>
-                                </div>
-                                <div id="search-actions-form"
-                                     class="accordion-collapse collapse {% if update_articles_form.errors %}show{% endif %}"
-                                     data-bs-parent="#search-actions">
-                                    <div class="accordion-body">
-                                        <form method="post">
-                                            {% csrf_token %}
-                                            {{ update_articles_form|crispy }}
-                                            <div class="d-flex justify-content-end">
-                                                <button type="submit" class="btn btn-outline-primary">{% translate "Update articles" %}</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-md-8" %}
                     {% endif %}
                 </div>
                 {% partialdef articles-page inline=True %}

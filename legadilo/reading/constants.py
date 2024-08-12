@@ -98,6 +98,11 @@ class ArticleSourceType(TextChoices):
     MANUAL = "MANUAL", _("Manual")
 
 
+class ArticleSearchType(TextChoices):
+    PLAIN = "plain", _("Words")
+    PHRASE = "phrase", _("Phrase")
+
+
 MAX_ARTICLE_FILE_SIZE = 5 * 1024 * 1024  # 5MiB in bytes.
 MAX_ARTICLES_PER_PAGE = 100
 MAX_ARTICLES_PER_PAGE_WITH_READ_ON_SCROLL = 5 * MAX_ARTICLES_PER_PAGE

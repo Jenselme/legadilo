@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% load i18n static humanize crispy_forms_tags %}
+
+{% block title %}
+    {% translate "Searching articles..." %}
+{% endblock title %}
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{request.csp_nonce}}"
+            type="module"></script>
+{% endblock page_js %}
+{% block content %}
+    <h1>{% translate "Searching articles..." %}</h1>
+    <form method="get">
+        {{ search_form|as_crispy_errors }}
+        <div class="row gy-2 gx-3 align-items-center">
+            <div class="col col-md-6 col-12">
+                {{ search_form.q|as_crispy_field }}
+                {% if search_form.q.errors %}<div class="invalid-feedback">{{ search_form.q.errors }}</div>{% endif %}
+            </div>
+            <div class="col col-md-4 col-12">
+                {{ search_form.search_type|as_crispy_field }}
+                {% if search_form.search_type.errors %}
+                    <div class="invalid-feedback">{{ search_form.search_type.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-2 col-12 d-flex justify-content-end">
+                <button class="btn btn-primary mt-2 mb-2" type="submit">{% translate "Search" %}</button>
+            </div>
+        </div>
+        <div class="accordion mb-3" id="advanced-search-container">
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <button class="accordion-button {% if not search_form.errors %}collapsed{% endif %} p-2"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#advanced-search-fields"
+                            aria-expanded="{% if search_form.errors %}true{% else %}false{% endif %}"
+                            aria-controls="advanced-search-fields">
+                        {% translate "View advanced search fields" %}
+                    </button>
+                </div>
+                <div id="advanced-search-fields"
+                     class="accordion-collapse collapse {% if search_form.errors %}show{% endif %}"
+                     data-bs-parent="#advanced-search-container">
+                    <div class="accordion-body row">
+                        <div class="row">
+                            <div class="col col-md-4 col-12">{{ search_form.read_status|as_crispy_field }}</div>
+                            <div class="col col-md-4 col-12">{{ search_form.favorite_status|as_crispy_field }}</div>
+                            <div class="col col-md-4 col-12">{{ search_form.for_later_status|as_crispy_field }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-md-3 col-12">{{ search_form.articles_max_age_value|as_crispy_field }}</div>
+                            <div class="col col-md-3 col-12">{{ search_form.articles_max_age_unit|as_crispy_field }}</div>
+                            <div class="col col-md-3 col-12">{{ search_form.articles_reading_time|as_crispy_field }}</div>
+                            <div class="col col-md-3 col-12">{{ search_form.articles_reading_time_operator|as_crispy_field }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-md-4 col-12">{{ search_form.include_tag_operator|as_crispy_field }}</div>
+                            <div class="col col-md-8 col-12">{{ search_form.tags_to_include|as_crispy_field }}</div>
+                            <div class="col col-md-4 col-12">{{ search_form.exclude_tag_operator|as_crispy_field }}</div>
+                            <div class="col col-md-8 col-12">{{ search_form.tags_to_exclude|as_crispy_field }}</div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-outline-primary">{% translate "Search" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-12" %}
+    <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center px-0 mx-0">
+        {% blocktranslate with formatted_nb_articles=total_results|intcomma count total_results=total_results %}
+            {{ formatted_nb_articles }} article in total
+        {% plural %}
+            {{ formatted_nb_articles }} articles in total
+        {% endblocktranslate %}
+    </h2>
+    {% for article in articles %}
+        <div id="{{ article|article_card_id }}" class="article-card-container">
+            {% include 'reading/partials/article_card.html' %}
+        </div>
+    {% empty %}
+        <p>{% translate "No results were found 😞 Try another search 🔍" %}</p>
+    {% endfor %}
+{% endblock content %}

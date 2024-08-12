@@ -46,11 +46,11 @@
                 <div id="article-edit-accordion" class="accordion">
                     <div class="accordion-item">
                         <div class="accordion-header">
-                            <button class="accordion-button {% if not edit_article_form.errors %}collapsed{% endif %}"
+                            <button class="accordion-button {% if not edit_article_form.errors %}collapsed{% endif %} p-2"
                                     type="button"
                                     data-bs-toggle="collapse"
                                     data-bs-target="#article-edit"
-                                    aria-expanded="{% if field.errors %}true{% else %}false{% endif %}"
+                                    aria-expanded="{% if edit_article_form.errors %}true{% else %}false{% endif %}"
                                     aria-controls="article-edit">{% translate "Update article" %}</button>
                         </div>
                         <div id="article-edit"

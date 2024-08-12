@@ -1,0 +1,30 @@
+{% load i18n crispy_forms_tags %}
+
+<div class="accordion mb-2 {{ size }}"
+     id="update-searched-articles-actions-container">
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <button class="accordion-button {% if not update_articles_form.errors %}collapsed{% endif %} p-2"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#update-searched-articles-actions-form"
+                    aria-expanded="{% if update_articles_form.errors %}true{% else %}false{% endif %}"
+                    aria-controls="update-searched-articles-actions-form">
+                {% translate "View search actions" %}
+            </button>
+        </div>
+        <div id="update-searched-articles-actions-form"
+             class="accordion-collapse collapse {% if update_articles_form.errors %}show{% endif %}"
+             data-bs-parent="#update-searched-articles-actions-container">
+            <div class="accordion-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ update_articles_form|crispy }}
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-outline-primary">{% translate "Update articles" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
