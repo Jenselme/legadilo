@@ -692,6 +692,8 @@ files = [
 
 [package.dependencies]
 Django = ">=4.2"
+fido2 = {version = ">=1.1.2", optional = true, markers = "extra == \"mfa\""}
+qrcode = {version = ">=7.0.0", optional = true, markers = "extra == \"mfa\""}
 
 [package.extras]
 mfa = ["fido2 (>=1.1.2)", "qrcode (>=7.0.0)"]
@@ -1037,6 +1039,23 @@ type = "git"
 url = "https://github.com/Jenselme/feedparser.git"
 reference = "correct-media-parsing"
 resolved_reference = "edeea73dc93ccfb7c68ada4aa318d7939ef96efa"
+
+[[package]]
+name = "fido2"
+version = "1.1.3"
+description = "FIDO2/WebAuthn library for implementing clients and servers."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "fido2-1.1.3-py3-none-any.whl", hash = "sha256:6be34c0b9fe85e4911fd2d103cce7ae8ce2f064384a7a2a3bd970b3ef7702931"},
+    {file = "fido2-1.1.3.tar.gz", hash = "sha256:26100f226d12ced621ca6198528ce17edf67b78df4287aee1285fee3cd5aa9fc"},
+]
+
+[package.dependencies]
+cryptography = ">=2.6,<35 || >35,<45"
+
+[package.extras]
+pcsc = ["pyscard (>=1.9,<3)"]
 
 [[package]]
 name = "filelock"
@@ -1967,6 +1986,17 @@ docs = ["sphinx (!=5.2.0,!=5.2.0.post0,!=7.2.5)", "sphinx-rtd-theme"]
 test = ["pretend", "pytest (>=3.0.1)", "pytest-rerunfailures"]
 
 [[package]]
+name = "pypng"
+version = "0.20220715.0"
+description = "Pure Python library for saving and loading PNG images"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pypng-0.20220715.0-py3-none-any.whl", hash = "sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c"},
+    {file = "pypng-0.20220715.0.tar.gz", hash = "sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"},
+]
+
+[[package]]
 name = "pytest"
 version = "8.3.2"
 description = "pytest: simple powerful testing with Python"
@@ -2213,6 +2243,29 @@ files = [
     {file = "PyYAML-6.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:39693e1f8320ae4f43943590b49779ffb98acb81f788220ea932a6b6c51004d8"},
     {file = "pyyaml-6.0.2.tar.gz", hash = "sha256:d584d9ec91ad65861cc08d42e834324ef890a082e591037abe114850ff7bbc3e"},
 ]
+
+[[package]]
+name = "qrcode"
+version = "7.4.2"
+description = "QR Code image generator"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "qrcode-7.4.2-py3-none-any.whl", hash = "sha256:581dca7a029bcb2deef5d01068e39093e80ef00b4a61098a2182eac59d01643a"},
+    {file = "qrcode-7.4.2.tar.gz", hash = "sha256:9dd969454827e127dbd93696b20747239e6d540e082937c90f14ac95b30f5845"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+pypng = "*"
+typing-extensions = "*"
+
+[package.extras]
+all = ["pillow (>=9.1.0)", "pytest", "pytest-cov", "tox", "zest.releaser[recommended]"]
+dev = ["pytest", "pytest-cov", "tox"]
+maintainer = ["zest.releaser[recommended]"]
+pil = ["pillow (>=9.1.0)"]
+test = ["coverage", "pytest"]
 
 [[package]]
 name = "referencing"
@@ -3298,4 +3351,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "bd6dd6cdca26c7d5d1a8f603533b2c0adae38e45699c256ac87337fda2defa7f"
+content-hash = "08d496f33f8bb6607c2a18a15d8a5fa071d6abbf46f4df8720c9798098f206d5"

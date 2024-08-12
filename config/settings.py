@@ -120,6 +120,7 @@ THIRD_PARTY_APPS = [
     "crispy_bootstrap5",
     "allauth",
     "allauth.account",
+    "allauth.mfa",
     "allauth.socialaccount",
     "axes",
     "django_htmx",
@@ -396,7 +397,7 @@ ADMINS = env.list("DJANGO_ADMINS", default=[])
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
 # Force the `admin` sign in process to go through the `django-allauth` workflow
-DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=False)
+DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=True)
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -494,6 +495,9 @@ ACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "legadilo.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSocialSignupForm"}
+# https://docs.allauth.org/en/latest/mfa/configuration.html
+MFA_TOTP_ISSUER = ALLOWED_HOSTS[-1]
+MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
 
 
 # django-version-checks (https://pypi.org/project/django-version-checks/)

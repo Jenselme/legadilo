@@ -1,0 +1,13 @@
+{% extends "account/base_reauthenticate.html" %}
+
+{% load i18n crispy_forms_tags %}
+
+{% block reauthenticate_content %}
+    <p>{% blocktranslate %}Enter your password:{% endblocktranslate %}</p>
+    <form method="post" action="{% url 'account_reauthenticate' %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ redirect_field }}
+        <button class="btn btn-primary">{% translate "Confirm" %}</button>
+    </form>
+{% endblock reauthenticate_content %}
