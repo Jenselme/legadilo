@@ -179,7 +179,7 @@ def list_or_update_articles(
     status = HTTPStatus.OK
     form = UpdateArticlesForm(tag_choices=tag_choices)
     if request.method == "POST":
-        status, form = _update_list_of_articles(request, articles_qs, tag_choices)
+        status, form = update_list_of_articles(request, articles_qs, tag_choices)
 
     return _display_list_of_articles(
         request,
@@ -212,7 +212,7 @@ class UpdateArticlesForm(forms.Form):
         widget=MultipleTagsWidget(allow_new=False),
     )
     update_action = forms.ChoiceField(
-        required=True,
+        required=False,
         initial=constants.UpdateArticleActions.DO_NOTHING,
         choices=constants.UpdateArticleActions.choices,
     )
@@ -232,9 +232,15 @@ class UpdateArticlesForm(forms.Form):
 
         return self.cleaned_data["remove_tags"]
 
+    def clean_update_action(self):
+        if not self.cleaned_data.get("update_action"):
+            return constants.UpdateArticleActions.DO_NOTHING
+
+        return constants.UpdateArticleActions(self.cleaned_data["update_action"])
+
 
 @transaction.atomic()
-def _update_list_of_articles(
+def update_list_of_articles(
     request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet, tag_choices: FormChoices
 ):
     form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
