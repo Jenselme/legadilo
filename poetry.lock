@@ -743,13 +743,13 @@ ipware = ["django-ipware (>=3)"]
 
 [[package]]
 name = "django-browser-reload"
-version = "1.13.0"
+version = "1.15.0"
 description = "Automatically reload your browser in development."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django_browser_reload-1.13.0-py3-none-any.whl", hash = "sha256:5c1705eb29f0b72808b702484f10a8d5da9cd9243e55ab81446cb697e96b3e8c"},
-    {file = "django_browser_reload-1.13.0.tar.gz", hash = "sha256:4e3507c10518f4c7439588aaed2f0c21b503878ecea7b18893f1e635e0cbe3ab"},
+    {file = "django_browser_reload-1.15.0-py3-none-any.whl", hash = "sha256:55b72335568b988e3a2beddb1703db6951516355925d3fc9c587f0bbd9e8efaa"},
+    {file = "django_browser_reload-1.15.0.tar.gz", hash = "sha256:ed094386c587a95ff4f34a0d302ecd58f15e919784c4c76a97f7cb977446104c"},
 ]
 
 [package.dependencies]
@@ -3351,4 +3351,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "08d496f33f8bb6607c2a18a15d8a5fa071d6abbf46f4df8720c9798098f206d5"
+content-hash = "d850e4753aecf737d502fb5b01f8b3f18f79ca63a884167cb3241b5eb0f5d080"
