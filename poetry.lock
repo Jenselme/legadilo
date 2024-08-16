@@ -918,13 +918,13 @@ typing-extensions = "*"
 
 [[package]]
 name = "django-template-partials"
-version = "24.2"
+version = "24.4"
 description = "django-template-partials"
 optional = false
 python-versions = "*"
 files = [
-    {file = "django-template-partials-24.2.tar.gz", hash = "sha256:e594063faec6d012df3a4170edf3c5dcc07c82b1c311aa42a1a5838493fd3a72"},
-    {file = "django_template_partials-24.2-py2.py3-none-any.whl", hash = "sha256:b859072e6b3cd780743399bf5e9cee8be1c56c88844425a4e669a65c136205b2"},
+    {file = "django_template_partials-24.4-py2.py3-none-any.whl", hash = "sha256:ee59d3839385d7f648907c3fa8d5923fcd66cd8090f141fe2a1c338b917984e2"},
+    {file = "django_template_partials-24.4.tar.gz", hash = "sha256:25b67301470fc274ecc419e5e5fd4686a5020b1c038fd241a70eb087809034b6"},
 ]
 
 [package.dependencies]
@@ -3351,4 +3351,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "08d496f33f8bb6607c2a18a15d8a5fa071d6abbf46f4df8720c9798098f206d5"
+content-hash = "5812a23b013b3f4f8f764d23e2fb0507fbfdbc375c793e93dc9572c96c704c34"

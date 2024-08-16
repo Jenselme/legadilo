@@ -230,7 +230,7 @@ django-extra-checks = "0.15.0"  # https://github.com/kalekseev/django-extra-chec
 django-csp = "3.8"  # https://django-csp.readthedocs.io/en/latest/index.html
 django-axes = "6.5.1"  # https://github.com/jazzband/django-axes
 django-htmx = "1.19.0"  # https://django-htmx.readthedocs.io/en/latest/
-django-template-partials = "24.2"  # https://github.com/carltongibson/django-template-partials
+django-template-partials = "24.4"  # https://github.com/carltongibson/django-template-partials
 
 # Project
 # ------------------------------------------------------------------------------
