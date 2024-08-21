@@ -220,7 +220,7 @@ rich = "^13.7.0"  # https://rich.readthedocs.io/en/stable/
 # ------------------------------------------------------------------------------
 django = "5.1"  # https://www.djangoproject.com/
 django-environ = "0.11.2"  # https://github.com/joke2k/django-environ
-django-allauth = {extras = ["mfa"], version = "64.0.0"}  # https://github.com/pennersr/django-allauth
+django-allauth = {extras = ["mfa"], version = "64.1.0"}  # https://github.com/pennersr/django-allauth
 django-crispy-forms = "2.3"  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5 = "2024.2"  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-anymail = "11.1"  # https://github.com/anymail/django-anymail
@@ -230,7 +230,7 @@ django-extra-checks = "0.15.0"  # https://github.com/kalekseev/django-extra-chec
 django-csp = "3.8"  # https://django-csp.readthedocs.io/en/latest/index.html
 django-axes = "6.5.1"  # https://github.com/jazzband/django-axes
 django-htmx = "1.19.0"  # https://django-htmx.readthedocs.io/en/latest/
-django-template-partials = "24.2"  # https://github.com/carltongibson/django-template-partials
+django-template-partials = "24.4"  # https://github.com/carltongibson/django-template-partials
 
 # Project
 # ------------------------------------------------------------------------------
@@ -250,7 +250,7 @@ defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.12.0"}
+sentry-sdk = {extras = ["django"], version = "^2.13.0"}
 
 
 [tool.poetry.group.dev]
@@ -279,11 +279,11 @@ pre-commit = "3.8.0"  # https://github.com/pre-commit/pre-commit
 
 # Django
 # ------------------------------------------------------------------------------
-factory-boy = "3.3.0"  # https://github.com/FactoryBoy/factory_boy
+factory-boy = "3.3.1"  # https://github.com/FactoryBoy/factory_boy
 django-debug-toolbar = "4.4.6"  # https://github.com/jazzband/django-debug-toolbar
 django-coverage-plugin = "3.1.0"  # https://github.com/nedbat/django_coverage_plugin
 pytest-django = "4.8.0"  # https://github.com/pytest-dev/pytest-django
-django-browser-reload = "1.13.0"  # https://pypi.org/project/django-browser-reload/
+django-browser-reload = "1.15.0"  # https://pypi.org/project/django-browser-reload/
 django-watchfiles = "0.2.0"  # https://github.com/adamchainz/django-watchfiles
 django-extensions = "3.2.3"  # https://github.com/django-extensions/django-extensions
 
@@ -299,7 +299,7 @@ myst-parser = "4.0.0"  # https://myst-parser.readthedocs.io/en/stable/intro.html
 optional = true
 
 [tool.poetry.group.typing.dependencies]
-types-python-dateutil = "^2.9.0.20240316"
+types-python-dateutil = "^2.9.0.20240821"
 mypy = "1.11.1"  # https://github.com/python/mypy
 django-stubs = { extras = ["compatible-mypy"], version = "5.0.4" }  # https://github.com/typeddjango/django-stubs
 
