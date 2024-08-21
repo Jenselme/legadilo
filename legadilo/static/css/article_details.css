@@ -22,7 +22,6 @@ blockquote {
 }
 
 figcaption {
-  margin-top: -1rem;
   margin-bottom: 1rem;
   font-size: 0.875em;
   color: var(--bs-secondary-color);
