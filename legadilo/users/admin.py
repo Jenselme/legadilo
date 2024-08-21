@@ -86,4 +86,6 @@ class UserAdmin(auth_admin.UserAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ("created_at", "updated_at")
+    list_display = ("title", "created_at", "user", "is_read")
+    list_filter = ("is_read",)
