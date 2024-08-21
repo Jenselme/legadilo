@@ -19,9 +19,12 @@
                     <div class="card-subtitle text-secondary">{{ notification.created_at }}</div>
                 </header>
                 <main class="card-text">
-                    <p>{{ notification.content }}</p>
+                    <p class="mb-1">{{ notification.content }}</p>
+                    {% if notification.link %}
+                        <a class="card-link" href="{{ notification.link }}">{{ notification.link_text }}</a>
+                    {% endif %}
                 </main>
-                <form method="post" hx-boost="true" hx-push-url="false">
+                <form class="mt-2" method="post" hx-boost="true" hx-push-url="false">
                     {% csrf_token %}
                     <input name="notification_id" type="hidden" value="{{ notification.id }}" />
                     {% if notification.is_read %}

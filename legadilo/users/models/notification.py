@@ -17,13 +17,18 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from django.db import models
 
 from legadilo.utils.time_utils import utcnow
 
 from .user import User
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
 
 
 class NotificationQuerySet(models.QuerySet["Notification"]):
@@ -67,6 +72,8 @@ class NotificationManager(models.Manager["Notification"]):
 class Notification(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField(blank=True)
+    link = models.URLField(blank=True)
+    link_text = models.CharField(max_length=100, blank=True)
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.GeneratedField(
         expression=models.Case(
@@ -82,6 +89,15 @@ class Notification(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = NotificationManager()
+
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.CheckConstraint(  # type: ignore[call-arg]
+                name="%(app_label)s_%(class)s_link_and_text_set_together",
+                condition=(models.Q(link__length=0) & models.Q(link_text__length=0))
+                | (models.Q(link__length__gt=0) & models.Q(link_text__length__gt=0)),
+            ),
+        ]
 
     def __str__(self):
         return f"Notification(title={self.title}, is_read={self.is_read})"

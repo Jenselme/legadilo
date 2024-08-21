@@ -23,6 +23,7 @@ from zoneinfo import ZoneInfo
 
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
@@ -278,7 +279,11 @@ class FeedManager(models.Manager["Feed"]):
             feed.disable(message)
             feed.save()
             Notification.objects.create(
-                user=feed.user, title=_("Feed '%s' was disabled") % feed.title, content=str(message)
+                user=feed.user,
+                title=_("Feed '%s' was disabled") % feed.title,
+                content=str(message),
+                link=reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}),
+                link_text=str(_("Edit feed")),
             )
 
     def log_not_modified(self, feed: Feed):
