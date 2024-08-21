@@ -85,12 +85,24 @@
                             {% if js_cfg.is_reading_on_scroll_enabled %}
                                 &nbsp;
                                 <button type="button"
-                                        class="btn btn-light p-0"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        data-bs-title="{% translate 'Read on scroll is enabled' %}">
-                                    {% include "core/partials/bs-icons/info.html" %}
+                                        class="btn btn-info p-0"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#reading-list-parameters"
+                                        aria-expanded="false"
+                                        aria-controls="reading-list-parameters">
+                                    {% include "core/partials/bs-icons/parameters.html" %}
                                 </button>
+                                <div class="collapse" id="reading-list-parameters">
+                                    <div class="card card-body p-0">
+                                        <div class="form-check">
+                                            <label for="read-on-scroll-enabled" class="form-check-label">Read on scroll enabled</label>
+                                            <input type="checkbox"
+                                                   class="form-check-input"
+                                                   id="read-on-scroll-enabled"
+                                                   checked />
+                                        </div>
+                                    </div>
+                                </div>
                             {% endif %}
                         </h2>
                     {% endif %}
