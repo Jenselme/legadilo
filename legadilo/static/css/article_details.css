@@ -1,3 +1,15 @@
+.article-content {
+  max-width: 900px;
+}
+
+.article-aside {
+  max-width: 300px;
+}
+
+#article-side-actions {
+  max-width: 276px;
+}
+
 img {
   max-width: 100%;
   height: auto;
