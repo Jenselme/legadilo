@@ -34,6 +34,7 @@ pre {
   border-radius: var(--bs-border-radius);
   padding: 0.5em;
   background-color: var(--bs-tertiary-bg);
+  max-width: calc(100vw - 24px);
 }
 
 table {
