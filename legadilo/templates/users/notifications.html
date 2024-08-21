@@ -14,8 +14,13 @@
     {% for notification in notifications %}
         <div class="card mb-2 {% if notification.is_read %}opacity-50{% endif %}">
             <div class="card-body">
-                <h2 class="card-title">{{ notification.title }}</h2>
-                <p class="card-text">{{ notification.content }}</p>
+                <header>
+                    <h2 class="card-title">{{ notification.title }}</h2>
+                    <div class="card-subtitle text-secondary">{{ notification.created_at }}</div>
+                </header>
+                <main class="card-text">
+                    <p>{{ notification.content }}</p>
+                </main>
                 <form method="post" hx-boost="true" hx-push-url="false">
                     {% csrf_token %}
                     <input name="notification_id" type="hidden" value="{{ notification.id }}" />
