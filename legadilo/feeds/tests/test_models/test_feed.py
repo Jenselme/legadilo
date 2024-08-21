@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from datetime import UTC, datetime
 
 import pytest
@@ -411,6 +412,8 @@ class TestFeedManager:
         assert not notification.is_read
         assert notification.title == f"Feed '{self.feed.title}' was disabled"
         assert notification.content == "We failed too many times to fetch the feed"
+        assert re.match(r"/feeds/\d+/", notification.link)
+        assert notification.link_text == "Edit feed"
 
     def test_update_feed(self, django_assert_num_queries):
         existing_article = ArticleFactory(

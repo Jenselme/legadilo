@@ -1,3 +1,15 @@
+.article-content {
+  max-width: 900px;
+}
+
+.article-aside {
+  max-width: 300px;
+}
+
+#article-side-actions {
+  max-width: 276px;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -10,7 +22,6 @@ blockquote {
 }
 
 figcaption {
-  margin-top: -1rem;
   margin-bottom: 1rem;
   font-size: 0.875em;
   color: var(--bs-secondary-color);
@@ -22,6 +33,7 @@ pre {
   border-radius: var(--bs-border-radius);
   padding: 0.5em;
   background-color: var(--bs-tertiary-bg);
+  max-width: calc(100vw - 24px);
 }
 
 table {

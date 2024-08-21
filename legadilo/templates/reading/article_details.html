@@ -26,9 +26,8 @@
         </form>
     {% endif %}
     <div class="container-fluid px-0">
-        <div class="mt-1 mt-md-2 row px-0 mx-0">
-            <div class="col col-1"></div>
-            <aside class="col col-2 d-none d-md-block">
+        <div class="mt-1 mt-md-2 row px-0 mx-0 justify-content-center">
+            <aside class="col col-2 d-none d-md-block article-aside">
                 <div id="article-side-actions">
                     {% partialdef article-side-actions inline=True %}
                         <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
@@ -38,7 +37,7 @@
                     {% endpartialdef %}
                 </div>
             </aside>
-            <article class="col col-12 col-md-7">
+            <article class="col col-12 col-md-7 article-content">
                 <header>
                     <h1>{{ article.title |safe }}</h1>
                     <div class="text-secondary">{% include 'reading/partials/article_metadata.html' %}</div>
@@ -131,7 +130,7 @@
                     </div>
                 </footer>
             </article>
-            <div class="col col-2"></div>
+            <div class="col col-2 d-none d-md-block article-aside"></div>
         </div>
     </div>
 {% endblock content %}
