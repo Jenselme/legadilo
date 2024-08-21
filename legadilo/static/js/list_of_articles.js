@@ -75,6 +75,12 @@
   };
 
   const readOnScroll = () => {
+    const isReadOnScrollCheckboxTicked = document.getElementById("read-on-scroll-enabled").checked;
+
+    if (!isReadOnScrollCheckboxTicked) {
+      return;
+    }
+
     for (const htmxForm of document.querySelectorAll(".readable-on-scroll")) {
       const parentBoundingRect = htmxForm.parentElement.getBoundingClientRect();
       const wasScrolledTo = parentBoundingRect.top < 0;
