@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Legadilo",
+  "version": "1.0",
+
+  "description": "Ajoute une bordure rouge pleine sur l'ensemble des pages web mozilla.org.",
+
+  "icons": {
+    "48": "icons/legadilo.48x48.png",
+    "96": "icons/legadilo.96x96.png"
+  },
+
+  "action": {
+    "default_title": "Legadilo",
+    "default_icon": "icons/legadilo.48x48.png",
+    "default_popup": "popup.html"
+  },
+
+  "commands": {
+     "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+W",
+        "windows": "Alt+W",
+        "mac": "Alt+W"
+      }
+    },
+    "wallabag-it": {
+      "suggested_key": {
+        "default": "Alt+Shift+W",
+        "windows": "Alt+Shift+W",
+        "mac": "Alt+Shift+W"
+      },
+      "description": "__MSG_Wallabag_it_description__"
+    }
+  },
+
+  "permissions": [
+    "contextMenus",
+    "activeTab"
+  ]
+}
