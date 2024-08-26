@@ -300,7 +300,7 @@ optional = true
 
 [tool.poetry.group.typing.dependencies]
 types-python-dateutil = "^2.9.0.20240821"
-mypy = "1.11.1"  # https://github.com/python/mypy
+mypy = "1.11.2"  # https://github.com/python/mypy
 django-stubs = { extras = ["compatible-mypy"], version = "5.0.4" }  # https://github.com/typeddjango/django-stubs
 
 [build-system]
