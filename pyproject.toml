@@ -238,7 +238,7 @@ django-template-partials = "24.4"  # https://github.com/carltongibson/django-tem
 # We must use git because the released version has a bug around media parsing.
 # See https://github.com/kurtmckee/feedparser/pull/441
 feedparser = {git = "https://github.com/Jenselme/feedparser.git", rev = "correct-media-parsing"}
-httpx = "^0.27.0"  # https://www.python-httpx.org/
+httpx = "^0.27.2"  # https://www.python-httpx.org/
 beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.23.0"  # https://github.com/python-jsonschema/jsonschema
