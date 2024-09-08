@@ -1,6 +1,12 @@
 # Changelog
 
 
+## 24.09.1
+
+- Display a count of unread notifications.
+  - This makes the link more visible when a user has unread notifications.
+
+
 ## 24.08.6
 
 - Can disable read on scroll temporarily.

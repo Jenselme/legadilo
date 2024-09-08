@@ -134,11 +134,17 @@
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link" href="{% url 'users:list_notifications' %}">
-                                                {% if user.has_unread_notifications %}
-                                                    {% include "core/partials/bs-icons/new_notifications.html" %}
-                                                {% else %}
-                                                    {% include "core/partials/bs-icons/no_notifications.html" %}
-                                                {% endif %}
+                                                <span class="position-relative">
+                                                    {% if user.count_unread_notifications > 0 %}
+                                                        {% include "core/partials/bs-icons/new_notifications.html" %}
+                                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                            {{ user.count_unread_notifications }}
+                                                            <span class="visually-hidden">{% translate "unread notifications" %}</span>
+                                                        </span>
+                                                    {% else %}
+                                                        {% include "core/partials/bs-icons/no_notifications.html" %}
+                                                    {% endif %}
+                                                </span>
                                             </a>
                                         </li>
                                         <li class="nav-item dropdown">
