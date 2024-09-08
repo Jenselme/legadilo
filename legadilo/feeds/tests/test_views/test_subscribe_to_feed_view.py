@@ -46,18 +46,21 @@ class TestSubscribeToFeedView:
         self.sample_payload = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.BIHOURLY.name,
+            "article_retention_time": 7,
             "open_original_link_by_default": True,
         }
         self.existing_tag = TagFactory(user=user)
         self.sample_payload_with_tags = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "article_retention_time": 7,
             "tags": [self.existing_tag.slug, "New"],
         }
         self.page_url = "https://example.com"
         self.sample_page_payload = {
             "url": self.page_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "article_retention_time": 7,
         }
 
     def test_not_logged_in(self, client):
@@ -90,6 +93,8 @@ class TestSubscribeToFeedView:
         ]
         assert feed.tags.count() == 0
         assert feed.open_original_link_by_default
+        assert feed.refresh_delay == feeds_constants.FeedRefreshDelays.BIHOURLY
+        assert feed.article_retention_time == 7
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
@@ -132,6 +137,7 @@ class TestSubscribeToFeedView:
         sample_payload_with_category = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "article_retention_time": 7,
             "category": category.slug,
         }
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
@@ -171,6 +177,7 @@ class TestSubscribeToFeedView:
                 '["https://www.jujens.eu/feeds/all.rss.xml", "Full feed"]]',
                 "feed_choices": self.feed_url,
                 "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+                "article_retention_time": 7,
             },
         )
 
@@ -324,6 +331,7 @@ class TestSubscribeToFeedView:
         payload = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,
+            "article_retention_time": 7,
             "category": category.slug,
             "tags": [existing_tag.slug, "New"],
         }

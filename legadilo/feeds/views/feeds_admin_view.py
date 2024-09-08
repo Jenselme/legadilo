@@ -52,6 +52,13 @@ class EditFeedForm(forms.ModelForm):
         choices=constants.FeedRefreshDelays.choices,
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
+    article_retention_time = forms.IntegerField(
+        required=True,
+        help_text=_(
+            "Define for how long in days to keep read articles associated with this feed. Use 0 to "
+            "always keep the articles."
+        ),
+    )
     category = forms.ChoiceField(
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
@@ -80,7 +87,14 @@ class EditFeedForm(forms.ModelForm):
 
     class Meta:
         model = Feed
-        fields = ("feed_url", "site_url", "refresh_delay", "category", "tags")
+        fields = (
+            "feed_url",
+            "site_url",
+            "refresh_delay",
+            "article_retention_time",
+            "category",
+            "tags",
+        )
 
     def clean_category(self):
         if not self.cleaned_data["category"]:

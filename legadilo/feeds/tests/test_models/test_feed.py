@@ -283,6 +283,7 @@ class TestFeedManager:
                 ),
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                0,
                 [],
             )
 
@@ -302,6 +303,7 @@ class TestFeedManager:
                 ONE_ARTICLE_FEED_DATA,
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                0,
                 [],
             )
 
@@ -343,6 +345,7 @@ class TestFeedManager:
                 ),
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                7,
                 [],
             )
 
@@ -356,6 +359,8 @@ class TestFeedManager:
         assert feed.slug == "awesome-website"
         assert feed.description == "A description"
         assert feed.feed_type == feeds_constants.SupportedFeedType.atom
+        assert feed.refresh_delay == feeds_constants.FeedRefreshDelays.DAILY_AT_NOON
+        assert feed.article_retention_time == 7
         assert feed.articles.count() > 0
         feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
@@ -375,6 +380,7 @@ class TestFeedManager:
                 ONE_ARTICLE_FEED_DATA,
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                0,
                 [tag],
             )
 
@@ -413,6 +419,7 @@ class TestFeedManager:
             ),
             other_user,
             feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+            0,
             [],
         )
 
