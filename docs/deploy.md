@@ -21,6 +21,7 @@ You will also need to configure these commands on the CRON of the host to update
 ```
 0 * * * * cd LEGADILO && docker compose -f production.yml exec django python manage.py update_feeds |& systemd-cat -t legadilo
 0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clearsessions |& systemd-cat -t legadilo
+0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_data |& systemd-cat -t legadilo
 ```
 
 You can also add this line to automatically back up the database (backups will be placed in the `production_postgres_data_backups` volume):
