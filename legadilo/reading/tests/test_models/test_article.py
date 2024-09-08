@@ -818,6 +818,57 @@ class TestArticleQuerySet:
             article_no_dates,
         ]
 
+    def test_for_cleanup(self, user, other_user):
+        ArticleFactory(title="Unread not linked to a feed (to keep)", user=user, read_at=None)
+        ArticleFactory(
+            title="Read not linked to a feed (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention = FeedFactory(user=user, article_retention_time=0)
+        feed_one_day_retention = FeedFactory(user=user, article_retention_time=1)
+        feed_seven_day_retention = FeedFactory(user=user, article_retention_time=7)
+
+        unread_1_day_retention_to_keep = ArticleFactory(
+            title="Unread, linked to 1 day retention (to keep)", user=user
+        )
+        feed_one_day_retention.articles.add(unread_1_day_retention_to_keep)
+
+        read_1_day_retention_to_cleanup = ArticleFactory(
+            title="Read, 1 day retention (to cleanup)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_one_day_retention.articles.add(read_1_day_retention_to_cleanup)
+
+        read_1_day_retention_to_keep = ArticleFactory(
+            title="Read, 1 day retention (to keep)", user=user, read_at=utcdt(2024, 6, 6, hour=12)
+        )
+        feed_one_day_retention.articles.add(read_1_day_retention_to_keep)
+
+        read_seven_day_retention_to_keep = ArticleFactory(
+            title="Read, 7 days retention (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_seven_day_retention.articles.add(read_seven_day_retention_to_keep)
+
+        read_keep_forever_retention_to_keep = ArticleFactory(
+            title="Read keep forever (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention.articles.add(read_keep_forever_retention_to_keep)
+
+        read_keep_forever_and_one_day_retention_to_keep = ArticleFactory(
+            title="Read keep forever and 1 day (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention.articles.add(read_keep_forever_and_one_day_retention_to_keep)
+        feed_one_day_retention.articles.add(read_keep_forever_and_one_day_retention_to_keep)
+
+        read_keep_one_and_seven_days_retention_to_keep = ArticleFactory(
+            title="Read keep 1 and 7 days (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
+        feed_one_day_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
+
+        with time_machine.travel("2024-06-07 00:00:00"):
+            articles_to_cleanup = Article.objects.get_queryset().for_cleanup()
+
+        assert list(articles_to_cleanup) == [read_1_day_retention_to_cleanup]
+
     def test_for_search(self, user):
         search_in_title = ArticleFactory(user=user, title="Claudius")
         ArticleFactory(title="Does not match search", user=user)

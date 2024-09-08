@@ -362,6 +362,36 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             alias_date_field_order=Coalesce(models.F("updated_at"), models.F("published_at"))
         ).order_by(order)
 
+    def for_cleanup(self) -> Self:
+        return self.alias(
+            min_feed_retention_time=models.Min("feeds__article_retention_time"),
+            # Let's keep the article until the last feed says it's time to collect.
+            feed_retention_time=models.Max("feeds__article_retention_time"),
+            article_cleanup_time=models.ExpressionWrapper(
+                models.F("read_at__epoch")
+                + (
+                    # This time is stored in days in the database. Convert it to seconds to add
+                    # it to the read at time stamp.
+                    models.F("feed_retention_time")
+                    * models.Value(
+                        24,
+                        output_field=models.IntegerField(),
+                    )
+                    * models.Value(60, output_field=models.IntegerField())
+                    * models.Value(60, output_field=models.IntegerField())
+                ),
+                output_field=models.IntegerField(),
+            ),
+        ).filter(
+            is_read=True,
+            feed_retention_time__isnull=False,
+            feed_retention_time__gt=0,
+            # If the min retention time is 0, it means at least one feed requires us to keep
+            # the article forever.
+            min_feed_retention_time__gt=0,
+            article_cleanup_time__lt=utcnow().timestamp(),
+        )
+
     def for_search(self, query: SearchQuery) -> Self:
         return (
             self.alias(search=SEARCH_VECTOR, rank=SearchRank(SEARCH_VECTOR, query))

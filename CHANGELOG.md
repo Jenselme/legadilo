@@ -3,6 +3,14 @@
 
 ## 24.09.1
 
+### Breaking change
+
+- Command `cleanup_old_updates` has been renamed into `clean_data`.
+  - It still cleans up old feed updates and articles fetch errors.
+  - It will also clean old articles from feeds if the _Keep articles_ option is not set to _Always_ in the configuration of the feeds.
+
+### Other changes
+
 - Display a count of unread notifications.
   - This makes the link more visible when a user has unread notifications.
 - Correct text breaks of summary.
