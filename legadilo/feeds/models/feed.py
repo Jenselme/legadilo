@@ -242,9 +242,15 @@ class FeedManager(models.Manager["Feed"]):
                 "category": category,
             },
         )
+
         if created:
             FeedTag.objects.associate_feed_with_tags(feed, tags)
             self.update_feed(feed, feed_metadata)
+        elif not feed.enabled:
+            feed.enable()
+            feed.save()
+            self.update_feed(feed, feed_metadata)
+
         return feed, created
 
     @transaction.atomic()

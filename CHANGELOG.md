@@ -6,6 +6,7 @@
 - Display a count of unread notifications.
   - This makes the link more visible when a user has unread notifications.
 - Correct text breaks of summary.
+- Re-enable feed if we re-add a disabled feed.
 
 
 ## 24.08.6
