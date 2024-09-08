@@ -11,6 +11,7 @@ Welcome to Legadilo's documentation!
    :caption: Contents:
 
    introduction
+   changelog
    deploy
    import_export
    pycharm/configuration
