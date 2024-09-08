@@ -15,6 +15,7 @@
   - This makes the link more visible when a user has unread notifications.
 - Correct text breaks of summary.
 - Re-enable feed if we re-add a disabled feed.
+- Correct article author in page metadata.
 
 
 ## 24.08.6
