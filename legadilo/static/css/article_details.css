@@ -53,3 +53,29 @@ th,
 td {
   padding: 0.25em;
 }
+
+@media print {
+  a.badge {
+    background: none !important;
+    color: black !important;
+    border: solid 1px black !important;
+  }
+
+  .accordion,
+  .header-container,
+  .btn-group,
+  aside,
+  aside.article-aside,
+  nav,
+  footer,
+  footer.content-footer {
+    display: none !important;
+  }
+
+  img,
+  figure {
+    page-break-inside: auto;
+    clear: both;
+    float: none;
+  }
+}

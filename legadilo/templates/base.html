@@ -26,9 +26,11 @@
               sizes="16x16" />
         {% block css %}
             <link rel="stylesheet"
+                  type="text/css"
                   href="{% static 'css/bootstrap.min.css' %}"
                   nonce="{{ request.csp_nonce }}" />
             <link rel="stylesheet"
+                  type="text/css"
                   href="{% static 'css/base.css' %}"
                   nonce="{{ request.csp_nonce }}" />
             {% block page_css %}
@@ -86,7 +88,7 @@
                 </div>
             </div>
             {% if not base.hide_header %}
-                <div class="mb-1 sticky-top">
+                <div class="header-container mb-1 sticky-top">
                     <nav class="navbar navbar-expand-md navbar-light bg-light">
                         <div class="container-fluid">
                             <button class="navbar-toggler navbar-toggler-right"
