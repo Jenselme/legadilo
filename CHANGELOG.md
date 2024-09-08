@@ -5,6 +5,7 @@
 
 - Display a count of unread notifications.
   - This makes the link more visible when a user has unread notifications.
+- Correct text breaks of summary.
 
 
 ## 24.08.6

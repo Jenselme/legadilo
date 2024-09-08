@@ -37,7 +37,7 @@
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
         </header>
         <main class="card-text mt-3 row">
-            <p class="mb-0 text-break">{{ article.summary | truncatewords_html:100 | safe }}</p>
+            <div class="mb-0 text-break">{{ article.summary | truncatewords_html:100 | safe }}</div>
         </main>
     </div>
     <footer class="card-footer d-flex justify-content-between">
