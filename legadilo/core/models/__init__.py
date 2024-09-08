@@ -13,11 +13,18 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from django.db.models import CharField
-from django.db.models.functions import Length
+from django.db.models import CharField, DateTimeField
+from django.db.models.functions import Extract, Length
 
 from .timezone import Timezone
 
 __all__ = ["Timezone"]
 
 CharField.register_lookup(Length)
+
+
+class ExtractTs(Extract):
+    lookup_name = "epoch"
+
+
+DateTimeField.register_lookup(ExtractTs)
