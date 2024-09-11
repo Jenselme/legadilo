@@ -16,6 +16,7 @@
 - Correct text breaks of summary.
 - Re-enable feed if we re-add a disabled feed.
 - Correct article author in page metadata.
+- Display a navigable table of content on the side of article details.
 
 
 ## 24.08.6

@@ -1,5 +1,10 @@
 :root {
   --content-footer-height: 104px;
+  --content-header-height: 56px;
+}
+
+html {
+  scroll-padding-top: var(--content-header-height);
 }
 
 .content-body {
@@ -22,7 +27,8 @@
 }
 
 #reading-list-group,
-#article-side-actions {
+#article-side-actions,
+#article-side-toc {
   position: fixed;
   width: 15.5%;
 }

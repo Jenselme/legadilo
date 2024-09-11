@@ -3,7 +3,7 @@
   "authors": [
     "me"
   ],
-  "content": "<p><a href=\"https://example.com/relative\" rel=\"noopener noreferrer\">Link 1</a><a href=\"https://example.com/abs\" rel=\"noopener noreferrer\">Link 1</a><img src=\"https://example.com/relative.png\"><img src=\"https://example.com/image.png\"></p>",
+  "content": "\n<h1 id=\"some-header\">Some header</h1>\n<h2 id=\"test\">This one has an id</h2>\n<p>Some text</p>\n<h2 id=\"this-one-has-html-in\">This one <em>has HTML</em> in </h2>\n",
   "contributors": [
     "me"
   ],
@@ -17,7 +17,23 @@
   "read_at": null,
   "source_title": "source article title",
   "summary": "<p><a href=\"https://example.com/relative\" rel=\"noopener noreferrer\">Link 1</a><a href=\"https://example.com/abs\" rel=\"noopener noreferrer\">Link 1</a></p>",
-  "table_of_content": [],
+  "table_of_content": [
+    {
+      "id": "some-header",
+      "level": 1,
+      "text": "Some header"
+    },
+    {
+      "id": "test",
+      "level": 2,
+      "text": "This one has an id"
+    },
+    {
+      "id": "this-one-has-html-in",
+      "level": 2,
+      "text": "This one has HTML in "
+    }
+  ],
   "tags": [
     "tag"
   ],

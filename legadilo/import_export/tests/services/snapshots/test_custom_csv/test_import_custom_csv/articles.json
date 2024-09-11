@@ -21,6 +21,7 @@
     "reading_time": 0,
     "slug": "existing-article",
     "summary": "",
+    "table_of_content": [],
     "title": "Existing article",
     "updated_at": "2024-05-17T13:00:00+00:00",
     "was_opened": false
@@ -47,6 +48,7 @@
     "reading_time": 0,
     "slug": "first-entry-title",
     "summary": "Watch out for nasty tricks",
+    "table_of_content": [],
     "title": "First entry title",
     "updated_at": "2005-11-09T11:56:34+00:00",
     "was_opened": false
@@ -77,6 +79,7 @@
     "reading_time": 0,
     "slug": "article-3",
     "summary": "<p>Test content</p>",
+    "table_of_content": [],
     "title": "Article 3",
     "updated_at": "2024-05-03T19:46:15+00:00",
     "was_opened": false
@@ -106,6 +109,7 @@
     "reading_time": 0,
     "slug": "with-tags",
     "summary": "Super article with tags",
+    "table_of_content": [],
     "title": "With tags",
     "updated_at": null,
     "was_opened": false
@@ -134,6 +138,7 @@
     "reading_time": 0,
     "slug": "article-4",
     "summary": "<p>Test content </p>",
+    "table_of_content": [],
     "title": "Article 4",
     "updated_at": "2024-05-03T19:46:15+00:00",
     "was_opened": false
@@ -164,6 +169,7 @@
     "reading_time": 0,
     "slug": "article-5",
     "summary": "<p>Test content</p>",
+    "table_of_content": [],
     "title": "Article 5",
     "updated_at": "2024-05-03T19:46:15+00:00",
     "was_opened": false
@@ -192,6 +198,7 @@
     "reading_time": 0,
     "slug": "article-6",
     "summary": "<p>Test content</p>",
+    "table_of_content": [],
     "title": "Article 6",
     "updated_at": "2024-05-03T19:46:15+00:00",
     "was_opened": false
@@ -220,6 +227,7 @@
     "reading_time": 0,
     "slug": "article-7",
     "summary": "<p>Test content</p>",
+    "table_of_content": [],
     "title": "Article 7",
     "updated_at": "2020-10-04T19:00:19.463831+00:00",
     "was_opened": false

@@ -38,7 +38,11 @@ from legadilo.utils.collections_utils import max_or_none, min_or_none
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time_utils import utcnow
-from legadilo.utils.validators import language_code_validator, list_of_strings_json_schema_validator
+from legadilo.utils.validators import (
+    language_code_validator,
+    list_of_strings_json_schema_validator,
+    table_of_content_json_schema_validator,
+)
 
 from .article_fetch_error import ArticleFetchError
 
@@ -457,6 +461,7 @@ class ArticleManager(models.Manager["Article"]):
                         slug=slugify(article_data.title),
                         summary=article_data.summary,
                         content=article_data.content,
+                        table_of_content=article_data.table_of_content,
                         reading_time=get_nb_words_from_html(article_data.content)
                         // user.settings.default_reading_time,
                         authors=article_data.authors,
@@ -673,6 +678,12 @@ class Article(models.Model):
         help_text=_("The language code for this article"),
         validators=[language_code_validator],
     )
+    table_of_content = models.JSONField(
+        validators=[table_of_content_json_schema_validator],
+        blank=True,
+        default=list,
+        help_text=_("The table of content of the article."),
+    )
 
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.GeneratedField(
@@ -775,6 +786,7 @@ class Article(models.Model):
             )
             self.summary = article_data.summary or self.summary
             self.content = article_data.content or self.content
+            self.table_of_content = article_data.table_of_content or self.table_of_content
             self.reading_time = (
                 get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
             ) or self.reading_time
@@ -787,6 +799,7 @@ class Article(models.Model):
             self.published_at = min_or_none([article_data.published_at, self.published_at])
         elif has_content_unlike_saved:
             self.content = article_data.content
+            self.table_of_content = article_data.table_of_content
 
         self.article_to_update = utcnow()
 

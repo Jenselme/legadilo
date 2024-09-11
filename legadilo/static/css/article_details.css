@@ -10,6 +10,33 @@
   max-width: 276px;
 }
 
+#article-side-actions,
+#article-side-toc {
+  max-height: calc(100vh - var(--content-header-height) - var(--content-footer-height) - 1vh);
+  overflow: auto;
+}
+
+.article-toc ul {
+  list-style: none;
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+.article-toc a {
+  border-left: 0.2em solid transparent;
+  padding: 0.125rem 0 0.125rem 0.75rem;
+  display: block;
+  text-decoration: none;
+  color: var(--bs-secondary-color);
+}
+
+.article-toc a.active,
+.article-toc a:hover {
+  border-left-color: var(--bs-primary-text-emphasis);
+  color: var(--bs-primary-text-emphasis);
+  font-weight: 500;
+}
+
 img {
   max-width: 100%;
   height: auto;

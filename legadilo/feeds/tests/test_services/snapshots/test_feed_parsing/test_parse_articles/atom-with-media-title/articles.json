@@ -14,6 +14,7 @@
     "read_at": null,
     "source_title": "Some feed",
     "summary": "Watch out for nasty tricks",
+    "table_of_content": [],
     "tags": [],
     "title": "First entry title",
     "updated_at": "2005-11-09T11:56:34+00:00"
@@ -33,6 +34,7 @@
     "read_at": null,
     "source_title": "Some feed",
     "summary": "Super article with tags",
+    "table_of_content": [],
     "tags": [
       "Other tag",
       "Tag"

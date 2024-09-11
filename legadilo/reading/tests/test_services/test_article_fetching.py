@@ -186,6 +186,32 @@ async def test_get_article_from_url_process_fixture(
             },
             id="link-correction",
         ),
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "<p>source article title</p>",
+                "title": "<p>Title</p>",
+                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
+                "content": """
+                <h1>Some header</h1>
+                <h2 id="test">This one has an id</h2>
+                <p>Some text</p>
+                <h2>This one <em>has HTML</em> in <script>it</script></h2>
+                """,
+                "authors": ["<span>me</span>"],
+                "contributors": ["<span>me</span>"],
+                "tags": ["<span>tag</span>"],
+                "link": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "<p>Hi there!</p>",
+                "published_at": None,
+                "updated_at": None,
+                "language": "<span>en</span>",
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="with-headers",
+        ),
     ],
 )
 def test_build_article_data(parameters: dict[str, Any], snapshot):

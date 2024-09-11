@@ -46,6 +46,20 @@ list_of_strings_json_schema_validator = JsonSchemaValidator({
     "items": {"type": "string"},
 })
 
+table_of_content_json_schema_validator = JsonSchemaValidator({
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {"type": "string"},
+            "text": {"type": "string"},
+            "level": {"type": "integer"},
+        },
+        "additionalProperties": False,
+        "required": ["id", "text", "level"],
+    },
+})
+
 
 def language_code_validator(value: Any):
     if not value or not isinstance(value, str):
