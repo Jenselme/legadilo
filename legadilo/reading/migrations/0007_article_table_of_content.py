@@ -52,6 +52,19 @@ class Migration(migrations.Migration):
                         "items": {
                             "additionalProperties": False,
                             "properties": {
+                                "children": {
+                                    "items": {
+                                        "additionalProperties": False,
+                                        "properties": {
+                                            "id": {"type": "string"},
+                                            "level": {"type": "integer"},
+                                            "text": {"type": "string"},
+                                        },
+                                        "required": ["id", "text", "level"],
+                                        "type": "object",
+                                    },
+                                    "type": "array",
+                                },
                                 "id": {"type": "string"},
                                 "level": {"type": "integer"},
                                 "text": {"type": "string"},

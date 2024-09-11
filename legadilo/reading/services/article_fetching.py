@@ -44,6 +44,10 @@ class TocItem(TypedDict):
     level: int
 
 
+class TocTopItem(TocItem):
+    children: list[TocItem]
+
+
 @dataclass(frozen=True)
 class ArticleData:
     external_article_id: str
@@ -51,7 +55,7 @@ class ArticleData:
     title: str
     summary: str
     content: str
-    table_of_content: list[TocItem]
+    table_of_content: list[TocTopItem]
     authors: list[str]
     contributors: list[str]
     tags: list[str]
@@ -461,15 +465,23 @@ def _get_lang(soup: BeautifulSoup, content_language: str | None) -> str:
     return language
 
 
-def _build_table_of_content(content: str) -> tuple[str, list[TocItem]]:
+def _build_table_of_content(content: str) -> tuple[str, list[TocTopItem]]:
     soup = BeautifulSoup(content, "html.parser")
     toc = []
+    toc_item_top_level: TocTopItem | None = None
 
     for header in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
         text = full_sanitize(header.text)
         id_ = header.get("id") or slugify(text)
         header["id"] = id_
         level = int(header.name.replace("h", ""))
-        toc.append(TocItem(id=id_, text=text, level=level))
+        # If the content is well-structured, all top level title will be at the same level.
+        # Since we don't know, we allow for a first h2 to be followed by a h1.
+        if toc_item_top_level is None or level <= toc_item_top_level["level"]:
+            toc_item_top_level = TocTopItem(id=id_, text=text, level=level, children=[])
+            toc.append(toc_item_top_level)
+        # We only allow one level in the TOC. It's enough.
+        elif level == toc_item_top_level["level"] + 1:
+            toc_item_top_level["children"].append(TocItem(id=id_, text=text, level=level))
 
     return str(soup), toc

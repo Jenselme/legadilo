@@ -1440,7 +1440,9 @@ class TestArticleModel:
                     "title": "Updated title",
                     "summary": "Updated summary",
                     "content": "Updated content",
-                    "table_of_content": [{"id": "header", "text": "My title", "level": 2}],
+                    "table_of_content": [
+                        {"id": "header", "text": "My title", "level": 2, "children": []}
+                    ],
                     "updated_at": utcdt(2024, 4, 20),
                     "external_tags": ["Initial tag", "Some tag", "Updated tag"],
                     "authors": ["Author 1", "Author 2", "Author 3"],
@@ -1467,7 +1469,7 @@ class TestArticleModel:
                 title="Updated title",
                 summary="Updated summary",
                 content="Updated content",
-                table_of_content=[{"id": "header", "text": "My title", "level": 2}],
+                table_of_content=[{"id": "header", "text": "My title", "level": 2, "children": []}],
                 authors=["Author 2", "Author 3"],
                 contributors=["Contributor 2", "Contributor 3"],
                 tags=["Some tag", "Updated tag"],

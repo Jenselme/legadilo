@@ -136,14 +136,15 @@
             <aside class="col col-2 d-none d-md-block article-aside">
                 <div id="article-side-toc">
                     {% partialdef article-side-toc inline=True %}
-                        <nav id="article-toc" class="article-toc mt-3 mb-0">
-                            <ul>
-                                {% for toc_entry in article.table_of_content %}
-                                    <li class="fs-6 fw-normal">
-                                        <a href="#{{ toc_entry.id }}">{{ toc_entry.text|safe }}</a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                        <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
+                            {% for toc_entry in article.table_of_content %}
+                                <a href="#{{ toc_entry.id }}">{{ toc_entry.text|safe }}</a>
+                                {% if toc_entry.children %}
+                                    <nav class="article-toc article-nested-toc">
+                                        {% for child in toc_entry.children %}<a href="#{{ child.id }}">{{ child.text|safe }}</a>{% endfor %}
+                                    </nav>
+                                {% endif %}
+                            {% endfor %}
                         </nav>
                         <div class="text-center mt-2">
                             <a href="#legadilo-article-title">

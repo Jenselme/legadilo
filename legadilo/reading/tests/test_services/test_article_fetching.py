@@ -197,6 +197,7 @@ async def test_get_article_from_url_process_fixture(
                 <h2 id="test">This one has an id</h2>
                 <p>Some text</p>
                 <h2>This one <em>has HTML</em> in <script>it</script></h2>
+                <h1>Another root title</h1>
                 """,
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],

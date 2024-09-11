@@ -54,6 +54,19 @@ table_of_content_json_schema_validator = JsonSchemaValidator({
             "id": {"type": "string"},
             "text": {"type": "string"},
             "level": {"type": "integer"},
+            "children": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string"},
+                        "text": {"type": "string"},
+                        "level": {"type": "integer"},
+                    },
+                    "additionalProperties": False,
+                    "required": ["id", "text", "level"],
+                },
+            },
         },
         "additionalProperties": False,
         "required": ["id", "text", "level"],
