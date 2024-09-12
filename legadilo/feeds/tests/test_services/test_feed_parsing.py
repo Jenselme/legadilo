@@ -23,6 +23,7 @@ from legadilo.feeds.services.feed_parsing import (
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
     _find_feed_page_content,
+    _find_youtube_rss_feed_link,
     _parse_articles_in_feed,
     get_feed_data,
     parse_feed,
@@ -195,6 +196,41 @@ class TestGetFeedMetadata:
         assert feed_data.feed_url == feed_url
         assert feed_data.feed_type == feed_type
         snapshot.assert_match(serialize_for_snapshot(feed_data), "feed_data.json")
+
+    @pytest.mark.parametrize(
+        ("user_entered_url", "expected_url"),
+        [
+            pytest.param(
+                "https://www.youtube.com/feeds/videos.xml?channel_id=toto",
+                "https://www.youtube.com/feeds/videos.xml?channel_id=toto",
+                id="already-is-channel-feed-link",
+            ),
+            pytest.param(
+                "https://www.youtube.com/feeds/videos.xml?playlist_id=toto",
+                "https://www.youtube.com/feeds/videos.xml?playlist_id=toto",
+                id="already-is-playlist-feed-link",
+            ),
+            pytest.param(
+                "https://www.youtube.com/channel/toto",
+                "https://www.youtube.com/feeds/videos.xml?channel_id=toto",
+                id="is-channel-with-id",
+            ),
+            pytest.param(
+                "https://www.youtube.com/watch?v=video_id&list=toto",
+                "https://www.youtube.com/feeds/videos.xml?playlist_id=toto",
+                id="is-playlist-url",
+            ),
+            pytest.param(
+                "https://www.youtube.com/watch?v=someVideo",
+                "https://www.youtube.com/watch?v=someVideo",
+                id="some-other-youtube-url",
+            ),
+        ],
+    )
+    def test_find_youtube_rss_feed_link(self, user_entered_url: str, expected_url: str):
+        youtube_feed_url = _find_youtube_rss_feed_link(user_entered_url)
+
+        assert youtube_feed_url == expected_url
 
     @pytest.mark.asyncio
     async def test_get_feed_metadata_from_page_url(self, httpx_mock, snapshot):

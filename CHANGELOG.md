@@ -1,5 +1,10 @@
 # Changelog
 
+## 24.09.3
+
+- Can subscribe with channel or playlist link.
+  - For channels, it must be a link of the form `/channel/<CHANNEL_ID>`. The clean url with `/@ChannelName` doesn’t work.
+
 ## 24.09.2
 
 - Improve logging for `clean_data`
