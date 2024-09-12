@@ -54,6 +54,7 @@ class EditFeedForm(forms.ModelForm):
     )
     article_retention_time = forms.IntegerField(
         required=True,
+        min_value=0,
         help_text=_(
             "Define for how long in days to keep read articles associated with this feed. Use 0 to "
             "always keep the articles."
