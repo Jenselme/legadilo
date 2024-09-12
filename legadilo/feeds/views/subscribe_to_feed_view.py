@@ -49,6 +49,7 @@ from ..services.feed_parsing import (
 
 class SubscribeToFeedForm(forms.Form):
     url = forms.URLField(
+        max_length=2048,
         assume_scheme="https",
         help_text=_(
             "Enter the URL to the feed you want to subscribe to or of a site in which case we will "
