@@ -50,12 +50,12 @@ urlpatterns = [
     ),
     path("articles/add/", views.add_article_view, name="add_article"),
     path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
-    path("article/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
+    path("articles/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
-    path("list/create/", views.reading_list_create_view, name="create_reading_list"),
-    # To clearly differentiate from the view that list articles.
+    # To clearly differentiate from the view that list articles in list/<slug>.
+    path("lists/edit/create/", views.reading_list_create_view, name="create_reading_list"),
     path(
-        "list/edit/<int:reading_list_id>/", views.reading_list_edit_view, name="edit_reading_list"
+        "lists/edit/<int:reading_list_id>/", views.reading_list_edit_view, name="edit_reading_list"
     ),
     path("search/", views.search_view, name="search"),
 ]
