@@ -14,14 +14,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from django.core.management import BaseCommand
 
 from legadilo.feeds.models import Feed
 from legadilo.reading.models import Article, ArticleFetchError
 
+logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
+    help = (
+        "Clean data from database: old feed updates, article fetch errors and articles whose "
+        "retention dates are passed"
+    )
+
     def handle(self, *args, **options):
-        Feed.objects.get_feed_update_for_cleanup().delete()
-        ArticleFetchError.objects.get_queryset().for_cleanup().delete()
-        Article.objects.get_queryset().for_cleanup().delete()
+        nb_deleted = Feed.objects.get_feed_update_for_cleanup().delete()
+        logger.info("Deleted %s feed updates.", nb_deleted)
+        nb_deleted = ArticleFetchError.objects.get_queryset().for_cleanup().delete()
+        logger.info("Deleted %s article fetch errors.", nb_deleted)
+        nb_deleted = Article.objects.get_queryset().for_cleanup().delete()
+        logger.info("Deleted %s articles.", nb_deleted)
