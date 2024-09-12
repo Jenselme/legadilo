@@ -818,6 +818,57 @@ class TestArticleQuerySet:
             article_no_dates,
         ]
 
+    def test_for_cleanup(self, user, other_user):
+        ArticleFactory(title="Unread not linked to a feed (to keep)", user=user, read_at=None)
+        ArticleFactory(
+            title="Read not linked to a feed (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention = FeedFactory(user=user, article_retention_time=0)
+        feed_one_day_retention = FeedFactory(user=user, article_retention_time=1)
+        feed_seven_day_retention = FeedFactory(user=user, article_retention_time=7)
+
+        unread_1_day_retention_to_keep = ArticleFactory(
+            title="Unread, linked to 1 day retention (to keep)", user=user
+        )
+        feed_one_day_retention.articles.add(unread_1_day_retention_to_keep)
+
+        read_1_day_retention_to_cleanup = ArticleFactory(
+            title="Read, 1 day retention (to cleanup)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_one_day_retention.articles.add(read_1_day_retention_to_cleanup)
+
+        read_1_day_retention_to_keep = ArticleFactory(
+            title="Read, 1 day retention (to keep)", user=user, read_at=utcdt(2024, 6, 6, hour=12)
+        )
+        feed_one_day_retention.articles.add(read_1_day_retention_to_keep)
+
+        read_seven_day_retention_to_keep = ArticleFactory(
+            title="Read, 7 days retention (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_seven_day_retention.articles.add(read_seven_day_retention_to_keep)
+
+        read_keep_forever_retention_to_keep = ArticleFactory(
+            title="Read keep forever (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention.articles.add(read_keep_forever_retention_to_keep)
+
+        read_keep_forever_and_one_day_retention_to_keep = ArticleFactory(
+            title="Read keep forever and 1 day (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention.articles.add(read_keep_forever_and_one_day_retention_to_keep)
+        feed_one_day_retention.articles.add(read_keep_forever_and_one_day_retention_to_keep)
+
+        read_keep_one_and_seven_days_retention_to_keep = ArticleFactory(
+            title="Read keep 1 and 7 days (to keep)", user=user, read_at=utcdt(2024, 6, 1)
+        )
+        feed_forever_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
+        feed_one_day_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
+
+        with time_machine.travel("2024-06-07 00:00:00"):
+            articles_to_cleanup = Article.objects.get_queryset().for_cleanup()
+
+        assert list(articles_to_cleanup) == [read_1_day_retention_to_cleanup]
+
     def test_for_search(self, user):
         search_in_title = ArticleFactory(user=user, title="Claudius")
         ArticleFactory(title="Does not match search", user=user)
@@ -878,6 +929,7 @@ class TestArticleManager:
                         title="Article 1",
                         summary="Summary 1",
                         content="Description 1" + " word " * user.settings.default_reading_time * 3,
+                        table_of_content=[],
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -895,6 +947,7 @@ class TestArticleManager:
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
+                        table_of_content=[],
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -911,6 +964,7 @@ class TestArticleManager:
                         title="Updated article",
                         summary="Summary updated",
                         content="Description updated",
+                        table_of_content=[],
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -926,6 +980,7 @@ class TestArticleManager:
                         title="Article 3",
                         summary="Summary 3",
                         content="Description 3",
+                        table_of_content=[],
                         authors=["Author"],
                         contributors=["Contributor"],
                         tags=["Some tag"],
@@ -990,6 +1045,7 @@ class TestArticleManager:
                         title="Article 1",
                         summary="Summary 1",
                         content="Description 1" + " word " * user.settings.default_reading_time * 3,
+                        table_of_content=[],
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -1007,6 +1063,7 @@ class TestArticleManager:
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
+                        table_of_content=[],
                         authors=["Author"],
                         contributors=[],
                         tags=[],
@@ -1044,6 +1101,7 @@ class TestArticleManager:
             title=existing_article.title,
             summary=existing_article.summary,
             content=existing_article.content,
+            table_of_content=[],
             authors=existing_article.authors,
             contributors=existing_article.contributors,
             tags=existing_article.external_tags,
@@ -1079,6 +1137,7 @@ class TestArticleManager:
             title=existing_article.title,
             summary=existing_article.summary,
             content=existing_article.content,
+            table_of_content=[],
             authors=existing_article.authors,
             contributors=existing_article.contributors,
             tags=existing_article.external_tags,
@@ -1370,6 +1429,7 @@ class TestArticleModel:
                     "title": "Initial title",
                     "summary": "Initial summary",
                     "content": "Initial content",
+                    "table_of_content": [],
                     "updated_at": utcdt(2024, 4, 19),
                     "external_tags": ["Initial tag", "Some tag"],
                     "authors": ["Author 1", "Author 2"],
@@ -1380,6 +1440,9 @@ class TestArticleModel:
                     "title": "Updated title",
                     "summary": "Updated summary",
                     "content": "Updated content",
+                    "table_of_content": [
+                        {"id": "header", "text": "My title", "level": 2, "children": []}
+                    ],
                     "updated_at": utcdt(2024, 4, 20),
                     "external_tags": ["Initial tag", "Some tag", "Updated tag"],
                     "authors": ["Author 1", "Author 2", "Author 3"],
@@ -1406,6 +1469,7 @@ class TestArticleModel:
                 title="Updated title",
                 summary="Updated summary",
                 content="Updated content",
+                table_of_content=[{"id": "header", "text": "My title", "level": 2, "children": []}],
                 authors=["Author 2", "Author 3"],
                 contributors=["Contributor 2", "Contributor 3"],
                 tags=["Some tag", "Updated tag"],
@@ -1447,6 +1511,7 @@ class TestArticleModel:
                 title="Updated title",
                 summary="",
                 content="",
+                table_of_content=[],
                 authors=["Author"],
                 contributors=[],
                 tags=[],

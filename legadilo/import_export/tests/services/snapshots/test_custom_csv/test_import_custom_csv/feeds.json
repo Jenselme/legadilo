@@ -1,5 +1,6 @@
 [
   {
+    "article_retention_time": 0,
     "category__title": "Existing category",
     "description": "",
     "disabled_at": null,
@@ -14,6 +15,7 @@
     "title": "Existing feed"
   },
   {
+    "article_retention_time": 0,
     "category__title": null,
     "description": "For documentation only",
     "disabled_at": null,
@@ -28,6 +30,7 @@
     "title": "Sample Feed"
   },
   {
+    "article_retention_time": 0,
     "category__title": "Category 4",
     "description": "For documentation only",
     "disabled_at": null,
@@ -42,6 +45,7 @@
     "title": "Sample Feed"
   },
   {
+    "article_retention_time": 0,
     "category__title": null,
     "description": "",
     "disabled_at": "2024-05-17T13:00:00+00:00",

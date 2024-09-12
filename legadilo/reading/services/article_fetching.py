@@ -18,11 +18,13 @@ import logging
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TypedDict
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatewords_html
+from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.utils.http_utils import get_async_client
@@ -36,6 +38,16 @@ from legadilo.utils.validators import is_url_valid, language_code_validator, nor
 logger = logging.getLogger(__name__)
 
 
+class TocItem(TypedDict):
+    id: str
+    text: str
+    level: int
+
+
+class TocTopItem(TocItem):
+    children: list[TocItem]
+
+
 @dataclass(frozen=True)
 class ArticleData:
     external_article_id: str
@@ -43,6 +55,7 @@ class ArticleData:
     title: str
     summary: str
     content: str
+    table_of_content: list[TocTopItem]
     authors: list[str]
     contributors: list[str]
     tags: list[str]
@@ -79,6 +92,7 @@ def build_article_data(  # noqa: PLR0913 too many arguments
 ) -> ArticleData:
     summary = _resolve_relative_links(link, summary)
     content = _resolve_relative_links(link, content)
+    content, toc = _build_table_of_content(content)
     if not summary and content:
         summary = _get_fallback_summary_from_content(content)
 
@@ -106,6 +120,7 @@ def build_article_data(  # noqa: PLR0913 too many arguments
             summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
         ),
         content=sanitize_keep_safe_tags(content),
+        table_of_content=toc,
         authors=_sanitize_lists(authors),
         contributors=_sanitize_lists(contributors),
         tags=_sanitize_lists(tags),
@@ -448,3 +463,25 @@ def _get_lang(soup: BeautifulSoup, content_language: str | None) -> str:
         language = content_language
 
     return language
+
+
+def _build_table_of_content(content: str) -> tuple[str, list[TocTopItem]]:
+    soup = BeautifulSoup(content, "html.parser")
+    toc = []
+    toc_item_top_level: TocTopItem | None = None
+
+    for header in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
+        text = full_sanitize(header.text)
+        id_ = header.get("id") or slugify(text)
+        header["id"] = id_
+        level = int(header.name.replace("h", ""))
+        # If the content is well-structured, all top level title will be at the same level.
+        # Since we don't know, we allow for a first h2 to be followed by a h1.
+        if toc_item_top_level is None or level <= toc_item_top_level["level"]:
+            toc_item_top_level = TocTopItem(id=id_, text=text, level=level, children=[])
+            toc.append(toc_item_top_level)
+        # We only allow one level in the TOC. It's enough.
+        elif level == toc_item_top_level["level"] + 1:
+            toc_item_top_level["children"].append(TocItem(id=id_, text=text, level=level))
+
+    return str(soup), toc

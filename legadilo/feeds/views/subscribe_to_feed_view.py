@@ -69,6 +69,15 @@ class SubscribeToFeedForm(forms.Form):
         choices=constants.FeedRefreshDelays.choices,
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
+    article_retention_time = forms.IntegerField(
+        required=True,
+        initial=365,
+        min_value=0,
+        help_text=_(
+            "Define for how long in days to keep read articles associated with this feed. Use 0 to "
+            "always keep the articles."
+        ),
+    )
     category = forms.ChoiceField(
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
@@ -117,7 +126,7 @@ class SubscribeToFeedForm(forms.Form):
         return choices
 
     class Meta:
-        fields = ("url", "category", "tags")
+        fields = ("url", "refresh_delay", "article_retention_time", "category", "tags")
 
     @property
     def feed_url(self):
@@ -161,6 +170,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             feed_medata,
             request.user,
             form.cleaned_data["refresh_delay"],
+            form.cleaned_data["article_retention_time"],
             tags,
             category,
             open_original_link_by_default=form.cleaned_data["open_original_link_by_default"],

@@ -3,6 +3,9 @@
 {% load static i18n crispy_forms_tags partials %}
 
 {% block page_js %}
+    <script src="{% static 'js/article_details.js' %}"
+            nonce="{{ request.csp_nonce }}"
+            defer></script>
     <script src="{% static 'js/tag_edition.js' %}"
             nonce="{{request.csp_nonce}}"
             type="module"></script>
@@ -31,7 +34,7 @@
                 <div id="article-side-actions">
                     {% partialdef article-side-actions inline=True %}
                         <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
-                        <div class="mt-5">
+                        <div class="mt-2">
                             {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
                         </div>
                     {% endpartialdef %}
@@ -39,7 +42,7 @@
             </aside>
             <article class="col col-12 col-md-7 article-content">
                 <header>
-                    <h1>{{ article.title |safe }}</h1>
+                    <h1 id="legadilo-article-title">{{ article.title |safe }}</h1>
                     <div class="text-secondary">{% include 'reading/partials/article_metadata.html' %}</div>
                 </header>
                 <div id="article-edit-accordion" class="accordion">
@@ -130,7 +133,28 @@
                     </div>
                 </footer>
             </article>
-            <div class="col col-2 d-none d-md-block article-aside"></div>
+            <aside class="col col-2 d-none d-md-block article-aside">
+                <div id="article-side-toc">
+                    {% partialdef article-side-toc inline=True %}
+                        <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
+                            {% for toc_entry in article.table_of_content %}
+                                <a href="#{{ toc_entry.id }}">{{ toc_entry.text|safe }}</a>
+                                {% if toc_entry.children %}
+                                    <nav class="article-toc article-nested-toc">
+                                        {% for child in toc_entry.children %}<a href="#{{ child.id }}">{{ child.text|safe }}</a>{% endfor %}
+                                    </nav>
+                                {% endif %}
+                            {% endfor %}
+                        </nav>
+                        <div class="text-center mt-2">
+                            <a href="#legadilo-article-title">
+                                {% include "core/partials/bs-icons/back_to_top.html" %}
+                                {% translate "Back to top" %}
+                            </a>
+                        </div>
+                    {% endpartialdef %}
+                </div>
+            </aside>
         </div>
     </div>
 {% endblock content %}

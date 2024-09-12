@@ -40,6 +40,35 @@ from legadilo.utils.time_utils import utcdt, utcnow
 from ... import constants as feeds_constants
 from ...models import Feed
 
+ONE_ARTICLE_FEED_DATA = FeedData(
+    feed_url="https://example.com/feeds/atom.xml",
+    site_url="https://example.com",
+    title="Awesome website",
+    description="A description",
+    feed_type=feeds_constants.SupportedFeedType.atom,
+    etag="W/etag",
+    last_modified=None,
+    articles=[
+        ArticleData(
+            external_article_id="some-article-1",
+            title="Article 1",
+            summary="Summary 1",
+            content="Description 1",
+            table_of_content=[],
+            authors=["Author"],
+            contributors=[],
+            tags=[],
+            link="https//example.com/article/1",
+            preview_picture_url="https://example.com/preview.png",
+            preview_picture_alt="Some image alt",
+            published_at=datetime.now(tz=UTC),
+            updated_at=datetime.now(tz=UTC),
+            source_title="Awesome website",
+            language="fr",
+        )
+    ],
+)
+
 
 @pytest.mark.django_db
 class TestFeedQuerySet:
@@ -238,8 +267,8 @@ class TestFeedManager:
 
         assert list(articles_qs) == [article_of_feed]
 
-    def test_recreate_feed_from_data(self, user, django_assert_num_queries):
-        existing_feed = FeedFactory(user=user)
+    def test_recreate_feed_from_data_on_active_feed(self, user, django_assert_num_queries):
+        existing_feed = FeedFactory(user=user, disabled_at=None)
 
         with django_assert_num_queries(3):
             feed, created = Feed.objects.create_from_metadata(
@@ -255,11 +284,35 @@ class TestFeedManager:
                 ),
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                0,
                 [],
             )
 
         assert feed == existing_feed
         assert not created
+        assert feed.disabled_at is None
+        assert feed.articles.count() == 0
+        assert feed.feed_updates.count() == 0
+
+    def test_recreate_feed_from_data_on_disabled_feed(self, user, django_assert_num_queries):
+        existing_feed = FeedFactory(
+            feed_url=ONE_ARTICLE_FEED_DATA.feed_url, user=user, disabled_at=utcnow()
+        )
+
+        with django_assert_num_queries(15):
+            feed, created = Feed.objects.create_from_metadata(
+                ONE_ARTICLE_FEED_DATA,
+                user,
+                feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                0,
+                [],
+            )
+
+        assert feed.id == existing_feed.id
+        assert not created
+        assert feed.disabled_at is None
+        assert feed.articles.count() > 0
+        assert feed.feed_updates.count() == 1
 
     def test_create_from_feed_data(self, user, django_assert_num_queries):
         with django_assert_num_queries(15):
@@ -278,6 +331,7 @@ class TestFeedManager:
                             title="Article 1",
                             summary="Summary 1",
                             content="Description 1",
+                            table_of_content=[],
                             authors=["Author"],
                             contributors=[],
                             tags=[],
@@ -293,6 +347,7 @@ class TestFeedManager:
                 ),
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                7,
                 [],
             )
 
@@ -306,6 +361,8 @@ class TestFeedManager:
         assert feed.slug == "awesome-website"
         assert feed.description == "A description"
         assert feed.feed_type == feeds_constants.SupportedFeedType.atom
+        assert feed.refresh_delay == feeds_constants.FeedRefreshDelays.DAILY_AT_NOON
+        assert feed.article_retention_time == 7
         assert feed.articles.count() > 0
         feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
@@ -322,35 +379,10 @@ class TestFeedManager:
 
         with django_assert_num_queries(18):
             feed, _ = Feed.objects.create_from_metadata(
-                FeedData(
-                    feed_url="https://example.com/feeds/atom.xml",
-                    site_url="https://example.com",
-                    title="Awesome website",
-                    description="A description",
-                    feed_type=feeds_constants.SupportedFeedType.atom,
-                    etag="W/etag",
-                    last_modified=None,
-                    articles=[
-                        ArticleData(
-                            external_article_id="some-article-1",
-                            title="Article 1",
-                            summary="Summary 1",
-                            content="Description 1",
-                            authors=["Author"],
-                            contributors=[],
-                            tags=[],
-                            link="https//example.com/article/1",
-                            preview_picture_url="https://example.com/preview.png",
-                            preview_picture_alt="Some image alt",
-                            published_at=datetime.now(tz=UTC),
-                            updated_at=datetime.now(tz=UTC),
-                            source_title="Awesome website",
-                            language="fr",
-                        )
-                    ],
-                ),
+                ONE_ARTICLE_FEED_DATA,
                 user,
                 feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+                0,
                 [tag],
             )
 
@@ -389,6 +421,7 @@ class TestFeedManager:
             ),
             other_user,
             feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+            0,
             [],
         )
 
@@ -441,6 +474,7 @@ class TestFeedManager:
                             title="Article 1",
                             summary="Summary 1",
                             content="Description 1",
+                            table_of_content=[],
                             authors=["Author"],
                             contributors=[],
                             tags=[],
@@ -457,6 +491,7 @@ class TestFeedManager:
                             title="Article 2",
                             summary="Summary 2",
                             content="Description existing updated",
+                            table_of_content=[],
                             authors=["Author"],
                             contributors=[],
                             tags=[],

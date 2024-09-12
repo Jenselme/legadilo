@@ -88,6 +88,7 @@ def article_details_view(
         "reading/article_details.html",
         {
             "base": {
+                "author": ", ".join(article.authors),
                 "fluid_content": True,
             },
             "article": article,

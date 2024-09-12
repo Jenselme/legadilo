@@ -117,6 +117,7 @@ class TestEditFeedView:
             data={
                 "category": self.feed_category.slug,
                 "refresh_delay": constants.FeedRefreshDelays.ON_MONDAYS,
+                "article_retention_time": 7,
                 "tags": ["new-tag"],
             },
         )
@@ -125,6 +126,7 @@ class TestEditFeedView:
         self.feed.refresh_from_db()
         assert self.feed.category == self.feed_category
         assert self.feed.refresh_delay == constants.FeedRefreshDelays.ON_MONDAYS
+        assert self.feed.article_retention_time == 7
         assert list(self.feed.feed_tags.get_selected_values()) == ["new-tag"]
 
     def test_remove_category(self, logged_in_sync_client):
@@ -133,7 +135,12 @@ class TestEditFeedView:
 
         response = logged_in_sync_client.post(
             self.url,
-            data={"category": "", "tags": [], "refresh_delay": constants.FeedRefreshDelays.HOURLY},
+            data={
+                "category": "",
+                "tags": [],
+                "refresh_delay": constants.FeedRefreshDelays.HOURLY,
+                "article_retention_time": 7,
+            },
         )
 
         assert response.status_code == HTTPStatus.OK

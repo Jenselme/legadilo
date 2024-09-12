@@ -17,6 +17,7 @@
   "read_at": null,
   "source_title": "source article title",
   "summary": "<p><a href=\"https://example.com/relative\" rel=\"noopener noreferrer\">Link 1</a><a href=\"https://example.com/abs\" rel=\"noopener noreferrer\">Link 1</a></p>",
+  "table_of_content": [],
   "tags": [
     "tag"
   ],

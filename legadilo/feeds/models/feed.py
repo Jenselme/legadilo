@@ -219,11 +219,12 @@ class FeedManager(models.Manager["Feed"]):
         return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids))
 
     @transaction.atomic()
-    def create_from_metadata(
+    def create_from_metadata(  # noqa: PLR0913 too many arguments
         self,
         feed_metadata: FeedData,
         user: User,
         refresh_delay: feeds_constants.FeedRefreshDelays,
+        article_retention_time: int,
         tags: list[Tag],
         category: FeedCategory | None = None,
         *,
@@ -236,15 +237,22 @@ class FeedManager(models.Manager["Feed"]):
                 "site_url": feed_metadata.site_url,
                 "title": feed_metadata.title,
                 "refresh_delay": refresh_delay,
+                "article_retention_time": article_retention_time,
                 "open_original_link_by_default": open_original_link_by_default,
                 "description": feed_metadata.description,
                 "feed_type": feed_metadata.feed_type,
                 "category": category,
             },
         )
+
         if created:
             FeedTag.objects.associate_feed_with_tags(feed, tags)
             self.update_feed(feed, feed_metadata)
+        elif not feed.enabled:
+            feed.enable()
+            feed.save()
+            self.update_feed(feed, feed_metadata)
+
         return feed, created
 
     @transaction.atomic()
@@ -341,6 +349,13 @@ class Feed(models.Model):
         choices=feeds_constants.FeedRefreshDelays.choices,
         max_length=100,
         default=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+    )
+    article_retention_time = models.PositiveIntegerField(
+        default=0,
+        help_text=_(
+            "Define for how long in days to keep read articles associated with this feed. Use 0 to "
+            "always keep the articles."
+        ),
     )
     open_original_link_by_default = models.BooleanField(default=False)
 

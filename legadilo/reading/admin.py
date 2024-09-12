@@ -69,6 +69,7 @@ class ArticleAdmin(admin.ModelAdmin):
         ArticleFetchErrorInline,
     ]
     readonly_fields = ("obj_created_at", "obj_updated_at")
+    formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
 
 
 @admin.register(ReadingList)

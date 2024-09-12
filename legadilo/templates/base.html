@@ -15,7 +15,7 @@
         </title>
         <meta name="description"
               content="{% translate 'Read your RSS feeds & other saved articles!' %}" />
-        <meta name="author" content="Julien Enselme" />
+        {% if base.author %}<meta name="author" content="{{ base.author }}" />{% endif %}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="manifest" href="{% url 'website:manifest' %}" />
         <meta name="theme-color" content="#0d6efd" />
@@ -26,9 +26,11 @@
               sizes="16x16" />
         {% block css %}
             <link rel="stylesheet"
+                  type="text/css"
                   href="{% static 'css/bootstrap.min.css' %}"
                   nonce="{{ request.csp_nonce }}" />
             <link rel="stylesheet"
+                  type="text/css"
                   href="{% static 'css/base.css' %}"
                   nonce="{{ request.csp_nonce }}" />
             {% block page_css %}
@@ -86,7 +88,7 @@
                 </div>
             </div>
             {% if not base.hide_header %}
-                <div class="mb-1 sticky-top">
+                <div class="header-container mb-1 sticky-top">
                     <nav class="navbar navbar-expand-md navbar-light bg-light">
                         <div class="container-fluid">
                             <button class="navbar-toggler navbar-toggler-right"
@@ -134,11 +136,17 @@
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link" href="{% url 'users:list_notifications' %}">
-                                                {% if user.has_unread_notifications %}
-                                                    {% include "core/partials/bs-icons/new_notifications.html" %}
-                                                {% else %}
-                                                    {% include "core/partials/bs-icons/no_notifications.html" %}
-                                                {% endif %}
+                                                <span class="position-relative">
+                                                    {% if user.count_unread_notifications > 0 %}
+                                                        {% include "core/partials/bs-icons/new_notifications.html" %}
+                                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                            {{ user.count_unread_notifications }}
+                                                            <span class="visually-hidden">{% translate "unread notifications" %}</span>
+                                                        </span>
+                                                    {% else %}
+                                                        {% include "core/partials/bs-icons/no_notifications.html" %}
+                                                    {% endif %}
+                                                </span>
                                             </a>
                                         </li>
                                         <li class="nav-item dropdown">

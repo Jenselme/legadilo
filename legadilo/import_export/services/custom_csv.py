@@ -127,6 +127,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
             feed_data,
             user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+            article_retention_time=0,
             tags=[],
             category=category,
         )
@@ -156,6 +157,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
             feed_data,
             user=user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+            article_retention_time=0,
             tags=[],
             category=category,
         )

@@ -148,6 +148,7 @@ async def _process_feed(user, client, outline, category=None):
             feed_data,
             user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
+            article_retention_time=0,
             tags=[],
             category=category,
         )

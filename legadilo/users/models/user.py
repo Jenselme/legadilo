@@ -54,8 +54,8 @@ class User(AbstractUser):
         return reverse("users:detail", kwargs={"pk": self.id})
 
     @cached_property
-    def has_unread_notifications(self) -> bool:
-        return self.notifications.has_unread(self)
+    def count_unread_notifications(self) -> int:
+        return self.notifications.count_unread(self)
 
     @cached_property
     def tzinfo(self) -> ZoneInfo:

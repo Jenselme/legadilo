@@ -48,8 +48,8 @@ class NotificationManager(models.Manager["Notification"]):
     def get_queryset(self) -> NotificationQuerySet:
         return NotificationQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def has_unread(self, user: User) -> bool:
-        return self.get_queryset().for_user(user).only_unread().exists()
+    def count_unread(self, user: User) -> int:
+        return self.get_queryset().for_user(user).only_unread().count()
 
     def list_all_for_user(self, user: User) -> Iterable[Notification]:
         return self.get_queryset().for_user(user).all()

@@ -51,11 +51,11 @@ class TestNotificationQuerySet:
 
 @pytest.mark.django_db
 class TestNotificationManager:
-    @pytest.mark.parametrize(("read_at", "expected_status"), [(None, True), (utcnow(), False)])
-    def test_has_unread(self, user, read_at, expected_status):
+    @pytest.mark.parametrize(("read_at", "expected_status"), [(None, 1), (utcnow(), 0)])
+    def test_count_unread(self, user, read_at, expected_status):
         NotificationFactory(user=user, read_at=read_at)
 
-        assert Notification.objects.has_unread(user) == expected_status
+        assert Notification.objects.count_unread(user) == expected_status
 
     def test_list_all(self, user, other_user):
         notification = NotificationFactory(user=user)
