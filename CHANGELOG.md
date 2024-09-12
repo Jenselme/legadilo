@@ -1,5 +1,9 @@
 # Changelog
 
+## 24.09.2
+
+- Improve logging for `clean_data`
+
 
 ## 24.09.1
 
