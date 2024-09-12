@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from html import unescape
 from itertools import chain
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -113,6 +113,9 @@ async def get_feed_data(
 
     It's either a feed or a page containing a link to a feed.
     """
+    if _is_youtube_link(url):
+        url = _find_youtube_rss_feed_link(url)
+
     parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
     if not parsed_feed.get("version"):
         url = _find_feed_page_content(url_content)
@@ -121,6 +124,32 @@ async def get_feed_data(
         )
 
     return build_feed_data_from_parsed_feed(parsed_feed, str(resolved_url))
+
+
+def _find_youtube_rss_feed_link(url: str) -> str:
+    is_youtube_feed = (
+        re.match(
+            r"https://[^/]+/feeds/videos.xml\?(channel_id|playlist_id)=.+",
+            url,
+            re.IGNORECASE,
+        )
+        is not None
+    )
+    if is_youtube_feed:
+        return url
+
+    if match_channel_with_id := re.match(
+        r"https://[^/]+/channel/(?P<channel_id>.+)", url, re.IGNORECASE
+    ):
+        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match_channel_with_id.group("channel_id")}"
+
+    parsed_link = urlparse(url)
+    params = parse_qs(parsed_link.query)
+    if params.get("list"):
+        return f"https://www.youtube.com/feeds/videos.xml?playlist_id={params["list"][0]}"
+
+    # Can't handle it. Let's let it through.
+    return url
 
 
 def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:

@@ -44,6 +44,7 @@ from legadilo.utils.urls import add_query_params, pop_query_param, validate_refe
 
 class FetchArticleForm(forms.Form):
     url = forms.URLField(
+        max_length=2048,
         assume_scheme="https",
         help_text=_("URL of the article to add."),
     )
