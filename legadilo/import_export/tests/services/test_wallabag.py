@@ -113,7 +113,7 @@ def test_import_valid_data(user):
     assert article.main_source_title == "www.example.com"
     assert article.annotations == ["Some stuff"]
     assert article.language == "en"
-    assert list(article.tags.values_list("title", "slug")) == [  # type: ignore[misc]
+    assert list(article.tags.values_list("title", "slug")) == [
         ("existing", "existing"),
         ("New tag", "new-tag"),
     ]

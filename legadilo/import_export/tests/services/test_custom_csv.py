@@ -71,6 +71,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         updated_at="2024-05-17T13:00:00+00:00",
     )
 
+    httpx_mock.add_response(url="https://example.com/existing.xml", content="")
     httpx_mock.add_response(
         url="https://example.com/rss2.xml",
         content=get_feed_fixture_content("sample_rss.xml"),

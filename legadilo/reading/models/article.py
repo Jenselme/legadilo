@@ -22,6 +22,7 @@ import math
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, Self, assert_never
+from urllib.parse import urlparse
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -529,8 +530,13 @@ class ArticleManager(models.Manager["Article"]):
             created = False
         except self.model.DoesNotExist:
             created = True
+            article_domain = urlparse(article_link).netloc
             article = Article.objects.create(
-                user=user, link=article_link, title=full_sanitize(article_link)
+                user=user,
+                link=article_link,
+                title=full_sanitize(article_link),
+                main_source_type=constants.ArticleSourceType.MANUAL,
+                main_source_title=article_domain,
             )
             ArticleTag.objects.associate_articles_with_tags(
                 [article], tags, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
@@ -738,7 +744,7 @@ class Article(models.Model):
             models.UniqueConstraint(
                 "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
             ),
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_main_source_type_valid",
                 condition=models.Q(
                     main_source_type__in=constants.ArticleSourceType.names,

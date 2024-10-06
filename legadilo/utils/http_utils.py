@@ -15,20 +15,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import httpx
-
-FETCH_TIMEOUT = 300
+from django.conf import settings
 
 
 def get_async_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(
-        headers={"User-Agent": "Legadilo"}, timeout=FETCH_TIMEOUT, follow_redirects=True
+        headers={"User-Agent": "Legadilo"},
+        timeout=settings.ARTICLE_FETCH_TIMEOUT,
+        follow_redirects=True,
     )
 
 
 def get_rss_async_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(
         limits=httpx.Limits(max_connections=20, max_keepalive_connections=10, keepalive_expiry=5.0),
-        timeout=FETCH_TIMEOUT,
+        timeout=settings.RSS_FETCH_TIMEOUT,
         follow_redirects=True,
         headers={"User-Agent": "Legadilo RSS"},
     )

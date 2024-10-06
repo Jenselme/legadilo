@@ -159,6 +159,8 @@ class TestImportCustomCSV:
             url="https://example.com/rss4.xml",
             content=get_feed_fixture_content("sample_atom.xml"),
         )
+        httpx_mock.add_response(url="https://example.com/rss8.xml", content="")
+        httpx_mock.add_response(url="https://example.com/existing.xml", content="")
 
         with Path(
             settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
@@ -200,6 +202,8 @@ class TestImportCustomCSV:
             url="https://example.com/rss4.xml",
             content=get_feed_fixture_content("sample_atom.xml"),
         )
+        httpx_mock.add_response(url="https://example.com/rss8.xml", content="")
+        httpx_mock.add_response(url="https://example.com/existing.xml", content="")
         temp_file = TemporaryUploadedFile(
             settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv",  # type: ignore[arg-type]
             "text/csv",
