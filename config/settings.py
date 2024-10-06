@@ -609,3 +609,5 @@ if not DEBUG and SENTRY_DSN:
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+ARTICLE_FETCH_TIMEOUT = env.int("LEGADILO_ARTICLE_FETCH_TIMEOUT", default=50)
+RSS_FETCH_TIMEOUT = env.int("LEGADILO_RSS_FETCH_TIMEOUT", default=300)

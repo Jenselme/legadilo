@@ -4,6 +4,9 @@
 
 - Correct `theme_color` in `manifest.json`.
 - Set main source on invalid articles.
+- Correct default timeout when fetching articles and RSS data.
+  - They are now configurable.
+  - We have a shorter timeout when fetching an article to hit the code timeout before hitting the nginx timeout configured on the default instance.
 
 ## 24.09.3
 
