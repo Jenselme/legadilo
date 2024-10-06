@@ -3,6 +3,7 @@
 ## 24.10.1
 
 - Correct `theme_color` in `manifest.json`.
+- Set main source on invalid articles.
 
 ## 24.09.3
 

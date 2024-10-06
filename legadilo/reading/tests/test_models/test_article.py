@@ -1250,6 +1250,8 @@ class TestArticleManager:
         assert article.link == link
         assert article.title == link
         assert article.updated_at is None
+        assert article.main_source_type == constants.ArticleSourceType.MANUAL
+        assert article.main_source_title == "toto.com"
         assert list(article.tags.all()) == [tag]
         assert article.article_fetch_errors.count() == 1
 
