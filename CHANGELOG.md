@@ -1,5 +1,9 @@
 # Changelog
 
+## 24.10.1
+
+- Correct `theme_color` in `manifest.json`.
+
 ## 24.09.3
 
 - Can subscribe with channel or playlist link.
