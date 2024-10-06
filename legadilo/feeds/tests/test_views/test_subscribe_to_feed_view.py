@@ -120,7 +120,7 @@ class TestSubscribeToFeedView:
             )
         ]
         assert not feed.open_original_link_by_default
-        assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]  # type: ignore[misc]
+        assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
@@ -343,11 +343,11 @@ class TestSubscribeToFeedView:
         assert feed is not None
         assert feed.user == other_user
         assert feed.tags.count() == 2
-        assert set(feed.tags.values_list("user_id", flat=True)) == {other_user.id}  # type: ignore[misc]
+        assert set(feed.tags.values_list("user_id", flat=True)) == {other_user.id}
         assert feed.category == category
         assert category.user == other_user
         assert Article.objects.count() == Article.objects.filter(user=other_user).count()
         article = Article.objects.first()
         assert article is not None
         assert article.tags.count() == 2
-        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}  # type: ignore[misc]
+        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}

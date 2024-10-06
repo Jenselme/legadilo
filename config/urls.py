@@ -6,8 +6,7 @@ from django.views import defaults as default_views
 
 
 def _correct_admin_url(path: str) -> str:
-    if path.startswith("/"):
-        path = path[1:]
+    path = path.removeprefix("/")
 
     if not path.endswith("/"):
         path += "/"

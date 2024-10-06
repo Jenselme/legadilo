@@ -114,7 +114,7 @@ class TestAddArticle:
         assert article is not None
         assert article.user == other_user
         assert article.tags.count() == 3
-        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}  # type: ignore[misc]
+        assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}
 
     def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
         httpx_mock.add_response(text=self.article_content, url=self.article_url)

@@ -215,7 +215,7 @@ class ArticleTag(models.Model):
 
     class Meta(TypedModelMeta):
         constraints = [
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_tagging_reason_valid",
                 condition=models.Q(
                     tagging_reason__in=constants.TaggingReason.names,
@@ -295,7 +295,7 @@ class ReadingListTag(models.Model):
             models.UniqueConstraint(
                 "reading_list", "tag", name="%(app_label)s_%(class)s_tagged_once_per_reading_list"
             ),
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_filter_type_valid",
                 condition=models.Q(
                     filter_type__in=constants.ReadingListTagFilterType.names,

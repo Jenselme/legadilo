@@ -738,7 +738,7 @@ class Article(models.Model):
             models.UniqueConstraint(
                 "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
             ),
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_main_source_type_valid",
                 condition=models.Q(
                     main_source_type__in=constants.ArticleSourceType.names,

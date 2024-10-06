@@ -92,7 +92,7 @@ class Notification(models.Model):
 
     class Meta(TypedModelMeta):
         constraints = [
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_link_and_text_set_together",
                 condition=(models.Q(link__length=0) & models.Q(link_text__length=0))
                 | (models.Q(link__length__gt=0) & models.Q(link_text__length__gt=0)),

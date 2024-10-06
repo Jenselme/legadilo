@@ -384,19 +384,19 @@ class Feed(models.Model):
             models.UniqueConstraint(
                 "feed_url", "user", name="%(app_label)s_%(class)s_feed_url_unique"
             ),
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_feed_type_valid",
                 condition=models.Q(
                     feed_type__in=feeds_constants.SupportedFeedType.names,
                 ),
             ),
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_refresh_delay_type_valid",
                 condition=models.Q(
                     refresh_delay__in=feeds_constants.FeedRefreshDelays.names,
                 ),
             ),
-            models.CheckConstraint(  # type: ignore[call-arg]
+            models.CheckConstraint(
                 name="%(app_label)s_%(class)s_disabled_reason_disabled_at_empty_when_enabled",
                 condition=models.Q(
                     disabled_reason="",
