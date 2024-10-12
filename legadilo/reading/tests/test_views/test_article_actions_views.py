@@ -80,7 +80,7 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["article"] == self.article
+        assert response.context["articles"] == [self.article]
         assert response.context["reading_lists"] == [self.reading_list]
         assert response.context["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 1
@@ -91,8 +91,8 @@ class TestUpdateArticleView:
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,
         }
-        assert response["HX-Reswap"] == "innerHTML show:none"
-        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
+        assert response["HX-Reswap"] == "none show:none"
+        assert "HX-Retarget" not in response.headers
         self.article.refresh_from_db()
         assert self.article.is_read
         assert b"<article" in response.content
@@ -120,7 +120,7 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["article"] == self.article
+        assert response.context["articles"] == [self.article]
         assert response.context["delete_article_card"]
         assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
@@ -151,7 +151,7 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["article"] == self.article
+        assert response.context["articles"] == [self.article]
         assert response.context["delete_article_card"]
         assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
@@ -178,10 +178,10 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["article"] == self.article
+        assert response.context["articles"] == [self.article]
         assert not response.context["delete_article_card"]
-        assert response["HX-Reswap"] == "innerHTML show:none"
-        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
+        assert response["HX-Reswap"] == "none show:none"
+        assert "HX-Retarget" not in response.headers
         self.article.refresh_from_db()
         assert self.article.is_for_later
         assert b"<article" in response.content
@@ -215,3 +215,93 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_details_actions.html"
         assert response.headers["HX-Reswap"] == "none show:none"
+
+
+@pytest.mark.django_db
+class TestMarkArticlesAsReadInBulkView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.url = reverse("reading:mark_articles_as_read_in_bulk")
+        self.article = ArticleFactory(user=user, read_at=None)
+        self.reading_list = ReadingListFactory(user=user)
+
+    def test_with_no_article_ids(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    def test_with_empty_article_ids(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {"article_ids": ""})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    def test_with_invalid_article_ids(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {"article_ids": "toto"})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    def test_mark_one_article_as_read(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(16):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "article_ids": self.article.id,
+                    "displayed_reading_list_id": str(self.reading_list.id),
+                },
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_action.html"
+        assert response.context["articles"] == [self.article]
+        assert response.context["reading_lists"] == [self.reading_list]
+        assert response.context["count_unread_articles_of_reading_lists"] == {
+            self.reading_list.slug: 0
+        }
+        assert response.context["displayed_reading_list"] == self.reading_list
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": False,
+            "auto_refresh_interval": 0,
+            "articles_list_min_refresh_timeout": 300,
+        }
+        assert "HX-Reswap" not in response.headers
+        assert "HX-Retarget" not in response.headers
+        self.article.refresh_from_db()
+        assert self.article.is_read
+        assert b"<article" in response.content
+
+    def test_mark_multiple_articles_as_read(
+        self, logged_in_sync_client, django_assert_num_queries, user, other_user
+    ):
+        other_article = ArticleFactory(user=user, read_at=None)
+        article_other_user = ArticleFactory(user=other_user, read_at=None)
+
+        with django_assert_num_queries(16):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "article_ids": f"{self.article.id},{other_article.id},{article_other_user.id}",
+                    "displayed_reading_list_id": self.reading_list.id,
+                },
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/update_article_action.html"
+        assert response.context["articles"] == [self.article, other_article]
+        assert response.context["reading_lists"] == [self.reading_list]
+        assert response.context["count_unread_articles_of_reading_lists"] == {
+            self.reading_list.slug: 0
+        }
+        assert response.context["displayed_reading_list"] == self.reading_list
+        assert response.context["js_cfg"] == {
+            "is_reading_on_scroll_enabled": False,
+            "auto_refresh_interval": 0,
+            "articles_list_min_refresh_timeout": 300,
+        }
+        assert "HX-Reswap" not in response.headers
+        assert "HX-Retarget" not in response.headers
+        self.article.refresh_from_db()
+        assert self.article.is_read
+        other_article.refresh_from_db()
+        assert other_article.is_read
+        article_other_user.refresh_from_db()
+        assert not article_other_user.is_read

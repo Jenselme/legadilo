@@ -17,6 +17,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 
 from legadilo.feeds.models import FeedDeletedArticle
@@ -25,8 +26,8 @@ from legadilo.reading.models import Article
 from legadilo.reading.services.views import get_from_url_for_article_details
 from legadilo.reading.templatetags import article_card_id
 from legadilo.reading.views.article_actions_views import (
+    get_common_template_context,
     redirect_to_reading_list,
-    update_article_card,
 )
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
@@ -54,10 +55,14 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
         from_url = get_from_url_for_article_details(request, request.POST)
         return HttpResponseRedirect(from_url)
 
-    return update_article_card(
+    return TemplateResponse(
         request,
-        article,
-        reading_constants.UpdateArticleActions.DO_NOTHING,
-        hx_target=hx_target,
-        delete_article_card=True,
+        "reading/update_article_action.html",
+        get_common_template_context(
+            request, reading_constants.UpdateArticleActions.DO_NOTHING, deleting_article=True
+        ),
+        headers={
+            "HX-Reswap": "outerHTML show:none swap:1s",
+            "HX-Retarget": hx_target,
+        },
     )

@@ -48,6 +48,11 @@ urlpatterns = [
         views.update_article_view,
         name="update_article",
     ),
+    path(
+        "articles/mark-as-read-in-bulk/",
+        views.mark_articles_as_read_in_bulk_view,
+        name="mark_articles_as_read_in_bulk",
+    ),
     path("articles/add/", views.add_article_view, name="add_article"),
     path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),

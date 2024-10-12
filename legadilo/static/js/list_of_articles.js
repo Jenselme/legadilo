@@ -54,7 +54,7 @@
 
   const setupReadOnScroll = () => {
     if (!jsCfg.is_reading_on_scroll_enabled) {
-      console.log("Read on scroll is not enabled for this reading list."); // eslint-disable-line no-console
+      console.log("Read on scroll is not enabled for this reading list.");
       return;
     }
 
@@ -69,9 +69,9 @@
     setTimeout(() => window.scroll(0, 0), 500);
 
     // Wait before reading on scroll: the user may scroll up again!
-    const readOnScrollDebounced = debounce(readOnScroll, 1000);
-    document.addEventListener("scrollend", readOnScrollDebounced); // eslint-disable-line no-console
-    console.log("Read on scroll setup!"); // eslint-disable-line no-console
+    const readOnScrollDebounced = debounce(readOnScroll, 1_000);
+    document.addEventListener("scrollend", readOnScrollDebounced);
+    console.log("Read on scroll setup!");
   };
 
   const readOnScroll = () => {
@@ -81,41 +81,63 @@
       return;
     }
 
-    for (const htmxForm of document.querySelectorAll(".readable-on-scroll")) {
-      const parentBoundingRect = htmxForm.parentElement.getBoundingClientRect();
+    const articleIdsToMarkAsRead = findArticleIdsToReadOnScroll();
+
+    if (articleIdsToMarkAsRead.length === 0) {
+      return;
+    }
+
+    // To make sure counters are correct at the end, we run the requests on after the other so the
+    // last one to complete has the correct count.
+    console.log(`Adding ${articleIdsToMarkAsRead} to the promise chain.`);
+    readOnScrollSequence = readOnScrollSequence.then(() =>
+      buildReadOnScrollPromise(articleIdsToMarkAsRead),
+    );
+  };
+
+  const findArticleIdsToReadOnScroll = () => {
+    const articleIdsToMarkAsRead = [];
+    for (const article of document.querySelectorAll(".readable-on-scroll")) {
+      const parentBoundingRect = article.getBoundingClientRect();
       const wasScrolledTo = parentBoundingRect.top < 0;
       const wasScrolledEnough = parentBoundingRect.top < -parentBoundingRect.height / 2;
       if (!wasScrolledTo || !wasScrolledEnough) {
-        return;
+        break;
       }
 
-      // To make sure counters are correct at the end, we run the requests on after the other so the
-      // last one to complete has the correct count.
-      console.log(`Adding ${htmxForm.action} to the promise chain.`); // eslint-disable-line no-console
-      readOnScrollSequence = readOnScrollSequence.then(() => buildReadOnScrollPromise(htmxForm));
+      articleIdsToMarkAsRead.push(article.dataset.articleId);
     }
+
+    return articleIdsToMarkAsRead;
   };
 
-  const buildReadOnScrollPromise = (htmxForm) => {
-    console.log(`Previous promise resolved, starting ${htmxForm.action}`); // eslint-disable-line no-console
+  const buildReadOnScrollPromise = (articleIdsToMarkAsRead) => {
+    console.log(`Previous promise resolved, starting ${articleIdsToMarkAsRead}`);
+    const formToSubmit = document.getElementById("bulk-mark-as-read-form");
     return new Promise((resolve) => {
       // Sometimes it can get stuck because of a weird bug in FF. Force a resolution after 10s to
       // try to at least mark the other articles as read. See #195
-      const forceResolutionTimer = setTimeout(() => resolve(), 10 * 1000);
+      const forceResolutionTimer = setTimeout(() => {
+        console.log(
+          `Request ${articleIdsToMarkAsRead} is taking too much time, forcing resolution`,
+        );
+        resolve();
+      }, 10 * 1000);
       const waitForRequestEnd = (event) => {
         if (
           event.detail &&
           event.detail.pathInfo &&
-          event.detail.pathInfo.requestPath === htmxForm.getAttribute("action")
+          event.detail.pathInfo.requestPath === formToSubmit.getAttribute("action")
         ) {
-          console.log(`Done for ${htmxForm.action}, resolving promise.`); // eslint-disable-line no-console
+          console.log(`Done for ${articleIdsToMarkAsRead}, resolving promise.`);
           htmx.off("htmx:afterRequest", waitForRequestEnd);
           clearTimeout(forceResolutionTimer);
           resolve();
         }
       };
+      document.getElementById("bulk-mark-as-read-data").value = articleIdsToMarkAsRead.join(",");
       htmx.on("htmx:afterRequest", waitForRequestEnd);
-      htmx.trigger(htmxForm, "submit");
+      htmx.trigger("#bulk-mark-as-read-form", "submit");
     });
   };
 

@@ -80,7 +80,6 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.context["article"].pk is None
         assert response.context["reading_lists"] == [self.reading_list]
         assert response.context["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
