@@ -401,6 +401,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                 # the article forever.
                 min_feed_retention_time__gt=0,
                 article_cleanup_time__lt=utcnow().timestamp(),
+                main_source_type=constants.ArticleSourceType.FEED,
             )
         )
 
