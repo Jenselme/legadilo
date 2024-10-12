@@ -491,6 +491,7 @@ class ArticleManager(models.Manager["Article"]):
                 "slug",
                 "summary",
                 "content",
+                "table_of_content",
                 "reading_time",
                 "authors",
                 "preview_picture_url",
