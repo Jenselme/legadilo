@@ -1530,15 +1530,3 @@ class TestArticleModel:
         assert was_updated
         for attr, value in expected_data.items():
             assert getattr(article, attr) == value
-
-    @pytest.mark.parametrize(
-        ("source_type", "is_from_feed"),
-        [
-            pytest.param(constants.ArticleSourceType.FEED, True, id="feed"),
-            pytest.param(constants.ArticleSourceType.MANUAL, False, id="manual"),
-        ],
-    )
-    def test_is_from_feed(self, source_type, is_from_feed):
-        article = ArticleFactory.build(main_source_type=source_type)
-
-        assert article.is_from_feed == is_from_feed

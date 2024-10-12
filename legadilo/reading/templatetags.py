@@ -73,11 +73,6 @@ def opened_action_url(article: Article) -> str:
 
 
 @register.filter
-def delete_action_url(article: Article) -> str:
-    return reverse("reading:delete_article", kwargs={"article_id": article.id})
-
-
-@register.filter
 def article_details_url(article: Article) -> str:
     return reverse(
         "reading:article_details", kwargs={"article_id": article.id, "article_slug": article.slug}

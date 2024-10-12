@@ -50,7 +50,6 @@ urlpatterns = [
     ),
     path("articles/add/", views.add_article_view, name="add_article"),
     path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
-    path("articles/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     # To clearly differentiate from the view that list articles in list/<slug>.
     path("lists/edit/create/", views.reading_list_create_view, name="create_reading_list"),

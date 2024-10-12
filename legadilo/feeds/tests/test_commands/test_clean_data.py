@@ -18,7 +18,7 @@ import pytest
 import time_machine
 from django.core.management import call_command
 
-from legadilo.feeds.models import FeedUpdate
+from legadilo.feeds.models import FeedDeletedArticle, FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article, ArticleFetchError
 from legadilo.reading.tests.factories import ArticleFactory, ArticleFetchErrorFactory
@@ -75,3 +75,4 @@ class TestCleanDataCommand:
             article_linked_to_forever_feed,
             unread_article_linked_to_feed_to_cleanup,
         ]
+        assert FeedDeletedArticle.objects.count() > 0

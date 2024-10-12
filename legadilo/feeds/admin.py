@@ -20,6 +20,7 @@ from legadilo.feeds.models import (
     Feed,
     FeedArticle,
     FeedCategory,
+    FeedDeletedArticle,
     FeedTag,
     FeedUpdate,
 )
@@ -76,3 +77,8 @@ class FeedCategoryAdmin(admin.ModelAdmin):
 class FeedArticleAdmin(admin.ModelAdmin):
     search_fields = ["feed__title", "article__title", "article__link"]
     autocomplete_fields = ["feed", "article"]
+
+
+@admin.register(FeedDeletedArticle)
+class FeedDeletedArticleAdmin(admin.ModelAdmin):
+    pass

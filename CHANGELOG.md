@@ -7,6 +7,7 @@
 - Improve display of notifications:
   - Put read first.
   - Hide read notifications after 3 months.
+- Can delete articles linked to feeds.
 
 ## 24.10.1
 

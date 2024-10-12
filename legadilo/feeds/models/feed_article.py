@@ -31,7 +31,7 @@ class FeedArticleManager(models.Manager):
 class FeedArticle(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_articles", on_delete=models.CASCADE)
     article = models.ForeignKey(
-        "reading.Article", related_name="feed_articles", on_delete=models.CASCADE
+        "reading.Article", related_name="feed_articles", on_delete=models.PROTECT
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
