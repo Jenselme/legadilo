@@ -40,5 +40,5 @@ def list_notifications_view(request: AuthenticatedHttpRequest) -> TemplateRespon
     return TemplateResponse(
         request,
         "users/notifications.html",
-        {"notifications": Notification.objects.list_all_for_user(request.user)},
+        {"notifications": Notification.objects.list_recent_for_user(request.user)},
     )

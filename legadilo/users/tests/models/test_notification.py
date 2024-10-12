@@ -15,9 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
+import time_machine
 
 from legadilo.users.models import Notification
-from legadilo.utils.time_utils import utcnow
+from legadilo.utils.time_utils import utcdt, utcnow
 
 from ..factories import NotificationFactory
 
@@ -48,6 +49,30 @@ class TestNotificationQuerySet:
 
         assert notifications == [notification]
 
+    @time_machine.travel("2024-10-12")
+    def test_for_user_list(self, user):
+        with time_machine.travel("2024-06-01"):
+            very_old_unread_notification = NotificationFactory(
+                title="Very old unread", user=user, read_at=None
+            )
+        with time_machine.travel("2024-06-01"):
+            NotificationFactory(title="Very old read", user=user, read_at=utcnow())
+        with time_machine.travel("2024-06-01"):
+            very_old_but_read_recently_notification = NotificationFactory(
+                title="Very old but read recently", user=user, read_at=utcdt(2024, 10, 1)
+            )
+        today_unread = NotificationFactory(title="Today unread", user=user, read_at=None)
+        today_read = NotificationFactory(title="Today read", user=user, read_at=utcnow())
+
+        notifications = list(Notification.objects.get_queryset().for_user_list(user))
+
+        assert notifications == [
+            very_old_unread_notification,
+            today_unread,
+            today_read,
+            very_old_but_read_recently_notification,
+        ]
+
 
 @pytest.mark.django_db
 class TestNotificationManager:
@@ -57,11 +82,11 @@ class TestNotificationManager:
 
         assert Notification.objects.count_unread(user) == expected_status
 
-    def test_list_all(self, user, other_user):
+    def test_list_recent(self, user, other_user):
         notification = NotificationFactory(user=user)
         NotificationFactory(user=other_user)
 
-        notifications = list(Notification.objects.list_all_for_user(user))
+        notifications = list(Notification.objects.list_recent_for_user(user))
 
         assert notifications == [notification]
 
