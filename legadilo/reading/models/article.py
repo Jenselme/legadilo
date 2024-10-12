@@ -808,7 +808,7 @@ class Article(models.Model):
             self.content = article_data.content
             self.table_of_content = article_data.table_of_content
 
-        self.article_to_update = utcnow()
+        self.obj_updated_at = utcnow()
 
         return True
 
