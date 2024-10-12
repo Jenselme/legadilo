@@ -32,7 +32,7 @@ from legadilo.reading.services.views import (
 )
 from legadilo.reading.templatetags import article_card_id
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.urls import add_query_params, validate_referer_url
+from legadilo.utils.urls import validate_referer_url
 
 
 @require_POST
@@ -89,11 +89,12 @@ def update_article_view(
     )
 
 
-def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
+def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse:
     from_url = get_from_url_for_article_details(request, request.POST)
-    return HttpResponseRedirect(
-        add_query_params(from_url, {"full_reload": ["true"]}),
-    )
+    if not request.htmx:
+        return HttpResponseRedirect(from_url)
+
+    return HttpResponse(headers={"HX-Redirect": from_url, "HX-Push-Url": "true"})
 
 
 def get_common_template_context(

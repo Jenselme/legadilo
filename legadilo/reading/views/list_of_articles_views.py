@@ -42,7 +42,6 @@ from legadilo.reading.services.views import get_js_cfg_from_reading_list
 from legadilo.reading.templatetags import decode_external_tag
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
-from legadilo.utils.urls import pop_query_param
 from legadilo.utils.validators import get_page_number_from_request
 
 
@@ -91,10 +90,6 @@ def _display_list_of_articles(
         # page instead of as orphans.
         orphans=int(articles_per_page * constants.ARTICLES_ORPHANS_PERCENTAGE),
     )
-    # If the full_reload params is passed, we render the full template. To avoid issues with
-    # following requests, we must remove it from the URL.
-    from_url, full_reload_param = pop_query_param(request.get_full_path(), "full_reload")
-    must_do_full_reload = bool(full_reload_param)
     requested_page = get_page_number_from_request(request)
     articles_page = get_requested_page(articles_paginator, requested_page)
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
@@ -114,16 +109,15 @@ def _display_list_of_articles(
         "next_page_number": articles_page.next_page_number if articles_page.has_next() else None,
         "articles_paginator": articles_paginator,
         "elided_page_range": articles_paginator.get_elided_page_range(requested_page),
-        "from_url": from_url,
+        "from_url": request.get_full_path(),
     }
-    cached_header = {
+
+    headers = {
         "Pragma": "no-cache",
         "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
     }
-    htmx_headers = {"HX-Push-Url": from_url} if must_do_full_reload else {}
-    headers = cached_header | htmx_headers
 
-    if request.htmx and not must_do_full_reload:
+    if request.htmx:
         return TemplateResponse(
             request,
             "reading/list_of_articles.html#articles-page",

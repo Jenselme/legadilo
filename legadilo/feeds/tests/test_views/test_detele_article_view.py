@@ -104,7 +104,7 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"{self.reading_list_url}?full_reload=true"
+        assert response["Location"] == self.reading_list_url
         assert Article.objects.count() == 0
 
     def test_delete_article_linked_with_feed(
@@ -119,7 +119,7 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"{self.reading_list_url}?full_reload=true"
+        assert response["Location"] == self.reading_list_url
         assert Article.objects.count() == 0
         assert FeedArticle.objects.count() == 0
         assert FeedDeletedArticle.objects.count() == 1

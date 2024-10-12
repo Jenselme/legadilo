@@ -197,9 +197,9 @@ class TestUpdateArticleView:
                 HTTP_HX_Request="true",
             )
 
-        assert response.status_code == HTTPStatus.FOUND
-        location_url = reverse("reading:default_reading_list")
-        assert response["Location"] == f"{location_url}?full_reload=true"
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Redirect"] == reverse("reading:default_reading_list")
+        assert response["HX-Push-Url"] == "true"
 
     def test_update_article_view_for_article_details_favorite_status_action(
         self, logged_in_sync_client, django_assert_num_queries
