@@ -14,19 +14,22 @@
 {% endblock title %}
 {% block content %}
     <form id="delete-feed-form"
+          class="visually-hidden"
+          aria-hidden="true"
           method="post"
           hx-boost="true"
           hx-push-url="true"
-          hx-confirm="Delete?">
+          hx-confirm="Delete?"
+          data-modal-id="danger-modal"
+          data-modal-title="{% translate 'Confirm feed deletion' %}"
+          data-modal-body="{% blocktranslate with feed_title=feed.title %}Are you sure you want to delete the feed '{{ feed_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
+        <input type="hidden" name="delete" value="true" />
     </form>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
         <button form="delete-feed-form"
-                data-modal-id="danger-modal"
-                data-modal-title="{% translate 'Confirm feed deletion' %}"
-                data-modal-body="{% blocktranslate with feed_title=feed.title %}Are you sure you want to delete the feed '{{ feed_title }}'?{% endblocktranslate %}"
                 class="btn btn-danger"
                 type="submit"
                 name="delete">{% translate "Delete" %}</button>

@@ -27,20 +27,23 @@
         {% endif %}
     </h1>
     <form id="delete-reading-list-form"
+          class="visually-hidden"
+          aria-hidden="true"
           method="post"
           hx-boost="true"
           hx-push-url="true"
-          hx-confirm="Delete?">
+          hx-confirm="Delete?"
+          data-modal-id="danger-modal"
+          data-modal-title="{% translate 'Confirm reading list deletion' %}"
+          data-modal-body="{% blocktranslate with reading_list_title=reading_list.title %}Are you sure you want to delete the reading list '{{ reading_list_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
+        <input type="hidden" name="delete" value="true" />
     </form>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
         {% if reading_list %}
             <button form="delete-reading-list-form"
-                    data-modal-id="danger-modal"
-                    data-modal-title="{% translate 'Confirm reading list deletion' %}"
-                    data-modal-body="{% blocktranslate with reading_list_title=reading_list.title %}Are you sure you want to delete the reading list '{{ reading_list_title }}'?{% endblocktranslate %}"
                     class="btn btn-danger"
                     type="submit"
                     name="delete">{% translate "Delete" %}</button>
