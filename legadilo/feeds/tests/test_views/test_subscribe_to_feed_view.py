@@ -109,7 +109,7 @@ class TestSubscribeToFeedView:
         with django_assert_num_queries(35):
             response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
 
-        assert response.status_code == HTTPStatus.CREATED, response.context["form"].errors
+        assert response.status_code == HTTPStatus.CREATED, response.context_data["form"].errors
         assert response.template_name == "feeds/subscribe_to_feed.html"
         messages = list(get_messages(response.wsgi_request))
         feed = Feed.objects.get()

@@ -80,13 +80,13 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["articles"] == [self.article]
-        assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_unread_articles_of_reading_lists"] == {
+        assert response.context_data["articles"] == [self.article]
+        assert response.context_data["reading_lists"] == [self.reading_list]
+        assert response.context_data["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 1
         }
-        assert response.context["displayed_reading_list"] == self.reading_list
-        assert response.context["js_cfg"] == {
+        assert response.context_data["displayed_reading_list"] == self.reading_list
+        assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,
@@ -120,8 +120,8 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["articles"] == [self.article]
-        assert response.context["delete_article_card"]
+        assert response.context_data["articles"] == [self.article]
+        assert response.context_data["delete_article_card"]
         assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         self.article.refresh_from_db()
@@ -151,8 +151,8 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["articles"] == [self.article]
-        assert response.context["delete_article_card"]
+        assert response.context_data["articles"] == [self.article]
+        assert response.context_data["delete_article_card"]
         assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         self.article.refresh_from_db()
@@ -178,8 +178,8 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["articles"] == [self.article]
-        assert not response.context["delete_article_card"]
+        assert response.context_data["articles"] == [self.article]
+        assert not response.context_data["delete_article_card"]
         assert response["HX-Reswap"] == "none show:none"
         assert "HX-Retarget" not in response.headers
         self.article.refresh_from_db()
@@ -252,13 +252,13 @@ class TestMarkArticlesAsReadInBulkView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["articles"] == [self.article]
-        assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_unread_articles_of_reading_lists"] == {
+        assert response.context_data["articles"] == [self.article]
+        assert response.context_data["reading_lists"] == [self.reading_list]
+        assert response.context_data["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
         }
-        assert response.context["displayed_reading_list"] == self.reading_list
-        assert response.context["js_cfg"] == {
+        assert response.context_data["displayed_reading_list"] == self.reading_list
+        assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,
@@ -286,13 +286,13 @@ class TestMarkArticlesAsReadInBulkView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/update_article_action.html"
-        assert response.context["articles"] == [self.article, other_article]
-        assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_unread_articles_of_reading_lists"] == {
+        assert response.context_data["articles"] == [self.article, other_article]
+        assert response.context_data["reading_lists"] == [self.reading_list]
+        assert response.context_data["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
         }
-        assert response.context["displayed_reading_list"] == self.reading_list
-        assert response.context["js_cfg"] == {
+        assert response.context_data["displayed_reading_list"] == self.reading_list
+        assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,

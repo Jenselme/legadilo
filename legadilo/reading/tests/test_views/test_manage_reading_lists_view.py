@@ -44,7 +44,7 @@ class TestReadingListsAdminView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/reading_lists_admin.html"
-        assert list(response.context["reading_lists"]) == [reading_list]
+        assert list(response.context_data["reading_lists"]) == [reading_list]
 
 
 @pytest.mark.django_db

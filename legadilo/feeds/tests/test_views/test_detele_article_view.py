@@ -80,12 +80,12 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_unread_articles_of_reading_lists"] == {
+        assert response.context_data["reading_lists"] == [self.reading_list]
+        assert response.context_data["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
         }
-        assert response.context["displayed_reading_list"] == self.reading_list
-        assert response.context["js_cfg"] == {
+        assert response.context_data["displayed_reading_list"] == self.reading_list
+        assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,

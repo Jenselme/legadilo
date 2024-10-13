@@ -102,7 +102,9 @@ class TestImportFeeds:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_feeds.html"
-        assert response.context["form"].errors == {"opml_file": ["The submitted file is empty."]}
+        assert response.context_data["form"].errors == {
+            "opml_file": ["The submitted file is empty."]
+        }
         assert Feed.objects.count() == 0
 
     def test_import_too_big(self, logged_in_sync_client):
@@ -126,7 +128,7 @@ class TestImportFeeds:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_feeds.html"
-        assert response.context["form"].errors == {
+        assert response.context_data["form"].errors == {
             "opml_file": ["The supplied file is too big to be imported"]
         }
         assert Feed.objects.count() == 0
@@ -149,7 +151,7 @@ class TestImportFeeds:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_feeds.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["form"].errors == {}
         assert Feed.objects.count() == 0
         messages = list(get_messages(response.wsgi_request))
         assert messages == [

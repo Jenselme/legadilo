@@ -139,7 +139,7 @@ class TestImportCustomCSV:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_export_articles.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["import_custom_csv_form"].errors == {}
         assert Feed.objects.count() == 0
         assert Article.objects.count() == 0
         messages = list(get_messages(response.wsgi_request))
@@ -181,7 +181,7 @@ class TestImportCustomCSV:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_export_articles.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["import_custom_csv_form"].errors == {}
         assert Feed.objects.count() > 0
         assert Article.objects.count() > 0
         messages = list(get_messages(response.wsgi_request))
@@ -224,7 +224,7 @@ class TestImportCustomCSV:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_export_articles.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["import_custom_csv_form"].errors == {}
         assert Feed.objects.count() > 0
         assert Article.objects.count() > 0
         messages = list(get_messages(response.wsgi_request))
@@ -261,7 +261,7 @@ class TestImportWallabag:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_export_articles.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["import_wallabag_form"].errors == {}
         assert Feed.objects.count() == 0
         assert Article.objects.count() == 0
         messages = list(get_messages(response.wsgi_request))
@@ -292,7 +292,7 @@ class TestImportWallabag:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_export_articles.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["import_wallabag_form"].errors == {}
         assert Feed.objects.count() == 0
         assert Article.objects.count() == 0
         messages = list(get_messages(response.wsgi_request))
@@ -323,7 +323,7 @@ class TestImportWallabag:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_export_articles.html"
-        assert response.context["form"].errors == {}
+        assert response.context_data["import_wallabag_form"].errors == {}
         assert Feed.objects.count() == 0
         assert Article.objects.count() > 0
         messages = list(get_messages(response.wsgi_request))
