@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% load i18n static crispy_forms_tags %}
+
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{request.csp_nonce}}"
+            type="module"></script>
+{% endblock page_js %}
+{% block title %}
+    {% if tag %}
+        {% blocktranslate with tag_title=tag.title %}
+            Editing tag '{{ tag_title }}'
+        {% endblocktranslate %}
+    {% else %}
+        {% translate "Create a tag manually" %}
+    {% endif %}
+{% endblock title %}
+{% block content %}
+    <form id="delete-tag-form"
+          class="visually-hidden"
+          aria-hidden="true"
+          method="post"
+          hx-boost="true"
+          hx-push-url="true"
+          hx-confirm="Delete?"
+          data-modal-id="danger-modal"
+          data-modal-title="{% translate 'Confirm tag deletion' %}"
+          data-modal-body="{% blocktranslate with tag_title=tag.title %}Are you sure you want to delete the tage '{{ tag_title }}'?{% endblocktranslate %}">
+        {% csrf_token %}
+        <input type="hidden" name="delete" value="true" />
+    </form>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {% if tag %}
+            <button form="delete-tag-form"
+                    class="btn btn-danger"
+                    type="submit"
+                    name="delete">{% translate "Delete" %}</button>
+            <button class="btn btn-primary" type="submit">{% translate "Update" %}</button>
+        {% else %}
+            <button class="btn btn-primary" type="submit">{% translate "Create" %}</button>
+        {% endif %}
+    </form>
+{% endblock content %}

@@ -48,6 +48,26 @@ class SubTag(TypedDict):
 TagsHierarchy = dict[str, list[SubTag]]
 
 
+class SubTagMappingManager(models.Manager):
+    def get_selected_mappings(self, tag: Tag) -> FormChoices:
+        return list(
+            self.filter(base_tag=tag)
+            .values_list("sub_tag__slug", flat=True)
+            .order_by("sub_tag__title")
+        )
+
+    @transaction.atomic()
+    def associate_tag_with_sub_tags(
+        self, tag: Tag, sub_tag_slugs: list[str], *, clear_existing: bool = False
+    ):
+        if clear_existing:
+            tag.sub_tag_mappings.all().delete()
+
+        sub_tags = Tag.objects.get_or_create_from_list(tag.user, sub_tag_slugs)
+        sub_tag_mappings = [self.model(base_tag=tag, sub_tag=sub_tag) for sub_tag in sub_tags]
+        self.bulk_create(sub_tag_mappings)
+
+
 class SubTagMapping(models.Model):
     base_tag = models.ForeignKey(
         "reading.Tag", related_name="sub_tag_mappings", on_delete=models.CASCADE
@@ -55,6 +75,8 @@ class SubTagMapping(models.Model):
     sub_tag = models.ForeignKey(
         "reading.Tag", related_name="base_tag_mappings", on_delete=models.CASCADE
     )
+
+    objects = SubTagMappingManager()
 
     class Meta(TypedModelMeta):
         constraints = [
@@ -146,6 +168,14 @@ class TagManager(models.Manager["Tag"]):
         self.bulk_create(tags_to_create)
 
         return [*existing_tags, *tags_to_create]
+
+    def list_for_admin(self, user: User) -> list[Tag]:
+        return list(
+            self.get_queryset()
+            .for_user(user)
+            .annotate(annot_articles_count=models.Count("articles"))
+            .order_by("title")
+        )
 
 
 class Tag(models.Model):

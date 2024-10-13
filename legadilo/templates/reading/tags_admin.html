@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% load i18n static %}
+
+{% block page_css %}
+    <link rel="stylesheet"
+          href="{% static 'css/grid.css' %}"
+          nonce="{{ request.csp_nonce }}" />
+{% endblock page_css %}
+{% block title %}
+    {% translate "Tags admin" %}
+{% endblock title %}
+{% block content %}
+    <h1>{% translate "Tags admin" %}</h1>
+    <a class="btn btn-outline-primary"
+       href="{% url 'reading:create_tag' %}"
+       role="button">{% translate "Manually create a tag" %}</a>
+    <div class="grid mt-3">
+        {% for tag in tags %}
+            <div class="card">
+                <div class="card-body">
+                    {{ tag.title }} ({% blocktranslate with count=tag.annot_articles_count %}{{ count }}&nbsp;articles{% endblocktranslate %})
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{% translate "View articles" %}</a>
+                    <a href="{% url 'reading:edit_tag' pk=tag.id %}">{% translate "Edit" %}</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

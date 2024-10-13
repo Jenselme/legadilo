@@ -160,6 +160,7 @@
                                                 <span class="visually-hidden">{% translate "Profile menu" %}</span>
                                             </a>
                                             <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="{% url 'reading:tags_admin' %}">{% translate "Tags admin" %}</a>
                                                 <a class="dropdown-item" href="{% url 'feeds:feeds_admin' %}">{% translate "Feeds admin" %}</a>
                                                 <a class="dropdown-item" href="{% url 'feeds:feed_category_admin' %}">{% translate "Feed categories admin" %}</a>
                                                 <a class="dropdown-item" href="{% url 'reading:reading_lists_admin' %}">{% translate "Reading lists admin" %}</a>

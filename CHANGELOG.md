@@ -4,6 +4,8 @@
 
 - Correct display of titles with HTML entities when adding an article.
 - Build a tag hierarchy to automatically add other tags when we select a tag.
+  - The hierarchy can be edited in the tag admin.
+  - Tag can also be renamed now.
 
 ## 24.10.2
 
