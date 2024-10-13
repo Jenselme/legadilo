@@ -8,6 +8,10 @@
   - Put unread first.
   - Hide read notifications after 3 months.
 - Can delete articles linked to feeds.
+- Always reload the page when going back to the reading list from article details.
+  - This is to make read on scroll work. Otherwise, we will have a HTMX page change and the JS script won’t even be loaded on the page.
+- Group updates for read on scroll.
+  - Instead of updating articles one by one, we now mark all scrolled articles as read in one go. This should make read on scroll feel easier to use.
 
 ## 24.10.1
 
