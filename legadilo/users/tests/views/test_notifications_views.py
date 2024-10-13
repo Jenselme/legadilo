@@ -45,7 +45,7 @@ class TestListNotificationsView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "users/notifications.html"
-        assert list(response.context["notifications"]) == [self.notification]
+        assert list(response.context_data["notifications"]) == [self.notification]
 
     def test_mark_all_as_read(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(8):

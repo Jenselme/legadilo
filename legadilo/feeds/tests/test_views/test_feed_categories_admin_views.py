@@ -42,7 +42,7 @@ class TestCategoryFeedAdminView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "feeds/feed_categories_admin.html"
-        assert list(response.context["categories"]) == [feed_category]
+        assert list(response.context_data["categories"]) == [feed_category]
 
 
 class TestCreateFeedCategoryView:

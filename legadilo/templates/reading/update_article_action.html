@@ -8,5 +8,9 @@
     <div hx-swap-oob="innerHTML:#articles-in-total">{% include "reading/list_of_articles.html#articles-in-total" %}</div>
 {% endif %}
 {% if not delete_article_card %}
-    {% include "reading/partials/article_card.html" %}
+    {% for article in articles %}
+        <div hx-swap-oob="innerHTML:#{{ article|article_card_id }}">
+            {% include "reading/partials/article_card.html" with article=article %}
+        </div>
+    {% endfor %}
 {% endif %}

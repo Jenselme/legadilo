@@ -13,6 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from http import HTTPStatus
+from typing import Any
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -30,7 +32,7 @@ from legadilo.reading.services.views import (
 )
 from legadilo.reading.templatetags import article_card_id
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.urls import add_query_params, validate_referer_url
+from legadilo.utils.urls import validate_referer_url
 
 
 @require_POST
@@ -53,51 +55,54 @@ def update_article_view(
     if for_article_details:
         if is_read_status_update:
             return redirect_to_reading_list(request)
-        return _update_article_details_actions(request, article)
+        return TemplateResponse(
+            request,
+            "reading/update_article_details_actions.html",
+            {
+                "article": article,
+                "from_url": get_from_url_for_article_details(request, request.POST),
+            },
+            headers={"HX-Reswap": "none show:none"},
+        )
 
     if not request.htmx:
         return HttpResponseRedirect(
             validate_referer_url(request, reverse("reading:default_reading_list"))
         )
 
-    return update_article_card(
-        request,
-        article,
-        update_action,
-        hx_target=f"#{article_card_id(article)}",
-        delete_article_card=False,
+    ctx = get_common_template_context(request, update_action)
+    hx_target = f"#{article_card_id(article)}"
+    headers = (
+        {
+            "HX-Reswap": "outerHTML show:none swap:1s",
+            "HX-Retarget": hx_target,
+        }
+        if ctx["delete_article_card"]
+        else {"HX-Reswap": "none show:none"}
     )
 
-
-def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    from_url = get_from_url_for_article_details(request, request.POST)
-    return HttpResponseRedirect(
-        add_query_params(from_url, {"full_reload": ["true"]}),
-    )
-
-
-def _update_article_details_actions(
-    request: AuthenticatedHttpRequest, article: Article
-) -> TemplateResponse:
     return TemplateResponse(
         request,
-        "reading/update_article_details_actions.html",
-        {
-            "article": article,
-            "from_url": get_from_url_for_article_details(request, request.POST),
-        },
-        headers={"HX-Reswap": "none show:none"},
+        "reading/update_article_action.html",
+        {**ctx, "articles": [article]},
+        headers=headers,
     )
 
 
-def update_article_card(
+def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse:
+    from_url = get_from_url_for_article_details(request, request.POST)
+    if not request.htmx:
+        return HttpResponseRedirect(from_url)
+
+    return HttpResponse(headers={"HX-Redirect": from_url, "HX-Push-Url": "true"})
+
+
+def get_common_template_context(
     request: AuthenticatedHttpRequest,
-    article: Article,
     update_action: constants.UpdateArticleActions,
     *,
-    hx_target,
-    delete_article_card,
-) -> TemplateResponse:
+    deleting_article: bool = False,
+) -> dict[str, Any]:
     from_url = get_from_url_for_article_details(request, request.POST)
     try:
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
@@ -118,7 +123,7 @@ def update_article_card(
             and displayed_reading_list.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER
         )
         delete_article_card = (
-            delete_article_card
+            deleting_article
             or for_later_but_excluded_from_list
             or not_for_later_but_excluded_from_list
         )
@@ -126,28 +131,56 @@ def update_article_card(
         displayed_reading_list = None
         count_articles_of_current_reading_list = None
         js_cfg = {}
+        delete_article_card = False
 
     reading_lists = ReadingList.objects.get_all_for_user(request.user)
     count_unread_articles_of_reading_lists = Article.objects.count_unread_articles_of_reading_lists(
         request.user, reading_lists
     )
+
+    return {
+        "reading_lists": reading_lists,
+        "count_unread_articles_of_reading_lists": count_unread_articles_of_reading_lists,
+        "displayed_reading_list": displayed_reading_list,
+        "js_cfg": js_cfg,
+        "from_url": from_url,
+        "count_articles_of_current_reading_list": count_articles_of_current_reading_list,
+        "delete_article_card": delete_article_card,
+    }
+
+
+@require_POST
+@login_required
+@transaction.atomic()
+def mark_articles_as_read_in_bulk_view(request: AuthenticatedHttpRequest) -> HttpResponse:
+    try:
+        article_ids = [int(id_) for id_ in request.POST["article_ids"].split(",") if id_]
+    except (TypeError, ValueError, KeyError, IndexError):
+        article_ids = []
+
+    if len(article_ids) == 0:
+        return HttpResponse(
+            "You must supply a valid list of ids",
+            status=HTTPStatus.BAD_REQUEST,
+            content_type="text/plain",
+        )
+
+    articles_qs = (
+        Article.objects.get_queryset()
+        .for_details()
+        .filter(user=request.user, id__in=article_ids)
+        .order_by("id")
+    )
+    articles_qs.update_articles_from_action(constants.UpdateArticleActions.MARK_AS_READ)
+
     return TemplateResponse(
         request,
         "reading/update_article_action.html",
         {
-            "article": article,
-            "reading_lists": reading_lists,
-            "count_unread_articles_of_reading_lists": count_unread_articles_of_reading_lists,
-            "displayed_reading_list": displayed_reading_list,
-            "js_cfg": js_cfg,
-            "from_url": from_url,
-            "count_articles_of_current_reading_list": count_articles_of_current_reading_list,
-            "delete_article_card": delete_article_card,
-        },
-        headers={
-            "HX-Reswap": "outerHTML show:none swap:1s"
-            if delete_article_card
-            else "innerHTML show:none",
-            "HX-Retarget": hx_target,
+            **get_common_template_context(
+                request,
+                constants.UpdateArticleActions.MARK_AS_READ,
+            ),
+            "articles": list(articles_qs),
         },
     )

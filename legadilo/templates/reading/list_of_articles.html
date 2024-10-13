@@ -153,4 +153,20 @@
             </div>
         </div>
     </div>
+    <form id="bulk-mark-as-read-form"
+          class="visually-hidden"
+          aria-hidden="true"
+          method="post"
+          action="{% url 'reading:mark_articles_as_read_in_bulk' %}"
+          hx-trigger="submit"
+          hx-swap="none show:none"
+          hx-boost="true"
+          hx-push-url="false">
+        {% csrf_token %}
+        <input id="bulk-mark-as-read-data" type="hidden" name="article_ids" value="" />
+        <input type="hidden"
+               name="displayed_reading_list_id"
+               value="{{ displayed_reading_list.id }}" />
+        <input type="hidden" name="from_url" value="{{ from_url }}" />
+    </form>
 {% endblock content %}

@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .article_actions_views import (
+    mark_articles_as_read_in_bulk_view,
     update_article_view,
 )
 from .article_details_views import article_details_view
@@ -35,6 +36,7 @@ __all__ = [
     "add_article_view",
     "article_details_view",
     "external_tag_with_articles_view",
+    "mark_articles_as_read_in_bulk_view",
     "reading_list_admin_view",
     "reading_list_create_view",
     "reading_list_edit_view",

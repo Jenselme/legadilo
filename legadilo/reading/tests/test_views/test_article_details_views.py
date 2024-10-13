@@ -61,9 +61,9 @@ class TestArticleDetailsView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/article_details.html"
-        assert response.context["article"] == self.article
-        assert response.context["from_url"] == reverse("reading:default_reading_list")
-        assert "edit_article_form" in response.context
+        assert response.context_data["article"] == self.article
+        assert response.context_data["from_url"] == reverse("reading:default_reading_list")
+        assert "edit_article_form" in response.context_data
 
     def test_view_details_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
         from_url = "/reading/lists/unread/"
@@ -72,9 +72,9 @@ class TestArticleDetailsView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/article_details.html"
-        assert response.context["article"] == self.article
-        assert response.context["from_url"] == from_url
-        assert "edit_article_form" in response.context
+        assert response.context_data["article"] == self.article
+        assert response.context_data["from_url"] == from_url
+        assert "edit_article_form" in response.context_data
 
 
 @pytest.mark.django_db

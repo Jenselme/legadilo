@@ -1,24 +1,7 @@
 {% load feeds %}
 
-<article class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
-    {% if js_cfg.is_reading_on_scroll_enabled and not article.is_read %}
-        <form class="visually-hidden readable-on-scroll"
-              aria-hidden="true"
-              method="post"
-              action="{{ article|read_action_url }}"
-              hx-indicator=".{{ article|article_action_indicator }}"
-              hx-trigger="submit"
-              hx-boost="true"
-              hx-swap="outerHTML show:none"
-              hx-target="#{{ article|article_card_id }}"
-              hx-push-url="false">
-            {% csrf_token %}
-            <input type="hidden"
-                   name="displayed_reading_list_id"
-                   value="{{ displayed_reading_list.id }}" />
-            <input type="hidden" name="from_url" value="{{ from_url }}" />
-        </form>
-    {% endif %}
+<article data-article-id="{{ article.id }}"
+         class="{% if js_cfg.is_reading_on_scroll_enabled and not article.is_read %}readable-on-scroll{% endif %} card mb-2 {% if article.is_read %}opacity-50{% endif %}">
     <div class="card-body">
         <header>
             <h2 class="card-title text-break">

@@ -80,13 +80,12 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.context["article"].pk is None
-        assert response.context["reading_lists"] == [self.reading_list]
-        assert response.context["count_unread_articles_of_reading_lists"] == {
+        assert response.context_data["reading_lists"] == [self.reading_list]
+        assert response.context_data["count_unread_articles_of_reading_lists"] == {
             self.reading_list.slug: 0
         }
-        assert response.context["displayed_reading_list"] == self.reading_list
-        assert response.context["js_cfg"] == {
+        assert response.context_data["displayed_reading_list"] == self.reading_list
+        assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
             "articles_list_min_refresh_timeout": 300,
@@ -105,7 +104,7 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"{self.reading_list_url}?full_reload=true"
+        assert response["Location"] == self.reading_list_url
         assert Article.objects.count() == 0
 
     def test_delete_article_linked_with_feed(
@@ -120,7 +119,7 @@ class TestDeleteArticleView:
             )
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"{self.reading_list_url}?full_reload=true"
+        assert response["Location"] == self.reading_list_url
         assert Article.objects.count() == 0
         assert FeedArticle.objects.count() == 0
         assert FeedDeletedArticle.objects.count() == 1

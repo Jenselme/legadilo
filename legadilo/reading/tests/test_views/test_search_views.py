@@ -172,10 +172,10 @@ class TestSearchView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/search.html"
-        assert not response.context["form"].is_valid()
-        assert response.context["form"].errors == {"q": ["This field is required."]}
-        assert response.context["articles"] == []
-        assert response.context["total_results"] == 0
+        assert not response.context_data["search_form"].is_valid()
+        assert response.context_data["search_form"].errors == {"q": ["This field is required."]}
+        assert response.context_data["articles"] == []
+        assert response.context_data["total_results"] == 0
 
     def test_search(self, user, logged_in_sync_client):
         article = ArticleFactory(title="Claudius", user=user)
@@ -185,9 +185,9 @@ class TestSearchView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/search.html"
-        assert response.context["form"].is_valid()
-        assert response.context["articles"] == [article]
-        assert response.context["total_results"] == 1
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [article]
+        assert response.context_data["total_results"] == 1
 
     def test_search_with_tags(self, user, logged_in_sync_client):
         ArticleFactory(user=user, title="Claudius")
@@ -217,9 +217,9 @@ class TestSearchView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/search.html"
-        assert response.context["form"].is_valid()
-        assert response.context["articles"] == [article_with_tag_to_include]
-        assert response.context["total_results"] == 1
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [article_with_tag_to_include]
+        assert response.context_data["total_results"] == 1
 
     def test_update_search(self, user, logged_in_sync_client):
         ArticleFactory(user=user, title="Claudius")
@@ -264,6 +264,6 @@ class TestSearchView:
         ]
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/search.html"
-        assert response.context["form"].is_valid()
-        assert response.context["articles"] == [article_with_tag_to_include]
-        assert response.context["total_results"] == 1
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [article_with_tag_to_include]
+        assert response.context_data["total_results"] == 1
