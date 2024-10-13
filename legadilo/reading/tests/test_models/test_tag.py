@@ -41,6 +41,32 @@ class TestTagManager:
             (self.tag2.slug, self.tag2.title),
         ]
 
+    def test_all_choices_with_hierarchy(self, user, other_user):
+        self.tag1.sub_tags.add(self.tag2)
+        tag3 = TagFactory(user=user)
+        tag4 = TagFactory(user=user)
+        self.tag2.sub_tags.add(tag3, tag4)
+
+        choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
+
+        assert choices == [
+            (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),
+            (self.tag1.slug, self.tag1.title),
+            (self.tag2.slug, self.tag2.title),
+            (tag3.slug, tag3.title),
+            (tag4.slug, tag4.title),
+        ]
+        assert hierarchy == {
+            self.existing_tag_with_spaces.slug: [],
+            self.tag1.slug: [{"title": self.tag2.title, "slug": self.tag2.slug}],
+            self.tag2.slug: [
+                {"title": tag3.title, "slug": tag3.slug},
+                {"title": tag4.title, "slug": tag4.slug},
+            ],
+            tag3.slug: [],
+            tag4.slug: [],
+        }
+
     def test_get_or_create_from_list(self, django_assert_num_queries, user):
         with django_assert_num_queries(4):
             tags = Tag.objects.get_or_create_from_list(

@@ -68,7 +68,9 @@ class FetchArticleForm(forms.Form):
 @require_http_methods(["GET", "POST"])  # type: ignore[type-var]
 @login_required
 async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    tag_choices = await sync_to_async(Tag.objects.get_all_choices)(request.user)
+    tag_choices, hierarchy = await sync_to_async(Tag.objects.get_all_choices_with_hierarchy)(
+        request.user
+    )
     form = FetchArticleForm(tag_choices=tag_choices)
     status = HTTPStatus.OK
 
@@ -87,7 +89,10 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
     return TemplateResponse(
         request,
         "reading/add_article.html",
-        {"form": form, "tags": Tag.objects.all()},
+        {
+            "form": form,
+            "tags_hierarchy": hierarchy,
+        },
         status=status,
     )
 

@@ -3,6 +3,7 @@
 ## 24.10.3
 
 - Correct display of titles with HTML entities when adding an article.
+- Build a tag hierarchy to automatically add other tags when we select a tag.
 
 ## 24.10.2
 

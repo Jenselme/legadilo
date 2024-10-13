@@ -26,6 +26,7 @@ from legadilo.reading.models import (
     ReadingListTag,
     Tag,
 )
+from legadilo.reading.models.tag import SubTagMapping
 
 
 class ArticleTagInline(admin.TabularInline):
@@ -52,10 +53,17 @@ class ArticleFetchErrorInline(admin.TabularInline):
         return False
 
 
+class SubTagMappingInline(admin.TabularInline):
+    model = SubTagMapping
+    fk_name = "base_tag"
+    autocomplete_fields = ["sub_tag"]
+
+
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     search_fields = ["title"]
     autocomplete_fields = ["user"]
+    inlines = [SubTagMappingInline]
 
 
 @admin.register(Article)

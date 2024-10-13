@@ -17,10 +17,12 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, TypedDict
 
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db import models, transaction
+from django.db.models.functions import Coalesce
 from slugify import slugify
 
 from legadilo.core import constants as core_constants
@@ -36,6 +38,33 @@ if TYPE_CHECKING:
 else:
     TypedModelMeta = object
     ReadingList = object
+
+
+class SubTag(TypedDict):
+    title: str
+    slug: str
+
+
+TagsHierarchy = dict[str, list[SubTag]]
+
+
+class SubTagMapping(models.Model):
+    base_tag = models.ForeignKey(
+        "reading.Tag", related_name="sub_tag_mappings", on_delete=models.CASCADE
+    )
+    sub_tag = models.ForeignKey(
+        "reading.Tag", related_name="base_tag_mappings", on_delete=models.CASCADE
+    )
+
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                "base_tag", "sub_tag", name="%(app_label)s_%(class)s_unique_sub_tag_mapping_for_tag"
+            )
+        ]
+
+    def __str__(self):
+        return f"SubTagMapping(base_tag={self.base_tag}, sub_tag={self.sub_tag})"
 
 
 class TagQuerySet(models.QuerySet["Tag"]):
@@ -54,6 +83,43 @@ class TagManager(models.Manager["Tag"]):
 
     def get_all_choices(self, user: User) -> FormChoices:
         return list(self.get_queryset().for_user(user).values_list("slug", "title"))
+
+    def get_all_choices_with_hierarchy(self, user: User) -> tuple[FormChoices, TagsHierarchy]:
+        choices: FormChoices = []
+        hierarchy: TagsHierarchy = {}
+        for tag_data in (
+            self.get_queryset()
+            .for_user(user)
+            .annotate(
+                sub_tag_titles=Coalesce(
+                    ArrayAgg(
+                        "sub_tags__title",
+                        filter=models.Q(sub_tags__title__isnull=False),
+                        ordering=("sub_tags__title",),
+                    ),
+                    [],
+                ),
+                sub_tag_slugs=Coalesce(
+                    ArrayAgg(
+                        "sub_tags__slug",
+                        filter=models.Q(sub_tags__slug__isnull=False),
+                        ordering=("sub_tags__title",),
+                    ),
+                    [],
+                ),
+            )
+            .values("slug", "title", "sub_tag_titles", "sub_tag_slugs")
+            .order_by("title", "id")
+        ):
+            choices.append((tag_data["slug"], tag_data["title"]))
+            hierarchy[tag_data["slug"]] = [
+                {"title": sub_tag_title, "slug": sub_tag_slug}
+                for sub_tag_title, sub_tag_slug in zip(
+                    tag_data["sub_tag_titles"], tag_data["sub_tag_slugs"], strict=False
+                )
+            ]
+
+        return choices, hierarchy
 
     def get_slugs_to_ids(self, user: User, slugs: Iterable[str]) -> dict[str, int]:
         return {
@@ -85,6 +151,10 @@ class TagManager(models.Manager["Tag"]):
 class Tag(models.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=50, blank=True)
+
+    sub_tags = models.ManyToManyField(
+        "reading.Tag", related_name="base_tags", through=SubTagMapping
+    )
 
     user = models.ForeignKey("users.User", related_name="tags", on_delete=models.CASCADE)
     articles = models.ManyToManyField(
