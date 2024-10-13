@@ -19,6 +19,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
 
+from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from legadilo.utils.time_utils import utcnow
@@ -41,6 +42,16 @@ class NotificationQuerySet(models.QuerySet["Notification"]):
     def only_unread(self):
         return self.filter(is_read=False)
 
+    def for_user_list(self, user: User) -> Self:
+        only_recent_and_unread = models.Q(read_at__isnull=True) | models.Q(
+            is_read__isnull=False, read_at__gt=utcnow() - relativedelta(months=3)
+        )
+        return (
+            self.for_user(user)
+            .filter(only_recent_and_unread)
+            .order_by(models.F("read_at").desc(nulls_first=True), "created_at")
+        )
+
 
 class NotificationManager(models.Manager["Notification"]):
     _hints: dict
@@ -51,8 +62,8 @@ class NotificationManager(models.Manager["Notification"]):
     def count_unread(self, user: User) -> int:
         return self.get_queryset().for_user(user).only_unread().count()
 
-    def list_all_for_user(self, user: User) -> Iterable[Notification]:
-        return self.get_queryset().for_user(user).all()
+    def list_recent_for_user(self, user: User) -> Iterable[Notification]:
+        return self.get_queryset().for_user_list(user)
 
     def mark_as_read(self, user: User, notification_id: int | None = None) -> None:
         qs = self.get_queryset().for_user(user)

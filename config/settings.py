@@ -296,9 +296,9 @@ SESSION_COOKIE_HTTPONLY = True
 # prevent disconnection while reading on scroll.
 SESSION_SAVE_EVERY_REQUEST = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
-# Reduce default session lifetime to 1 week (instead of 2) because we refresh the session. If we are
-# 1 week without usage, we are disconnected.
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 5  # 5 days in seconds
+# Set default session lifetime to 2 weeks. If we are 2 weeks without usage (session is refreshed),
+# we are disconnected automatically.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 days in seconds
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-httponly
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options

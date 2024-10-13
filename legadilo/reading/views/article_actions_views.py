@@ -35,37 +35,6 @@ from legadilo.utils.urls import add_query_params, validate_referer_url
 
 @require_POST
 @login_required
-def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> HttpResponse:
-    article = get_object_or_404(Article, id=article_id, user=request.user)
-    hx_target = f"#{article_card_id(article)}"
-    article.delete()
-
-    for_article_details = request.POST.get("for_article_details", "")
-    if for_article_details:
-        return _redirect_to_reading_list(request)
-
-    if not request.htmx:
-        from_url = get_from_url_for_article_details(request, request.POST)
-        return HttpResponseRedirect(from_url)
-
-    return _update_article_card(
-        request,
-        article,
-        constants.UpdateArticleActions.DO_NOTHING,
-        hx_target=hx_target,
-        delete_article_card=True,
-    )
-
-
-def _redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    from_url = get_from_url_for_article_details(request, request.POST)
-    return HttpResponseRedirect(
-        add_query_params(from_url, {"full_reload": ["true"]}),
-    )
-
-
-@require_POST
-@login_required
 @transaction.atomic()
 def update_article_view(
     request: AuthenticatedHttpRequest,
@@ -83,7 +52,7 @@ def update_article_view(
 
     if for_article_details:
         if is_read_status_update:
-            return _redirect_to_reading_list(request)
+            return redirect_to_reading_list(request)
         return _update_article_details_actions(request, article)
 
     if not request.htmx:
@@ -91,12 +60,19 @@ def update_article_view(
             validate_referer_url(request, reverse("reading:default_reading_list"))
         )
 
-    return _update_article_card(
+    return update_article_card(
         request,
         article,
         update_action,
         hx_target=f"#{article_card_id(article)}",
         delete_article_card=False,
+    )
+
+
+def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
+    from_url = get_from_url_for_article_details(request, request.POST)
+    return HttpResponseRedirect(
+        add_query_params(from_url, {"full_reload": ["true"]}),
     )
 
 
@@ -114,7 +90,7 @@ def _update_article_details_actions(
     )
 
 
-def _update_article_card(
+def update_article_card(
     request: AuthenticatedHttpRequest,
     article: Article,
     update_action: constants.UpdateArticleActions,

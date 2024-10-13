@@ -36,5 +36,6 @@ urlpatterns = [
         views.feed_articles_view,
         name="feed_articles",
     ),
+    path("articles/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
     path("articles/<int:feed_id>/", views.feed_articles_view, name="feed_articles"),
 ]

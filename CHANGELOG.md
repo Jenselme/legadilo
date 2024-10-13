@@ -1,5 +1,14 @@
 # Changelog
 
+## 24.10.2
+
+- Increase session lifetime to 2 weeks: it seems like a better compromise to only be disconnected if we haven’t used legadilo in a while.
+- Update table of content when re-fetching an artile.
+- Improve display of notifications:
+  - Put read first.
+  - Hide read notifications after 3 months.
+- Can delete articles linked to feeds.
+
 ## 24.10.1
 
 - Correct `theme_color` in `manifest.json`.

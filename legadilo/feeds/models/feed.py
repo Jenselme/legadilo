@@ -37,6 +37,7 @@ from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
+from .feed_deleted_article import FeedDeletedArticle
 from .feed_tag import FeedTag
 from .feed_update import FeedUpdate, FeedUpdateQuerySet
 
@@ -257,14 +258,19 @@ class FeedManager(models.Manager["Feed"]):
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_metadata: FeedData):
+        deleted_feed_links = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
+        articles = [
+            article for article in feed_metadata.articles if article.link not in deleted_feed_links
+        ]
         created_articles = Article.objects.update_or_create_from_articles_list(
             feed.user,
-            feed_metadata.articles,
+            articles,
             feed.tags.all(),
             source_type=reading_constants.ArticleSourceType.FEED,
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,
+            ignored_article_links=deleted_feed_links,
             feed_etag=feed_metadata.etag,
             feed_last_modified=feed_metadata.last_modified,
             feed=feed,

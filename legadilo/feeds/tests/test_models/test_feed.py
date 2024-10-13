@@ -22,7 +22,7 @@ import time_machine
 from asgiref.sync import async_to_sync
 
 from legadilo.core.models import Timezone
-from legadilo.feeds.models import FeedArticle, FeedUpdate
+from legadilo.feeds.models import FeedArticle, FeedDeletedArticle, FeedUpdate
 from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
 from legadilo.feeds.tests.factories import (
     FeedCategoryFactory,
@@ -299,7 +299,7 @@ class TestFeedManager:
             feed_url=ONE_ARTICLE_FEED_DATA.feed_url, user=user, disabled_at=utcnow()
         )
 
-        with django_assert_num_queries(15):
+        with django_assert_num_queries(16):
             feed, created = Feed.objects.create_from_metadata(
                 ONE_ARTICLE_FEED_DATA,
                 user,
@@ -315,7 +315,7 @@ class TestFeedManager:
         assert feed.feed_updates.count() == 1
 
     def test_create_from_feed_data(self, user, django_assert_num_queries):
-        with django_assert_num_queries(15):
+        with django_assert_num_queries(16):
             feed, created = Feed.objects.create_from_metadata(
                 FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
@@ -377,7 +377,7 @@ class TestFeedManager:
     def test_create_from_metadata_with_tags(self, user, django_assert_num_queries):
         tag = TagFactory()
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(19):
             feed, _ = Feed.objects.create_from_metadata(
                 ONE_ARTICLE_FEED_DATA,
                 user,
@@ -457,7 +457,7 @@ class TestFeedManager:
         )
         FeedArticle.objects.create(feed=self.feed, article=existing_article)
 
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             Feed.objects.update_feed(
                 self.feed,
                 FeedData(
@@ -516,6 +516,68 @@ class TestFeedManager:
         existing_article.refresh_from_db()
         assert existing_article.main_source_type == reading_constants.ArticleSourceType.MANUAL
         assert existing_article.main_source_title != self.feed.title
+
+    def test_update_feed_with_deleted_articles(self, django_assert_num_queries):
+        deleted_link = "https://example.com/deleted/"
+        FeedDeletedArticle.objects.create(article_link=deleted_link, feed=self.feed)
+
+        with django_assert_num_queries(10):
+            Feed.objects.update_feed(
+                self.feed,
+                FeedData(
+                    feed_url="https://example.com/feeds/atom.xml",
+                    site_url="https://example.com",
+                    title="Awesome website",
+                    description="A description",
+                    feed_type=feeds_constants.SupportedFeedType.atom,
+                    etag="W/etag",
+                    last_modified=None,
+                    articles=[
+                        ArticleData(
+                            external_article_id="some-article-1",
+                            title="Article 1",
+                            summary="Summary 1",
+                            content="Description 1",
+                            table_of_content=[],
+                            authors=["Author"],
+                            contributors=[],
+                            tags=[],
+                            link="https//example.com/article/1",
+                            preview_picture_url="https://example.com/preview.png",
+                            preview_picture_alt="Some image alt",
+                            published_at=datetime.now(tz=UTC),
+                            updated_at=datetime.now(tz=UTC),
+                            source_title=self.feed.title,
+                            language="fr",
+                        ),
+                        ArticleData(
+                            external_article_id="deleted-article",
+                            title="Article 2",
+                            summary="Summary 2",
+                            content="Description",
+                            table_of_content=[],
+                            authors=["Author"],
+                            contributors=[],
+                            tags=[],
+                            link=deleted_link,
+                            preview_picture_url="",
+                            preview_picture_alt="",
+                            published_at=datetime.now(tz=UTC),
+                            updated_at=datetime.now(tz=UTC),
+                            source_title=self.feed.title,
+                            language="fr",
+                        ),
+                    ],
+                ),
+            )
+
+        assert self.feed.articles.count() == 1
+        article = self.feed.articles.get()
+        assert article.link != deleted_link
+        assert self.feed.feed_updates.count() == 1
+        feed_update = self.feed.feed_updates.get()
+        assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
+        assert feed_update.ignored_article_links == [deleted_link]
 
     def test_get_feed_update_for_cleanup(self):
         feed = FeedFactory()
