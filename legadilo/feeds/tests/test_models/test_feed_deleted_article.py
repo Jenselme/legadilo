@@ -36,7 +36,7 @@ class TestFeedDeletedArticleManager:
 
         all_deleted = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
 
-        assert list(all_deleted) == [deleted1.article_link, deleted2.article_link]
+        assert all_deleted == {deleted1.article_link, deleted2.article_link}
 
     def test_list_deleted_for_feed_nothing_deleted(self):
         feed = FeedFactory()

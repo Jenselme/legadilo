@@ -270,7 +270,7 @@ class FeedManager(models.Manager["Feed"]):
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,
-            ignored_article_links=deleted_feed_links,
+            ignored_article_links=list(deleted_feed_links),
             feed_etag=feed_metadata.etag,
             feed_last_modified=feed_metadata.last_modified,
             feed=feed,
