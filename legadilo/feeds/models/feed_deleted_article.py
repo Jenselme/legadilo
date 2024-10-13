@@ -33,13 +33,13 @@ class FeedDeletedArticleQuerySet(models.QuerySet["FeedDeletedArticle"]):
 
 
 class FeedDeletedArticleManager(models.Manager["FeedDeletedArticle"]):
-    def list_deleted_for_feed(self, feed: Feed) -> list[str]:
+    def list_deleted_for_feed(self, feed: Feed) -> set[str]:
         deleted_links = (
             self.get_queryset()
             .filter(feed=feed)
             .aggregate(deleted=Coalesce(ArrayAgg("article_link"), []))
         )
-        return deleted_links["deleted"]
+        return set(deleted_links["deleted"])
 
     def delete_article(self, article: Article):
         feed_deleted_articles = []
