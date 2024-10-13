@@ -12,6 +12,12 @@
   - This is to make read on scroll work. Otherwise, we will have a HTMX page change and the JS script won’t even be loaded on the page.
 - Group updates for read on scroll.
   - Instead of updating articles one by one, we now mark all scrolled articles as read in one go. This should make read on scroll feel easier to use.
+- Allow to use all version of PG above 16.
+  - We still rely on 16 but don’t block users who would want to use 17 or above.
+    - We keep 16 in our container and don’t have a way to upgrade yet anyway. See https://github.com/Jenselme/legadilo/issues/276
+  - We don’t support versions below that: we developed and tested against 16 and don’t want to test other ones.
+    - Future versions should work fine directly from our experience.
+    - Older ones probably too given the feature set we use. But we don’t want to have any weird surprises.
 
 ## 24.10.1
 

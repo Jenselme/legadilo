@@ -504,7 +504,7 @@ MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
 # ------------------------------------------------------------------------------
 VERSION_CHECKS = {
     "python": "==3.12.*",
-    "postgresql": "==16.*",
+    "postgresql": ">=16",
 }
 
 
