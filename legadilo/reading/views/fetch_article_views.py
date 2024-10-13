@@ -26,6 +26,7 @@ from django.shortcuts import aget_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
@@ -186,14 +187,15 @@ async def _handle_save(
 
     # Empty form after success
     form = FetchArticleForm(tag_choices=tag_choices)
+    sanitized_title = mark_safe(article.title)  # noqa: S308 valid use of markup safe.
     if not article.content:
         messages.warning(
             request,
-            no_content_message % article.title,
+            no_content_message % sanitized_title,
         )
     else:
         messages.success(
             request,
-            format_html(success_message, str(article_details_url(article)), article.title),
+            format_html(success_message, str(article_details_url(article)), sanitized_title),
         )
     return HTTPStatus.CREATED, form

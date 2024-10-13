@@ -1,5 +1,9 @@
 # Changelog
 
+## 24.10.3
+
+- Correct display of titles with HTML entities when adding an article.
+
 ## 24.10.2
 
 - Increase session lifetime to 2 weeks: it seems like a better compromise to only be disconnected if we haven’t used legadilo in a while.
