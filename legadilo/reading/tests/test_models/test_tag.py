@@ -18,7 +18,48 @@ import pytest
 
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag, ReadingListTag, Tag
+from legadilo.reading.models.tag import SubTagMapping
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
+
+
+@pytest.mark.django_db
+class TestSubTagMappingManager:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.tag1 = TagFactory(title="Tag 1", user=user)
+        self.sub_tag1 = TagFactory(title="Sub tag 1", user=user)
+        SubTagMapping.objects.create(base_tag=self.tag1, sub_tag=self.sub_tag1)
+        self.tag2 = TagFactory(title="Tag 2", user=user)
+        self.sub_tag2 = TagFactory(title="Sub tag 2", user=user)
+        SubTagMapping.objects.create(base_tag=self.tag2, sub_tag=self.sub_tag2)
+
+    def test_get_selected_mappings(self):
+        choices = SubTagMapping.objects.get_selected_mappings(self.tag1)
+
+        assert choices == [self.sub_tag1.slug]
+
+    def test_associate_tag_with_sub_tags(self, user, django_assert_num_queries):
+        new_tag = TagFactory(title="New tag", user=user)
+
+        with django_assert_num_queries(6):
+            SubTagMapping.objects.associate_tag_with_sub_tags(self.tag1, [new_tag.slug])
+
+        assert set(self.tag1.sub_tags.all().values_list("slug", flat=True)) == {
+            new_tag.slug,
+            self.sub_tag1.slug,
+        }
+
+    def test_associate_tag_with_sub_tags_clear_existing(self, user, django_assert_num_queries):
+        new_tag = TagFactory(title="New tag", user=user)
+
+        with django_assert_num_queries(7):
+            SubTagMapping.objects.associate_tag_with_sub_tags(
+                self.tag1, [new_tag.slug], clear_existing=True
+            )
+
+        assert set(self.tag1.sub_tags.all().values_list("slug", flat=True)) == {
+            new_tag.slug,
+        }
 
 
 @pytest.mark.django_db
@@ -40,6 +81,32 @@ class TestTagManager:
             (self.tag1.slug, self.tag1.title),
             (self.tag2.slug, self.tag2.title),
         ]
+
+    def test_all_choices_with_hierarchy(self, user, other_user):
+        self.tag1.sub_tags.add(self.tag2)
+        tag3 = TagFactory(user=user)
+        tag4 = TagFactory(user=user)
+        self.tag2.sub_tags.add(tag3, tag4)
+
+        choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
+
+        assert choices == [
+            (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),
+            (self.tag1.slug, self.tag1.title),
+            (self.tag2.slug, self.tag2.title),
+            (tag3.slug, tag3.title),
+            (tag4.slug, tag4.title),
+        ]
+        assert hierarchy == {
+            self.existing_tag_with_spaces.slug: [],
+            self.tag1.slug: [{"title": self.tag2.title, "slug": self.tag2.slug}],
+            self.tag2.slug: [
+                {"title": tag3.title, "slug": tag3.slug},
+                {"title": tag4.title, "slug": tag4.slug},
+            ],
+            tag3.slug: [],
+            tag4.slug: [],
+        }
 
     def test_get_or_create_from_list(self, django_assert_num_queries, user):
         with django_assert_num_queries(4):
@@ -75,6 +142,22 @@ class TestTagManager:
         slugs_to_ids = Tag.objects.get_slugs_to_ids(user, [tag.slug])
 
         assert slugs_to_ids == {tag.slug: tag.id}
+
+    def test_list_for_admin(self, user):
+        TagFactory(title="Tag other user")
+        article = ArticleFactory(user=user)
+        ArticleTag.objects.create(article=article, tag=self.tag1)
+
+        all_tags = Tag.objects.list_for_admin(user)
+
+        assert all_tags == [
+            self.existing_tag_with_spaces,
+            self.tag1,
+            self.tag2,
+        ]
+        assert all_tags[0].annot_articles_count == 0  # type: ignore[attr-defined]
+        assert all_tags[1].annot_articles_count == 1  # type: ignore[attr-defined]
+        assert all_tags[2].annot_articles_count == 0  # type: ignore[attr-defined]
 
 
 @pytest.mark.django_db

@@ -13,20 +13,23 @@
 {% endblock title %}
 {% block content %}
     <form id="delete-category-form"
+          class="visually-hidden"
+          aria-hidden="true"
           method="post"
           hx-boost="true"
           hx-push-url="true"
-          hx-confirm="Delete?">
+          hx-confirm="Delete?"
+          data-modal-id="danger-modal"
+          data-modal-title="{% translate 'Confirm category deletion' %}"
+          data-modal-body="{% blocktranslate with category_title=category.title %}Are you sure you want to delete the category '{{ category_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
+        <input type="hidden" name="delete" value="true" />
     </form>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
         {% if category %}
             <button form="delete-category-form"
-                    data-modal-id="danger-modal"
-                    data-modal-title="{% translate 'Confirm category deletion' %}"
-                    data-modal-body="{% blocktranslate with category_title=category.title %}Are you sure you want to delete the category '{{ category_title }}'?{% endblocktranslate %}"
                     class="btn btn-danger"
                     type="submit"
                     name="delete">{% translate "Delete" %}</button>

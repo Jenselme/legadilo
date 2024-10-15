@@ -1,5 +1,13 @@
 # Changelog
 
+## 24.10.3
+
+- Correct display of titles with HTML entities when adding an article.
+- Build a tag hierarchy to automatically add other tags when we select a tag.
+  - The hierarchy can be edited in the tag admin.
+  - Tag can also be renamed now.
+- Correct the modal used when deleting feeds, feed categories and reading lists.
+
 ## 24.10.2
 
 - Increase session lifetime to 2 weeks: it seems like a better compromise to only be disconnected if we haven’t used legadilo in a while.

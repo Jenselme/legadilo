@@ -8,25 +8,16 @@
             type="module"></script>
 {% endblock page_js %}
 {% block title %}
-    {% if reading_list %}
-        {% blocktranslate with reading_list_title=reading_list.title %}
-            Editing reading list '{{ reading_list_title }}'
+    {% if tag %}
+        {% blocktranslate with tag_title=tag.title %}
+            Editing tag '{{ tag_title }}'
         {% endblocktranslate %}
     {% else %}
-        {% translate "Create a new reading list" %}
+        {% translate "Create a tag manually" %}
     {% endif %}
 {% endblock title %}
 {% block content %}
-    <h1>
-        {% if reading_list %}
-            {% blocktranslate with reading_list_title=reading_list.title %}
-                Editing reading list '{{ reading_list_title }}'
-            {% endblocktranslate %}
-        {% else %}
-            {% translate "Create a new reading list" %}
-        {% endif %}
-    </h1>
-    <form id="delete-reading-list-form"
+    <form id="delete-tag-form"
           class="visually-hidden"
           aria-hidden="true"
           method="post"
@@ -34,16 +25,16 @@
           hx-push-url="true"
           hx-confirm="Delete?"
           data-modal-id="danger-modal"
-          data-modal-title="{% translate 'Confirm reading list deletion' %}"
-          data-modal-body="{% blocktranslate with reading_list_title=reading_list.title %}Are you sure you want to delete the reading list '{{ reading_list_title }}'?{% endblocktranslate %}">
+          data-modal-title="{% translate 'Confirm tag deletion' %}"
+          data-modal-body="{% blocktranslate with tag_title=tag.title %}Are you sure you want to delete the tage '{{ tag_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
         <input type="hidden" name="delete" value="true" />
     </form>
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        {% if reading_list %}
-            <button form="delete-reading-list-form"
+        {% if tag %}
+            <button form="delete-tag-form"
                     class="btn btn-danger"
                     type="submit"
                     name="delete">{% translate "Delete" %}</button>
@@ -51,9 +42,5 @@
         {% else %}
             <button class="btn btn-primary" type="submit">{% translate "Create" %}</button>
         {% endif %}
-        {% if not reading_list.is_default %}
-            <button class="btn btn-outline-secondary" type="submit" name="make-default">{% translate "Make default" %}</button>
-        {% endif %}
     </form>
-    <div class="mb-4"></div>
 {% endblock content %}
