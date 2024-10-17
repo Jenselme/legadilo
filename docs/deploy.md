@@ -13,24 +13,19 @@ Currently, the easiest way to run the project is to use docker and docker compos
 
     docker compose -f production.yml up -d
 
-This will build the most up-to-date image and start it.
-The data will be in the `production_postgres_data` volume.
-The service will be exposed on port 8000.
-You will also need to configure these commands on the CRON of the host to update the feeds at regular intervals:
+This will:
+1. Build the most up-to-date image and start it. The data will be in the `production_postgres_data` volume.
+2. The service will be exposed on port 8000.
+3. It will also spin a `cron` container running feed updates and various cleanup every hour.
 
-```
-0 * * * * cd LEGADILO && docker compose -f production.yml exec django python manage.py update_feeds |& systemd-cat -t legadilo
-0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clearsessions |& systemd-cat -t legadilo
-0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_data |& systemd-cat -t legadilo
-```
-
-You can also add this line to automatically back up the database (backups will be placed in the `production_postgres_data_backups` volume):
+You can also add this line to the host cron tab to automatically back up the database (backups will be placed in the `production_postgres_data_backups` volume):
 
 ```
 0 1 * * * cd LEGADILO && docker compose -f production.yml exec postgres /usr/local/bin/backup
 ```
 
 You can then use the `/usr/local/bin/restore` script to restore them.
+
 
 ## Docker image
 
@@ -44,7 +39,27 @@ You can also get a tagged version like this:
 
 The tags are creating following the calendar version pattern: the two first digits are for the year, the second one are for the month and the lasts are incremented at each build. You can find the list of available tags [in GitHub](https://github.com/Jenselme/legadilo/tags).
 
-You will have to set up the CRON as described in the previous section.
+You will have to set up the CRON manually.
+
+### Cron
+
+You will need to configure these commands on the CRON of the host to update the feeds at regular intervals and run various cleanups:
+
+```
+0 * * * * cd LEGADILO && docker compose -f production.yml exec django python manage.py update_feeds |& systemd-cat -t legadilo
+0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clearsessions |& systemd-cat -t legadilo
+0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_data |& systemd-cat -t legadilo
+```
+
+```{admonition} Why not use the cron command?
+:class: note
+
+While you probably want `update_feeds` each hour to update hourly feeds, cleanups don’t need to be run that often.
+Since you have access to a proper crontab on the host, scheduling each command individually will give you more granular control about what you are doing.
+
+But if you want to make it easier for you (and be future proof regarding other commands), you may schedule the `cron` command instead. 
+```
+
 
 ## Configuration options
 

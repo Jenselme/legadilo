@@ -7,6 +7,9 @@
   - The hierarchy can be edited in the tag admin.
   - Tag can also be renamed now.
 - Correct the modal used when deleting feeds, feed categories and reading lists.
+- Create a `cron` command run by a `cron` container by default.
+  - This should ease running the CRON commands requires to update feeds (and run some cleanups) more easily within docker compose.
+- Use the feed as page title when editing a feed.
 
 ## 24.10.2
 
