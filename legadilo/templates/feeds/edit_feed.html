@@ -9,10 +9,11 @@
 {% endblock page_js %}
 {% block title %}
     {% blocktranslate with feed_title=feed.title %}
-        Edit feed '{{ feed_title }}'
+        Editing feed '{{ feed_title }}'
     {% endblocktranslate %}
 {% endblock title %}
 {% block content %}
+    <h1>Editing feed '{{ feed.title }}'</h1>
     <form id="delete-feed-form"
           class="visually-hidden"
           aria-hidden="true"
