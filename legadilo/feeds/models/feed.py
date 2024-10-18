@@ -103,6 +103,18 @@ def _build_refresh_filters(  # noqa: C901, PLR0911, PLR0912 too complex
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
+        case feeds_constants.FeedRefreshDelays.ON_SATURDAYS:
+            if now.weekday() == calendar.SATURDAY:
+                return models.When(
+                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                )
+            return models.When(base_filters, then=False)
+        case feeds_constants.FeedRefreshDelays.ON_SUNDAYS:
+            if now.weekday() == calendar.SUNDAY:
+                return models.When(
+                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                )
+            return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.TWICE_A_WEEK:
             if now.weekday() in {calendar.MONDAY, calendar.THURSDAY}:
                 return models.When(

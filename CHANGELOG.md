@@ -10,6 +10,8 @@
 - Create a `cron` command run by a `cron` container by default.
   - This should ease running the CRON commands requires to update feeds (and run some cleanups) more easily within docker compose.
 - Use the feed as page title when editing a feed.
+- Can update feeds on saturdays and on sundays.
+  - It’s to have articles updated at the start of the weekend!
 
 ## 24.10.2
 
