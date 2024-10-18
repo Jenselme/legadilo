@@ -29,7 +29,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models, transaction
-from django.db.models.functions import Cast, Coalesce
+from django.db.models.functions import Cast, Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
@@ -405,11 +405,21 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             )
         )
 
-    def for_search(self, query: SearchQuery) -> Self:
+    def for_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
+        full_text_search_query = SearchQuery(
+            search_query.q, search_type=search_query.search_type.value, config="english"
+        )
         return (
-            self.alias(search=SEARCH_VECTOR, rank=SearchRank(SEARCH_VECTOR, query))
-            .filter(search=query)
-            .order_by("-rank", "id")
+            self.alias(search=SEARCH_VECTOR)
+            .annotate(rank=SearchRank(SEARCH_VECTOR, full_text_search_query))
+            .filter(search=full_text_search_query)
+        )
+
+    def for_tags_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
+        return (
+            self.alias(lower_tags_title=Lower("tags__title"))
+            .annotate(rank=models.Value(0))
+            .filter(lower_tags_title=search_query.q.lower())
         )
 
 
@@ -636,10 +646,9 @@ class ArticleManager(models.Manager["Article"]):
             .filter(_build_filters_from_reading_list(search_query))
         )
         if search_query.q:
-            full_text_search_query = SearchQuery(
-                search_query.q, search_type=search_query.search_type.value, config="english"
-            )
-            articles_qs = articles_qs.for_search(full_text_search_query)
+            full_text_articles_qs = articles_qs.for_search(search_query)
+            tags_articles_qs = articles_qs.for_tags_search(search_query)
+            articles_qs = tags_articles_qs.union(full_text_articles_qs).order_by("-rank", "id")
 
         return articles_qs
 
