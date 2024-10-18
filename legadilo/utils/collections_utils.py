@@ -49,3 +49,11 @@ async def alist(collection: AsyncIterable[T]) -> list[T]:
         output.append(item)
 
     return output
+
+
+async def aset(collection: AsyncIterable[T]) -> set[T]:
+    output = set()
+    async for item in collection:
+        output.add(item)
+
+    return output
