@@ -39,6 +39,7 @@ from legadilo.utils.security import full_sanitize
 
 from ...users.models import User
 from ...utils.collections_utils import alist, aset
+from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
 
 
@@ -48,7 +49,7 @@ class SearchForm(forms.Form):
     search_type = forms.ChoiceField(
         required=False,
         choices=constants.ArticleSearchType.choices,
-        initial=constants.ArticleSearchType.PLAIN.value,
+        initial=constants.ArticleSearchType.PLAIN,
     )
     # Search refinement fields
     read_status = forms.ChoiceField(
@@ -103,9 +104,15 @@ class SearchForm(forms.Form):
     )
 
     def __init__(self, data=None, *, tag_choices: FormChoices):
-        super().__init__(data)
+        super().__init__(data.copy())
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
+
+        # Make sure we set the proper search type is correct when we do a URL search. By default,
+        # it's a word search.
+        search_type = self.data.get("search_type")
+        if is_url_valid(self.data.get("q")) and not search_type:
+            self.data["search_type"] = constants.ArticleSearchType.URL  # type: ignore[index]
 
     def clean_q(self):
         q = self.cleaned_data["q"]
@@ -232,6 +239,7 @@ async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
                 "articles": [],
                 "total_results": 0,
             },
+            status=HTTPStatus.BAD_REQUEST,
         )
 
     if request.method == "POST":

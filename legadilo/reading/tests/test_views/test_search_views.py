@@ -170,7 +170,7 @@ class TestSearchView:
     def test_invalid_form(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url)
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "reading/search.html"
         assert not response.context_data["search_form"].is_valid()
         assert response.context_data["search_form"].errors == {"q": ["This field is required."]}
@@ -188,6 +188,21 @@ class TestSearchView:
         assert response.context_data["search_form"].is_valid()
         assert response.context_data["articles"] == [article]
         assert response.context_data["total_results"] == 1
+
+    def test_search_with_url(self, user, logged_in_sync_client):
+        article_link = "https://example.com/articles/1.html"
+        article = ArticleFactory(title="Claudius", user=user, link=article_link)
+
+        response = logged_in_sync_client.get(self.url, data={"q": article_link})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["search_form"].data == {
+            "q": ["https://example.com/articles/1.html"],
+            "search_type": [constants.ArticleSearchType.URL],
+        }
+        assert response.context_data["articles"] == [article]
 
     def test_search_with_tags(self, user, logged_in_sync_client):
         ArticleFactory(user=user, title="Claudius")

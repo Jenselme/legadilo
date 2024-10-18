@@ -962,6 +962,20 @@ class TestArticleQuerySet:
 
         assert searched_articles == [article]
 
+    def test_for_url_search(self, user):
+        searched_link = "https://example.com/articles/1"
+        article_with_full_url = ArticleFactory(
+            title="Full url", user=user, link=f"{searched_link}.html"
+        )
+        article_with_partial_url = ArticleFactory(
+            title="Partial url", user=user, link=searched_link
+        )
+        ArticleFactory(title="Other URL", user=user)
+
+        articles = list(Article.objects.get_queryset().for_url_search(searched_link).order_by("id"))
+
+        assert articles == [article_with_full_url, article_with_partial_url]
+
 
 @pytest.mark.django_db
 class TestArticleManager:
@@ -1425,6 +1439,16 @@ class TestArticleManager:
         found_articles = list(Article.objects.search(user, search_query))
 
         assert found_articles == [search_in_title]
+
+    def test_search_url(self, user):
+        article = ArticleFactory(title="Test", user=user)
+        search_query = ArticleFullTextSearchQuery(
+            q=article.link, search_type=constants.ArticleSearchType.URL
+        )
+
+        found_articles = list(Article.objects.search(user, search_query))
+
+        assert found_articles == [article]
 
     def test_search_with_tags_results(self, user, other_user):
         ArticleFactory(title="Claudius other user", user=other_user)

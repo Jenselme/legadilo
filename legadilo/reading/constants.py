@@ -101,6 +101,7 @@ class ArticleSourceType(TextChoices):
 class ArticleSearchType(TextChoices):
     PLAIN = "plain", _("Words")
     PHRASE = "phrase", _("Phrase")
+    URL = "url", _("URL")
 
 
 MAX_ARTICLE_FILE_SIZE = 5 * 1024 * 1024  # 5MiB in bytes.

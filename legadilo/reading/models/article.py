@@ -422,6 +422,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .filter(lower_tags_title=search_query.q.lower())
         )
 
+    def for_url_search(self, url: str) -> Self:
+        return self.filter(link__icontains=url)
+
 
 class ArticleManager(models.Manager["Article"]):
     _hints: dict
@@ -645,7 +648,9 @@ class ArticleManager(models.Manager["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
             .filter(_build_filters_from_reading_list(search_query))
         )
-        if search_query.q:
+        if search_query.search_type == constants.ArticleSearchType.URL:
+            articles_qs = articles_qs.for_url_search(search_query.q)
+        elif search_query.q:
             full_text_articles_qs = articles_qs.for_search(search_query)
             tags_articles_qs = articles_qs.for_tags_search(search_query)
             articles_qs = tags_articles_qs.union(full_text_articles_qs).order_by("-rank", "id")
