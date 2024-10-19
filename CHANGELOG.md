@@ -13,6 +13,8 @@
 - Can update feeds on saturdays and on sundays.
   - It’s to have articles updated at the start of the weekend!
 - Can sort search results by relevancy & various dates.
+- Can add comments on articles.
+  - Text supports Markdown markup.
 
 ## 24.10.2
 
