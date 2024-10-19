@@ -41,6 +41,7 @@ class TestSearchForm:
         assert form.cleaned_data == {
             "q": "Claudius",
             "search_type": constants.ArticleSearchType.PLAIN,
+            "order": constants.ArticleSearchOrderBy.RANK_DESC,
             "read_status": constants.ReadStatus.ALL,
             "favorite_status": constants.FavoriteStatus.ALL,
             "for_later_status": constants.ForLaterStatus.ALL,
@@ -61,6 +62,7 @@ class TestSearchForm:
         assert form.cleaned_data == {
             "q": "Claudius",
             "search_type": constants.ArticleSearchType.PLAIN,
+            "order": constants.ArticleSearchOrderBy.RANK_DESC,
             "read_status": constants.ReadStatus.ALL,
             "favorite_status": constants.FavoriteStatus.ALL,
             "for_later_status": constants.ForLaterStatus.ALL,
@@ -123,6 +125,7 @@ class TestSearchForm:
             {
                 "q": "Claudius",
                 "search_type": constants.ArticleSearchType.PHRASE,
+                "order": constants.ArticleSearchOrderBy.READ_AT_ASC,
                 "read_status": constants.ReadStatus.ONLY_READ.value,
                 "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE.value,
                 "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER.value,
@@ -142,6 +145,7 @@ class TestSearchForm:
         assert form.cleaned_data == {
             "q": "Claudius",
             "search_type": constants.ArticleSearchType.PHRASE,
+            "order": constants.ArticleSearchOrderBy.READ_AT_ASC,
             "read_status": constants.ReadStatus.ONLY_READ,
             "favorite_status": constants.FavoriteStatus.ONLY_FAVORITE,
             "for_later_status": constants.ForLaterStatus.ONLY_FOR_LATER,

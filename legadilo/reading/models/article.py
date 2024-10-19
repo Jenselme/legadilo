@@ -122,6 +122,29 @@ class ArticleSearchQuery:
 class ArticleFullTextSearchQuery(ArticleSearchQuery):
     q: str = ""
     search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
+    order: constants.ArticleSearchOrderBy = constants.ArticleSearchOrderBy.RANK_DESC
+
+    @property
+    def order_by(self) -> str:  # noqa: PLR0911 Too many return statements
+        match self.order:
+            case constants.ArticleSearchOrderBy.RANK_DESC:
+                return "-rank"
+            case constants.ArticleSearchOrderBy.RANK_ASC:
+                return "rank"
+            case constants.ArticleSearchOrderBy.ARTICLE_SAVE_DATE_DESC:
+                return "-obj_updated_at"
+            case constants.ArticleSearchOrderBy.ARTICLE_SAVE_DATE_ASC:
+                return "obj_updated_at"
+            case constants.ArticleSearchOrderBy.ARTICLE_DATE_DESC:
+                return "-published_at"
+            case constants.ArticleSearchOrderBy.ARTICLE_DATE_ASC:
+                return "published_at"
+            case constants.ArticleSearchOrderBy.READ_AT_DESC:
+                return "-read_at"
+            case constants.ArticleSearchOrderBy.READ_AT_ASC:
+                return "read_at"
+            case _:
+                assert_never(self.order)
 
 
 def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901 too complex
@@ -653,7 +676,9 @@ class ArticleManager(models.Manager["Article"]):
         elif search_query.q:
             full_text_articles_qs = articles_qs.for_search(search_query)
             tags_articles_qs = articles_qs.for_tags_search(search_query)
-            articles_qs = tags_articles_qs.union(full_text_articles_qs).order_by("-rank", "id")
+            articles_qs = tags_articles_qs.union(full_text_articles_qs).order_by(
+                search_query.order_by, "id"
+            )
 
         return articles_qs
 

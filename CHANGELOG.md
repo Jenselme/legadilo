@@ -12,6 +12,7 @@
 - Use the feed as page title when editing a feed.
 - Can update feeds on saturdays and on sundays.
   - It’s to have articles updated at the start of the weekend!
+- Can sort search results by relevancy & various dates.
 
 ## 24.10.2
 

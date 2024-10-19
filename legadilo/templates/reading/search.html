@@ -46,6 +46,9 @@
                      data-bs-parent="#advanced-search-container">
                     <div class="accordion-body row">
                         <div class="row">
+                            <div class="col col-md-4 col-12">{{ search_form.order|as_crispy_field }}</div>
+                        </div>
+                        <div class="row">
                             <div class="col col-md-4 col-12">{{ search_form.read_status|as_crispy_field }}</div>
                             <div class="col col-md-4 col-12">{{ search_form.favorite_status|as_crispy_field }}</div>
                             <div class="col col-md-4 col-12">{{ search_form.for_later_status|as_crispy_field }}</div>

@@ -1475,6 +1475,17 @@ class TestArticleManager:
 
         assert found_articles == [search_in_title]
 
+    def test_search_order_by(self, user):
+        article_1 = ArticleFactory(title="Read at", user=user, read_at=utcdt(2024, 6, 1))
+        article_2 = ArticleFactory(title="Read at", user=user, read_at=utcdt(2024, 6, 30))
+        search_query = ArticleFullTextSearchQuery(
+            q="Read at", order=constants.ArticleSearchOrderBy.READ_AT_ASC
+        )
+
+        articles = list(Article.objects.search(user, search_query))
+
+        assert articles == [article_1, article_2]
+
 
 class TestArticleModel:
     @pytest.mark.django_db

@@ -51,6 +51,12 @@ class SearchForm(forms.Form):
         choices=constants.ArticleSearchType.choices,
         initial=constants.ArticleSearchType.PLAIN,
     )
+    # Dates
+    order = forms.ChoiceField(
+        required=False,
+        choices=constants.ArticleSearchOrderBy.choices,
+        initial=constants.ArticleSearchOrderBy.RANK_DESC,
+    )
     # Search refinement fields
     read_status = forms.ChoiceField(
         required=False, choices=constants.ReadStatus.choices, initial=constants.ReadStatus.ALL
@@ -128,6 +134,11 @@ class SearchForm(forms.Form):
         if not self.cleaned_data.get("search_type"):
             return constants.ArticleSearchType.PLAIN
         return constants.ArticleSearchType(self.cleaned_data["search_type"])
+
+    def clean_order(self):
+        if not self.cleaned_data.get("order"):
+            return constants.ArticleSearchOrderBy.RANK_DESC
+        return constants.ArticleSearchOrderBy(self.cleaned_data["order"])
 
     def clean_read_status(self):
         if not self.cleaned_data.get("read_status"):
