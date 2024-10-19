@@ -137,7 +137,7 @@
                 <div id="article-side-toc">
                     {% partialdef article-side-toc inline=True %}
                         <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
-                            <p class="lead">{{ article.title }}</p>
+                            <p class="lead">{{ article.title|safe }}</p>
                             {% for toc_entry in article.table_of_content %}
                                 <a href="#{{ toc_entry.id }}">{{ toc_entry.text|safe }}</a>
                                 {% if toc_entry.children %}
