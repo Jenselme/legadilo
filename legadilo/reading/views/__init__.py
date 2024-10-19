@@ -13,12 +13,17 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from .article_actions_views import (
     mark_articles_as_read_in_bulk_view,
     update_article_view,
 )
 from .article_details_views import article_details_view
+from .comment_views import (
+    create_comment_view,
+    delete_comment_view,
+    display_comment_view,
+    edit_comment_view,
+)
 from .fetch_article_views import add_article_view, refetch_article_view
 from .list_of_articles_views import (
     external_tag_with_articles_view,
@@ -36,7 +41,11 @@ from .tags_admin_views import create_tag_view, edit_tag_view, tags_admin_view
 __all__ = [
     "add_article_view",
     "article_details_view",
+    "create_comment_view",
     "create_tag_view",
+    "delete_comment_view",
+    "display_comment_view",
+    "edit_comment_view",
     "edit_tag_view",
     "external_tag_with_articles_view",
     "mark_articles_as_read_in_bulk_view",

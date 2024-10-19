@@ -32,6 +32,8 @@ from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.reading.services.views import get_from_url_for_article_details
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
+from .comment_views import CommentArticleForm
+
 
 class EditArticleForm(forms.Form):
     tags = MultipleTagsField(
@@ -93,6 +95,7 @@ def article_details_view(
             },
             "article": article,
             "edit_article_form": edit_article_form,
+            "comment_article_form": CommentArticleForm(),
             "from_url": get_from_url_for_article_details(request, request.GET),
         },
         status=status,

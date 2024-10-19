@@ -57,7 +57,7 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_article_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url, HTTP_REFERER="http://testserver/reading/"
             )
@@ -70,7 +70,7 @@ class TestUpdateArticleView:
         assert not self.other_article.is_read
 
     def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
@@ -104,7 +104,7 @@ class TestUpdateArticleView:
             user=user, for_later_status=constants.ForLaterStatus.ONLY_NOT_FOR_LATER
         )
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -135,7 +135,7 @@ class TestUpdateArticleView:
             user=user, for_later_status=constants.ForLaterStatus.ONLY_FOR_LATER
         )
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -162,7 +162,7 @@ class TestUpdateArticleView:
     def test_update_article_view_with_htmx_mark_for_later_reading_list_include_all(
         self, user, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -189,7 +189,7 @@ class TestUpdateArticleView:
     def test_update_article_view_for_article_details_read_status_action(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"for_article_details": "True"},
@@ -204,7 +204,7 @@ class TestUpdateArticleView:
     def test_update_article_view_for_article_details_favorite_status_action(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.post(
                 self.mark_as_favorite_url,
                 data={"for_article_details": "True"},
@@ -241,7 +241,7 @@ class TestMarkArticlesAsReadInBulkView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
     def test_mark_one_article_as_read(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -275,7 +275,7 @@ class TestMarkArticlesAsReadInBulkView:
         other_article = ArticleFactory(user=user, read_at=None)
         article_other_user = ArticleFactory(user=other_user, read_at=None)
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.url,
                 {

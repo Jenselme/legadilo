@@ -299,7 +299,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         )
 
     def for_details(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags()).for_feed_links()
+        return self.prefetch_related(_build_prefetch_article_tags(), "comments").for_feed_links()
 
     def for_export(self, user: User) -> Self:
         return (

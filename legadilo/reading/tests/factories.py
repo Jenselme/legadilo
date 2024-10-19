@@ -21,7 +21,7 @@ from factory.django import DjangoModelFactory
 
 from legadilo.users.tests.factories import UserFactory
 
-from ..models import Article, ArticleFetchError, ReadingList, Tag
+from ..models import Article, ArticleFetchError, Comment, ReadingList, Tag
 
 
 class ArticleFactory(DjangoModelFactory):
@@ -67,3 +67,11 @@ class ArticleFetchErrorFactory(DjangoModelFactory):
 
     class Meta:
         model = ArticleFetchError
+
+
+class CommentFactory(DjangoModelFactory):
+    text = factory.Sequence(lambda n: f"Comment {n}")
+    article = factory.SubFactory(ArticleFactory)
+
+    class Meta:
+        model = Comment
