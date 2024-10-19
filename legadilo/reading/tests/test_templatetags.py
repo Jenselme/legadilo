@@ -23,6 +23,7 @@ from legadilo.reading.templatetags import (
     encode_external_tag,
     favorite_action_url,
     for_later_action_url,
+    markdown,
     read_action_url,
 )
 from legadilo.reading.tests.factories import ArticleFactory
@@ -123,3 +124,9 @@ def test_decode_external_tag(encoded_tag: str, expected_decoded_tag: str):
     decoded_tag = decode_external_tag(encoded_tag)
 
     assert decoded_tag == expected_decoded_tag
+
+
+def test_markdown():
+    rendered_value = markdown("*Hello* **world**!")
+
+    assert rendered_value == "<p><em>Hello</em> <strong>world</strong>!</p>"

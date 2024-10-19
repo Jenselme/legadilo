@@ -7,6 +7,6 @@
                  You commented on {{ comment_date }}
             {% endblocktranslate %}
         </p>
-        <div class="card-text">{{ comment.text }}</div>
+        <div class="card-text">{{ comment.text|markdown }}</div>
     </div>
 </div>

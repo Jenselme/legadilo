@@ -22,6 +22,14 @@ from django.urls import reverse
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading.models import Article
 
+COMMENT = """My comment
+with <em>nasty HTML</em>
+and line breaks
+"""
+CLEANED_COMMENT = """My comment
+with nasty HTML
+and line breaks"""
+
 
 @pytest.mark.django_db
 class TestCreateCommentView:
@@ -58,10 +66,14 @@ class TestCreateCommentView:
 
         with django_assert_num_queries(7):
             response = logged_in_sync_client.post(
-                self.url, data={"article_id": article.id, "text": "My comment"}
+                self.url,
+                data={
+                    "article_id": article.id,
+                    "text": COMMENT,
+                },
             )
 
         assert response.status_code == HTTPStatus.OK
         assert article.comments.count() == 1
         comment = article.comments.get()
-        assert comment.text == "My&#32;comment"
+        assert comment.text == CLEANED_COMMENT

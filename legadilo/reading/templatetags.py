@@ -16,9 +16,11 @@
 
 from urllib.parse import unquote
 
-from django.template.defaultfilters import urlencode
+from django.template.defaultfilters import stringfilter, urlencode
 from django.template.defaulttags import register
 from django.urls import reverse
+from django.utils.safestring import mark_safe
+from markdown import Markdown
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
@@ -115,3 +117,10 @@ def encode_external_tag(tag: str) -> str:
 @register.filter
 def decode_external_tag(tag: str) -> str:
     return unquote(tag).replace("------", "/")
+
+
+@register.filter
+@stringfilter
+def markdown(value: str) -> str:
+    md = Markdown(extensions=["fenced_code"])
+    return mark_safe(md.convert(value))  # noqa: S308 valid use of markup safe.

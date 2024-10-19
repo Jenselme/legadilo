@@ -20,23 +20,32 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from nh3 import clean_text
 
 from legadilo.reading.models import Article, Comment
 from legadilo.users.user_types import AuthenticatedHttpRequest
+from legadilo.utils.security import full_sanitize
 
 
 class CommentArticleForm(forms.Form):
     article_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
-    text = forms.CharField(required=True, widget=forms.Textarea(attrs={"rows": 5}))
+    text = forms.CharField(
+        required=True,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 5,
+                "placeholder": _("Type your comment here. Markdown syntax is supported."),
+            }
+        ),
+    )
 
     class Meta:
         fields = ("text",)
 
     def clean_text(self):
         text = self.cleaned_data.get("text", "")
-        text = clean_text(text)
+        text = full_sanitize(text)
         if not text:
             raise ValidationError("Your text is empty!")
 

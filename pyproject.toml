@@ -244,6 +244,7 @@ nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.23.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
+markdown = "^3.7"
 
 
 [tool.poetry.group.prod]
@@ -257,8 +258,8 @@ sentry-sdk = {extras = ["django"], version = "^2.14.0"}
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-pudb = "2024.1.2"  # https://documen.tician.de/pudb/
-ipdb = "0.13.13"  # https://github.com/gotcha/ipdb
+pudb = "^2024.1.2"  # https://documen.tician.de/pudb/
+ipdb = "^0.13.13"  # https://github.com/gotcha/ipdb
 
 # Testing
 # ------------------------------------------------------------------------------
@@ -300,6 +301,7 @@ optional = true
 
 [tool.poetry.group.typing.dependencies]
 types-python-dateutil = "^2.9.0.20240906"
+types-Markdown = "^3.7.0.20240822"
 mypy = "1.11.2"  # https://github.com/python/mypy
 django-stubs = { extras = ["compatible-mypy"], version = "5.1.0" }  # https://github.com/typeddjango/django-stubs
 
