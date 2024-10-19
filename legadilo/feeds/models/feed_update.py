@@ -96,6 +96,8 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
             case (
                 constants.FeedRefreshDelays.ON_MONDAYS
                 | constants.FeedRefreshDelays.ON_THURSDAYS
+                | constants.FeedRefreshDelays.ON_SATURDAYS
+                | constants.FeedRefreshDelays.ON_SUNDAYS
                 | constants.FeedRefreshDelays.TWICE_A_WEEK
             ):
                 return relativedelta(months=2)

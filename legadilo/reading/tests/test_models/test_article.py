@@ -23,7 +23,6 @@ import pytest
 import time_machine
 from asgiref.sync import async_to_sync
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.search import SearchQuery
 from django.db import models
 
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
@@ -908,7 +907,7 @@ class TestArticleQuerySet:
         assert list(articles_to_cleanup) == [read_1_day_retention_to_cleanup]
 
     def test_for_search(self, user):
-        search_in_title = ArticleFactory(user=user, title="Claudius")
+        search_in_title = ArticleFactory(title="Claudius", user=user)
         ArticleFactory(title="Does not match search", user=user)
         search_in_authors = ArticleFactory(
             title="Search in authors", user=user, authors=["Claudius"]
@@ -919,7 +918,15 @@ class TestArticleQuerySet:
         search_in_content = ArticleFactory(title="Search in content", user=user, content="Claudius")
         search_in_summary = ArticleFactory(title="Search in summary", user=user, summary="Claudius")
 
-        searched_articles = list(Article.objects.get_queryset().for_search(SearchQuery("Claudius")))
+        searched_articles = list(
+            Article.objects.get_queryset()
+            .for_search(
+                ArticleFullTextSearchQuery(
+                    q="Claudius", search_type=constants.ArticleSearchType.PLAIN
+                )
+            )
+            .order_by("-rank")
+        )
 
         assert searched_articles == [
             search_in_title,
@@ -928,6 +935,46 @@ class TestArticleQuerySet:
             search_in_content,
             search_in_main_source_title,
         ]
+
+    def test_for_tags_search(self, user):
+        ArticleFactory(title="Claudius", user=user)
+        article = ArticleFactory(title="Correctly tagged", user=user)
+        tag_that_matches = TagFactory(title="Claudius", user=user)
+        ArticleTag.objects.create(
+            tag=tag_that_matches,
+            article=article,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        other_article = ArticleFactory(title="Other article", user=user)
+        other_tag = TagFactory(title="Other tag", user=user)
+        ArticleTag.objects.create(
+            tag=other_tag,
+            article=other_article,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        ArticleTag.objects.create(
+            tag=other_tag, article=article, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        )
+
+        searched_articles = list(
+            Article.objects.get_queryset().for_tags_search(ArticleFullTextSearchQuery(q="claudius"))
+        )
+
+        assert searched_articles == [article]
+
+    def test_for_url_search(self, user):
+        searched_link = "https://example.com/articles/1"
+        article_with_full_url = ArticleFactory(
+            title="Full url", user=user, link=f"{searched_link}.html"
+        )
+        article_with_partial_url = ArticleFactory(
+            title="Partial url", user=user, link=searched_link
+        )
+        ArticleFactory(title="Other URL", user=user)
+
+        articles = list(Article.objects.get_queryset().for_url_search(searched_link).order_by("id"))
+
+        assert articles == [article_with_full_url, article_with_partial_url]
 
 
 @pytest.mark.django_db
@@ -1393,6 +1440,30 @@ class TestArticleManager:
 
         assert found_articles == [search_in_title]
 
+    def test_search_url(self, user):
+        article = ArticleFactory(title="Test", user=user)
+        search_query = ArticleFullTextSearchQuery(
+            q=article.link, search_type=constants.ArticleSearchType.URL
+        )
+
+        found_articles = list(Article.objects.search(user, search_query))
+
+        assert found_articles == [article]
+
+    def test_search_with_tags_results(self, user, other_user):
+        ArticleFactory(title="Claudius other user", user=other_user)
+        search_in_title = ArticleFactory(user=user, title="Claudius")
+        search_query = ArticleFullTextSearchQuery(q="Claudius")
+        tagged_article = ArticleFactory(title="Tagged article", user=user)
+        tag = TagFactory(title="claudius", user=user)
+        ArticleTag.objects.create(
+            tag=tag, article=tagged_article, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        )
+
+        found_articles = list(Article.objects.search(user, search_query))
+
+        assert found_articles == [search_in_title, tagged_article]
+
     def test_search_with_advanced_filters(self, user, other_user):
         ArticleFactory(user=user, title="Claudius read", read_at=utcnow())
         search_in_title = ArticleFactory(user=user, title="Claudius", read_at=None)
@@ -1403,6 +1474,17 @@ class TestArticleManager:
         found_articles = list(Article.objects.search(user, search_query))
 
         assert found_articles == [search_in_title]
+
+    def test_search_order_by(self, user):
+        article_1 = ArticleFactory(title="Read at", user=user, read_at=utcdt(2024, 6, 1))
+        article_2 = ArticleFactory(title="Read at", user=user, read_at=utcdt(2024, 6, 30))
+        search_query = ArticleFullTextSearchQuery(
+            q="Read at", order=constants.ArticleSearchOrderBy.READ_AT_ASC
+        )
+
+        articles = list(Article.objects.search(user, search_query))
+
+        assert articles == [article_1, article_2]
 
 
 class TestArticleModel:

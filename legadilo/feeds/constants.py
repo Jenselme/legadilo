@@ -47,6 +47,8 @@ class FeedRefreshDelays(TextChoices):
     EVERY_EVENING = "EVERY_EVENING", _("Every Evening")
     ON_MONDAYS = "ON_MONDAYS", _("On Mondays")
     ON_THURSDAYS = "ON_THURSDAYS", _("On Thursdays")
+    ON_SATURDAYS = "ON_SATURDAYS", _("On Saturdays")
+    ON_SUNDAYS = "ON_SUNDAYS", _("On Sundays")
     TWICE_A_WEEK = "TWICE_A_WEEK", _("Twice a week")
     FIRST_DAY_OF_THE_MONTH = "FIRST_DAY_OF_THE_MONTH", _("First Day of the Month")
     MIDDLE_OF_THE_MONTH = "MIDDLE_OF_THE_MONTH", _("Middle Day of the Month")

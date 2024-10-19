@@ -38,7 +38,8 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.security import full_sanitize
 
 from ...users.models import User
-from ...utils.collections_utils import alist
+from ...utils.collections_utils import alist, aset
+from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
 
 
@@ -48,7 +49,13 @@ class SearchForm(forms.Form):
     search_type = forms.ChoiceField(
         required=False,
         choices=constants.ArticleSearchType.choices,
-        initial=constants.ArticleSearchType.PLAIN.value,
+        initial=constants.ArticleSearchType.PLAIN,
+    )
+    # Dates
+    order = forms.ChoiceField(
+        required=False,
+        choices=constants.ArticleSearchOrderBy.choices,
+        initial=constants.ArticleSearchOrderBy.RANK_DESC,
     )
     # Search refinement fields
     read_status = forms.ChoiceField(
@@ -103,9 +110,15 @@ class SearchForm(forms.Form):
     )
 
     def __init__(self, data=None, *, tag_choices: FormChoices):
-        super().__init__(data)
+        super().__init__(data.copy())
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
+
+        # Make sure we set the proper search type is correct when we do a URL search. By default,
+        # it's a word search.
+        search_type = self.data.get("search_type")
+        if is_url_valid(self.data.get("q")) and not search_type:
+            self.data["search_type"] = constants.ArticleSearchType.URL  # type: ignore[index]
 
     def clean_q(self):
         q = self.cleaned_data["q"]
@@ -121,6 +134,11 @@ class SearchForm(forms.Form):
         if not self.cleaned_data.get("search_type"):
             return constants.ArticleSearchType.PLAIN
         return constants.ArticleSearchType(self.cleaned_data["search_type"])
+
+    def clean_order(self):
+        if not self.cleaned_data.get("order"):
+            return constants.ArticleSearchOrderBy.RANK_DESC
+        return constants.ArticleSearchOrderBy(self.cleaned_data["order"])
 
     def clean_read_status(self):
         if not self.cleaned_data.get("read_status"):
@@ -232,13 +250,19 @@ async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
                 "articles": [],
                 "total_results": 0,
             },
+            status=HTTPStatus.BAD_REQUEST,
         )
 
     if request.method == "POST":
         # We update the articles of the current search.
         articles_qs = await _search(request.user, search_form)
+        # articles_qs is based on a union, so we can't rely on filter or paginators. Since we need
+        # these features, we extract the ids of the articles to update and build a new QS.
+        article_ids_to_update = await aset(articles_qs.values_list("id", flat=True))
         status, update_articles_form = await sync_to_async(update_list_of_articles)(
-            request, articles_qs, tag_choices
+            request,
+            Article.objects.get_queryset().filter(id__in=article_ids_to_update),
+            tag_choices,
         )
 
     # Articles have been updated. Some may not be part of the search anymore. Rerun it.

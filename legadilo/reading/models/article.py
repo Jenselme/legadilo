@@ -29,7 +29,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models, transaction
-from django.db.models.functions import Cast, Coalesce
+from django.db.models.functions import Cast, Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
@@ -122,6 +122,29 @@ class ArticleSearchQuery:
 class ArticleFullTextSearchQuery(ArticleSearchQuery):
     q: str = ""
     search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
+    order: constants.ArticleSearchOrderBy = constants.ArticleSearchOrderBy.RANK_DESC
+
+    @property
+    def order_by(self) -> str:  # noqa: PLR0911 Too many return statements
+        match self.order:
+            case constants.ArticleSearchOrderBy.RANK_DESC:
+                return "-rank"
+            case constants.ArticleSearchOrderBy.RANK_ASC:
+                return "rank"
+            case constants.ArticleSearchOrderBy.ARTICLE_SAVE_DATE_DESC:
+                return "-obj_updated_at"
+            case constants.ArticleSearchOrderBy.ARTICLE_SAVE_DATE_ASC:
+                return "obj_updated_at"
+            case constants.ArticleSearchOrderBy.ARTICLE_DATE_DESC:
+                return "-published_at"
+            case constants.ArticleSearchOrderBy.ARTICLE_DATE_ASC:
+                return "published_at"
+            case constants.ArticleSearchOrderBy.READ_AT_DESC:
+                return "-read_at"
+            case constants.ArticleSearchOrderBy.READ_AT_ASC:
+                return "read_at"
+            case _:
+                assert_never(self.order)
 
 
 def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901 too complex
@@ -405,12 +428,25 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             )
         )
 
-    def for_search(self, query: SearchQuery) -> Self:
-        return (
-            self.alias(search=SEARCH_VECTOR, rank=SearchRank(SEARCH_VECTOR, query))
-            .filter(search=query)
-            .order_by("-rank", "id")
+    def for_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
+        full_text_search_query = SearchQuery(
+            search_query.q, search_type=search_query.search_type.value, config="english"
         )
+        return (
+            self.alias(search=SEARCH_VECTOR)
+            .annotate(rank=SearchRank(SEARCH_VECTOR, full_text_search_query))
+            .filter(search=full_text_search_query)
+        )
+
+    def for_tags_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
+        return (
+            self.alias(lower_tags_title=Lower("tags__title"))
+            .annotate(rank=models.Value(0))
+            .filter(lower_tags_title=search_query.q.lower())
+        )
+
+    def for_url_search(self, url: str) -> Self:
+        return self.filter(link__icontains=url)
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -635,11 +671,14 @@ class ArticleManager(models.Manager["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
             .filter(_build_filters_from_reading_list(search_query))
         )
-        if search_query.q:
-            full_text_search_query = SearchQuery(
-                search_query.q, search_type=search_query.search_type.value, config="english"
+        if search_query.search_type == constants.ArticleSearchType.URL:
+            articles_qs = articles_qs.for_url_search(search_query.q)
+        elif search_query.q:
+            full_text_articles_qs = articles_qs.for_search(search_query)
+            tags_articles_qs = articles_qs.for_tags_search(search_query)
+            articles_qs = tags_articles_qs.union(full_text_articles_qs).order_by(
+                search_query.order_by, "id"
             )
-            articles_qs = articles_qs.for_search(full_text_search_query)
 
         return articles_qs
 

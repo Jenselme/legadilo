@@ -181,7 +181,7 @@ class TestArticleTagQuerySet:
         )
 
     def test_for_reading_list(self):
-        article_tags = ArticleTag.objects.get_queryset().for_reading_list()
+        article_tags = ArticleTag.objects.get_queryset().for_reading_list().order_by("id")
 
         assert list(article_tags) == [self.article_tag1, self.article_tag3]
 

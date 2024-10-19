@@ -101,6 +101,18 @@ class ArticleSourceType(TextChoices):
 class ArticleSearchType(TextChoices):
     PLAIN = "plain", _("Words")
     PHRASE = "phrase", _("Phrase")
+    URL = "url", _("URL")
+
+
+class ArticleSearchOrderBy(TextChoices):
+    RANK_DESC = "RANK_DESC", _("Rank desc")
+    RANK_ASC = "RANK_ASC", _("Rank asc")
+    ARTICLE_SAVE_DATE_DESC = "ARTICLE_SAVE_DATE_DESC", _("Article save date desc")
+    ARTICLE_SAVE_DATE_ASC = "ARTICLE_SAVE_DATE_ASC", _("Article save date asc")
+    ARTICLE_DATE_DESC = "ARTICLE_DATE_DESC", _("Article date desc")
+    ARTICLE_DATE_ASC = "ARTICLE_DATE_ASC", _("Article date asc")
+    READ_AT_DESC = "READ_AT_DESC", _("Read at desc")
+    READ_AT_ASC = "READ_AT_ASC", _("Read at asc")
 
 
 MAX_ARTICLE_FILE_SIZE = 5 * 1024 * 1024  # 5MiB in bytes.

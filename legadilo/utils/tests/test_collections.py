@@ -17,7 +17,7 @@ import asyncio
 
 import pytest
 
-from legadilo.utils.collections_utils import alist, max_or_none, min_or_none
+from legadilo.utils.collections_utils import alist, aset, max_or_none, min_or_none
 from legadilo.utils.time_utils import utcdt
 
 
@@ -71,3 +71,15 @@ async def test_alist():
     output = await alist(async_generator())
 
     assert output == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_aset():
+    async def async_generator():
+        yield 1
+        await asyncio.sleep(0)
+        yield 2
+
+    output = await aset(async_generator())
+
+    assert output == {1, 2}
