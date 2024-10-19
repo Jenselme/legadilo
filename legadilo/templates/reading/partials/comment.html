@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<div id="comment-{{ comment.id }}" class="card mt-2">
+    <div class="card-body">
+        <p class="lead">
+            {% blocktranslate with comment_date=comment.created_at|date:"SHORT_DATETIME_FORMAT" %}
+                 You commented on {{ comment_date }}
+            {% endblocktranslate %}
+        </p>
+        <div class="card-text">{{ comment.text }}</div>
+    </div>
+</div>

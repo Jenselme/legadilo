@@ -14,18 +14,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .article import Article
-from .article_fetch_error import ArticleFetchError
-from .comment import Comment
-from .reading_list import ReadingList
-from .tag import ArticleTag, ReadingListTag, Tag
+from __future__ import annotations
 
-__all__ = [
-    "Article",
-    "ArticleFetchError",
-    "ArticleTag",
-    "Comment",
-    "ReadingList",
-    "ReadingListTag",
-    "Tag",
-]
+from typing import TYPE_CHECKING
+
+from django.db import models
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models import TypedModelMeta
+else:
+    TypedModelMeta = object
+
+
+class Comment(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    text = models.TextField()
+
+    article = models.ForeignKey(
+        "reading.Article", related_name="comments", on_delete=models.CASCADE
+    )
+
+    class Meta(TypedModelMeta):
+        ordering = ("created_at", "id")
+
+    def __str__(self):
+        return f"Comment(article={self.article.title}, text={self.text[:50]})"

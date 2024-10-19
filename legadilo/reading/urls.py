@@ -65,4 +65,5 @@ urlpatterns = [
         "lists/edit/<int:reading_list_id>/", views.reading_list_edit_view, name="edit_reading_list"
     ),
     path("search/", views.search_view, name="search"),
+    path("comment/", views.create_comment_view, name="create_comment"),
 ]

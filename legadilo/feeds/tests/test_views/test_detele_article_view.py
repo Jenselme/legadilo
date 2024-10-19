@@ -53,7 +53,7 @@ class TestDeleteArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_delete(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -61,7 +61,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(self.url, {"from_url": self.reading_list_url})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -69,7 +69,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(19):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -98,7 +98,7 @@ class TestDeleteArticleView:
     def test_delete_article_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )
@@ -113,7 +113,7 @@ class TestDeleteArticleView:
         feed = FeedFactory(user=user)
         FeedArticle.objects.create(feed=feed, article=self.article)
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.post(
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )

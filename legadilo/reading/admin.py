@@ -22,6 +22,7 @@ from legadilo.reading.models import (
     Article,
     ArticleFetchError,
     ArticleTag,
+    Comment,
     ReadingList,
     ReadingListTag,
     Tag,
@@ -78,6 +79,11 @@ class ArticleAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ("obj_created_at", "obj_updated_at")
     formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(ReadingList)
