@@ -140,7 +140,7 @@
                                 </form>
                                 <div id="all-comments" class="mt-3">
                                     {% for comment in article.comments.all %}
-                                        {% include "reading/partials/comment.html" with comment=comment %}
+                                        {% include "reading/partials/comment.html#comment-card" with comment=comment %}
                                     {% endfor %}
                                 </div>
                             </div>

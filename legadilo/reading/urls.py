@@ -66,4 +66,7 @@ urlpatterns = [
     ),
     path("search/", views.search_view, name="search"),
     path("comment/", views.create_comment_view, name="create_comment"),
+    path("comment/<int:pk>/", views.display_comment_view, name="display_comment"),
+    path("comment/<int:pk>/edit/", views.edit_comment_view, name="edit_comment"),
+    path("comment/<int:pk>/delete/", views.delete_comment_view, name="delete_comment"),
 ]
