@@ -2,6 +2,11 @@
 
 set -eu
 
+if [[ $(git branch --show-current) != "main" ]]; then
+    echo "You must run the release script on the main branch" >&2
+    exit 1
+fi
+
 base_date_tag=$(date +%y.%m)
 last_tag=$(git tag  | sort -r | grep "${base_date_tag}"  | head -n 1)
 last_tag_revision=$(echo "${last_tag}" | cut -d . -f 3 -)
