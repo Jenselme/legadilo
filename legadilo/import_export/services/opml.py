@@ -92,7 +92,7 @@ async def _process_opml_data(user, root) -> tuple[int, int]:
     nb_imported_feeds = 0
     nb_imported_categories = 0
     body = root.find("body")
-    if not body:
+    if body is None or len(body) == 0:
         return 0, 0
 
     tasks = []
