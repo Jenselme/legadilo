@@ -74,13 +74,13 @@ def _build_refresh_filters(  # noqa: C901, PLR0911, PLR0912 too complex
                 then=True,
             )
         case feeds_constants.FeedRefreshDelays.EVERY_MORNING:
-            if 8 <= now.hour <= 12:  # noqa: PLR2004 Magic value used in comparison
+            if 8 <= now.hour <= 10:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.DAILY_AT_NOON:
-            if 11 <= now.hour <= 13:  # noqa: PLR2004 Magic value used in comparison
+            if 12 <= now.hour <= 14:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
                     base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
                 )
