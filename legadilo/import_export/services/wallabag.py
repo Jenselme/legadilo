@@ -16,21 +16,40 @@
 
 import json
 import logging
+from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from django.core.files import File
-from jsonschema import validate as validate_json_schema
+from pydantic import BaseModel as BaseSchema
+from pydantic import Field, HttpUrl, TypeAdapter
 
-from legadilo.import_export.services.exceptions import InvalidEntryError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.services.article_fetching import build_article_data
 from legadilo.users.models import User
-from legadilo.utils.time_utils import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid
 
 logger = logging.getLogger(__name__)
+
+
+class WallabagArticle(BaseSchema):
+    id: int
+    is_archived: bool
+    is_starred: bool
+    tags: list[str] = Field(default_factory=list)
+    title: str
+    url: HttpUrl
+    content: str = ""
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    published_by: list[str] = Field(default_factory=list)
+    reading_time: int = 0
+    domain_name: str
+    preview_picture: HttpUrl | str = ""
+    annotations: list = Field(default_factory=list)
+    language: str = ""
+
+
+ListOfWallabagArticles = TypeAdapter(list[WallabagArticle])
 
 
 def import_wallabag_json_file_path(user: User, path_to_file: str) -> int:
@@ -45,34 +64,28 @@ def import_wallabag_file(user: User, file: File) -> int:
 
 
 def _import_wallabag_data(user: User, data: list[dict]) -> int:
-    _validate_data_batch(data)
+    wallabag_articles = ListOfWallabagArticles.validate_python(data)
     nb_added_articles = 0
-    for raw_article_data in data:
-        link = raw_article_data["url"]
-        preview_picture_url = raw_article_data.get("preview_picture", "")
-        if preview_picture_url and not is_url_valid(preview_picture_url):
-            logger.debug(f"Some preview url link {preview_picture_url} is not valid")
-            preview_picture_url = ""
-        if not is_url_valid(link):
-            raise InvalidEntryError(f"The article URL ({link}) is not valid")
+    for wallabag_article in wallabag_articles:
+        link = wallabag_article.url
 
-        tags = Tag.objects.get_or_create_from_list(user, raw_article_data.get("tags", []))
+        tags = Tag.objects.get_or_create_from_list(user, wallabag_article.tags)
         article_data = build_article_data(
-            external_article_id=f"wallabag:{raw_article_data['id']}",
-            source_title=raw_article_data["domain_name"],
-            title=raw_article_data["title"],
+            external_article_id=f"wallabag:{wallabag_article.id}",
+            source_title=wallabag_article.domain_name,
+            title=wallabag_article.title,
             summary="",
-            content=raw_article_data.get("content", ""),
-            authors=raw_article_data.get("published_by", []),
+            content=wallabag_article.content,
+            authors=wallabag_article.published_by,
             contributors=[],
             tags=[],
-            link=link,
-            annotations=raw_article_data.get("annotations", []),
-            preview_picture_url=preview_picture_url,
+            link=str(link),
+            annotations=wallabag_article.annotations,
+            preview_picture_url=str(wallabag_article.preview_picture),
             preview_picture_alt="",
-            published_at=safe_datetime_parse(raw_article_data["created_at"]),
-            updated_at=safe_datetime_parse(raw_article_data["updated_at"]),
-            language=raw_article_data.get("language", ""),
+            published_at=wallabag_article.created_at,
+            updated_at=wallabag_article.updated_at,
+            language=wallabag_article.language,
         )
         Article.objects.update_or_create_from_articles_list(
             user=user,
@@ -83,43 +96,3 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
         nb_added_articles += 1
 
     return nb_added_articles
-
-
-def _validate_data_batch(article_data: Any):
-    validate_json_schema(
-        article_data,
-        {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "number"},
-                    "is_archived": {"type": "number"},
-                    "is_starred": {"type": "number"},
-                    "tags": {"type": "array", "items": {"type": "string"}},
-                    "title": {"type": "string"},
-                    "url": {"type": "string"},
-                    "content": {"type": "string"},
-                    "created_at": {"type": "string"},
-                    "updated_at": {"type": "string"},
-                    "published_by": {"type": "array", "items": {"type": "string"}},
-                    "reading_time": {"type": "number"},
-                    "domain_name": {"type": "string"},
-                    "preview_picture": {"type": "string"},
-                    "annotations": {"type": "array"},
-                    "language": {"type": "string"},
-                },
-                "required": [
-                    "id",
-                    "is_archived",
-                    "is_starred",
-                    "title",
-                    "url",
-                    "created_at",
-                    "updated_at",
-                    "reading_time",
-                    "domain_name",
-                ],
-            },
-        },
-    )
