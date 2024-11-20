@@ -141,12 +141,12 @@ def _find_youtube_rss_feed_link(url: str) -> str:
     if match_channel_with_id := re.match(
         r"https://[^/]+/channel/(?P<channel_id>.+)", url, re.IGNORECASE
     ):
-        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match_channel_with_id.group("channel_id")}"
+        return f"https://www.youtube.com/feeds/videos.xml?channel_id={match_channel_with_id.group('channel_id')}"
 
     parsed_link = urlparse(url)
     params = parse_qs(parsed_link.query)
     if params.get("list"):
-        return f"https://www.youtube.com/feeds/videos.xml?playlist_id={params["list"][0]}"
+        return f"https://www.youtube.com/feeds/videos.xml?playlist_id={params['list'][0]}"
 
     # Can't handle it. Let's let it through.
     return url

@@ -58,7 +58,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
 
         tags = Tag.objects.get_or_create_from_list(user, raw_article_data.get("tags", []))
         article_data = build_article_data(
-            external_article_id=f"wallabag:{raw_article_data["id"]}",
+            external_article_id=f"wallabag:{raw_article_data['id']}",
             source_title=raw_article_data["domain_name"],
             title=raw_article_data["title"],
             summary="",

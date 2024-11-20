@@ -587,7 +587,7 @@ if not DEBUG and SENTRY_DSN:
             # Don't send any private information. The id is more than enough.
             if user := event.get("user"):
                 user.pop("email", None)
-                user["username"] = f"user:{user["id"]}"
+                user["username"] = f"user:{user['id']}"
 
             return event
 
