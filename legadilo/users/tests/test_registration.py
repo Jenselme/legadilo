@@ -21,6 +21,7 @@ import pytest
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test import override_settings
 from django.urls import reverse
 
 from legadilo.core.middlewares import CSPMiddleware
@@ -39,6 +40,7 @@ class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.
 
+    @override_settings(CONTACT_EMAIL="contact@legadilo.eu")
     def test_registration_success(self, client, utc_tz, mocker, snapshot):
         self.client = client
         self.mocker = mocker

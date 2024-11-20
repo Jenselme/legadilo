@@ -20,4 +20,5 @@ from django.conf import settings
 def provide_global_context(request):
     return {
         "VERSION": settings.VERSION,
+        "CONTACT_EMAIL": settings.CONTACT_EMAIL,
     }
