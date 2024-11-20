@@ -141,7 +141,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         SSLCertVerificationError,
     ):
         logger.error(
-            f"Failed to import feed {row["feed_url"]} Created with basic data and disabled."
+            f"Failed to import feed {row['feed_url']} Created with basic data and disabled."
         )
         feed_data = build_feed_data(
             feed_url=row["feed_url"],
@@ -168,13 +168,13 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         feed_url_in_file_to_true_feed[row["feed_url"]] = feed
         return feed, created
     except IntegrityError:
-        logger.info(f"You are already subscribed to {row["feed_url"]}")
+        logger.info(f"You are already subscribed to {row['feed_url']}")
         return None, False
 
 
 async def _import_article(user, feed, row):
     article_data = build_article_data(
-        external_article_id=f"custom_csv:{row["article_id"]}",
+        external_article_id=f"custom_csv:{row['article_id']}",
         source_title=feed.title if feed else urlparse(row["article_link"]).netloc,
         title=row["article_title"],
         summary="",

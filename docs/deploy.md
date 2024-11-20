@@ -137,4 +137,5 @@ You can create cryptahpicaly sure secrets in Python with `python3 -c "import sec
 | `SENTRY_DSN`                            | `None`             | To enable error monitoring with Sentry (leave empty to leave it deactivated).          |
 | `LEGADILO_ARTICLE_FETCH_TIMEOUT`        | 50                 | The fetch timeout when fetching articles in seconds.                                   |
 | `LEGADILO_RSS_FETCH_TIMEOUT`            | 300                | The fetch timeout when fetching feeds in seconds.                                      |
+| `LEGADILO_CONTACT_EMAIL`                | `None`             | The contact email to display to authenticated user.                                    |
 
