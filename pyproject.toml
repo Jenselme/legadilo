@@ -244,7 +244,8 @@ nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
 jsonschema = "^4.23.0"  # https://github.com/python-jsonschema/jsonschema
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
-markdown = "^3.7"
+markdown = "^3.7"  # https://python-markdown.github.io
+pydantic = "2.10.0"  # https://docs.pydantic.dev/latest/
 
 
 [tool.poetry.group.prod]
