@@ -58,10 +58,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         default=list,
                         validators=[
-                            legadilo.utils.validators.JsonSchemaValidator({
-                                "items": {"type": "string"},
-                                "type": "array",
-                            })
+                            legadilo.utils.validators.list_of_strings_json_schema_validator
                         ],
                     ),
                 ),
@@ -71,10 +68,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         default=list,
                         validators=[
-                            legadilo.utils.validators.JsonSchemaValidator({
-                                "items": {"type": "string"},
-                                "type": "array",
-                            })
+                            legadilo.utils.validators.list_of_strings_json_schema_validator
                         ],
                     ),
                 ),
@@ -88,10 +82,7 @@ class Migration(migrations.Migration):
                         default=list,
                         help_text="Tags of the article from the its source",
                         validators=[
-                            legadilo.utils.validators.JsonSchemaValidator({
-                                "items": {"type": "string"},
-                                "type": "array",
-                            })
+                            legadilo.utils.validators.list_of_strings_json_schema_validator
                         ],
                     ),
                 ),

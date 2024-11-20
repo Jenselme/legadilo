@@ -47,34 +47,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 default=list,
                 help_text="The table of content of the article.",
-                validators=[
-                    legadilo.utils.validators.JsonSchemaValidator({
-                        "items": {
-                            "additionalProperties": False,
-                            "properties": {
-                                "children": {
-                                    "items": {
-                                        "additionalProperties": False,
-                                        "properties": {
-                                            "id": {"type": "string"},
-                                            "level": {"type": "integer"},
-                                            "text": {"type": "string"},
-                                        },
-                                        "required": ["id", "text", "level"],
-                                        "type": "object",
-                                    },
-                                    "type": "array",
-                                },
-                                "id": {"type": "string"},
-                                "level": {"type": "integer"},
-                                "text": {"type": "string"},
-                            },
-                            "required": ["id", "text", "level"],
-                            "type": "object",
-                        },
-                        "type": "array",
-                    })
-                ],
+                validators=[legadilo.utils.validators.table_of_content_json_schema_validator],
             ),
         ),
         migrations.RunPython(build_toc, reverse_code=migrations.RunPython.noop),

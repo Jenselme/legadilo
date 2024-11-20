@@ -22,56 +22,43 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import HttpRequest
 from django.utils.deconstruct import deconstructible
-from jsonschema import ValidationError as JsonSchemaValidationError
-from jsonschema import validate as validate_json_schema
 from nh3 import is_html
+from pydantic import BaseModel as BaseSchema
+from pydantic import Field, TypeAdapter
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.utils.security import full_sanitize
 
 
 @deconstructible
-class JsonSchemaValidator:
-    def __init__(self, schema):
+class PydanticSchemaValidator:
+    def __init__(self, schema: BaseSchema | TypeAdapter):
         self._schema = schema
 
     def __call__(self, value):
         try:
-            validate_json_schema(value, self._schema)
-        except JsonSchemaValidationError as e:
+            if isinstance(self._schema, BaseSchema):
+                self._schema.model_validate(value)
+            else:
+                self._schema.validate_python(value)
+        except PydanticValidationError as e:
             raise ValidationError(str(e)) from e
 
 
-list_of_strings_json_schema_validator = JsonSchemaValidator({
-    "type": "array",
-    "items": {"type": "string"},
-})
+list_of_strings_json_schema_validator = PydanticSchemaValidator(TypeAdapter(list[str]))
 
-table_of_content_json_schema_validator = JsonSchemaValidator({
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "id": {"type": "string"},
-            "text": {"type": "string"},
-            "level": {"type": "integer"},
-            "children": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "string"},
-                        "text": {"type": "string"},
-                        "level": {"type": "integer"},
-                    },
-                    "additionalProperties": False,
-                    "required": ["id", "text", "level"],
-                },
-            },
-        },
-        "additionalProperties": False,
-        "required": ["id", "text", "level"],
-    },
-})
+
+class TableOfContentItem(BaseSchema):
+    id: str
+    text: str
+    level: int
+
+
+class TableOfContentTopItem(TableOfContentItem):
+    children: list[TableOfContentItem] = Field(default_factory=list)
+
+
+table_of_content_json_schema_validator = PydanticSchemaValidator(TypeAdapter(TableOfContentTopItem))
 
 
 def language_code_validator(value: Any):
