@@ -587,7 +587,7 @@ if not DEBUG and SENTRY_DSN:
             # Don't send any private information. The id is more than enough.
             if user := event.get("user"):
                 user.pop("email", None)
-                user["username"] = f"user:{user["id"]}"
+                user["username"] = f"user:{user['id']}"
 
             return event
 
@@ -611,3 +611,4 @@ if not DEBUG and SENTRY_DSN:
 # ------------------------------------------------------------------------------
 ARTICLE_FETCH_TIMEOUT = env.int("LEGADILO_ARTICLE_FETCH_TIMEOUT", default=50)
 RSS_FETCH_TIMEOUT = env.int("LEGADILO_RSS_FETCH_TIMEOUT", default=300)
+CONTACT_EMAIL = env.str("LEGADILO_CONTACT_EMAIL", default=None)

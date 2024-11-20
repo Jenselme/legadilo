@@ -28,7 +28,7 @@ class CustomJsonEncoder(json.JSONEncoder):
             return obj.isoformat()
 
         if is_dataclass(obj):
-            return asdict(obj)  # type: ignore[call-overload]
+            return asdict(obj)  # type: ignore[arg-type]
 
         return super().default(obj)
 

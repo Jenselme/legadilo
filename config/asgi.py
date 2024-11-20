@@ -37,4 +37,4 @@ async def application(scope, receive, send):
     elif scope["type"] == "websocket":
         await websocket_application(scope, receive, send)
     else:
-        raise NotImplementedError(f"Unknown scope type {scope["type"]}")
+        raise NotImplementedError(f"Unknown scope type {scope['type']}")

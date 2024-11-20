@@ -216,7 +216,14 @@
                 {% endif %}
             </p>
             <p class="mb-1">
-                <a class="text-white" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug" %}</a>
+                <a class="text-white" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug." %}</a>
+                {% if CONTACT_EMAIL and user.is_authenticated %}
+                    <span>
+                        {% blocktranslate with email=CONTACT_EMAIL %}
+                            Contact us at <a href="mailto:{{ email }}">{{ email }}</a>
+                        {% endblocktranslate %}
+                    </span>
+                {% endif %}
             </p>
         </footer>
     </body>
