@@ -16,7 +16,7 @@
 from operator import xor
 from typing import Annotated, Self
 
-from asgiref.sync import async_to_sync
+from asgiref.sync import sync_to_async
 from ninja import ModelSchema, Router, Schema
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
@@ -59,25 +59,25 @@ class InArticleSchema(Schema):
 
 @reading_api_router.get("/articles/", response=list[OutArticleSchema])
 @paginate
-def list_articles(request: AuthenticateApiRequest):
+async def list_articles(request: AuthenticateApiRequest):  # noqa: RUF029 pagination is async!
     return Article.objects.get_queryset().for_user(request.auth).default_order_by()
 
 
 @reading_api_router.post("/articles/", response=OutArticleSchema)
-def create_article(request: AuthenticateApiRequest, article: InArticleSchema):
+async def create_article(request: AuthenticateApiRequest, article: InArticleSchema):
     if article.has_data:
         article_data = build_article_data_from_content(
             url=article.link, title=article.title, content=article.content
         )
     else:
-        article_data = async_to_sync(get_article_from_url)(article.link)
+        article_data = await get_article_from_url(article.link)
 
     # Tags specified in article data are the raw tags used in feeds, they are not used to link an
     # article to tag objects.
-    tags = Tag.objects.get_or_create_from_list(request.auth, article.tags)
+    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(request.auth, article.tags)
     article_data = article_data.model_copy(update={"tags": ()})
 
-    articles = Article.objects.update_or_create_from_articles_list(
+    articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
         request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
     return articles[0]

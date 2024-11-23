@@ -55,11 +55,7 @@ def max_or_none(
 
 
 async def alist(collection: AsyncIterable[T]) -> list[T]:
-    output = []
-    async for item in collection:
-        output.append(item)
-
-    return output
+    return [item async for item in collection]
 
 
 async def aset(collection: AsyncIterable[T]) -> set[T]:

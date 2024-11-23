@@ -613,6 +613,7 @@ if not DEBUG and SENTRY_DSN:
 # ------------------------------------------------------------------------------
 # See https://django-ninja.dev/reference/settings/
 NINJA_PAGINATION_MAX_LIMIT = 500
+NINJA_PAGINATION_CLASS = "legadilo.utils.pagination.LimitOffsetPagination"
 
 
 # Your stuff...

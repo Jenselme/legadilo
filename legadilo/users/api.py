@@ -19,7 +19,7 @@ from datetime import datetime
 import jwt
 from django.core.exceptions import BadRequest
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
+from django.shortcuts import aget_object_or_404
 from ninja import Router, Schema
 from ninja.security import HttpBearer
 from pydantic import BaseModel as BaseSchema
@@ -35,12 +35,12 @@ users_api_router = Router(tags=["auth"])
 
 
 class AuthBearer(HttpBearer):
-    def authenticate(self, request, token) -> User | None:
+    async def authenticate(self, request, token) -> User | None:
         if not token:
             return None
 
         decoded_jwt = _decode_jwt(token)
-        return _get_user_from_jwt(decoded_jwt)
+        return await _get_user_from_jwt(decoded_jwt)
 
 
 class JWT(BaseSchema):
@@ -59,9 +59,9 @@ def _decode_jwt(token: str) -> JWT:
         raise BadRequest("Invalid JWT token") from e
 
 
-def _get_user_from_jwt(decoded_jwt: JWT) -> User | None:
+async def _get_user_from_jwt(decoded_jwt: JWT) -> User | None:
     try:
-        return User.objects.get(id=decoded_jwt.user_id)
+        return await User.objects.aget(id=decoded_jwt.user_id)
     except User.DoesNotExist:
         return None
 
@@ -75,13 +75,13 @@ class Token(Schema):
 
 
 @users_api_router.post("/refresh/", auth=None, response=Token)
-def refresh_token(request: HttpRequest, payload: RefreshTokenPayload) -> Token:
-    application_token = get_object_or_404(
+async def refresh_token(request: HttpRequest, payload: RefreshTokenPayload) -> Token:
+    application_token = await aget_object_or_404(
         ApplicationToken.objects.get_queryset().only_valid().defer(None),
         token=payload.application_token,
     )
     application_token.last_used_at = utcnow()
-    application_token.save()
+    await application_token.asave()
     jwt = _create_jwt(application_token.user_id, application_token.token)
 
     return Token(jwt=jwt)
