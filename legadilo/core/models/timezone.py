@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import TYPE_CHECKING
+from zoneinfo import ZoneInfo
 
 from django.db import models
 
@@ -45,3 +46,7 @@ class Timezone(models.Model):
 
     def __repr__(self):
         return f"Timezone(name={self.name})"
+
+    @property
+    def zone_info(self) -> ZoneInfo:
+        return ZoneInfo(self.name)
