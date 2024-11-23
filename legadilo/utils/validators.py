@@ -54,7 +54,8 @@ def truncate(max_size: int) -> AfterValidator:
     return AfterValidator(lambda value: value[:max_size])  # noqa: FURB118 don't use a lambda
 
 
-RemoveFalsyItems = AfterValidator(lambda items: [item for item in items if item])
+def remove_falsy_items(container_type: type):
+    return AfterValidator(lambda items: container_type(item for item in items if item))
 
 
 def none_to_value(none_replacer: Any) -> BeforeValidator:

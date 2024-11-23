@@ -21,6 +21,7 @@ import logging
 import math
 from collections.abc import Iterable
 from dataclasses import dataclass
+from itertools import chain
 from typing import TYPE_CHECKING, Literal, Self, assert_never
 from urllib.parse import urlparse
 
@@ -845,9 +846,13 @@ class Article(models.Model):
             ) or self.reading_time
             self.preview_picture_url = article_data.preview_picture_url or self.preview_picture_alt
             self.preview_picture_alt = article_data.preview_picture_alt or self.preview_picture_alt
-            self.authors = list(dict.fromkeys(self.authors + article_data.authors))
-            self.contributors = list(dict.fromkeys(self.contributors + article_data.contributors))
-            self.external_tags = list(dict.fromkeys(self.external_tags + article_data.tags))
+            # We create the deduplicated list with dict.fromkeys and not sets to preserve the
+            # initial order. We chain the iterable since they don't have the same type.
+            self.authors = list(dict.fromkeys(chain(self.authors, article_data.authors)))
+            self.contributors = list(
+                dict.fromkeys(chain(self.contributors, article_data.contributors))
+            )
+            self.external_tags = list(dict.fromkeys(chain(self.external_tags, article_data.tags)))
             self.updated_at = max_or_none([article_data.updated_at, self.updated_at])
             self.published_at = min_or_none([article_data.published_at, self.published_at])
         elif has_content_unlike_saved:

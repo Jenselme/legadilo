@@ -38,7 +38,6 @@ from legadilo.utils.validators import (
     CleanedString,
     FullSanitizeValidator,
     LanguageCodeValidatorOrDefault,
-    RemoveFalsyItems,
     TableOfContentItem,
     TableOfContentTopItem,
     ValidUrlValidator,
@@ -46,6 +45,7 @@ from legadilo.utils.validators import (
     is_url_valid,
     none_to_value,
     normalize_url,
+    remove_falsy_items,
     sanitize_keep_safe_tags_validator,
     truncate,
 )
@@ -79,9 +79,9 @@ class ArticleData(BaseSchema):
     ]
     content: Annotated[str, sanitize_keep_safe_tags_validator()]
     table_of_content: tuple[TableOfContentTopItem, ...] = ()
-    authors: Annotated[tuple[CleanedString, ...], RemoveFalsyItems]
-    contributors: Annotated[tuple[CleanedString, ...], RemoveFalsyItems]
-    tags: Annotated[tuple[CleanedString, ...], RemoveFalsyItems]
+    authors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)]
+    contributors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)]
+    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)]
     link: Annotated[str, ValidUrlValidator]
     preview_picture_url: OptionalUrl = ""
     preview_picture_alt: Annotated[str, FullSanitizeValidator, none_to_value("")] = ""
