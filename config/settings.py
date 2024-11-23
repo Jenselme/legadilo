@@ -113,6 +113,7 @@ DJANGO_APPS = [
     "django.forms",
 ]
 THIRD_PARTY_APPS = [
+    "ninja",
     "django_version_checks",
     "extra_checks",
     "anymail",
@@ -605,6 +606,12 @@ if not DEBUG and SENTRY_DSN:
         )
     except ImportError:
         print("Failed to import sentry_sdk")  # noqa: T201 print found
+
+
+# django-ninja
+# ------------------------------------------------------------------------------
+# See https://django-ninja.dev/reference/settings/
+NINJA_PAGINATION_MAX_LIMIT = 500
 
 
 # Your stuff...

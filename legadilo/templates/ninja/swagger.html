@@ -1,0 +1,28 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link type="text/css"
+              rel="stylesheet"
+              href="{% static 'ninja/swagger-ui.css' %}"
+              nonce="{{ request.csp_nonce }}" />
+        <link rel="shortcut icon" href="{% static 'ninja/favicon.png' %}" />
+        <title>{{ api.title }}</title>
+    </head>
+    <body data-csrf-token="{% if add_csrf %}{{ csrf_token }}{% endif %}"
+          data-api-csrf="{% if add_csrf %}true{% endif %}">
+        <script type="application/json" id="swagger-settings">
+            {% comment %}
+            	Beware: if this file gets reformatted, we can loose the proper syntax below. This
+            	will breaks the swagger template!
+            {% endcomment %}
+            {{ swagger_settings | safe }}
+        </script>
+        <div id="swagger-ui"></div>
+        <script src="{% static 'ninja/swagger-ui-bundle.js' %}"
+                nonce="{{ request.csp_nonce }}"></script>
+        <script src="{% static 'ninja/swagger-ui-init.js' %}"
+                nonce="{{ request.csp_nonce }}"></script>
+    </body>
+</html>
