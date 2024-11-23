@@ -22,7 +22,7 @@ from django.db.models.functions import Collate
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.forms import UserAdminChangeForm, UserAdminCreationForm
-from legadilo.users.models import Notification, UserSettings
+from legadilo.users.models import ApplicationToken, Notification, UserSettings
 
 User = get_user_model()
 
@@ -90,3 +90,8 @@ class NotificationAdmin(admin.ModelAdmin):
     autocomplete_fields = ("user",)
     list_display = ("title", "created_at", "user", "is_read")
     list_filter = ("is_read",)
+
+
+@admin.register(ApplicationToken)
+class ApplicationTokenAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("user",)
