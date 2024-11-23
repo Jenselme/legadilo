@@ -21,7 +21,6 @@ from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import HttpRequest
-from django.utils.deconstruct import deconstructible
 from nh3 import is_html
 from pydantic import (
     AfterValidator,
@@ -62,22 +61,12 @@ def none_to_value(none_replacer: Any) -> BeforeValidator:
     return BeforeValidator(lambda value: none_replacer if value is None else value)
 
 
-@deconstructible
-class PydanticSchemaValidator:
-    def __init__(self, schema: BaseSchema | TypeAdapter):
-        self._schema = schema
+def list_of_strings_validator(value: Any):
+    try:
+        TypeAdapter(list[str]).validate_python(value)
+    except PydanticValidationError as e:
+        raise ValidationError(str(e)) from e
 
-    def __call__(self, value):
-        try:
-            if isinstance(self._schema, BaseSchema):
-                self._schema.model_validate(value)
-            else:
-                self._schema.validate_python(value)
-        except PydanticValidationError as e:
-            raise ValidationError(str(e)) from e
-
-
-list_of_strings_json_schema_validator = PydanticSchemaValidator(TypeAdapter(list[str]))
 
 CleanedString = Annotated[str, FullSanitizeValidator, StringConstraints(strip_whitespace=True)]
 
@@ -92,7 +81,11 @@ class TableOfContentTopItem(TableOfContentItem):
     children: list[TableOfContentItem] = Field(default_factory=list)
 
 
-table_of_content_json_schema_validator = PydanticSchemaValidator(TypeAdapter(TableOfContentTopItem))
+def table_of_content_validator(value: Any):
+    try:
+        TypeAdapter(TableOfContentItem).validate_python(value)
+    except PydanticValidationError as e:
+        raise ValidationError(str(e)) from e
 
 
 def language_code_validator(value: Any):

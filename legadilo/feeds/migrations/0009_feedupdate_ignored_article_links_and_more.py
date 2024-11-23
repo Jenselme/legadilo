@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 default=list,
-                validators=[legadilo.utils.validators.list_of_strings_json_schema_validator],
+                validators=[legadilo.utils.validators.list_of_strings_validator],
             ),
         ),
         migrations.AlterField(

@@ -1014,7 +1014,8 @@ class TestArticleManager:
                         external_article_id="some-article-1",
                         title="Article 1",
                         summary="Summary 1",
-                        content="Description 1" + " word " * user.settings.default_reading_time * 3,
+                        content="""<h2 id="section-title">My title</h2> <h3 id="sub-section">Sub-section</h3>Description 1"""  # noqa: E501
+                        + " word " * user.settings.default_reading_time * 3,
                         table_of_content=(),
                         authors=("Author",),
                         contributors=(),
@@ -1099,15 +1100,20 @@ class TestArticleManager:
         assert existing_article_to_keep.updated_at == utcdt(2024, 4, 20)
         assert existing_article_to_keep.obj_created_at == utcdt(2024, 6, 1, 12, 0)
         assert existing_article_to_keep.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
-        other_article = Article.objects.exclude(
-            id__in=[existing_article_to_update.id, existing_article_to_keep.id]
-        ).first()
-        assert other_article is not None
+        other_article = Article.objects.get(external_article_id="some-article-1")
         assert other_article.title == "Article 1"
         assert other_article.slug == "article-1"
         assert other_article.reading_time == 3
         assert other_article.obj_created_at == utcdt(2024, 6, 2, 12, 0)
         assert other_article.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
+        assert other_article.table_of_content == [
+            {
+                "children": [{"id": "sub-section", "level": 3, "text": "Sub-section"}],
+                "id": "section-title",
+                "level": 2,
+                "text": "My title",
+            }
+        ]
         assert list(
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True

@@ -22,7 +22,7 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from ...utils.time_utils import utcnow
-from ...utils.validators import list_of_strings_json_schema_validator
+from ...utils.validators import list_of_strings_validator
 from .. import constants
 
 if TYPE_CHECKING:
@@ -115,7 +115,7 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
 class FeedUpdate(models.Model):
     status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)
     ignored_article_links = models.JSONField(
-        validators=[list_of_strings_json_schema_validator], blank=True, default=list
+        validators=[list_of_strings_validator], blank=True, default=list
     )
     error_message = models.TextField(blank=True)
     technical_debug_data = models.JSONField(blank=True, null=True)

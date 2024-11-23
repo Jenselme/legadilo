@@ -22,7 +22,7 @@ from typing import Annotated
 
 from django.core.files import File
 from pydantic import BaseModel as BaseSchema
-from pydantic import TypeAdapter
+from pydantic import ConfigDict, TypeAdapter
 
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, Tag
@@ -33,7 +33,6 @@ from legadilo.utils.validators import (
     FullSanitizeValidator,
     RemoveFalsyItems,
     ValidUrlValidator,
-    default_frozen_model_config,
     sanitize_keep_safe_tags_validator,
 )
 
@@ -41,7 +40,9 @@ logger = logging.getLogger(__name__)
 
 
 class WallabagArticle(BaseSchema):
-    model_config = default_frozen_model_config
+    model_config = ConfigDict(
+        extra="ignore", frozen=True, validate_default=True, validate_assignment=True
+    )
 
     id: int
     is_archived: bool
@@ -54,10 +55,10 @@ class WallabagArticle(BaseSchema):
     updated_at: datetime | None = None
     published_by: Annotated[tuple[CleanedString, ...], RemoveFalsyItems] = ()
     reading_time: int = 0
-    domain_name: Annotated[str, ValidUrlValidator]
+    domain_name: Annotated[str, FullSanitizeValidator]
     preview_picture: OptionalUrl = ""
     annotations: tuple[str, ...] = ()
-    language: Language
+    language: Language = ""
 
 
 ListOfWallabagArticles = TypeAdapter(list[WallabagArticle])

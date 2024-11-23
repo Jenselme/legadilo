@@ -15,23 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from dataclasses import asdict, is_dataclass
-from datetime import date, datetime
 from typing import Any
 
 from django.db import models
 from pydantic import BaseModel as BaseSchema
 
-
-class CustomJsonEncoder(json.JSONEncoder):
-    def default(self, obj: Any) -> Any:
-        if isinstance(obj, datetime | date):
-            return obj.isoformat()
-
-        if is_dataclass(obj):
-            return asdict(obj)  # type: ignore[arg-type]
-
-        return super().default(obj)
+from legadilo.utils.collections_utils import CustomJsonEncoder
 
 
 def serialize_for_snapshot(value: Any) -> str:

@@ -35,14 +35,14 @@ from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
-from legadilo.utils.collections_utils import max_or_none, min_or_none
+from legadilo.utils.collections_utils import CustomJsonEncoder, max_or_none, min_or_none
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time_utils import utcnow
 from legadilo.utils.validators import (
     language_code_validator,
-    list_of_strings_json_schema_validator,
-    table_of_content_json_schema_validator,
+    list_of_strings_validator,
+    table_of_content_validator,
 )
 
 from .article_fetch_error import ArticleFetchError
@@ -696,17 +696,15 @@ class Article(models.Model):
             "we will use 0."
         ),
     )
-    authors = models.JSONField(
-        validators=[list_of_strings_json_schema_validator], blank=True, default=list
-    )
+    authors = models.JSONField(validators=[list_of_strings_validator], blank=True, default=list)
     contributors = models.JSONField(
-        validators=[list_of_strings_json_schema_validator], blank=True, default=list
+        validators=[list_of_strings_validator], blank=True, default=list
     )
     link = models.URLField(max_length=1_024)
     preview_picture_url = models.URLField(blank=True, max_length=1_024)
     preview_picture_alt = models.TextField(blank=True)
     external_tags = models.JSONField(
-        validators=[list_of_strings_json_schema_validator],
+        validators=[list_of_strings_validator],
         blank=True,
         default=list,
         help_text=_("Tags of the article from the its source"),
@@ -733,10 +731,11 @@ class Article(models.Model):
         validators=[language_code_validator],
     )
     table_of_content = models.JSONField(
-        validators=[table_of_content_json_schema_validator],
+        validators=[table_of_content_validator],
         blank=True,
         default=list,
         help_text=_("The table of content of the article."),
+        encoder=CustomJsonEncoder,
     )
 
     read_at = models.DateTimeField(null=True, blank=True)
