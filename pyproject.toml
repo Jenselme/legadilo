@@ -231,6 +231,7 @@ django-csp = "3.8"  # https://django-csp.readthedocs.io/en/latest/index.html
 django-axes = "7.0.0"  # https://github.com/jazzband/django-axes
 django-htmx = "1.21.0"  # https://django-htmx.readthedocs.io/en/latest/
 django-template-partials = "24.4"  # https://github.com/carltongibson/django-template-partials
+django-ninja = "1.3.0"  # https://django-ninja.dev
 
 # Project
 # ------------------------------------------------------------------------------
