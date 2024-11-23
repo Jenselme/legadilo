@@ -55,3 +55,7 @@ class PrettyJSONWidget(widgets.Textarea):
             return value
         except (JSONDecodeError, ValueError, TypeError):
             return super().format_value(value)
+
+
+class DateTimeWidget(widgets.DateTimeInput):
+    input_type = "datetime-local"
