@@ -27,7 +27,7 @@ from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
     get_article_from_url,
 )
-from legadilo.users.user_types import AuthenticatedHttpRequest
+from legadilo.users.user_types import AuthenticateApiRequest
 from legadilo.utils.validators import ValidUrlValidator
 
 reading_api_router = Router(tags=["reading"])
@@ -59,12 +59,12 @@ class InArticleSchema(Schema):
 
 @reading_api_router.get("/articles/", response=list[OutArticleSchema])
 @paginate
-def list_articles(request: AuthenticatedHttpRequest):
-    return Article.objects.get_queryset().for_user(request.user).default_order_by()
+def list_articles(request: AuthenticateApiRequest):
+    return Article.objects.get_queryset().for_user(request.auth).default_order_by()
 
 
 @reading_api_router.post("/articles/", response=OutArticleSchema)
-def create_article(request: AuthenticatedHttpRequest, article: InArticleSchema):
+def create_article(request: AuthenticateApiRequest, article: InArticleSchema):
     if article.has_data:
         article_data = build_article_data_from_content(
             url=article.link, title=article.title, content=article.content
@@ -74,10 +74,10 @@ def create_article(request: AuthenticatedHttpRequest, article: InArticleSchema):
 
     # Tags specified in article data are the raw tags used in feeds, they are not used to link an
     # article to tag objects.
-    tags = Tag.objects.get_or_create_from_list(request.user, article.tags)
+    tags = Tag.objects.get_or_create_from_list(request.auth, article.tags)
     article_data = article_data.model_copy(update={"tags": ()})
 
     articles = Article.objects.update_or_create_from_articles_list(
-        request.user, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
+        request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
     return articles[0]

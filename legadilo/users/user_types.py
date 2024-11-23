@@ -28,3 +28,10 @@ class AuthenticatedHttpRequest(HttpRequest):
     @abstractmethod
     async def auser(self) -> User:
         pass
+
+
+class AuthenticateApiRequest(HttpRequest):
+    # In the API, we cannot use user because it's not defined when using auth tokens. We must rely
+    # on auth which will always contains the proper user object.
+    user: None  # type: ignore[assignment]
+    auth: User

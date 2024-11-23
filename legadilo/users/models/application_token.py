@@ -24,6 +24,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from ...utils.time_utils import utcnow
 from .user import User
 
 if TYPE_CHECKING:
@@ -32,9 +33,18 @@ else:
     TypedModelMeta = object
 
 
+class ApplicationTokenQuerySet(models.QuerySet["ApplicationToken"]):
+    def only_valid(self):
+        return self.filter(models.Q(validity_end=None) | models.Q(validity_end__lt=utcnow()))
+
+
 class ApplicationTokenManager(models.Manager["ApplicationToken"]):
+    _hints: dict
+
     def get_queryset(self):
-        return super().get_queryset().defer("token")
+        return ApplicationTokenQuerySet(model=self.model, using=self._db, hints=self._hints).defer(
+            "token"
+        )
 
     def create_new_token(
         self, user: User, title: str, validity_end: datetime | None = None

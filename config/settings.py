@@ -2,6 +2,7 @@
 
 import concurrent
 import warnings
+from datetime import timedelta
 from pathlib import Path
 
 import asgiref
@@ -620,3 +621,5 @@ ARTICLE_FETCH_TIMEOUT = env.int("LEGADILO_ARTICLE_FETCH_TIMEOUT", default=50)
 RSS_FETCH_TIMEOUT = env.int("LEGADILO_RSS_FETCH_TIMEOUT", default=300)
 CONTACT_EMAIL = env.str("LEGADILO_CONTACT_EMAIL", default=None)
 TOKEN_LENGTH = 50
+JWT_ALGORITHM = "HS256"
+JWT_MAX_AGE = timedelta(hours=4)
