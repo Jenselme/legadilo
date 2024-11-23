@@ -165,8 +165,14 @@ async def get_article_from_url(url: str) -> ArticleData:
     return _build_article_data_from_soup(
         url,
         soup,
-        content_language,
+        content_language=content_language,
     )
+
+
+def build_article_data_from_content(*, url: str, title: str, content: str) -> ArticleData:
+    soup = BeautifulSoup(content, "html.parser")
+
+    return _build_article_data_from_soup(url, soup, forced_title=title)
 
 
 async def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
@@ -210,14 +216,18 @@ def _parse_http_equiv_refresh(value: str) -> str | None:
 
 
 def _build_article_data_from_soup(
-    fetched_url: str, soup: BeautifulSoup, content_language: str | None
+    fetched_url: str,
+    soup: BeautifulSoup,
+    *,
+    content_language: str | None = None,
+    forced_title: str | None = None,
 ) -> ArticleData:
     content = _get_content(soup)
 
     return ArticleData(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
-        title=_get_title(soup),
+        title=forced_title or _get_title(soup),
         summary=_get_summary(soup, content),
         content=content,
         authors=tuple(_get_authors(soup)),
