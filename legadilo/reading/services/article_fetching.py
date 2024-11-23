@@ -13,17 +13,18 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import logging
 import sys
-from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TypedDict
+from typing import Annotated, Any, Literal
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
-from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatewords_html
+from pydantic import BaseModel as BaseSchema
+from pydantic import model_validator
 from slugify import slugify
 
 from legadilo.reading import constants
@@ -33,117 +34,100 @@ from legadilo.utils.security import (
     sanitize_keep_safe_tags,
 )
 from legadilo.utils.time_utils import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid, language_code_validator, normalize_url
+from legadilo.utils.validators import (
+    CleanedString,
+    FullSanitizeValidator,
+    LanguageCodeValidatorOrDefault,
+    RemoveFalsyItems,
+    TableOfContentItem,
+    TableOfContentTopItem,
+    ValidUrlValidator,
+    default_frozen_model_config,
+    is_url_valid,
+    none_to_value,
+    normalize_url,
+    sanitize_keep_safe_tags_validator,
+    truncate,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class TocItem(TypedDict):
-    id: str
-    text: str
-    level: int
+Language = Annotated[
+    str,
+    FullSanitizeValidator,
+    truncate(constants.LANGUAGE_CODE_MAX_LENGTH),
+    LanguageCodeValidatorOrDefault,
+    none_to_value(""),
+]
+OptionalUrl = Literal[""] | Annotated[str, ValidUrlValidator]
 
 
-class TocTopItem(TocItem):
-    children: list[TocItem]
+class ArticleData(BaseSchema):
+    model_config = default_frozen_model_config
 
-
-@dataclass(frozen=True)
-class ArticleData:
-    external_article_id: str
-    source_title: str
-    title: str
-    summary: str
-    content: str
-    table_of_content: list[TocTopItem]
-    authors: list[str]
-    contributors: list[str]
-    tags: list[str]
-    link: str
-    preview_picture_url: str
-    preview_picture_alt: str
-    published_at: datetime | None
-    updated_at: datetime | None
-    language: str
-    annotations: list[str] | tuple[str] = field(default_factory=list)
+    external_article_id: Annotated[
+        str, FullSanitizeValidator, truncate(constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH)
+    ]
+    source_title: Annotated[
+        str, FullSanitizeValidator, truncate(constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
+    ]
+    title: Annotated[str, FullSanitizeValidator]
+    summary: Annotated[
+        str,
+        sanitize_keep_safe_tags_validator(constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY),
+    ]
+    content: Annotated[str, sanitize_keep_safe_tags_validator()]
+    table_of_content: tuple[TableOfContentTopItem, ...] = ()
+    authors: Annotated[tuple[CleanedString, ...], RemoveFalsyItems]
+    contributors: Annotated[tuple[CleanedString, ...], RemoveFalsyItems]
+    tags: Annotated[tuple[CleanedString, ...], RemoveFalsyItems]
+    link: Annotated[str, ValidUrlValidator]
+    preview_picture_url: OptionalUrl = ""
+    preview_picture_alt: Annotated[str, FullSanitizeValidator, none_to_value("")] = ""
+    published_at: datetime | None = None
+    updated_at: datetime | None = None
+    language: Language
+    annotations: tuple[str, ...] = ()
     read_at: datetime | None = None
     is_favorite: bool = False
 
+    @model_validator(mode="before")
+    @staticmethod
+    def prepare_values(
+        values: dict[str, Any],
+    ) -> dict[str, Any]:
+        summary = values.get("summary", "")
+        content = values.get("content", "")
+        title = values.get("title", "")
+        source_title = values.get("source_title", "")
+        link = values.get("link")
 
-def build_article_data(  # noqa: PLR0913 too many arguments
-    *,
-    external_article_id: str,
-    source_title: str,
-    title: str,
-    summary: str,
-    content: str,
-    authors: list[str],
-    contributors: list[str],
-    tags: list[str],
-    link: str,
-    preview_picture_url: str,
-    preview_picture_alt: str,
-    published_at: datetime | None,
-    updated_at: datetime | None,
-    language: str,
-    annotations: list[str] | tuple[str] = (),  # type: ignore[assignment]
-    read_at: datetime | None = None,
-    is_favorite: bool = False,
-) -> ArticleData:
-    summary = _resolve_relative_links(link, summary)
-    content = _resolve_relative_links(link, content)
-    content, toc = _build_table_of_content(content)
-    if not summary and content:
-        summary = _get_fallback_summary_from_content(content)
+        # Consider link optional here to please mypy. It's mandatory anyway so validation will fail
+        # later if needed.
+        if link:
+            summary = _resolve_relative_links(link, summary)
+            content = _resolve_relative_links(link, content)
 
-    try:
-        language = full_sanitize(language)[: constants.LANGUAGE_CODE_MAX_LENGTH]
-        language_code_validator(language)
-    except (ValidationError, TypeError):
-        language = ""
+        content, table_of_content = _build_table_of_content(content)
 
-    title = full_sanitize(title)[: constants.ARTICLE_TITLE_MAX_LENGTH]
-    if not title:
-        title = urlparse(link).netloc
+        if not summary and content:
+            summary = _get_fallback_summary_from_content(content)
 
-    source_title = full_sanitize(source_title)[: constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH]
-    if not source_title:
-        source_title = urlparse(link).netloc
+        if not title:
+            title = urlparse(values.get("link")).netloc
 
-    return ArticleData(
-        external_article_id=full_sanitize(external_article_id)[
-            : constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH
-        ],
-        source_title=source_title,
-        title=title,
-        summary=sanitize_keep_safe_tags(
-            summary, extra_tags_to_cleanup=constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY
-        ),
-        content=sanitize_keep_safe_tags(content),
-        table_of_content=toc,
-        authors=_sanitize_lists(authors),
-        contributors=_sanitize_lists(contributors),
-        tags=_sanitize_lists(tags),
-        link=link,
-        preview_picture_url=preview_picture_url,
-        preview_picture_alt=full_sanitize(preview_picture_alt),
-        published_at=published_at,
-        updated_at=updated_at,
-        language=language,
-        annotations=annotations,
-        read_at=read_at,
-        is_favorite=is_favorite,
-    )
+        if not source_title:
+            source_title = urlparse(values.get("link")).netloc
 
-
-def _sanitize_lists(alist: list[str]) -> list[str]:
-    cleaned_list = []
-    for item in alist:
-        cleaned_item = full_sanitize(item.strip())
-        if cleaned_item:
-            cleaned_list.append(cleaned_item)
-
-    return cleaned_list
+        return {
+            **values,
+            "summary": summary,
+            "content": content,
+            "title": title,
+            "source_title": source_title,
+            "table_of_content": table_of_content,
+        }
 
 
 def _resolve_relative_links(article_link: str, content: str) -> str:
@@ -230,15 +214,15 @@ def _build_article_data_from_soup(
 ) -> ArticleData:
     content = _get_content(soup)
 
-    return build_article_data(
+    return ArticleData(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
         title=_get_title(soup),
         summary=_get_summary(soup, content),
         content=content,
-        authors=_get_authors(soup),
-        contributors=[],
-        tags=_get_tags(soup),
+        authors=tuple(_get_authors(soup)),
+        contributors=(),
+        tags=tuple(_get_tags(soup)),
         link=_get_link(fetched_url, soup),
         preview_picture_url=_get_preview_picture_url(fetched_url, soup),
         preview_picture_alt="",
@@ -465,10 +449,10 @@ def _get_lang(soup: BeautifulSoup, content_language: str | None) -> str:
     return language
 
 
-def _build_table_of_content(content: str) -> tuple[str, list[TocTopItem]]:
+def _build_table_of_content(content: str) -> tuple[str, list[TableOfContentTopItem]]:
     soup = BeautifulSoup(content, "html.parser")
     toc = []
-    toc_item_top_level: TocTopItem | None = None
+    toc_item_top_level: TableOfContentTopItem | None = None
 
     for header in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
         text = full_sanitize(header.text)
@@ -477,11 +461,11 @@ def _build_table_of_content(content: str) -> tuple[str, list[TocTopItem]]:
         level = int(header.name.replace("h", ""))
         # If the content is well-structured, all top level title will be at the same level.
         # Since we don't know, we allow for a first h2 to be followed by a h1.
-        if toc_item_top_level is None or level <= toc_item_top_level["level"]:
-            toc_item_top_level = TocTopItem(id=id_, text=text, level=level, children=[])
+        if toc_item_top_level is None or level <= toc_item_top_level.level:
+            toc_item_top_level = TableOfContentTopItem(id=id_, text=text, level=level)
             toc.append(toc_item_top_level)
         # We only allow one level in the TOC. It's enough.
-        elif level == toc_item_top_level["level"] + 1:
-            toc_item_top_level["children"].append(TocItem(id=id_, text=text, level=level))
+        elif level == toc_item_top_level.level + 1:
+            toc_item_top_level.children.append(TableOfContentItem(id=id_, text=text, level=level))
 
     return str(soup), toc

@@ -18,64 +18,48 @@ import logging
 import re
 import sys
 import time
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from html import unescape
 from itertools import chain
+from typing import Annotated
 from urllib.parse import parse_qs, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
+from pydantic import BaseModel as BaseSchema
 
 from legadilo.reading.services.article_fetching import (
     ArticleData,
-    build_article_data,
     parse_tags_list,
 )
 from legadilo.utils.security import full_sanitize
 
 from ...utils.time_utils import dt_to_http_date
-from ...utils.validators import normalize_url
+from ...utils.validators import (
+    FullSanitizeValidator,
+    ValidUrlValidator,
+    default_frozen_model_config,
+    normalize_url,
+    truncate,
+)
 from .. import constants
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
-class FeedData:
-    feed_url: str
-    site_url: str
-    title: str
-    description: str
+class FeedData(BaseSchema):
+    model_config = default_frozen_model_config
+
+    feed_url: Annotated[str, ValidUrlValidator]
+    site_url: Annotated[str, ValidUrlValidator]
+    title: Annotated[str, FullSanitizeValidator, truncate(constants.FEED_TITLE_MAX_LENGTH)]
+    description: Annotated[str, FullSanitizeValidator]
     feed_type: constants.SupportedFeedType
     etag: str
     last_modified: datetime | None
     articles: list[ArticleData]
-
-
-def build_feed_data(  # noqa: PLR0913 too many arguments
-    *,
-    feed_url: str,
-    site_url: str,
-    title: str,
-    description: str,
-    feed_type: constants.SupportedFeedType,
-    etag: str,
-    last_modified: datetime | None,
-    articles: list[ArticleData],
-) -> FeedData:
-    return FeedData(
-        feed_url=feed_url,
-        site_url=site_url,
-        title=full_sanitize(title)[: constants.FEED_TITLE_MAX_LENGTH],
-        description=full_sanitize(description),
-        feed_type=feed_type,
-        articles=articles,
-        etag=etag,
-        last_modified=last_modified,
-    )
 
 
 class NoFeedUrlFoundError(Exception):
@@ -153,8 +137,9 @@ def _find_youtube_rss_feed_link(url: str) -> str:
 
 
 def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: str) -> FeedData:
-    feed_title = full_sanitize(parsed_feed.feed.get("title", ""))
-    return build_feed_data(
+    feed_title = parsed_feed.feed.get("title", "")
+
+    return FeedData(
         feed_url=resolved_url,
         site_url=_normalize_found_link(parsed_feed.feed.get("link", resolved_url)),
         title=feed_title,
@@ -241,7 +226,7 @@ def _parse_articles_in_feed(
             article_link = _get_article_link(feed_url, entry)
             content = _get_article_content(entry)
             articles_data.append(
-                build_article_data(
+                ArticleData(
                     external_article_id=entry.get("id", ""),
                     title=entry.title,
                     summary=_get_summary(article_link, entry),

@@ -101,7 +101,7 @@ async def _import_custom_csv(request: AuthenticatedHttpRequest):
                 nb_imported_feeds,
                 nb_imported_categories,
             ) = await import_custom_csv_file(await request.auser(), file_path)
-    except (DataImportError, UnicodeDecodeError):
+    except (DataImportError, UnicodeDecodeError, PydanticValidationError):
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
     else:

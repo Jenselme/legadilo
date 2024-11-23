@@ -11,7 +11,7 @@
   "link": "https://www.example.com/posts/en/1-super-article/",
   "preview_picture_alt": "",
   "preview_picture_url": "https://www.example.com/images/profile.png",
-  "published_at": "2024-02-26T23:00:00+00:00",
+  "published_at": "2024-02-26T23:00:00Z",
   "read_at": null,
   "source_title": "Super blog",
   "summary": "I just wrote a new book, I\u2019ll hope you will like it! Here are some thoughts on it.",
@@ -20,5 +20,5 @@
     "Musketeers"
   ],
   "title": "On the 3 musketeers",
-  "updated_at": "2024-03-08T23:00:00+00:00"
+  "updated_at": "2024-03-08T23:00:00Z"
 }

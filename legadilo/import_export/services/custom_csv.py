@@ -30,16 +30,16 @@ from django.db import IntegrityError
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
 from legadilo.feeds.services.feed_parsing import (
+    FeedData,
     FeedFileTooBigError,
     InvalidFeedFileError,
     NoFeedUrlFoundError,
-    build_feed_data,
     get_feed_data,
 )
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
-from legadilo.reading.services.article_fetching import build_article_data
+from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.users.models import User
 from legadilo.utils.http_utils import get_rss_async_client
 from legadilo.utils.security import full_sanitize
@@ -143,7 +143,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         logger.error(
             f"Failed to import feed {row['feed_url']} Created with basic data and disabled."
         )
-        feed_data = build_feed_data(
+        feed_data = FeedData(
             feed_url=row["feed_url"],
             site_url=row["feed_site_url"],
             title=row["feed_title"],
@@ -173,14 +173,14 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
 
 
 async def _import_article(user, feed, row):
-    article_data = build_article_data(
+    article_data = ArticleData(
         external_article_id=f"custom_csv:{row['article_id']}",
         source_title=feed.title if feed else urlparse(row["article_link"]).netloc,
         title=row["article_title"],
         summary="",
         content=row["article_content"],
         authors=_safe_json_parse(row["article_authors"], []),
-        contributors=[],
+        contributors=(),
         tags=_safe_json_parse(row["article_tags"], []),
         link=row["article_link"],
         preview_picture_url="",

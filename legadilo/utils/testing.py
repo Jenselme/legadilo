@@ -20,6 +20,7 @@ from datetime import date, datetime
 from typing import Any
 
 from django.db import models
+from pydantic import BaseModel as BaseSchema
 
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -34,6 +35,11 @@ class CustomJsonEncoder(json.JSONEncoder):
 
 
 def serialize_for_snapshot(value: Any) -> str:
+    if isinstance(value, BaseSchema):
+        value = value.model_dump(mode="json")
+    elif isinstance(value, list | tuple) and len(value) > 0 and isinstance(value[0], BaseSchema):
+        value = [item.model_dump(mode="json") for item in value]
+
     value = json.dumps(value, indent=2, sort_keys=True, cls=CustomJsonEncoder)
 
     return str(value)

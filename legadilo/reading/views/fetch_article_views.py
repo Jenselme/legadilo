@@ -29,6 +29,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
@@ -154,7 +155,7 @@ async def _handle_save(
                 force_update=force_update,
             )
         )[0]
-    except (httpx.HTTPError, ArticleTooBigError) as e:
+    except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
         article, created = await sync_to_async(Article.objects.create_invalid_article)(
             request.user,
             article_link,
