@@ -18,6 +18,11 @@ from typing import Any
 
 from django.db import models
 from django.db.models import Model
+from ninja import Schema
+
+
+class ApiError(Schema):
+    detail: str
 
 
 async def update_model_from_patch_dict(

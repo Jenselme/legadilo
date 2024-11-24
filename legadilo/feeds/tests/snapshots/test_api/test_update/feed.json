@@ -1,0 +1,20 @@
+{
+  "article_retention_time": 600,
+  "category": {
+    "id": 10,
+    "slug": "category-slug",
+    "title": "Category title"
+  },
+  "description": "",
+  "disabled_at": null,
+  "disabled_reason": "",
+  "enabled": true,
+  "feed_type": "rss",
+  "feed_url": "https://example.com/feed.rss",
+  "id": 1,
+  "open_original_link_by_default": false,
+  "refresh_delay": "TWICE_A_WEEK",
+  "site_url": "https://example.com",
+  "slug": "feed-slug",
+  "title": "Feed title"
+}

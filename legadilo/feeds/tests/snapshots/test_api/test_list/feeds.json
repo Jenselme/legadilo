@@ -1,0 +1,21 @@
+{
+  "count": 1,
+  "items": [
+    {
+      "article_retention_time": 0,
+      "category": null,
+      "description": "",
+      "disabled_at": null,
+      "disabled_reason": "",
+      "enabled": true,
+      "feed_type": "rss",
+      "feed_url": "https://example.com/feed.rss",
+      "id": 1,
+      "open_original_link_by_default": false,
+      "refresh_delay": "DAILY_AT_NOON",
+      "site_url": "https://example.com",
+      "slug": "feed-slug",
+      "title": "Feed title"
+    }
+  ]
+}

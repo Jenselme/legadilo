@@ -23,6 +23,7 @@ from legadilo.users.tests.factories import UserFactory
 
 from .. import constants
 from ..models import Feed, FeedCategory, FeedDeletedArticle
+from ..services.feed_parsing import FeedData
 
 
 class FeedCategoryFactory(DjangoModelFactory):
@@ -64,3 +65,17 @@ class FeedDeletedArticleFactory(DjangoModelFactory):
 
     class Meta:
         model = FeedDeletedArticle
+
+
+class FeedDataFactory(factory.DictFactory):
+    feed_url = factory.Sequence(lambda n: f"https://example.com/feeds-{n}.rss")
+    site_url = "https://example.com"
+    title = factory.Sequence(lambda n: f"Feed {n}")
+    description = "Some feed description"
+    feed_type = SupportedFeedType.rss
+    etag = ""
+    last_modified = None
+    articles = factory.ListFactory()
+
+    class Meta:
+        model = FeedData
