@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
-{% load i18n crispy_forms_tags %}
+{% load i18n static crispy_forms_tags %}
 
 {% block title %}
     {% translate "Manage API tokens" %}
 {% endblock title %}
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{request.csp_nonce}}"
+            type="module"></script>
+{% endblock page_js %}
 {% block content %}
     <h1>{% translate "Manage API tokens" %}</h1>
     {% if new_application_token %}
@@ -26,13 +31,20 @@
                         Created on {{ created_at }}
                     {% endblocktranslate %}
                 </span>
-                <span>
-                    {% if token.validity_end %}
+                {% if token.validity_end %}
+                    <span>
                         {% blocktranslate with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
-                        Valid until {{ validity_end }}
-                    {% endblocktranslate %}
-                    {% endif %}
-                </span>
+                            Valid until {{ validity_end }}
+                        {% endblocktranslate %}
+                    </span>
+                {% endif %}
+                {% if token.last_used_at %}
+                    <span>
+                        {% blocktranslate with last_used_at=token.last_used_at|date:"SHORT_DATETIME_FORMAT" %}
+                            Last used {{ last_used_at }}
+                        {% endblocktranslate %}
+                    </span>
+                {% endif %}
                 <form hx-post="{% url 'users:delete_token' token_id=token.id %}"
                       data-modal-id="danger-modal"
                       data-modal-title="{% translate 'Confirm token deletion' %}"

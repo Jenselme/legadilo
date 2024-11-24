@@ -21,7 +21,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
 from ...utils.time_utils import utcnow
@@ -35,7 +35,7 @@ else:
 
 class ApplicationTokenQuerySet(models.QuerySet["ApplicationToken"]):
     def only_valid(self):
-        return self.filter(models.Q(validity_end=None) | models.Q(validity_end__lt=utcnow()))
+        return self.filter(models.Q(validity_end=None) | models.Q(validity_end__gt=utcnow()))
 
 
 class ApplicationTokenManager(models.Manager["ApplicationToken"]):
@@ -46,6 +46,7 @@ class ApplicationTokenManager(models.Manager["ApplicationToken"]):
             "token"
         )
 
+    @transaction.atomic
     def create_new_token(
         self, user: User, title: str, validity_end: datetime | None = None
     ) -> ApplicationToken:

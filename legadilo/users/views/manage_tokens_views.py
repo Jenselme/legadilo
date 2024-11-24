@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from http import HTTPStatus
 
 from django import forms
 from django.contrib import messages
@@ -33,7 +34,7 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 class CreateTokenForm(forms.ModelForm):
     timezone = forms.ModelChoiceField(
         Timezone.objects.all(),
-        required=True,
+        required=False,
         widget=AutocompleteSelectWidget(),
         help_text=_("The timezone in which the validity end date should be understood."),
     )
@@ -57,14 +58,17 @@ class CreateTokenForm(forms.ModelForm):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def list_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+def manage_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     form = CreateTokenForm(initial={"timezone": request.user.settings.timezone})
     new_application_token = None
+    status = HTTPStatus.OK
 
     if request.method == "POST":
         form = CreateTokenForm(request.POST)
         if form.is_valid():
-            new_application_token, form = _create_token(request, form)
+            new_application_token, form, status = _create_token(request, form)
+        else:
+            status = HTTPStatus.BAD_REQUEST
 
     return TemplateResponse(
         request,
@@ -74,12 +78,15 @@ def list_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
             "tokens": ApplicationToken.objects.filter(user=request.user),
             "form": form,
         },
+        status=status,
     )
 
 
 def _create_token(
     request: AuthenticatedHttpRequest, form: CreateTokenForm
-) -> tuple[ApplicationToken | None, CreateTokenForm]:
+) -> tuple[ApplicationToken | None, CreateTokenForm, HTTPStatus]:
+    status = HTTPStatus.OK
+
     try:
         new_application_token = ApplicationToken.objects.create_new_token(
             request.user, form.cleaned_data["title"], form.cleaned_data["validity_end"]
@@ -94,9 +101,10 @@ def _create_token(
         )
     except IntegrityError:
         new_application_token = None
-        messages.error(request, _("A token already exists with this name"))
+        status = HTTPStatus.CONFLICT
+        messages.error(request, _("A token already exists with this name."))
 
-    return new_application_token, form
+    return new_application_token, form, status
 
 
 @login_required

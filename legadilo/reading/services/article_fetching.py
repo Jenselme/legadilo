@@ -79,9 +79,9 @@ class ArticleData(BaseSchema):
     ]
     content: Annotated[str, sanitize_keep_safe_tags_validator()]
     table_of_content: tuple[TableOfContentTopItem, ...] = ()
-    authors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)]
-    contributors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)]
-    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)]
+    authors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
+    contributors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
+    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     link: Annotated[str, ValidUrlValidator]
     preview_picture_url: OptionalUrl = ""
     preview_picture_alt: Annotated[str, FullSanitizeValidator, none_to_value("")] = ""

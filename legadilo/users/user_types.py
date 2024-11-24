@@ -30,7 +30,7 @@ class AuthenticatedHttpRequest(HttpRequest):
         pass
 
 
-class AuthenticateApiRequest(HttpRequest):
+class AuthenticatedApiRequest(HttpRequest):
     # In the API, we cannot use user because it's not defined when using auth tokens. We must rely
     # on auth which will always contains the proper user object.
     user: None  # type: ignore[assignment]

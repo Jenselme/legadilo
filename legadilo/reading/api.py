@@ -27,7 +27,7 @@ from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
     get_article_from_url,
 )
-from legadilo.users.user_types import AuthenticateApiRequest
+from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.validators import ValidUrlValidator
 
 reading_api_router = Router(tags=["reading"])
@@ -37,6 +37,13 @@ class OutArticleSchema(ModelSchema):
     class Meta:
         model = Article
         exclude = ("user", "obj_created_at", "obj_updated_at")
+
+
+@reading_api_router.get("/articles/", response=list[OutArticleSchema])
+@paginate
+async def list_articles(request: AuthenticatedApiRequest):  # noqa: RUF029 pagination is async!
+    # TODO: what to do this this?
+    return Article.objects.get_queryset().for_user(request.auth).default_order_by()
 
 
 class InArticleSchema(Schema):
@@ -57,14 +64,8 @@ class InArticleSchema(Schema):
         return bool(self.title) and bool(self.content)
 
 
-@reading_api_router.get("/articles/", response=list[OutArticleSchema])
-@paginate
-async def list_articles(request: AuthenticateApiRequest):  # noqa: RUF029 pagination is async!
-    return Article.objects.get_queryset().for_user(request.auth).default_order_by()
-
-
-@reading_api_router.post("/articles/", response=OutArticleSchema)
-async def create_article(request: AuthenticateApiRequest, article: InArticleSchema):
+@reading_api_router.post("/articles/", response=OutArticleSchema, url_name="create_article")
+async def create_article_view(request: AuthenticatedApiRequest, article: InArticleSchema):
     if article.has_data:
         article_data = build_article_data_from_content(
             url=article.link, title=article.title, content=article.content

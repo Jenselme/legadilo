@@ -1,5 +1,14 @@
 # Changelog
 
+## 24.11.1
+
+- Reduced allow times in which daily updates are run. We still support bi-hourly cron runs.
+- Display a contact email to all authenticated users.
+- Add an API:
+  - The documentation is available at `/api/docs/`.
+  - You can manage application tokens in your profile.
+  - You can get auth tokens from these applications tokens to use the API.
+
 ## 24.10.3
 
 - Correct display of titles with HTML entities when adding an article.

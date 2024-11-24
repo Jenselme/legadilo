@@ -17,10 +17,10 @@
 from datetime import datetime
 
 import jwt
-from django.core.exceptions import BadRequest
 from django.http import HttpRequest
 from django.shortcuts import aget_object_or_404
-from ninja import Router, Schema
+from ninja import ModelSchema, Router, Schema
+from ninja.errors import AuthenticationError
 from ninja.security import HttpBearer
 from pydantic import BaseModel as BaseSchema
 from pydantic import ValidationError as PydanticValidationError
@@ -30,6 +30,7 @@ from legadilo.users.models import ApplicationToken
 from legadilo.utils.time_utils import utcnow
 
 from .models import User
+from .user_types import AuthenticatedApiRequest
 
 users_api_router = Router(tags=["auth"])
 
@@ -44,7 +45,7 @@ class AuthBearer(HttpBearer):
 
 
 class JWT(BaseSchema):
-    application_token: str
+    application_token_title: str
     user_id: int
     exp: datetime
 
@@ -54,9 +55,9 @@ def _decode_jwt(token: str) -> JWT:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return JWT.model_validate(decoded_token)
     except jwt.ExpiredSignatureError as e:
-        raise BadRequest("Expired JWT token") from e
+        raise AuthenticationError("Expired JWT token") from e
     except (jwt.PyJWTError, PydanticValidationError) as e:
-        raise BadRequest("Invalid JWT token") from e
+        raise AuthenticationError("Invalid JWT token") from e
 
 
 async def _get_user_from_jwt(decoded_jwt: JWT) -> User | None:
@@ -74,15 +75,15 @@ class Token(Schema):
     jwt: str
 
 
-@users_api_router.post("/refresh/", auth=None, response=Token)
-async def refresh_token(request: HttpRequest, payload: RefreshTokenPayload) -> Token:
+@users_api_router.post("/refresh/", auth=None, response=Token, url_name="refresh_token")
+async def refresh_token_view(request: HttpRequest, payload: RefreshTokenPayload) -> Token:
     application_token = await aget_object_or_404(
         ApplicationToken.objects.get_queryset().only_valid().defer(None),
         token=payload.application_token,
     )
     application_token.last_used_at = utcnow()
     await application_token.asave()
-    jwt = _create_jwt(application_token.user_id, application_token.token)
+    jwt = _create_jwt(application_token.user_id, application_token.title)
 
     return Token(jwt=jwt)
 
@@ -90,10 +91,21 @@ async def refresh_token(request: HttpRequest, payload: RefreshTokenPayload) -> T
 def _create_jwt(user_id: int, application_token: str) -> str:
     return jwt.encode(
         {
-            "application_token": application_token,
+            "application_token_title": application_token,
             "user_id": user_id,
             "exp": utcnow() + settings.JWT_MAX_AGE,
         },
         settings.SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
+
+
+class UserSchema(ModelSchema):
+    class Meta:
+        model = User
+        fields = ("email",)
+
+
+@users_api_router.get("", response=UserSchema, url_name="user_info")
+async def get_user_view(request: AuthenticatedApiRequest) -> User:  # noqa: RUF029 auth is async!
+    return request.auth

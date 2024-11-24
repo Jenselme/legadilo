@@ -19,10 +19,11 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from factory import Faker, SubFactory, post_generation
+from factory import Sequence as FactorySequence
 from factory.django import DjangoModelFactory
 
 from legadilo.core.models import Timezone
-from legadilo.users.models import Notification, UserSettings
+from legadilo.users.models import ApplicationToken, Notification, UserSettings
 
 
 class UserFactory(DjangoModelFactory):
@@ -69,3 +70,12 @@ class NotificationFactory(DjangoModelFactory):
 
     class Meta:
         model = Notification
+
+
+class ApplicationTokenFactory(DjangoModelFactory):
+    title = FactorySequence(lambda n: f"Token {n}")
+    token = FactorySequence(lambda n: f"token-{n}")
+    user = SubFactory(UserFactory)
+
+    class Meta:
+        model = ApplicationToken

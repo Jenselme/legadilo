@@ -22,6 +22,7 @@ from factory.django import DjangoModelFactory
 from legadilo.users.tests.factories import UserFactory
 
 from ..models import Article, ArticleFetchError, Comment, ReadingList, Tag
+from ..services.article_fetching import ArticleData
 
 
 class ArticleFactory(DjangoModelFactory):
@@ -75,3 +76,16 @@ class CommentFactory(DjangoModelFactory):
 
     class Meta:
         model = Comment
+
+
+class ArticleDataFactory(factory.DictFactory):
+    external_article_id = factory.Sequence(lambda n: f"external-id-{n}")
+    source_title = factory.Sequence(lambda n: f"Source {n}")
+    title = factory.Sequence(lambda n: f"Article {n}")
+    summary = ""
+    content = ""
+    link = factory.Sequence(lambda n: f"https://example.com/article-{n}.html")
+    language = "en"
+
+    class Meta:
+        model = ArticleData
