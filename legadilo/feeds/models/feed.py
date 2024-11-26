@@ -208,7 +208,7 @@ class FeedManager(models.Manager["Feed"]):
             self.get_queryset()
             .for_user(user)
             .select_related("category")
-            .order_by("category__title")
+            .order_by("category__title", "id")
         ):
             category_title = feed.category.title if feed.category else None
             feeds_by_categories.setdefault(category_title, []).append(feed)
