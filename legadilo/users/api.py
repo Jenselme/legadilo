@@ -75,7 +75,13 @@ class Token(Schema):
     jwt: str
 
 
-@users_api_router.post("/refresh/", auth=None, response=Token, url_name="refresh_token")
+@users_api_router.post(
+    "/refresh/",
+    auth=None,
+    response=Token,
+    url_name="refresh_token",
+    summary="Create a new access token from an application token",
+)
 async def refresh_token_view(request: HttpRequest, payload: RefreshTokenPayload) -> Token:
     application_token = await aget_object_or_404(
         ApplicationToken.objects.get_queryset().only_valid().defer(None),
@@ -106,6 +112,13 @@ class UserSchema(ModelSchema):
         fields = ("email",)
 
 
-@users_api_router.get("", response=UserSchema, url_name="user_info")
+@users_api_router.get(
+    "", response=UserSchema, url_name="user_info", summary="Get current user info"
+)
 async def get_user_view(request: AuthenticatedApiRequest) -> User:  # noqa: RUF029 auth is async!
+    """Access information about your user.
+
+    It mostly serves as an endpoint to check that you are correctly authenticated and can use the
+    API with a token.
+    """
     return request.auth
