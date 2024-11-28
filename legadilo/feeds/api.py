@@ -20,6 +20,7 @@ from operator import xor
 from typing import Annotated, Self
 
 from asgiref.sync import sync_to_async
+from django.db import IntegrityError, transaction
 from django.shortcuts import aget_object_or_404
 from ninja import ModelSchema, PatchDict, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
@@ -235,13 +236,15 @@ class FeedCategoryPayload(Schema):
     summary="Create a feed category",
 )
 async def create_category_view(request: AuthenticatedApiRequest, payload: FeedCategoryPayload):
-    # For some reason, I always get a 400 error with a useless HTML body if I do a try/catch with
-    # the IntegrityError. Let's use aget_or_create to prevent this.
-    category, created = await FeedCategory.objects.aget_or_create(
-        title=payload.title, user=request.auth
-    )
+    return await sync_to_async(_create_feed_category)(request.auth, payload)
 
-    if not created:
+
+@transaction.atomic()
+def _create_feed_category(user: User, payload: FeedCategoryPayload):
+    # We must wrap it in a transaction to have the proper error messages and SQL queries in tests.
+    try:
+        category = FeedCategory.objects.create(title=payload.title, user=user)
+    except IntegrityError:
         return HTTPStatus.CONFLICT, {"detail": "A category with this title already exists."}
 
     return HTTPStatus.CREATED, category

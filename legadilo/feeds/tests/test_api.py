@@ -98,7 +98,7 @@ class TestCreateCategoryView:
         assert response.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_create(self, logged_in_sync_client, user, django_assert_num_queries):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.post(
                 self.url, {"title": "Test category"}, content_type="application/json"
             )
