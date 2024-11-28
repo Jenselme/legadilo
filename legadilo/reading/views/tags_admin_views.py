@@ -13,17 +13,18 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from http import HTTPStatus
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
-from slugify import slugify
 
 from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
@@ -67,10 +68,9 @@ class TagForm(forms.ModelForm):
         return super().save(commit=commit)
 
     def create(self, user: User):
-        tag, _created = Tag.objects.get_or_create(
+        tag = Tag.objects.create(
+            title=self.cleaned_data["title"],
             user=user,
-            slug=slugify(self.cleaned_data["title"]),
-            defaults={"title": self.cleaned_data["title"]},
         )
         self.instance = tag
 
@@ -94,13 +94,31 @@ class TagForm(forms.ModelForm):
 def create_tag_view(request: AuthenticatedHttpRequest) -> TemplateResponse | HttpResponseRedirect:
     tag_choices = Tag.objects.get_all_choices(request.user)
     form = TagForm(tag_choices=tag_choices)
+    status = HTTPStatus.OK
     if request.method == "POST":
-        form = TagForm(request.POST, tag_choices=tag_choices)
-        if form.is_valid():
-            tag = form.create(request.user)
+        status, form, tag = _create_tag(request, tag_choices)
+        if tag:
             return HttpResponseRedirect(reverse("reading:edit_tag", kwargs={"pk": tag.id}))
 
-    return TemplateResponse(request, "reading/edit_tag.html", {"form": form})
+    return TemplateResponse(request, "reading/edit_tag.html", {"form": form}, status=status)
+
+
+def _create_tag(
+    request: AuthenticatedHttpRequest, tag_choices: FormChoices
+) -> tuple[HTTPStatus, TagForm, Tag | None]:
+    form = TagForm(request.POST, tag_choices=tag_choices)
+    if not form.is_valid():
+        return HTTPStatus.BAD_REQUEST, form, None
+
+    try:
+        tag = form.create(request.user)
+    except IntegrityError:
+        messages.error(
+            request, _("A tag with title '%s' already exists.") % form.cleaned_data["title"]
+        )
+        return HTTPStatus.CONFLICT, form, None
+
+    return HTTPStatus.CREATED, form, tag
 
 
 @require_http_methods(["GET", "POST"])

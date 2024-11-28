@@ -8,6 +8,7 @@
   - The documentation is available at `/api/docs/`.
   - You can manage application tokens in your profile.
   - You can get auth tokens from these applications tokens to use the API.
+- Prevent 500 errors on duplicated tags (in tag admin), feed categories and reading lists.
 
 ## 24.10.3
 

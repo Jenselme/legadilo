@@ -17,6 +17,8 @@
 from http import HTTPStatus
 
 import pytest
+from django.contrib.messages import DEFAULT_LEVELS, get_messages
+from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
@@ -69,7 +71,7 @@ class TestCreateTagView:
         assert response.template_name == "reading/edit_tag.html"
 
     def test_create_tag(self, logged_in_sync_client, django_assert_num_queries, user):
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(self.url, {"title": "Tag to create"})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -80,11 +82,18 @@ class TestCreateTagView:
     def test_create_tag_already_exists(
         self, logged_in_sync_client, django_assert_num_queries, user
     ):
-        with django_assert_num_queries(15):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.post(self.url, {"title": self.tag.title})
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("reading:edit_tag", kwargs={"pk": self.tag.id})
+        assert response.status_code == HTTPStatus.CONFLICT
+        assert Tag.objects.filter(user=user).count() == 1
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message=f"A tag with title '{self.tag.title}' already exists.",
+            )
+        ]
 
 
 @pytest.mark.django_db

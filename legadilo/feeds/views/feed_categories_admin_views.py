@@ -13,13 +13,17 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from http import HTTPStatus
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.feeds.models import FeedCategory
@@ -39,7 +43,7 @@ def feed_category_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespo
 
 
 class FeedCategoryForm(forms.ModelForm):
-    title = forms.CharField()
+    title = forms.CharField(required=True)
 
     class Meta:
         model = FeedCategory
@@ -48,19 +52,38 @@ class FeedCategoryForm(forms.ModelForm):
 
 @require_http_methods(["GET", "POST"])
 @login_required
+@transaction.atomic()
 def create_feed_category_view(
     request: AuthenticatedHttpRequest,
 ) -> TemplateResponse | HttpResponseRedirect:
     form = FeedCategoryForm()
+    status = HTTPStatus.OK
     if request.method == "POST":
-        form = FeedCategoryForm(data=request.POST)
-        if form.is_valid():
-            feed_category = FeedCategory.objects.create(**form.cleaned_data, user=request.user)
+        status, form, feed_category = _create_feed_category(request)
+        if feed_category:
             return HttpResponseRedirect(
                 reverse("feeds:edit_feed_category", kwargs={"category_id": feed_category.id})
             )
 
-    return TemplateResponse(request, "feeds/edit_feed_category.html", {"form": form})
+    return TemplateResponse(request, "feeds/edit_feed_category.html", {"form": form}, status=status)
+
+
+def _create_feed_category(
+    request: AuthenticatedHttpRequest,
+) -> tuple[HTTPStatus, FeedCategoryForm, FeedCategory | None]:
+    form = FeedCategoryForm(data=request.POST)
+    if not form.is_valid():
+        return HTTPStatus.BAD_REQUEST, form, None
+
+    try:
+        feed_category = FeedCategory.objects.create(**form.cleaned_data, user=request.user)
+    except IntegrityError:
+        messages.error(
+            request, _("A category with title '%s' already exists.") % form.cleaned_data["title"]
+        )
+        return HTTPStatus.CONFLICT, form, None
+
+    return HTTPStatus.CREATED, form, feed_category
 
 
 @require_http_methods(["GET", "POST"])
