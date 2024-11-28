@@ -189,7 +189,7 @@ class TestUpdateCategoryView:
         assert self.feed_category.title == "New title"
         assert response.json() == {
             "id": self.feed_category.id,
-            "slug": self.feed_category.slug,
+            "slug": "new-title",
             "title": "New title",
         }
 

@@ -41,9 +41,9 @@ class TestReadingListManager:
 
     def test_get_reading_list(self, user):
         slug_to_get = "my-reading-list"
-        reading_list_to_get = ReadingListFactory(slug=slug_to_get, user=user)
-        ReadingListFactory(slug="other-reading-list", user=user)
-        ReadingListFactory(slug=slug_to_get)
+        reading_list_to_get = ReadingListFactory(title="My Reading list", user=user)
+        ReadingListFactory(title="My Other Reading list", user=user)
+        ReadingListFactory(title="My Reading list")
 
         reading_list = ReadingList.objects.get_reading_list(user, slug_to_get)
 
@@ -79,16 +79,16 @@ class TestReadingListModel:
         assert ReadingList.objects.count() == 2
 
     def test_cannot_create_multiple_lists_with_same_slug_for_one_user(self, user):
-        ReadingListFactory(user=user, slug="reading-list")
+        ReadingListFactory(user=user, title="Reading list")
 
         with pytest.raises(
             IntegrityError,
             match='duplicate key value violates unique constraint "reading_readinglist_enforce_slug_unicity"',  # noqa: E501
         ):
-            ReadingListFactory(user=user, slug="reading-list")
+            ReadingListFactory(user=user, title="Reading list")
 
     def test_can_create_multiple_lists_with_same_slug_different_user(self):
-        ReadingListFactory(slug="reading-list")
-        ReadingListFactory(slug="reading-list")
+        ReadingListFactory(title="Reading List")
+        ReadingListFactory(title="Reading List")
 
         assert ReadingList.objects.count() == 2

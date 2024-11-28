@@ -210,7 +210,6 @@ class Tag(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
-
         return super().save(*args, **kwargs)
 
 
