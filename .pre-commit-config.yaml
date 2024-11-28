@@ -86,6 +86,7 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
+        exclude: ".envrc"
         args: [-e, SC1091]
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
