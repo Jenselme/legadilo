@@ -153,7 +153,7 @@ class TagManager(models.Manager["Tag"]):
         }
 
     @transaction.atomic()
-    def get_or_create_from_list(self, user: User, titles_or_slugs: list[str]) -> list[Tag]:
+    def get_or_create_from_list(self, user: User, titles_or_slugs: Iterable[str]) -> list[Tag]:
         existing_tags = list(
             Tag.objects.get_queryset()
             .for_user(user)

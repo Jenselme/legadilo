@@ -40,6 +40,7 @@ from legadilo.reading.tests.factories import (
 )
 from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt, utcnow
+from legadilo.utils.validators import TableOfContentTopItem
 
 
 @pytest.mark.parametrize(
@@ -1013,12 +1014,13 @@ class TestArticleManager:
                         external_article_id="some-article-1",
                         title="Article 1",
                         summary="Summary 1",
-                        content="Description 1" + " word " * user.settings.default_reading_time * 3,
-                        table_of_content=[],
-                        authors=["Author"],
-                        contributors=[],
-                        tags=[],
-                        link="https//example.com/article/1",
+                        content="""<h2 id="section-title">My title</h2> <h3 id="sub-section">Sub-section</h3>Description 1"""  # noqa: E501
+                        + " word " * user.settings.default_reading_time * 3,
+                        table_of_content=(),
+                        authors=("Author",),
+                        contributors=(),
+                        tags=(),
+                        link="https://example.com/article/1",
                         preview_picture_url="https://example.com/preview.png",
                         preview_picture_alt="Some image alt",
                         published_at=now_dt,
@@ -1032,10 +1034,10 @@ class TestArticleManager:
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
-                        table_of_content=[],
-                        authors=["Author"],
-                        contributors=[],
-                        tags=[],
+                        table_of_content=(),
+                        authors=("Author",),
+                        contributors=(),
+                        tags=(),
                         preview_picture_url="",
                         preview_picture_alt="",
                         published_at=now_dt,
@@ -1049,10 +1051,10 @@ class TestArticleManager:
                         title="Updated article",
                         summary="Summary updated",
                         content="Description updated",
-                        table_of_content=[],
-                        authors=["Author"],
-                        contributors=[],
-                        tags=[],
+                        table_of_content=(),
+                        authors=("Author",),
+                        contributors=(),
+                        tags=(),
                         preview_picture_url="",
                         preview_picture_alt="",
                         published_at=utcdt(2024, 4, 19),
@@ -1065,11 +1067,11 @@ class TestArticleManager:
                         title="Article 3",
                         summary="Summary 3",
                         content="Description 3",
-                        table_of_content=[],
-                        authors=["Author"],
-                        contributors=["Contributor"],
-                        tags=["Some tag"],
-                        link="https//example.com/article/3",
+                        table_of_content=(),
+                        authors=("Author",),
+                        contributors=("Contributor",),
+                        tags=("Some tag",),
+                        link="https://example.com/article/3",
                         preview_picture_url="",
                         preview_picture_alt="",
                         published_at=now_dt,
@@ -1098,15 +1100,20 @@ class TestArticleManager:
         assert existing_article_to_keep.updated_at == utcdt(2024, 4, 20)
         assert existing_article_to_keep.obj_created_at == utcdt(2024, 6, 1, 12, 0)
         assert existing_article_to_keep.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
-        other_article = Article.objects.exclude(
-            id__in=[existing_article_to_update.id, existing_article_to_keep.id]
-        ).first()
-        assert other_article is not None
+        other_article = Article.objects.get(external_article_id="some-article-1")
         assert other_article.title == "Article 1"
         assert other_article.slug == "article-1"
         assert other_article.reading_time == 3
         assert other_article.obj_created_at == utcdt(2024, 6, 2, 12, 0)
         assert other_article.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
+        assert other_article.table_of_content == [
+            {
+                "children": [{"id": "sub-section", "level": 3, "text": "Sub-section"}],
+                "id": "section-title",
+                "level": 2,
+                "text": "My title",
+            }
+        ]
         assert list(
             Article.objects.annotate(tag_slugs=ArrayAgg("tags__slug")).values_list(
                 "tag_slugs", flat=True
@@ -1130,11 +1137,11 @@ class TestArticleManager:
                         title="Article 1",
                         summary="Summary 1",
                         content="Description 1" + " word " * user.settings.default_reading_time * 3,
-                        table_of_content=[],
-                        authors=["Author"],
-                        contributors=[],
-                        tags=[],
-                        link="https//example.com/article/1",
+                        table_of_content=(),
+                        authors=("Author",),
+                        contributors=(),
+                        tags=(),
+                        link="https://example.com/article/1",
                         preview_picture_url="https://example.com/preview.png",
                         preview_picture_alt="Some image alt",
                         published_at=now_dt,
@@ -1144,14 +1151,14 @@ class TestArticleManager:
                     ),
                     ArticleData(
                         external_article_id="some-article-1",
-                        link="https//example.com/article/1",
+                        link="https://example.com/article/1",
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
-                        table_of_content=[],
-                        authors=["Author"],
-                        contributors=[],
-                        tags=[],
+                        table_of_content=(),
+                        authors=("Author",),
+                        contributors=(),
+                        tags=(),
                         preview_picture_url="",
                         preview_picture_alt="",
                         published_at=now_dt,
@@ -1186,10 +1193,10 @@ class TestArticleManager:
             title=existing_article.title,
             summary=existing_article.summary,
             content=existing_article.content,
-            table_of_content=[],
-            authors=existing_article.authors,
-            contributors=existing_article.contributors,
-            tags=existing_article.external_tags,
+            table_of_content=(),
+            authors=tuple(existing_article.authors),
+            contributors=tuple(existing_article.contributors),
+            tags=tuple(existing_article.external_tags),
             published_at=now_dt,
             updated_at=now_dt,
             source_title="Some site",
@@ -1222,10 +1229,10 @@ class TestArticleManager:
             title=existing_article.title,
             summary=existing_article.summary,
             content=existing_article.content,
-            table_of_content=[],
-            authors=existing_article.authors,
-            contributors=existing_article.contributors,
-            tags=existing_article.external_tags,
+            table_of_content=(),
+            authors=tuple(existing_article.authors),
+            contributors=tuple(existing_article.contributors),
+            tags=tuple(existing_article.external_tags),
             published_at=now_dt,
             updated_at=now_dt,
             source_title="Some site",
@@ -1525,7 +1532,7 @@ class TestArticleModel:
                 True,
                 {
                     "title": "Updated title",
-                    "content": "Updated content",
+                    "content": """<h2 id="my-title">My title</h2> Updated content""",
                     "updated_at": utcdt(2024, 4, 21),
                 },
                 True,
@@ -1540,7 +1547,7 @@ class TestArticleModel:
                 False,
                 {
                     "title": "Initial title",
-                    "content": "Updated content",
+                    "content": """<h2 id="my-title">My title</h2> Updated content""",
                     "updated_at": utcdt(2024, 4, 21),
                 },
                 True,
@@ -1561,10 +1568,10 @@ class TestArticleModel:
                 {
                     "title": "Updated title",
                     "summary": "Updated summary",
-                    "content": "Updated content",
-                    "table_of_content": [
-                        {"id": "header", "text": "My title", "level": 2, "children": []}
-                    ],
+                    "content": """<h2 id="my-title">My title</h2> Updated content""",
+                    "table_of_content": (
+                        TableOfContentTopItem(id="my-title", text="My title", level=2, children=[]),
+                    ),
                     "updated_at": utcdt(2024, 4, 20),
                     "external_tags": ["Initial tag", "Some tag", "Updated tag"],
                     "authors": ["Author 1", "Author 2", "Author 3"],
@@ -1590,12 +1597,14 @@ class TestArticleModel:
                 external_article_id="some-article-1",
                 title="Updated title",
                 summary="Updated summary",
-                content="Updated content",
-                table_of_content=[{"id": "header", "text": "My title", "level": 2, "children": []}],
-                authors=["Author 2", "Author 3"],
-                contributors=["Contributor 2", "Contributor 3"],
-                tags=["Some tag", "Updated tag"],
-                link="https//example.com/article/1",
+                content="<h2>My title</h2> Updated content",
+                table_of_content=(
+                    TableOfContentTopItem(id="header", text="My title", level=2, children=[]),
+                ),
+                authors=("Author 2", "Author 3"),
+                contributors=("Contributor 2", "Contributor 3"),
+                tags=("Some tag", "Updated tag"),
+                link="https://example.com/article/1",
                 preview_picture_url="https://example.com/preview.png",
                 preview_picture_alt="Some image alt",
                 published_at=utcdt(2024, 4, 20),
@@ -1633,11 +1642,11 @@ class TestArticleModel:
                 title="Updated title",
                 summary="",
                 content="",
-                table_of_content=[],
-                authors=["Author"],
-                contributors=[],
-                tags=[],
-                link="https//example.com/article/1",
+                table_of_content=(),
+                authors=("Author",),
+                contributors=(),
+                tags=(),
+                link="https://example.com/article/1",
                 preview_picture_url="",
                 preview_picture_alt="",
                 published_at=utcdt(2024, 4, 20),

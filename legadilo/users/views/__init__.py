@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .manage_tokens_views import delete_token_view, manage_tokens_view
 from .notifications_views import list_notifications_view
 from .user_views import (
     user_detail_view,
@@ -23,7 +24,9 @@ from .user_views import (
 )
 
 __all__ = [
+    "delete_token_view",
     "list_notifications_view",
+    "manage_tokens_view",
     "user_detail_view",
     "user_redirect_view",
     "user_update_settings_view",

@@ -17,9 +17,20 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterable, Iterable
-from typing import TypeVar
+from typing import Any, TypeVar
+
+from django.core.serializers.json import DjangoJSONEncoder
+from pydantic import BaseModel as BaseSchema
 
 T = TypeVar("T")
+
+
+class CustomJsonEncoder(DjangoJSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, BaseSchema):
+            return o.model_dump(mode="json")
+
+        return super().default(o)
 
 
 def min_or_none(collection: Iterable[T]) -> T | None:
@@ -44,11 +55,7 @@ def max_or_none(
 
 
 async def alist(collection: AsyncIterable[T]) -> list[T]:
-    output = []
-    async for item in collection:
-        output.append(item)
-
-    return output
+    return [item async for item in collection]
 
 
 async def aset(collection: AsyncIterable[T]) -> set[T]:

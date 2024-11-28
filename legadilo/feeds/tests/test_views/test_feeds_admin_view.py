@@ -21,9 +21,10 @@ from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds import constants
-from legadilo.feeds.models import Feed
+from legadilo.feeds.models import Feed, FeedArticle
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
-from legadilo.reading.tests.factories import TagFactory
+from legadilo.reading.models import Article
+from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 
 
 @pytest.mark.django_db
@@ -82,12 +83,16 @@ class TestEditFeedView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_delete_feed(self, logged_in_sync_client):
+    def test_delete_feed(self, user, logged_in_sync_client):
+        article = ArticleFactory(user=user)
+        FeedArticle.objects.create(feed=self.feed, article=article)
+
         response = logged_in_sync_client.post(self.url, data={"delete": ""})
 
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == reverse("feeds:feeds_admin")
         assert Feed.objects.count() == 0
+        assert Article.objects.count() > 0
 
     def test_disable_feed(self, logged_in_sync_client):
         response = logged_in_sync_client.post(self.url, data={"disable": ""})

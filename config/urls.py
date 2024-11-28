@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
 
+from config.api import api
+
 
 def _correct_admin_url(path: str) -> str:
     path = path.removeprefix("/")
@@ -26,6 +28,7 @@ urlpatterns = [  # noqa: RUF005 concatenation
     path("feeds/", include("legadilo.feeds.urls", namespace="feeds")),
     path("reading/", include("legadilo.reading.urls", namespace="reading")),
     path("import-export/", include("legadilo.import_export.urls", namespace="import_export")),
+    path("api/", api.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

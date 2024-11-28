@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
-from jsonschema import ValidationError as JsonSchemaValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.import_export.services.wallabag import _import_wallabag_data
 from legadilo.reading import constants as reading_constants
@@ -24,7 +24,7 @@ from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 
 
 def test_import_invalid_data(user):
-    with pytest.raises(JsonSchemaValidationError):
+    with pytest.raises(PydanticValidationError):
         _import_wallabag_data(user, [{"key": "value"}])
 
 

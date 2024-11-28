@@ -13,65 +13,80 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import re
-from typing import Any
+from collections.abc import Set
+from typing import Annotated, Any
 from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import HttpRequest
-from django.utils.deconstruct import deconstructible
-from jsonschema import ValidationError as JsonSchemaValidationError
-from jsonschema import validate as validate_json_schema
 from nh3 import is_html
+from pydantic import (
+    AfterValidator,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    TypeAdapter,
+)
+from pydantic import BaseModel as BaseSchema
+from pydantic import ValidationError as PydanticValidationError
 
-from legadilo.utils.security import full_sanitize
+from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
+
+default_frozen_model_config = ConfigDict(
+    extra="forbid", frozen=True, validate_default=True, validate_assignment=True
+)
+
+FullSanitizeValidator = AfterValidator(full_sanitize)
 
 
-@deconstructible
-class JsonSchemaValidator:
-    def __init__(self, schema):
-        self._schema = schema
-
-    def __call__(self, value):
-        try:
-            validate_json_schema(value, self._schema)
-        except JsonSchemaValidationError as e:
-            raise ValidationError(str(e)) from e
+def sanitize_keep_safe_tags_validator(extra_tags: Set[str] = frozenset()) -> AfterValidator:
+    return AfterValidator(
+        lambda value: sanitize_keep_safe_tags(value, extra_tags_to_cleanup=extra_tags)
+    )
 
 
-list_of_strings_json_schema_validator = JsonSchemaValidator({
-    "type": "array",
-    "items": {"type": "string"},
-})
+def truncate(max_size: int) -> AfterValidator:
+    # We must use a lambda here: Pydantic cannot recognize the signature of
+    # operator.itemgetter(slice(max_size)) if we pass it to its validator.
+    return AfterValidator(lambda value: value[:max_size])  # noqa: FURB118 don't use a lambda
 
-table_of_content_json_schema_validator = JsonSchemaValidator({
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "id": {"type": "string"},
-            "text": {"type": "string"},
-            "level": {"type": "integer"},
-            "children": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "string"},
-                        "text": {"type": "string"},
-                        "level": {"type": "integer"},
-                    },
-                    "additionalProperties": False,
-                    "required": ["id", "text", "level"],
-                },
-            },
-        },
-        "additionalProperties": False,
-        "required": ["id", "text", "level"],
-    },
-})
+
+def remove_falsy_items(container_type: type):
+    return AfterValidator(lambda items: container_type(item for item in items if item))
+
+
+def none_to_value(none_replacer: Any) -> BeforeValidator:
+    return BeforeValidator(lambda value: none_replacer if value is None else value)
+
+
+def list_of_strings_validator(value: Any):
+    try:
+        TypeAdapter(list[str]).validate_python(value)
+    except PydanticValidationError as e:
+        raise ValidationError(str(e)) from e
+
+
+CleanedString = Annotated[str, FullSanitizeValidator, StringConstraints(strip_whitespace=True)]
+
+
+class TableOfContentItem(BaseSchema):
+    id: CleanedString
+    text: CleanedString
+    level: int
+
+
+class TableOfContentTopItem(TableOfContentItem):
+    children: list[TableOfContentItem] = Field(default_factory=list)
+
+
+def table_of_content_validator(value: Any):
+    try:
+        TypeAdapter(TableOfContentItem).validate_python(value)
+    except PydanticValidationError as e:
+        raise ValidationError(str(e)) from e
 
 
 def language_code_validator(value: Any):
@@ -87,6 +102,17 @@ def language_code_validator(value: Any):
         return
 
     raise ValidationError("Language code is invalid")
+
+
+def language_code_validator_or_default(value: Any) -> str:
+    try:
+        language_code_validator(value)
+        return value
+    except (ValidationError, TypeError):
+        return ""
+
+
+LanguageCodeValidatorOrDefault = AfterValidator(language_code_validator_or_default)
 
 
 def get_page_number_from_request(request: HttpRequest) -> int:
@@ -115,6 +141,16 @@ def is_url_valid(url: str | None) -> bool:
         return False
 
     return True
+
+
+def _is_url_valid_for_pydantic_validator(url: str | None) -> str:
+    if url is None or not is_url_valid(url):
+        raise ValueError(f"{url} is not a valid url")
+
+    return url
+
+
+ValidUrlValidator = AfterValidator(_is_url_valid_for_pydantic_validator)
 
 
 def normalize_url(base_url: str, url_to_normalize: str) -> str:

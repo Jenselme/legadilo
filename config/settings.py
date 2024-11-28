@@ -2,6 +2,7 @@
 
 import concurrent
 import warnings
+from datetime import timedelta
 from pathlib import Path
 
 import asgiref
@@ -113,6 +114,7 @@ DJANGO_APPS = [
     "django.forms",
 ]
 THIRD_PARTY_APPS = [
+    "ninja",
     "django_version_checks",
     "extra_checks",
     "anymail",
@@ -607,8 +609,18 @@ if not DEBUG and SENTRY_DSN:
         print("Failed to import sentry_sdk")  # noqa: T201 print found
 
 
+# django-ninja
+# ------------------------------------------------------------------------------
+# See https://django-ninja.dev/reference/settings/
+NINJA_PAGINATION_MAX_LIMIT = 500
+NINJA_PAGINATION_CLASS = "legadilo.utils.pagination.LimitOffsetPagination"
+
+
 # Your stuff...
 # ------------------------------------------------------------------------------
 ARTICLE_FETCH_TIMEOUT = env.int("LEGADILO_ARTICLE_FETCH_TIMEOUT", default=50)
 RSS_FETCH_TIMEOUT = env.int("LEGADILO_RSS_FETCH_TIMEOUT", default=300)
 CONTACT_EMAIL = env.str("LEGADILO_CONTACT_EMAIL", default=None)
+TOKEN_LENGTH = 50
+JWT_ALGORITHM = "HS256"
+JWT_MAX_AGE = timedelta(hours=4)

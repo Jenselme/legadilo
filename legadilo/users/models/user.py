@@ -59,4 +59,4 @@ class User(AbstractUser):
 
     @cached_property
     def tzinfo(self) -> ZoneInfo:
-        return ZoneInfo(self.settings.timezone.name)
+        return self.settings.timezone.zone_info

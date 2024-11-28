@@ -26,8 +26,7 @@ from django.http import StreamingHttpResponse
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
-from jsonschema import ValidationError as JsonSchemaValidationError
-from jsonschema.exceptions import ValidationError as JsonValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.users.models import User
@@ -102,7 +101,7 @@ async def _import_custom_csv(request: AuthenticatedHttpRequest):
                 nb_imported_feeds,
                 nb_imported_categories,
             ) = await import_custom_csv_file(await request.auser(), file_path)
-    except (JsonSchemaValidationError, DataImportError, UnicodeDecodeError):
+    except (DataImportError, UnicodeDecodeError, PydanticValidationError):
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
     else:
@@ -127,7 +126,7 @@ async def _import_wallabag(request: AuthenticatedHttpRequest):
         nb_imported_articles = await sync_to_async(import_wallabag_file)(
             await request.auser(), import_wallabag_form.cleaned_data["wallabag_file"]
         )
-    except (JSONDecodeError, UnicodeDecodeError, JsonValidationError):
+    except (JSONDecodeError, UnicodeDecodeError, PydanticValidationError):
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
     else:

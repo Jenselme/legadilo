@@ -19,7 +19,7 @@ from typing import Any
 
 import pytest
 
-from legadilo.reading.services.article_fetching import build_article_data, get_article_from_url
+from legadilo.reading.services.article_fetching import ArticleData, get_article_from_url
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
 
@@ -216,6 +216,6 @@ async def test_get_article_from_url_process_fixture(
     ],
 )
 def test_build_article_data(parameters: dict[str, Any], snapshot):
-    article_data = build_article_data(**parameters)
+    article_data = ArticleData(**parameters)
 
     snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")

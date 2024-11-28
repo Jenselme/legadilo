@@ -57,12 +57,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=list,
-                        validators=[
-                            legadilo.utils.validators.JsonSchemaValidator({
-                                "items": {"type": "string"},
-                                "type": "array",
-                            })
-                        ],
+                        validators=[legadilo.utils.validators.list_of_strings_validator],
                     ),
                 ),
                 (
@@ -70,12 +65,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=list,
-                        validators=[
-                            legadilo.utils.validators.JsonSchemaValidator({
-                                "items": {"type": "string"},
-                                "type": "array",
-                            })
-                        ],
+                        validators=[legadilo.utils.validators.list_of_strings_validator],
                     ),
                 ),
                 ("link", models.URLField(max_length=1024)),
@@ -87,12 +77,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         default=list,
                         help_text="Tags of the article from the its source",
-                        validators=[
-                            legadilo.utils.validators.JsonSchemaValidator({
-                                "items": {"type": "string"},
-                                "type": "array",
-                            })
-                        ],
+                        validators=[legadilo.utils.validators.list_of_strings_validator],
                     ),
                 ),
                 (

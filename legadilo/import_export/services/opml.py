@@ -22,6 +22,7 @@ import httpx
 from asgiref.sync import async_to_sync, sync_to_async
 from defusedxml.ElementTree import parse
 from django.db import IntegrityError
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedCategory
@@ -176,7 +177,7 @@ async def _process_feed(user, client, outline, category=None):
         nb_imported_feeds += 1
     except IntegrityError:
         logger.info(f"You are already subscribed to {outline.feed_url}")
-    except (FeedFileTooBigError, InvalidFeedFileError):
+    except (FeedFileTooBigError, InvalidFeedFileError, PydanticValidationError):
         logger.exception("Failed to import the feed")
 
     return nb_imported_feeds

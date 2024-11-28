@@ -15,25 +15,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from dataclasses import asdict, is_dataclass
-from datetime import date, datetime
 from typing import Any
 
 from django.db import models
+from pydantic import BaseModel as BaseSchema
 
-
-class CustomJsonEncoder(json.JSONEncoder):
-    def default(self, obj: Any) -> Any:
-        if isinstance(obj, datetime | date):
-            return obj.isoformat()
-
-        if is_dataclass(obj):
-            return asdict(obj)  # type: ignore[arg-type]
-
-        return super().default(obj)
+from legadilo.utils.collections_utils import CustomJsonEncoder
 
 
 def serialize_for_snapshot(value: Any) -> str:
+    if isinstance(value, BaseSchema):
+        value = value.model_dump(mode="json")
+    elif isinstance(value, list | tuple) and len(value) > 0 and isinstance(value[0], BaseSchema):
+        value = [item.model_dump(mode="json") for item in value]
+
     value = json.dumps(value, indent=2, sort_keys=True, cls=CustomJsonEncoder)
 
     return str(value)
@@ -41,3 +36,7 @@ def serialize_for_snapshot(value: Any) -> str:
 
 def all_model_fields_except(model: type[models.Model], excluded_fields: set[str]):
     return [field.name for field in model._meta.fields if field.name not in excluded_fields]
+
+
+def build_bearer_header(jwt: str = ""):
+    return f"Bearer {jwt}"

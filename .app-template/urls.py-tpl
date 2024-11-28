@@ -1,8 +1,6 @@
-from django.urls import path
-
-from . import views
+from django.urls import URLPattern
 
 app_name = "{{ app_name }}"
 
-urlpatterns = [
+urlpatterns: list[URLPattern] = [
 ]

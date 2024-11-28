@@ -10,14 +10,14 @@
     "link": "http://example.org/entry/3",
     "preview_picture_alt": "My image description My image credit",
     "preview_picture_url": "https://example.com/my-image.jpg",
-    "published_at": "2005-11-09T00:23:47+00:00",
+    "published_at": "2005-11-09T00:23:47Z",
     "read_at": null,
     "source_title": "Some feed",
     "summary": "Watch out for nasty tricks",
     "table_of_content": [],
     "tags": [],
     "title": "First entry title",
-    "updated_at": "2005-11-09T11:56:34+00:00"
+    "updated_at": "2005-11-09T11:56:34Z"
   },
   {
     "annotations": [],

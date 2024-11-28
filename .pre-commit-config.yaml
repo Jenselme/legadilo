@@ -79,12 +79,14 @@ repos:
     rev: v1.36.1
     hooks:
       - id: djlint-reformat-django
+        exclude: "ninja/swagger.html"
       - id: djlint-django
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
+        exclude: ".envrc"
         args: [-e, SC1091]
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint

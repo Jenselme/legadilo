@@ -28,6 +28,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
@@ -206,7 +207,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             _("The feed file is too big, we won't parse it. Try to find a more lightweight feed."),
         )
         return HTTPStatus.BAD_REQUEST, form
-    except (InvalidFeedFileError, ValueError, TypeError):
+    except (InvalidFeedFileError, PydanticValidationError, ValueError, TypeError):
         messages.error(
             request,
             _(

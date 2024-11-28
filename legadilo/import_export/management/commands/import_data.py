@@ -23,7 +23,7 @@ from xml.etree.ElementTree import (  # noqa: S405 etree methods are vulnerable t
 from django.core.management import BaseCommand
 from django.core.management.base import CommandError, CommandParser
 from django.db import transaction
-from jsonschema import ValidationError as JsonSchemaValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.import_export.services.custom_csv import import_custom_csv_file_sync
 from legadilo.import_export.services.exceptions import DataImportError
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             self._import(options)
         except User.DoesNotExist as e:
             raise CommandError(f"No user with id {options['user_id']} was found!") from e
-        except JsonSchemaValidationError as e:
+        except PydanticValidationError as e:
             logger.debug(str(e))
             raise CommandError("The file you supplied is not valid") from e
         except FileNotFoundError as e:
