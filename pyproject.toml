@@ -246,7 +246,7 @@ python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 markdown = "^3.7"  # https://python-markdown.github.io
 pydantic = "2.10.0"  # https://docs.pydantic.dev/latest/
-pyjwt = "2.10.0"  # https://pyjwt.readthedocs.io/en/stable/
+pyjwt = "2.10.1"  # https://pyjwt.readthedocs.io/en/stable/
 
 
 [tool.poetry.group.prod]
