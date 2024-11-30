@@ -7,13 +7,24 @@ import {
   listCategories,
 } from "./legadilo.js";
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  onMessage(request, sender, sendResponse);
+const isFirefox = typeof browser === "object";
 
-  return true;
-});
+if (isFirefox) {
+  browser.runtime.onConnect.addListener(function (port) {
+    port.onMessage.addListener((request) => onMessage(request, port.postMessage));
+  });
+} else {
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    onMessage(request, sendResponse);
 
-const onMessage = async (request, sender, sendResponse) => {
+    return true;
+  });
+}
+
+/**
+ * @param request {MediaQueryList}
+ */
+const onMessage = async (request, sendResponse) => {
   try {
     switch (request.name) {
       case "save-article":

@@ -1,9 +1,14 @@
 import Tags from "./vendor/tags.js";
 
+let port;
 let articleTagsInstance = null;
 let feedTagsInstance = null;
 
+const isFirefox = typeof browser === "object";
+
 document.addEventListener("DOMContentLoaded", async () => {
+  connectToPort();
+
   hideLoader();
   hideErrorMessage();
   hideActionSelector();
@@ -19,6 +24,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   runDefaultAction(tab, pageContent);
 });
+
+const connectToPort = () => {
+  if (!isFirefox) {
+    return null;
+  }
+
+  port = chrome.runtime.connect({ name: "legadilo-popup" });
+  port.onMessage.addListener(onMessage);
+};
 
 const runDefaultAction = (tab, pageContent) => {
   const parser = new DOMParser();
@@ -36,7 +50,7 @@ const runDefaultAction = (tab, pageContent) => {
   displayActionSelector(tab, pageContent, feedNodes);
 };
 
-const onResponse = (request) => {
+const onMessage = (request) => {
   if (request.error) {
     hideLoader();
     displayErrorMessage(request.error);
@@ -183,14 +197,14 @@ const displayFeed = (feed, tags, categories) => {
     });
   }
 
-  document.querySelector("#update-feed-form").addEventListener("submit", async (event) => {
+  document.querySelector("#update-feed-form").addEventListener("submit", (event) => {
     event.preventDefault();
 
     const data = new FormData(event.target);
 
     hideFeed();
     displayLoader();
-    const response = await chrome.runtime.sendMessage({
+    sendMessage({
       name: "update-feed",
       feedId: feed.id,
       payload: {
@@ -200,8 +214,6 @@ const displayFeed = (feed, tags, categories) => {
         tags: data.getAll("tags"),
       },
     });
-
-    onResponse(response);
   });
 };
 
@@ -215,18 +227,15 @@ const hideFeed = () => {
 const getCurrentTab = () =>
   chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
 
-const saveArticle = async (tab, pageContent) => {
+const saveArticle = (tab, pageContent) => {
   displayLoader();
-  const response = await chrome.runtime.sendMessage({
+  sendMessage({
     name: "save-article",
     payload: { link: tab.url, title: tab.title, content: pageContent },
   });
-
-  onResponse(response);
 };
 
 const savedArticleSuccess = (article, tags) => {
-  console.log("anuierta unriteanurit n");
   displayArticle(article, tags);
   setupArticleActions(article.id);
 };
@@ -263,16 +272,14 @@ const setupArticleActions = (articleId) => {
     updateArticle({ isForLater: false });
   });
 
-  const updateArticle = async (payload) => {
+  const updateArticle = (payload) => {
     hideArticle();
     displayLoader();
-    const response = await chrome.runtime.sendMessage({
+    sendMessage({
       name: "update-article",
       articleId,
       payload,
     });
-
-    onResponse(response);
   };
 };
 
@@ -280,14 +287,12 @@ const updatedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
 };
 
-const subscribeToFeed = async (link) => {
+const subscribeToFeed = (link) => {
   displayLoader();
-  const response = await chrome.runtime.sendMessage({
+  sendMessage({
     name: "subscribe-to-feed",
     payload: { link },
   });
-
-  onResponse(response);
 };
 
 const feedSubscriptionSuccess = (feed, tags, categories) => {
@@ -296,4 +301,14 @@ const feedSubscriptionSuccess = (feed, tags, categories) => {
 
 const updatedFeedSuccess = (feed, tags, categories) => {
   displayFeed(feed, tags, categories);
+};
+
+const sendMessage = async (message) => {
+  if (isFirefox) {
+    port.postMessage(message);
+    return;
+  }
+
+  const response = await chrome.runtime.sendMessage(message);
+  onMessage(response);
 };

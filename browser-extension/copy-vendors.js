@@ -10,6 +10,5 @@ const vendorFiles = [
 
 for (const vendorFile of vendorFiles) {
   const destFileName = vendorFile.split("/").at(-1);
-  fs.copyFileSync(vendorFile, `./firefox-src/vendor/${destFileName}`);
-  fs.copyFileSync(vendorFile, `./chrome-src/vendor/${destFileName}`);
+  fs.copyFileSync(vendorFile, `./src/vendor/${destFileName}`);
 }
