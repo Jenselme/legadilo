@@ -8,6 +8,6 @@
   },
   "scripts": {
     "postinstall": "./copy-vendors.js",
-    "build": "web-ext build --source-dir src"
+    "build": "web-ext build --overwrite-dest --source-dir firefox-src"
   }
 }
