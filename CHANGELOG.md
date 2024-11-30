@@ -9,6 +9,9 @@
   - You can manage application tokens in your profile.
   - You can get auth tokens from these applications tokens to use the API.
 - Prevent 500 errors on duplicated tags (in tag admin), feed categories and reading lists.
+- Add debug information to feed admin.
+- Add link to feed admin on feed articles list.
+- Can search for feeds in feed admin.
 
 ## 24.10.3
 
