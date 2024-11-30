@@ -4,12 +4,23 @@
   fill: currentcolor;
 }
 
-#article-container {
+#article-container,
+#feed-container,
+#action-selector-container {
   padding: 0.5rem;
+}
+
+#action-selector-container {
+  max-width: 300px;
+  padding: 0.5rem;
+}
+
+#action-selector-container .row {
+  max-width: 280px;
 }
 
 body,
 #loading-indicator {
-  min-height: 410px;
+  min-height: 350px;
   min-width: 300px;
 }

@@ -1,15 +1,18 @@
 import Tags from "./vendor/tags.js";
 
 let port;
-let tagInstance = null;
+let articleTagsInstance = null;
+let feedTagsInstance = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   port = browser.runtime.connect({ name: "legadilo-popup" });
   port.onMessage.addListener(onMessage);
 
+  hideLoader();
   hideErrorMessage();
+  hideActionSelector();
   hideArticle();
-  displayLoader();
+  hideFeed();
 
   const tab = await getCurrentTab();
   const scriptResult = await browser.scripting.executeScript({
@@ -18,11 +21,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   const pageContent = scriptResult[0].result;
 
-  port.postMessage({
-    request: "save-article",
-    payload: { link: tab.url, title: tab.title, content: pageContent },
-  });
+  runDefaultAction(tab, pageContent);
 });
+
+const runDefaultAction = (tab, pageContent) => {
+  const parser = new DOMParser();
+  const htmlDoc = parser.parseFromString(pageContent, "text/html");
+  const feedNodes = [];
+  feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
+  feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
+
+  // No feed links, let's save immediately.
+  if (feedNodes.length === 0) {
+    saveArticle(tab, pageContent);
+    return;
+  }
+
+  displayActionSelector(tab, pageContent, feedNodes);
+};
 
 /**
  * @param msg {MediaQueryList}
@@ -43,7 +59,45 @@ const onMessage = async (event) => {
     case "updated-article":
       updatedArticleSuccess(event.article, event.tags);
       break;
+    case "subscribed-to-feed":
+      feedSubscriptionSuccess(event.feed, event.tags, event.categories);
+      break;
+    case "updated-feed":
+      updatedFeedSuccess(event.feed, event.tags, event.categories);
+      break;
+    default:
+      console.warn(`Unknown action ${event.request}`);
   }
+};
+
+const displayActionSelector = (tab, pageContent, feedNodes) => {
+  document.querySelector("#action-selector-container").style.display = "block";
+
+  const chooseFeedsContainer = document.querySelector("#choose-action-container");
+  for (const feedNode of feedNodes) {
+    const button = document.createElement("button");
+    button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
+    button.innerText = feedNode.getAttribute("title");
+    let feedHref = feedNode.getAttribute("href");
+    if (feedHref.startsWith("//")) {
+      const pageProtocol = new URL(tab.url).protocol;
+      feedHref = `${pageProtocol}${feedHref}`;
+    }
+    button.addEventListener("click", () => {
+      hideActionSelector();
+      subscribeToFeed(feedHref);
+    });
+    chooseFeedsContainer.appendChild(button);
+  }
+
+  document.querySelector("#save-article-action-btn").addEventListener("click", () => {
+    hideActionSelector();
+    saveArticle(tab, pageContent);
+  });
+};
+
+const hideActionSelector = () => {
+  document.querySelector("#action-selector-container").style.display = "none";
 };
 
 const displayErrorMessage = (message) => {
@@ -66,15 +120,11 @@ const hideLoader = () => {
 const displayArticle = (article, tags) => {
   document.querySelector("#article-container").style.display = "block";
 
-  if (!article) {
-    return;
-  }
-
   document.querySelector("#saved-article-title").value = article.title;
   document.querySelector("#saved-article-reading-time").value = article.reading_time;
 
-  if (tagInstance === null && tags !== undefined && tags !== null) {
-    tagInstance = Tags.init("#saved-article-tags", {
+  if (articleTagsInstance === null) {
+    articleTagsInstance = Tags.init("#saved-article-tags", {
       allowNew: true,
       allowClear: true,
       items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
@@ -109,11 +159,74 @@ const hideArticle = () => {
   document.querySelector("#article-container").style.display = "none";
 };
 
+const displayFeed = (feed, tags, categories) => {
+  document.querySelector("#feed-container").style.display = "block";
+  document.querySelector("#feed-title").innerText = feed.title;
+
+  document.querySelector("#feed-refresh-delay").value = feed.refresh_delay;
+  document.querySelector("#feed-article-retention-time").value = feed.article_retention_time;
+
+  const categorySelector = document.querySelector("#feed-category");
+  // Clean all existing choices.
+  categorySelector.innerHTML = "";
+  const noCategoryOption = document.createElement("option");
+  noCategoryOption.value = "";
+  noCategoryOption.innerText = "No Category";
+  categorySelector.appendChild(noCategoryOption);
+  for (const category of categories) {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.innerText = category.title;
+    categorySelector.appendChild(option);
+  }
+  categorySelector.value = feed.category ? feed.category.id : "";
+
+  if (feedTagsInstance === null) {
+    feedTagsInstance = Tags.init("#feed-tags", {
+      allowNew: true,
+      allowClear: true,
+      items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
+      selected: feed.tags.map((tag) => tag.slug),
+    });
+  }
+
+  document.querySelector("#update-feed-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const data = new FormData(event.target);
+
+    hideFeed();
+    displayLoader();
+    port.postMessage({
+      request: "update-feed",
+      feedId: feed.id,
+      payload: {
+        categoryId: data.get("category") || null,
+        refreshDelay: data.get("refresh-delay"),
+        articleRetentionTime: data.get("retention-time"),
+        tags: data.getAll("tags"),
+      },
+    });
+  });
+};
+
+const hideFeed = () => {
+  document.querySelector("#feed-container").style.display = "none";
+};
+
 /**
  * @returns {Promise<tabs.Tab>}
  */
 const getCurrentTab = () =>
   browser.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
+
+const saveArticle = (tab, pageContent) => {
+  displayLoader();
+  port.postMessage({
+    request: "save-article",
+    payload: { link: tab.url, title: tab.title, content: pageContent },
+  });
+};
 
 const savedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
@@ -165,4 +278,20 @@ const setupArticleActions = (articleId) => {
 
 const updatedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
+};
+
+const subscribeToFeed = (link) => {
+  displayLoader();
+  port.postMessage({
+    request: "subscribe-to-feed",
+    payload: { link },
+  });
+};
+
+const feedSubscriptionSuccess = (feed, tags, categories) => {
+  displayFeed(feed, tags, categories);
+};
+
+const updatedFeedSuccess = (feed, tags, categories) => {
+  displayFeed(feed, tags, categories);
 };

@@ -16,6 +16,13 @@
                 </div>
             </div>
         </div>
+        <div id="action-selector-container">
+            <div id="choose-action-container" class="row row-cols-1 m-auto">
+                <button id="save-article-action-btn"
+                        class="btn btn-primary mb-2 col"
+                        type="button">Save this article</button>
+            </div>
+        </div>
         <div id="article-container">
             <form id="update-saved-article-form">
                 <div class="mb-3">
@@ -90,6 +97,53 @@
                          alt="Unmark as for later" />
                 </button>
             </div>
+        </div>
+        <div id="feed-container">
+            <h2 id="feed-title"></h2>
+            <form id="update-feed-form">
+                <div class="mb-3">
+                    <label for="feed-category" class="form-label">Category</label>
+                    <select id="feed-category" name="category" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <label for="feed-refresh-delay" class="form-label">Refresh delay</label>
+                    <select id="feed-refresh-delay" name="refresh-delay" class="form-select">
+                        <option value="HOURLY">Hourly</option>
+                        <option value="BIHOURLY">Bihourly</option>
+                        <option value="EVERY_MORNING">Every Morning</option>
+                        <option value="DAILY_AT_NOON">Daily at Noon</option>
+                        <option value="EVERY_EVENING">Every Evening</option>
+                        <option value="ON_MONDAYS">On Mondays</option>
+                        <option value="ON_THURSDAYS">On Thursdays</option>
+                        <option value="ON_SATURDAYS">On Saturdays</option>
+                        <option value="ON_SUNDAYS">On Sundays</option>
+                        <option value="TWICE_A_WEEK">Twice a week</option>
+                        <option value="FIRST_DAY_OF_THE_MONTH">First Day of the Month</option>
+                        <option value="MIDDLE_OF_THE_MONTH">Middle Day of the Month</option>
+                        <option value="END_OF_THE_MONTH">End of the Month</option>
+                        <option value="THRICE_A_MONTH">Thrice a month</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="feed-article-retention-time" class="form-label">Article retention time in days (0 for infinity)</label>
+                    <input id="feed-article-retention-time"
+                           name="retention-time"
+                           class="form-control"
+                           type="number"
+                           step="1" />
+                </div>
+                <div class="mb-3">
+                    <label for="feed-tags" class="form-label">Tags</label>
+                    <select id="feed-tags"
+                            name="tags"
+                            class="form-select"
+                            multiple
+                            data-allow-new="true">
+                        <option disabled hidden value="">Choose a tag...</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-sm">Update</button>
+            </form>
         </div>
         <div id="error-container" class="alert alert-danger">
             <p>An error occurred</p>

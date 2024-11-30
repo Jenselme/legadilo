@@ -26,8 +26,27 @@ export const updateArticle = async (
     is_for_later: isForLater,
   });
 
+export const subscribeToFeed = async (link) => await post("/api/feeds/", { feed_url: link });
+
+export const updateFeed = async (
+  feedId,
+  { categoryId, tags, refreshDelay, articleRetentionTime },
+) =>
+  await patch(`/api/feeds/${feedId}/`, {
+    category_id: categoryId,
+    tags,
+    refresh_delay: refreshDelay,
+    article_retention_time: articleRetentionTime,
+  });
+
 export const listTags = async () => {
   const response = await get("/api/reading/tags/");
+
+  return response.items;
+};
+
+export const listCategories = async () => {
+  const response = await get("/api/feeds/categories/");
 
   return response.items;
 };
