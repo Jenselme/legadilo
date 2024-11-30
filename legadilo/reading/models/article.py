@@ -449,6 +449,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_url_search(self, url: str) -> Self:
         return self.filter(link__icontains=url)
 
+    def for_api(self):
+        return self.prefetch_related(_build_prefetch_article_tags())
+
 
 class ArticleManager(models.Manager["Article"]):
     _hints: dict

@@ -21,7 +21,7 @@ from typing import Annotated, Self
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
 from ninja import ModelSchema, PatchDict, Router, Schema
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
@@ -42,7 +42,15 @@ from legadilo.utils.validators import (
 reading_api_router = Router(tags=["reading"])
 
 
+class OutTagSchema(ModelSchema):
+    class Meta:
+        model = Tag
+        fields = ("title", "slug")
+
+
 class OutArticleSchema(ModelSchema):
+    tags: list[OutTagSchema] = Field(alias="tags_to_display")
+
     class Meta:
         model = Article
         exclude = ("user", "obj_created_at", "obj_updated_at")
@@ -92,7 +100,9 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
         request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
-    return HTTPStatus.CREATED, articles[0]
+    return HTTPStatus.CREATED, await Article.objects.get_queryset().for_api().aget(
+        id=articles[0].id
+    )
 
 
 @reading_api_router.get(
@@ -102,7 +112,9 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     summary="View the details of a specific article",
 )
 async def get_article_view(request: AuthenticatedApiRequest, article_id: int) -> Article:
-    return await aget_object_or_404(Article, id=article_id, user=request.auth)
+    return await aget_object_or_404(
+        Article.objects.get_queryset().for_api(), id=article_id, user=request.auth
+    )
 
 
 class ArticleUpdate(Schema):
@@ -131,9 +143,9 @@ async def update_article_view(
         await _update_article_tags(request.auth, article, tags)
 
     # Required to update tags and generated fields
-    await update_model_from_patch_dict(article, payload, must_refresh=True)
+    await update_model_from_patch_dict(article, payload)
 
-    return article
+    return await Article.objects.get_queryset().for_api().aget(id=article_id)
 
 
 async def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]):

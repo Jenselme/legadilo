@@ -21,7 +21,7 @@ import pytest
 from django.urls import reverse
 
 from legadilo.reading import constants
-from legadilo.reading.models import Article
+from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
@@ -96,7 +96,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(link=self.article_link),
         )
 
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url, {"link": self.article_link}, content_type="application/json"
             )
@@ -119,7 +119,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(link=self.article_link),
         )
 
-        with django_assert_num_queries(15):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.url,
                 {"link": self.article_link, "tags": ["Some tag"]},
@@ -145,7 +145,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(link=self.article_link),
         )
 
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -190,8 +190,22 @@ class TestGetArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert Article.objects.count() == 1
 
-    def test_get(self, logged_in_sync_client, snapshot):
-        response = logged_in_sync_client.get(self.url)
+    def test_get(self, user, logged_in_sync_client, snapshot, django_assert_num_queries):
+        tag = TagFactory(user=user, title="Some tag")
+        tag_to_exclude = TagFactory(user=user, title="Deleted tag")
+        ArticleTag.objects.create(
+            article=self.article,
+            tag=tag,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
+        )
+        ArticleTag.objects.create(
+            article=self.article,
+            tag=tag_to_exclude,
+            tagging_reason=constants.TaggingReason.DELETED,
+        )
+
+        with django_assert_num_queries(7):
+            response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         snapshot.assert_match(
@@ -226,7 +240,7 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_no_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.patch(self.url, {}, content_type="application/json")
 
         assert response.status_code == HTTPStatus.OK
@@ -238,7 +252,7 @@ class TestUpdateArticleView:
         )
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -265,7 +279,7 @@ class TestUpdateArticleView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.article.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
