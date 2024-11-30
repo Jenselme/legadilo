@@ -167,8 +167,12 @@ def external_tag_with_articles_view(
 
 
 def list_or_update_articles(
-    request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet, page_title: str
+    request: AuthenticatedHttpRequest,
+    articles_qs: ArticleQuerySet,
+    page_title: str,
+    extra_ctx: dict | None = None,
 ) -> TemplateResponse:
+    extra_ctx = extra_ctx or {}
     tag_choices = Tag.objects.get_all_choices(request.user)
     status = HTTPStatus.OK
     form = UpdateArticlesForm(tag_choices=tag_choices)
@@ -179,6 +183,7 @@ def list_or_update_articles(
         request,
         articles_qs,
         {
+            **extra_ctx,
             "page_title": page_title,
             "displayed_reading_list": None,
             "js_cfg": {},

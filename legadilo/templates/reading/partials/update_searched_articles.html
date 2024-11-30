@@ -1,8 +1,8 @@
 {% load i18n crispy_forms_tags %}
 
-<div class="accordion mb-2 {{ size }}"
+<div class="accordion mb-2 {{ size }} pe-0"
      id="update-searched-articles-actions-container">
-    <div class="accordion-item">
+    <div class="accordion-item me-0">
         <div class="accordion-header">
             <button class="accordion-button {% if not update_articles_form.errors %}collapsed{% endif %} p-2"
                     type="button"

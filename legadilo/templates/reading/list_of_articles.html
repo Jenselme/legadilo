@@ -72,7 +72,7 @@
             <div class="col col-12 col-md-8 px-1 px-md-3 mx-0">
                 <div class="row px-0 mx-0">
                     {% if count_articles_of_current_reading_list > 0 %}
-                        <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center px-0 mx-0">
+                        <h2 class="fs-6 col-md-2 align-middle d-flex align-items-center px-0 mx-0">
                             <span id="articles-in-total">
                                 {% partialdef articles-in-total inline=True %}
                                     {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
@@ -105,6 +105,11 @@
                                 </div>
                             {% endif %}
                         </h2>
+                    {% endif %}
+                    {% if feed %}
+                        <div class="d-flex mb-2 col-md-2">
+                            <span class="align-middle d-flex align-items-center"><a href="{% url 'feeds:edit_feed' feed_id=feed.id %}">{% translate "Edit this feed" %}</a></span>
+                        </div>
                     {% endif %}
                     {% if update_articles_form %}
                         {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-md-8" %}
