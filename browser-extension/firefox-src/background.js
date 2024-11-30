@@ -14,25 +14,25 @@ browser.runtime.onConnect.addListener(function (port) {
 });
 
 /**
- * @param msg {MediaQueryList}
+ * @param request {MediaQueryList}
  */
-const onMessage = async (msg) => {
+const onMessage = async (request) => {
   try {
-    switch (msg.request) {
+    switch (request.name) {
       case "save-article":
-        await processSaveArticleRequest(msg.payload);
+        await processSaveArticleRequest(request.payload);
         break;
       case "update-article":
-        await processUpdateArticleRequest(msg.articleId, msg.payload);
+        await processUpdateArticleRequest(request.articleId, request.payload);
         break;
       case "subscribe-to-feed":
-        await processFeedSubscriptionRequest(msg.payload);
+        await processFeedSubscriptionRequest(request.payload);
         break;
       case "update-feed":
-        await processUpdateFeedRequest(msg.feedId, msg.payload);
+        await processUpdateFeedRequest(request.feedId, request.payload);
         break;
       default:
-        console.warn(`Unknown action ${msg.request}`);
+        console.warn(`Unknown action ${request.name}`);
         break;
     }
   } catch (err) {
@@ -43,23 +43,23 @@ const onMessage = async (msg) => {
 const processSaveArticleRequest = async (payload) => {
   const article = await saveArticle(payload);
   const tags = await listTags();
-  extPort.postMessage({ request: "saved-article", article, tags });
+  extPort.postMessage({ name: "saved-article", article, tags });
 };
 
 const processUpdateArticleRequest = async (articleId, payload) => {
   const article = await updateArticle(articleId, payload);
   const tags = await listTags();
-  extPort.postMessage({ request: "updated-article", article, tags });
+  extPort.postMessage({ name: "updated-article", article, tags });
 };
 
 const processFeedSubscriptionRequest = async (payload) => {
   const feed = await subscribeToFeed(payload.link);
   const [tags, categories] = await Promise.all([listTags(), listCategories()]);
-  extPort.postMessage({ request: "subscribed-to-feed", feed, tags, categories });
+  extPort.postMessage({ name: "subscribed-to-feed", feed, tags, categories });
 };
 
 const processUpdateFeedRequest = async (feedId, payload) => {
   const feed = await updateFeed(feedId, payload);
   const [tags, categories] = await Promise.all([listTags(), listCategories()]);
-  extPort.postMessage({ request: "updated-feed", feed, tags, categories });
+  extPort.postMessage({ name: "updated-feed", feed, tags, categories });
 };

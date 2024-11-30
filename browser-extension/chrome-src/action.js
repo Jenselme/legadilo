@@ -1,13 +1,9 @@
 import Tags from "./vendor/tags.js";
 
-let port;
 let articleTagsInstance = null;
 let feedTagsInstance = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  port = browser.runtime.connect({ name: "legadilo-popup" });
-  port.onMessage.addListener(onMessage);
-
   hideLoader();
   hideErrorMessage();
   hideActionSelector();
@@ -15,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   hideFeed();
 
   const tab = await getCurrentTab();
-  const scriptResult = await browser.scripting.executeScript({
+  const scriptResult = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: () => document.documentElement.outerHTML,
   });
@@ -40,10 +36,7 @@ const runDefaultAction = (tab, pageContent) => {
   displayActionSelector(tab, pageContent, feedNodes);
 };
 
-/**
- * @param msg {MediaQueryList}
- */
-const onMessage = async (request) => {
+const onResponse = (request) => {
   if (request.error) {
     hideLoader();
     displayErrorMessage(request.error);
@@ -190,14 +183,14 @@ const displayFeed = (feed, tags, categories) => {
     });
   }
 
-  document.querySelector("#update-feed-form").addEventListener("submit", (event) => {
+  document.querySelector("#update-feed-form").addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const data = new FormData(event.target);
 
     hideFeed();
     displayLoader();
-    port.postMessage({
+    const response = await chrome.runtime.sendMessage({
       name: "update-feed",
       feedId: feed.id,
       payload: {
@@ -207,6 +200,8 @@ const displayFeed = (feed, tags, categories) => {
         tags: data.getAll("tags"),
       },
     });
+
+    onResponse(response);
   });
 };
 
@@ -218,17 +213,20 @@ const hideFeed = () => {
  * @returns {Promise<tabs.Tab>}
  */
 const getCurrentTab = () =>
-  browser.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
+  chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
 
-const saveArticle = (tab, pageContent) => {
+const saveArticle = async (tab, pageContent) => {
   displayLoader();
-  port.postMessage({
+  const response = await chrome.runtime.sendMessage({
     name: "save-article",
     payload: { link: tab.url, title: tab.title, content: pageContent },
   });
+
+  onResponse(response);
 };
 
 const savedArticleSuccess = (article, tags) => {
+  console.log("anuierta unriteanurit n");
   displayArticle(article, tags);
   setupArticleActions(article.id);
 };
@@ -265,14 +263,16 @@ const setupArticleActions = (articleId) => {
     updateArticle({ isForLater: false });
   });
 
-  const updateArticle = (payload) => {
+  const updateArticle = async (payload) => {
     hideArticle();
     displayLoader();
-    port.postMessage({
+    const response = await chrome.runtime.sendMessage({
       name: "update-article",
       articleId,
       payload,
     });
+
+    onResponse(response);
   };
 };
 
@@ -280,12 +280,14 @@ const updatedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
 };
 
-const subscribeToFeed = (link) => {
+const subscribeToFeed = async (link) => {
   displayLoader();
-  port.postMessage({
+  const response = await chrome.runtime.sendMessage({
     name: "subscribe-to-feed",
     payload: { link },
   });
+
+  onResponse(response);
 };
 
 const feedSubscriptionSuccess = (feed, tags, categories) => {
