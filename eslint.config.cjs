@@ -9,5 +9,9 @@ module.exports = [
     files: ["browser-extension/**/*.js"],
     languageOptions: { globals: { browser: true, chrome: true } },
   },
+  {
+    files: ["browser-extension/*.js"],
+    languageOptions: { globals: { ...globals.node } },
+  },
   pluginJs.configs.recommended,
 ];

@@ -3,25 +3,33 @@
     <head>
         <meta charset="utf-8" />
         <title>Legadilo</title>
+        <link rel="stylesheet" type="text/css" href="./vendor/bootstrap.css" />
+        <script src="./vendor/bootstrap.js"></script>
     </head>
     <body>
         <form id="update-saved-article-form">
-            <div>
-                <div>
-                    <label for="saved-article-title">Article title</label>
-                    <input id="saved-article-title" type="text" />
-                </div>
+            <div class="mb-3">
+                <label for="saved-article-title" class="form-label">
+                    Article title <span>*</span>
+                </label>
+                <input id="saved-article-title" class="form-control" type="text" />
             </div>
-            <div>
-                <button type="submit" name="saved-mark-as-read">Mark as read</button>
-                <button type="submit" name="saved-mark-as-favorite">Mark as favorite</button>
-                <button type="submit" name="saved-mark-as-for-later">Mark as for later</button>
+            <div class="mb-3">
+                <button class="btn btn-outline-primary"
+                        type="submit"
+                        name="saved-mark-as-read">Mark as read</button>
+                <button class="btn btn-outline-primary"
+                        type="submit"
+                        name="saved-mark-as-favorite">Mark as favorite</button>
+                <button class="btn btn-outline-primary"
+                        type="submit"
+                        name="saved-mark-as-for-later">Mark as for later</button>
             </div>
         </form>
-        <div id="error-container">
+        <div id="error-container" class="alert alert-danger">
             <p>An error occurred</p>
             <pre id="error-message"></pre>
         </div>
-        <script src="action.js"></script>
+        <script src="action.js" type="module"></script>
     </body>
 </html>
