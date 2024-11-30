@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from collections.abc import Set
 from typing import Any
 
 from django.db import models
@@ -25,17 +25,28 @@ class ApiError(Schema):
     detail: str
 
 
-async def update_model_from_patch_dict(
+FIELD_UNSET: Any = object()
+
+
+async def update_model_from_schema(
     model: Model,
-    data: dict[str, Any],
+    schema: Schema,
     *,
     must_refresh: bool = False,
     refresh_qs: models.QuerySet | None = None,
+    excluded_fields: Set[str] = frozenset(),
 ):
+    data = schema.model_dump(exclude_unset=True)
+    updated_attrs = []
+
     for attr, value in data.items():
+        if attr in excluded_fields or value is FIELD_UNSET:
+            continue
+
+        updated_attrs.append(attr)
         setattr(model, attr, value)
 
-    await model.asave(update_fields=list(data.keys()))
+    await model.asave(update_fields=updated_attrs)
 
     if must_refresh:
         await model.arefresh_from_db(from_queryset=refresh_qs)

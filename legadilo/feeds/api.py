@@ -22,7 +22,7 @@ from typing import Annotated, Self
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError, transaction
 from django.shortcuts import aget_object_or_404
-from ninja import ModelSchema, PatchDict, Router, Schema
+from ninja import ModelSchema, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import model_validator
@@ -38,7 +38,7 @@ from legadilo.feeds.services.feed_parsing import (
 from legadilo.reading.models import Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import ApiError, update_model_from_patch_dict
+from legadilo.utils.api import FIELD_UNSET, ApiError, update_model_from_schema
 from legadilo.utils.http_utils import get_rss_async_client
 from legadilo.utils.validators import (
     CleanedString,
@@ -152,17 +152,19 @@ async def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
 
 
 class FeedUpdate(Schema):
-    disabled_reason: Annotated[str, FullSanitizeValidator] = ""
-    disabled_at: datetime | None = None
-    category_id: int | None = None
-    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    refresh_delay: constants.FeedRefreshDelays
-    article_retention_time: int
-    open_original_link_by_default: bool
+    disabled_reason: Annotated[str, FullSanitizeValidator] | None = FIELD_UNSET
+    disabled_at: datetime | None = FIELD_UNSET
+    category_id: int | None = FIELD_UNSET
+    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
+    refresh_delay: constants.FeedRefreshDelays = FIELD_UNSET
+    article_retention_time: int = FIELD_UNSET
+    open_original_link_by_default: bool = FIELD_UNSET
 
     @model_validator(mode="after")
     def check_disabled(self) -> Self:
-        if xor(bool(self.disabled_reason), bool(self.disabled_at)):
+        if xor(self.disabled_reason is FIELD_UNSET, self.disabled_at is FIELD_UNSET) or xor(
+            self.disabled_reason is None, self.disabled_at is None
+        ):
             raise ValueError(
                 "You must supply none of disabled_reason and disabled_at or both of them"
             )
@@ -179,16 +181,18 @@ class FeedUpdate(Schema):
 async def update_feed_view(
     request: AuthenticatedApiRequest,
     feed_id: int,
-    payload: PatchDict[FeedUpdate],  # type: ignore[type-arg]
+    payload: FeedUpdate,
 ):
     qs = Feed.objects.get_queryset().select_related("category")
     feed = await aget_object_or_404(qs, id=feed_id, user=request.auth)
 
-    if (tags := payload.pop("tags", None)) is not None:
-        await _update_feed_tags(request.auth, feed, tags)
+    if payload.tags is not FIELD_UNSET:
+        await _update_feed_tags(request.auth, feed, payload.tags)
 
     # We must refresh to update generated fields & tags.
-    await update_model_from_patch_dict(feed, payload, must_refresh=True, refresh_qs=qs)
+    await update_model_from_schema(
+        feed, payload, must_refresh=True, refresh_qs=qs, excluded_fields={"tags"}
+    )
 
     return feed
 
@@ -269,11 +273,11 @@ async def get_category_view(request: AuthenticatedApiRequest, category_id: int):
 async def update_category_view(
     request: AuthenticatedApiRequest,
     category_id: int,
-    payload: PatchDict[FeedCategoryPayload],  # type: ignore[type-arg]
+    payload: FeedCategoryPayload,
 ) -> FeedCategory:
     category = await aget_object_or_404(FeedCategory, id=category_id, user=request.auth)
 
-    await update_model_from_patch_dict(category, payload)
+    await update_model_from_schema(category, payload)
 
     return category
 

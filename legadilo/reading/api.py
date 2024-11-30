@@ -20,7 +20,7 @@ from typing import Annotated, Self
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
-from ninja import ModelSchema, PatchDict, Router, Schema
+from ninja import ModelSchema, Router, Schema
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
 
@@ -33,7 +33,7 @@ from legadilo.reading.services.article_fetching import (
 )
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import update_model_from_patch_dict
+from legadilo.utils.api import FIELD_UNSET, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
     FullSanitizeValidator,
@@ -120,12 +120,12 @@ async def get_article_view(request: AuthenticatedApiRequest, article_id: int) ->
 
 
 class ArticleUpdate(Schema):
-    title: Annotated[str, FullSanitizeValidator]
-    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    read_at: datetime
-    is_favorite: bool
-    is_for_later: bool
-    reading_time: int
+    title: Annotated[str, FullSanitizeValidator] = FIELD_UNSET
+    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
+    read_at: datetime | None = FIELD_UNSET
+    is_favorite: bool = FIELD_UNSET
+    is_for_later: bool = FIELD_UNSET
+    reading_time: int = FIELD_UNSET
 
 
 @reading_api_router.patch(
@@ -137,15 +137,14 @@ class ArticleUpdate(Schema):
 async def update_article_view(
     request: AuthenticatedApiRequest,
     article_id: int,
-    payload: PatchDict[ArticleUpdate],  # type: ignore[type-arg]
+    payload: ArticleUpdate,
 ) -> Article:
     article = await aget_object_or_404(Article, id=article_id, user=request.auth)
 
-    if (tags := payload.pop("tags", None)) is not None:
-        await _update_article_tags(request.auth, article, tags)
+    if payload.tags is not FIELD_UNSET:
+        await _update_article_tags(request.auth, article, payload.tags)
 
-    # Required to update tags and generated fields
-    await update_model_from_patch_dict(article, payload)
+    await update_model_from_schema(article, payload, excluded_fields={"tags"})
 
     return await Article.objects.get_queryset().for_api().aget(id=article_id)
 

@@ -526,7 +526,7 @@ class TestUpdateFeedView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.feed.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
