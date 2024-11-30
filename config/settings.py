@@ -127,6 +127,7 @@ THIRD_PARTY_APPS = [
     "axes",
     "django_htmx",
     "template_partials.apps.SimpleAppConfig",
+    "corsheaders",
 ]
 LOCAL_APPS = [
     "legadilo.core",
@@ -183,6 +184,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
     "legadilo.core.middlewares.CSPMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -354,6 +356,14 @@ CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
 # Those are forced to true in production
 CSP_UPGRADE_INSECURE_REQUESTS = IS_PRODUCTION
 CSP_BLOCK_ALL_MIXED_CONTENT = IS_PRODUCTION
+
+
+# CORS
+# ------------------------------------------------------------------------------
+# https://github.com/adamchainz/django-cors-headers#readme
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_URLS_REGEX = r"^/api/.*$"
+CORS_ALLOW_CREDENTIALS = False
 
 
 # EMAIL
