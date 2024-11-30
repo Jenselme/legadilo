@@ -21,8 +21,10 @@ from typing import Annotated, Self
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
 from ninja import ModelSchema, PatchDict, Router, Schema
+from ninja.pagination import paginate
 from pydantic import Field, model_validator
 
+from config import settings
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.reading.services.article_fetching import (
@@ -171,3 +173,12 @@ async def delete_article_view(request: AuthenticatedApiRequest, article_id: int)
     await article.adelete()
 
     return HTTPStatus.NO_CONTENT, None
+
+
+@reading_api_router.get(
+    "/tags/", response=list[OutTagSchema], url_name="list_tags", summary="List tags"
+)
+# Let's get all tags.
+@paginate(page_size=settings.NINJA_PAGINATION_MAX_LIMIT * 4)
+async def list_tags_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
+    return Tag.objects.get_queryset().for_user(request.auth)

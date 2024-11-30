@@ -328,3 +328,28 @@ class TestDeleteArticleView:
 
         assert response.status_code == HTTPStatus.NO_CONTENT
         assert Article.objects.count() == 0
+
+
+@pytest.mark.django_db
+class TestListTagsView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.tag = TagFactory(
+            user=user,
+            title="Some tag",
+        )
+        self.url = reverse("api-1.0.0:list_tags")
+
+    def test_not_logged_in(self, client):
+        response = client.get(self.url, {}, content_type="application/json")
+
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_list(self, other_user, logged_in_sync_client, django_assert_num_queries, snapshot):
+        TagFactory(user=other_user, title="Some tag")
+
+        with django_assert_num_queries(7):
+            response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "tags.json")
