@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Legadilo Options</title>
+    </head>
+    <body>
+        <form id="options-form">
+            <div>
+                <label for="instance-url">Instance URL</label>
+                <input id="instance-url" name="instanceUrl" type="url" required />
+            </div>
+            <div>
+                <label for="application-token">Application token</label>
+                <input id="application-token" name="applicationToken" type="text" required />
+            </div>
+            <button id="reset-options" type="button">Reset to default</button>
+            <button type="submit">Save</button>
+        </form>
+        <p id="status"></p>
+        <script src="./options.js" type="module"></script>
+    </body>
+</html>

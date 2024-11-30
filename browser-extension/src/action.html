@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Legadilo</title>
+    </head>
+    <body>
+        <form id="update-saved-article-form">
+            <div>
+                <div>
+                    <label for="saved-article-title">Article title</label>
+                    <input id="saved-article-title" type="text" />
+                </div>
+            </div>
+            <div>
+                <button type="submit" name="saved-mark-as-read">Mark as read</button>
+                <button type="submit" name="saved-mark-as-favorite">Mark as favorite</button>
+                <button type="submit" name="saved-mark-as-for-later">Mark as for later</button>
+            </div>
+        </form>
+        <div id="error-container">
+            <p>An error occurred</p>
+            <pre id="error-message"></pre>
+        </div>
+        <script src="action.js"></script>
+    </body>
+</html>
