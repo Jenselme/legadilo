@@ -29,17 +29,23 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 from ...core.forms import FormChoices
 from ...core.forms.fields import MultipleTagsField
 from ...reading.models import Tag
+from ...utils.security import full_sanitize
 from .. import constants
 
 
 @require_GET
 @login_required
 def feeds_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+    searched_text = full_sanitize(request.GET.get("q", ""))
+
     return TemplateResponse(
         request,
         "feeds/feeds_admin.html",
         {
-            "feeds_by_categories": Feed.objects.get_by_categories(request.user),
+            "searched_text": searched_text,
+            "feeds_by_categories": Feed.objects.get_by_categories(
+                request.user, searched_text=searched_text
+            ),
         },
     )
 

@@ -17,6 +17,18 @@
     <a class="btn btn-outline-secondary"
        href="{% url 'import_export:import_feeds' %}"
        role="button">{% translate "Import feeds" %}</a>
+    <form class="mt-2" method="get">
+        <div class="input-group">
+            <span id="feeds-search-glass" class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
+            <input type="text"
+                   class="form-control"
+                   name="q"
+                   placeholder="{% translate 'Search for feeds here...' %}"
+                   value="{{ searched_text }}"
+                   aria-label="Search for feeds"
+                   aria-describedby="feeds-search-glass" />
+        </div>
+    </form>
     <div id="feeds-by-categories-accordion" class="accordion mt-3">
         {% for category_title, feeds in feeds_by_categories.items %}
             <div class="accordion-item">

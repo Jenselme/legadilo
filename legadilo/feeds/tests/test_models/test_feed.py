@@ -256,6 +256,38 @@ class TestFeedManager:
             other_feed_category.title: [feed_other_category],
         }
 
+    def test_get_feeds_by_categories_with_empty_search(self, user, other_user):
+        feed_1_without_category = FeedFactory(user=user)
+        feed_2_without_category = FeedFactory(user=user)
+        feed_category = FeedCategoryFactory(user=user)
+        feed_1_with_category = FeedFactory(
+            user=user, title="Feed 1 with category", category=feed_category
+        )
+        feed_2_with_category = FeedFactory(
+            user=user, title="Feed 2 with category", slug="", category=feed_category
+        )
+        other_feed_category = FeedCategoryFactory(user=user)
+        feed_other_category = FeedFactory(user=user, category=other_feed_category)
+
+        feeds_by_categories = Feed.objects.get_by_categories(user, searched_text="aa")
+
+        assert feeds_by_categories == {
+            None: [self.feed, feed_1_without_category, feed_2_without_category],
+            feed_category.title: [feed_1_with_category, feed_2_with_category],
+            other_feed_category.title: [feed_other_category],
+        }
+
+    def test_get_feeds_by_categories_with_search(self, user, other_user):
+        FeedFactory(user=user)
+
+        feeds_by_categories = Feed.objects.get_by_categories(
+            user, searched_text=self.feed.title.upper()
+        )
+
+        assert feeds_by_categories == {
+            None: [self.feed],
+        }
+
     def test_get_articles(self, user):
         article_of_feed = ArticleFactory(user=user)
         FeedArticle.objects.create(feed=self.feed, article=article_of_feed)

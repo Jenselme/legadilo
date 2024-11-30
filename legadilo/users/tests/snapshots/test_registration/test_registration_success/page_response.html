@@ -173,7 +173,7 @@
                                         <li class="nav-item">
                                             <form action="/reading/search/" method="get">
                                                 <div class="input-group">
-                                                    <span class="input-group-text">
+                                                    <span id="articles-search-glass" class="input-group-text">
 
 <img class="bi"
      src="/static/images/bs/search.svg"
@@ -184,6 +184,8 @@
                                                            name="q"
                                                            placeholder="Search articles here..."
                                                            minlength="3"
+                                                           aria-label="Search for articles"
+                                                           aria-describedby="articles-search-glass"
                                                            required />
                                                 </div>
                                                 <button class="visually-hidden" type="submit">Search</button>
