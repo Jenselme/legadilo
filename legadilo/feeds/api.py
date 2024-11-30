@@ -27,6 +27,7 @@ from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import model_validator
 
+from config import settings
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedCategory, FeedTag
 from legadilo.feeds.services.feed_parsing import (
@@ -35,6 +36,7 @@ from legadilo.feeds.services.feed_parsing import (
     NoFeedUrlFoundError,
     get_feed_data,
 )
+from legadilo.reading.api import OutTagSchema
 from legadilo.reading.models import Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
@@ -58,6 +60,7 @@ class OutFeedCategorySchema(ModelSchema):
 
 class OutFeedSchema(ModelSchema):
     category: OutFeedCategorySchema | None
+    tags: list[OutTagSchema]
 
     class Meta:
         model = Feed
@@ -69,7 +72,7 @@ class OutFeedSchema(ModelSchema):
 )
 @paginate
 async def list_feeds_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
-    return Feed.objects.get_queryset().for_user(request.auth).select_related("category")
+    return Feed.objects.get_queryset().for_user(request.auth).for_api()
 
 
 class FeedSubscription(Schema):
@@ -85,7 +88,7 @@ class FeedSubscription(Schema):
     "",
     response={
         HTTPStatus.CREATED: OutFeedSchema,
-        HTTPStatus.CONFLICT: ApiError,
+        HTTPStatus.ALREADY_REPORTED: OutFeedSchema,
         HTTPStatus.NOT_ACCEPTABLE: ApiError,
     },
     url_name="subscribe_to_feed",
@@ -121,10 +124,9 @@ async def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: Feed
             "accessible and valid."
         }
 
-    if not created:
-        return HTTPStatus.CONFLICT, {"detail": "You are already subscribed to this feed"}
+    status = HTTPStatus.CREATED if created else HTTPStatus.ALREADY_REPORTED
 
-    return HTTPStatus.CREATED, feed
+    return status, await Feed.objects.get_queryset().for_api().aget(id=feed.id)
 
 
 async def _get_category(user: User, category_id: int | None) -> FeedCategory | None:
@@ -147,7 +149,7 @@ async def _get_category(user: User, category_id: int | None) -> FeedCategory | N
 )
 async def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
     return await aget_object_or_404(
-        Feed.objects.get_queryset().select_related("category"), id=feed_id, user=request.auth
+        Feed.objects.get_queryset().for_api(), id=feed_id, user=request.auth
     )
 
 
@@ -190,11 +192,9 @@ async def update_feed_view(
         await _update_feed_tags(request.auth, feed, payload.tags)
 
     # We must refresh to update generated fields & tags.
-    await update_model_from_schema(
-        feed, payload, must_refresh=True, refresh_qs=qs, excluded_fields={"tags"}
-    )
+    await update_model_from_schema(feed, payload, excluded_fields={"tags"})
 
-    return feed
+    return await Feed.objects.get_queryset().for_api().aget(id=feed_id)
 
 
 async def _update_feed_tags(user: User, feed: Feed, new_tags: tuple[str, ...]):
@@ -224,7 +224,8 @@ async def delete_feed_view(request: AuthenticatedApiRequest, feed_id: int):
     url_name="list_feed_categories",
     summary="List all your feed categories",
 )
-@paginate
+# Let's get all categories.
+@paginate(page_size=settings.NINJA_PAGINATION_MAX_LIMIT * 4)
 async def list_categories_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
     return FeedCategory.objects.get_queryset().for_user(request.auth)
 

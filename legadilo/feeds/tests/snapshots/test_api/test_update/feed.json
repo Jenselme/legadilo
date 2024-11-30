@@ -16,5 +16,6 @@
   "refresh_delay": "TWICE_A_WEEK",
   "site_url": "https://example.com",
   "slug": "feed-slug",
+  "tags": [],
   "title": "Feed title"
 }

@@ -1,30 +1,21 @@
 {
-  "article_retention_time": 100,
+  "article_retention_time": 0,
   "category": {
     "id": 10,
     "slug": "category-slug",
     "title": "Category title"
   },
-  "description": "Some feed description",
+  "description": "",
   "disabled_at": null,
   "disabled_reason": "",
   "enabled": true,
   "feed_type": "rss",
   "feed_url": "https://example.com/feed.rss",
   "id": 1,
-  "open_original_link_by_default": true,
-  "refresh_delay": "HOURLY",
+  "open_original_link_by_default": false,
+  "refresh_delay": "DAILY_AT_NOON",
   "site_url": "https://example.com",
   "slug": "feed-slug",
-  "tags": [
-    {
-      "slug": "some-tag",
-      "title": "Some tag"
-    },
-    {
-      "slug": "tag-0",
-      "title": "Tag 0"
-    }
-  ],
+  "tags": [],
   "title": "Feed title"
 }

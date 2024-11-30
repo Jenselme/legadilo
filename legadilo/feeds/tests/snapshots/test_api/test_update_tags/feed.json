@@ -16,5 +16,15 @@
   "refresh_delay": "DAILY_AT_NOON",
   "site_url": "https://example.com",
   "slug": "feed-slug",
+  "tags": [
+    {
+      "slug": "new-tag",
+      "title": "New tag"
+    },
+    {
+      "slug": "tag-to-keep",
+      "title": "Tag to keep"
+    }
+  ],
   "title": "Feed title"
 }
