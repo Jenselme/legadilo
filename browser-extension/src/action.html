@@ -4,28 +4,93 @@
         <meta charset="utf-8" />
         <title>Legadilo</title>
         <link rel="stylesheet" type="text/css" href="./vendor/bootstrap.css" />
+        <link rel="stylesheet" type="text/css" href="./action.css" />
         <script src="./vendor/bootstrap.js"></script>
     </head>
     <body>
-        <form id="update-saved-article-form">
-            <div class="mb-3">
-                <label for="saved-article-title" class="form-label">
-                    Article title <span>*</span>
-                </label>
-                <input id="saved-article-title" class="form-control" type="text" />
+        <div id="loading-indicator-container">
+            <div id="loading-indicator"
+                 class="d-flex align-items-center justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
-            <div class="mb-3">
-                <button class="btn btn-outline-primary"
-                        type="submit"
-                        name="saved-mark-as-read">Mark as read</button>
-                <button class="btn btn-outline-primary"
-                        type="submit"
-                        name="saved-mark-as-favorite">Mark as favorite</button>
-                <button class="btn btn-outline-primary"
-                        type="submit"
-                        name="saved-mark-as-for-later">Mark as for later</button>
+        </div>
+        <div id="article-container">
+            <form id="update-saved-article-form">
+                <div class="mb-3">
+                    <label for="saved-article-title" class="form-label">
+                        Article title <span>*</span>
+                    </label>
+                    <input id="saved-article-title"
+                           name="title"
+                           class="form-control"
+                           type="text" />
+                </div>
+                <div class="mb-3">
+                    <label for="saved-article-reading-time" class="form-label">
+                        Reading time
+                        <span>*</span>
+                    </label>
+                    <input id="saved-article-reading-time"
+                           name="reading-time"
+                           class="form-control"
+                           type="number"
+                           step="1" />
+                </div>
+                <div class="mb-3">
+                    <label for="saved-article-tags" class="form-label">Tags</label>
+                    <select id="saved-article-tags"
+                            name="tags"
+                            class="form-select"
+                            multiple
+                            data-allow-new="true">
+                        <option disabled hidden value="">Choose a tag...</option>
+                    </select>
+                </div>
+                <div class="mb-3 d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                </div>
+            </form>
+            <div class="mb-3 d-flex justify-content-evenly">
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="mark-article-as-read">
+                    <img class="bi" src="./vendor/bs-icons/book.svg" alt="Mark as read" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="mark-article-as-unread">
+                    <img class="bi" src="./vendor/bs-icons/book-fill.svg" alt="Mark as unread" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="mark-article-as-favorite">
+                    <img class="bi" src="./vendor/bs-icons/star.svg" alt="Mark as favorite" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="unmark-article-as-favorite">
+                    <img class="bi"
+                         src="./vendor/bs-icons/star-fill.svg"
+                         alt="Unmark as favorite" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="mark-article-as-for-later">
+                    <img class="bi"
+                         src="./vendor/bs-icons/bookmark.svg"
+                         alt="Mark as for later" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="unmark-article-as-for-later">
+                    <img class="bi"
+                         src="./vendor/bs-icons/bookmark-fill.svg"
+                         alt="Unmark as for later" />
+                </button>
             </div>
-        </form>
+        </div>
         <div id="error-container" class="alert alert-danger">
             <p>An error occurred</p>
             <pre id="error-message"></pre>

@@ -1,0 +1,15 @@
+.bi {
+  display: inline-block;
+  vertical-align: -0.125em;
+  fill: currentcolor;
+}
+
+#article-container {
+  padding: 0.5rem;
+}
+
+body,
+#loading-indicator {
+  min-height: 410px;
+  min-width: 300px;
+}
