@@ -202,14 +202,21 @@ class FeedManager(models.Manager["Feed"]):
     def get_queryset(self) -> FeedQuerySet:
         return FeedQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    def get_by_categories(self, user: User) -> dict[str | None, list[Feed]]:
+    def get_by_categories(
+        self, user: User, searched_text: str = ""
+    ) -> dict[str | None, list[Feed]]:
         feeds_by_categories: dict[str | None, list[Feed]] = {}
-        for feed in (
+        qs = (
             self.get_queryset()
             .for_user(user)
             .select_related("category")
             .order_by("category__title", "id")
-        ):
+        )
+
+        if len(searched_text) > 3:  # noqa: PLR2004 Magic value used in comparison
+            qs = qs.filter(title__icontains=searched_text)
+
+        for feed in qs:
             category_title = feed.category.title if feed.category else None
             feeds_by_categories.setdefault(category_title, []).append(feed)
 

@@ -15,9 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from http import HTTPStatus
+from typing import Any
 
 import pytest
+from django.contrib.messages import DEFAULT_LEVELS, get_messages
+from django.contrib.messages.storage.base import Message
 from django.urls import reverse
+from slugify import slugify
 
 from legadilo.reading import constants
 from legadilo.reading.models import ReadingList, ReadingListTag
@@ -54,7 +58,7 @@ class TestCreateReadingListView:
         self.url = reverse("reading:create_reading_list")
         self.tag_to_include = TagFactory(slug="tag-to-include")
         self.tag_to_exclude = TagFactory(slug="tag-to-exclude")
-        self.sample_data = {
+        self.sample_data: dict[str, Any] = {
             "title": "Sample Reading List",
             "enable_reading_on_scroll": True,
             "auto_refresh_interval": 0,
@@ -83,9 +87,26 @@ class TestCreateReadingListView:
         response = logged_in_sync_client.post(self.url, data={})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "reading/edit_reading_list.html"
+        assert response.context_data["form"].errors == {
+            "articles_max_age_unit": ["This field is required."],
+            "articles_max_age_value": ["This field is required."],
+            "articles_reading_time": ["This field is required."],
+            "articles_reading_time_operator": ["This field is required."],
+            "auto_refresh_interval": ["This field is required."],
+            "exclude_tag_operator": ["This field is required."],
+            "favorite_status": ["This field is required."],
+            "for_later_status": ["This field is required."],
+            "include_tag_operator": ["This field is required."],
+            "order": ["This field is required."],
+            "order_direction": ["This field is required."],
+            "read_status": ["This field is required."],
+            "title": ["This field is required."],
+        }
 
-    def test_create_reading_list(self, logged_in_sync_client, user):
-        response = logged_in_sync_client.post(self.url, data=self.sample_data)
+    def test_create_reading_list(self, logged_in_sync_client, user, django_assert_num_queries):
+        with django_assert_num_queries(33):
+            response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         reading_list = ReadingList.objects.get()
         assert response.status_code == HTTPStatus.FOUND
@@ -104,6 +125,28 @@ class TestCreateReadingListView:
                 continue
 
             assert getattr(reading_list, field) == value
+
+    def test_create_duplicated_reading_list(
+        self, logged_in_sync_client, user, django_assert_num_queries
+    ):
+        self.sample_data.pop("tags_to_include")
+        self.sample_data.pop("tags_to_exclude")
+        reading_list = ReadingListFactory(
+            **self.sample_data, slug=slugify(self.sample_data["title"]), user=user
+        )
+
+        with django_assert_num_queries(19):
+            response = logged_in_sync_client.post(self.url, data=self.sample_data)
+
+        assert response.status_code == HTTPStatus.CONFLICT
+        assert ReadingList.objects.count() == 1
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message=f"A reading list with title '{reading_list.title}' already exists.",
+            )
+        ]
 
 
 @pytest.mark.django_db

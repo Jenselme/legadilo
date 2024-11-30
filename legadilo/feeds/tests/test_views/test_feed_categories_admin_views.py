@@ -17,6 +17,8 @@
 from http import HTTPStatus
 
 import pytest
+from django.contrib.messages import DEFAULT_LEVELS, get_messages
+from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
 from legadilo.feeds.models import FeedCategory
@@ -56,14 +58,40 @@ class TestCreateFeedCategoryView:
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == f"/accounts/login/?next={self.url}"
 
-    def test_create_category(self, logged_in_sync_client, user):
-        response = logged_in_sync_client.post(self.url, data={"title": "My category"})
+    def test_create_category(
+        self, logged_in_sync_client, user, other_user, django_assert_num_queries
+    ):
+        with django_assert_num_queries(8):
+            response = logged_in_sync_client.post(self.url, data={"title": "My category"})
 
         assert response.status_code == HTTPStatus.FOUND
-        feed_category = FeedCategory.objects.get()
+        feed_category = FeedCategory.objects.get(user=user)
         assert response["Location"] == f"/feeds/categories/{feed_category.id}/"
         assert feed_category.user == user
         assert feed_category.title == "My category"
+
+    def test_create_duplicated_category(self, logged_in_sync_client, user):
+        category = FeedCategoryFactory(title="My category", slug="my-category", user=user)
+
+        response = logged_in_sync_client.post(self.url, data={"title": category.title})
+
+        assert response.status_code == HTTPStatus.CONFLICT
+        assert FeedCategory.objects.count() == 1
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["ERROR"],
+                message=f"A category with title '{category.title}' already exists.",
+            )
+        ]
+
+    def test_create_category_invalid_form(self, logged_in_sync_client, user, other_user):
+        response = logged_in_sync_client.post(self.url, data={})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert FeedCategory.objects.count() == 0
+        assert response.template_name == "feeds/edit_feed_category.html"
+        assert response.context_data["form"].errors == {"title": ["This field is required."]}
 
 
 class TestEditFeedCategoryView:

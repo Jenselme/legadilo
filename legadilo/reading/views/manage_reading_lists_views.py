@@ -18,7 +18,9 @@ from http import HTTPStatus
 from typing import Any
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -127,6 +129,7 @@ class ReadingListForm(forms.ModelForm):
 
 @require_http_methods(["GET", "POST"])
 @login_required
+@transaction.atomic()
 def reading_list_create_view(
     request: AuthenticatedHttpRequest,
 ) -> TemplateResponse | HttpResponseRedirect:
@@ -134,10 +137,8 @@ def reading_list_create_view(
     form = _build_form_from_reading_list_instance(tag_choices)
     status = HTTPStatus.OK
     if request.method == "POST":
-        form = _build_form_from_reading_list_instance(tag_choices, data=request.POST)
-        status = HTTPStatus.BAD_REQUEST
-        if form.is_valid():
-            reading_list = form.create(request.user)
+        status, form, reading_list = _create_reading_list(request, tag_choices)
+        if reading_list:
             return HttpResponseRedirect(
                 reverse("reading:edit_reading_list", kwargs={"reading_list_id": reading_list.id})
             )
@@ -145,6 +146,25 @@ def reading_list_create_view(
     return TemplateResponse(
         request, "reading/edit_reading_list.html", {"form": form}, status=status
     )
+
+
+def _create_reading_list(
+    request: AuthenticatedHttpRequest, tag_choices: FormChoices
+) -> tuple[HTTPStatus, ReadingListForm, ReadingList | None]:
+    form = _build_form_from_reading_list_instance(tag_choices, data=request.POST)
+    if not form.is_valid():
+        return HTTPStatus.BAD_REQUEST, form, None
+
+    try:
+        reading_list = form.create(request.user)
+    except IntegrityError:
+        messages.error(
+            request,
+            _("A reading list with title '%s' already exists.") % form.cleaned_data["title"],
+        )
+        return HTTPStatus.CONFLICT, form, None
+
+    return HTTPStatus.CREATED, form, reading_list
 
 
 @require_http_methods(["GET", "POST"])

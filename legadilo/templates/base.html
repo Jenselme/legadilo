@@ -117,12 +117,14 @@
                                         <li class="nav-item">
                                             <form action="{% url 'reading:search' %}" method="get">
                                                 <div class="input-group">
-                                                    <span class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
+                                                    <span id="articles-search-glass" class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
                                                     <input type="text"
                                                            class="form-control"
                                                            name="q"
                                                            placeholder="{% translate 'Search articles here...' %}"
                                                            minlength="3"
+                                                           aria-label="Search for articles"
+                                                           aria-describedby="articles-search-glass"
                                                            required />
                                                 </div>
                                                 <button class="visually-hidden" type="submit">{% translate "Search" %}</button>

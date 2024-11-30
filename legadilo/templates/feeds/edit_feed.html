@@ -41,4 +41,33 @@
         {% endif %}
         <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
     </form>
+    <div id="feed-debug-container" class="accordion mt-5">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#feed-debug-data"
+                        aria-expanded="false"
+                        aria-controls="feed-debug-data">{% translate "Feed update debug information" %}</button>
+            </h2>
+            <div id="feed-debug-data"
+                 class="accordion-collapse collapse"
+                 data-bs-parent="#feed-debug-container">
+                <div class="accordion-body">
+                    {% for debug_data in feed.feed_updates.all %}
+                        <ul>
+                            <li>{% translate "Date:" %} {{ debug_data.created_at|date:"SHORT_DATETIME_FORMAT" }}</li>
+                            <li>{% translate "Status:" %} {{ debug_data.status }}</li>
+                            {% if debug_data.error_message %}
+                                <li>{% translate "Error Message:" %} {{ debug_data.error_message }}</li>
+                            {% endif %}
+                        </ul>
+                        {% if debug_data.technical_debug_data %}<pre>{{ debug_data.technical_debug_data|format_json }}</pre>{% endif %}
+                        <hr />
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}

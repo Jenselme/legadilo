@@ -65,6 +65,15 @@ class TestFeedsAdminView:
             self.feed_category.title: [self.feed, self.feed_without_slug],
         }
 
+    def test_feed_admin_with_search(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url, {"q": f"<p>{self.feed.title}</p>"})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "feeds/feeds_admin.html"
+        assert response.context_data["feeds_by_categories"] == {
+            self.feed_category.title: [self.feed],
+        }
+
 
 class TestEditFeedView:
     @pytest.fixture(autouse=True)
