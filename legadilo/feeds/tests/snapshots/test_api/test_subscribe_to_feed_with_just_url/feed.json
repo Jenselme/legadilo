@@ -12,5 +12,6 @@
   "refresh_delay": "DAILY_AT_NOON",
   "site_url": "https://example.com",
   "slug": "feed-slug",
+  "tags": [],
   "title": "Feed title"
 }

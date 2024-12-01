@@ -1,0 +1,13 @@
+{
+  "name": "legadilo-browser-extension",
+  "version": "0.1.0",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "bootstrap5-tags": "^1.7.5",
+    "web-ext": "^8.3.0"
+  },
+  "scripts": {
+    "postinstall": "./copy-vendors.js",
+    "build": "web-ext build --overwrite-dest --source-dir src"
+  }
+}

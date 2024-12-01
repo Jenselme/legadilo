@@ -20,9 +20,11 @@ from typing import Annotated, Self
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
-from ninja import ModelSchema, PatchDict, Router, Schema
-from pydantic import model_validator
+from ninja import ModelSchema, Router, Schema
+from ninja.pagination import paginate
+from pydantic import Field, model_validator
 
+from config import settings
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.reading.services.article_fetching import (
@@ -31,7 +33,7 @@ from legadilo.reading.services.article_fetching import (
 )
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import update_model_from_patch_dict
+from legadilo.utils.api import FIELD_UNSET, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
     FullSanitizeValidator,
@@ -42,7 +44,15 @@ from legadilo.utils.validators import (
 reading_api_router = Router(tags=["reading"])
 
 
+class OutTagSchema(ModelSchema):
+    class Meta:
+        model = Tag
+        fields = ("title", "slug")
+
+
 class OutArticleSchema(ModelSchema):
+    tags: list[OutTagSchema] = Field(alias="tags_to_display")
+
     class Meta:
         model = Article
         exclude = ("user", "obj_created_at", "obj_updated_at")
@@ -92,7 +102,9 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
         request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
-    return HTTPStatus.CREATED, articles[0]
+    return HTTPStatus.CREATED, await Article.objects.get_queryset().for_api().aget(
+        id=articles[0].id
+    )
 
 
 @reading_api_router.get(
@@ -102,16 +114,18 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     summary="View the details of a specific article",
 )
 async def get_article_view(request: AuthenticatedApiRequest, article_id: int) -> Article:
-    return await aget_object_or_404(Article, id=article_id, user=request.auth)
+    return await aget_object_or_404(
+        Article.objects.get_queryset().for_api(), id=article_id, user=request.auth
+    )
 
 
 class ArticleUpdate(Schema):
-    title: Annotated[str, FullSanitizeValidator]
-    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    read_at: datetime
-    is_favorite: bool
-    is_for_later: bool
-    reading_time: int
+    title: Annotated[str, FullSanitizeValidator] = FIELD_UNSET
+    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
+    read_at: datetime | None = FIELD_UNSET
+    is_favorite: bool = FIELD_UNSET
+    is_for_later: bool = FIELD_UNSET
+    reading_time: int = FIELD_UNSET
 
 
 @reading_api_router.patch(
@@ -123,17 +137,16 @@ class ArticleUpdate(Schema):
 async def update_article_view(
     request: AuthenticatedApiRequest,
     article_id: int,
-    payload: PatchDict[ArticleUpdate],  # type: ignore[type-arg]
+    payload: ArticleUpdate,
 ) -> Article:
     article = await aget_object_or_404(Article, id=article_id, user=request.auth)
 
-    if (tags := payload.pop("tags", None)) is not None:
-        await _update_article_tags(request.auth, article, tags)
+    if payload.tags is not FIELD_UNSET:
+        await _update_article_tags(request.auth, article, payload.tags)
 
-    # Required to update tags and generated fields
-    await update_model_from_patch_dict(article, payload, must_refresh=True)
+    await update_model_from_schema(article, payload, excluded_fields={"tags"})
 
-    return article
+    return await Article.objects.get_queryset().for_api().aget(id=article_id)
 
 
 async def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]):
@@ -159,3 +172,12 @@ async def delete_article_view(request: AuthenticatedApiRequest, article_id: int)
     await article.adelete()
 
     return HTTPStatus.NO_CONTENT, None
+
+
+@reading_api_router.get(
+    "/tags/", response=list[OutTagSchema], url_name="list_tags", summary="List tags"
+)
+# Let's get all tags.
+@paginate(page_size=settings.NINJA_PAGINATION_MAX_LIMIT * 4)
+async def list_tags_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
+    return Tag.objects.get_queryset().for_user(request.auth)

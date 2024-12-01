@@ -195,6 +195,9 @@ class FeedQuerySet(models.QuerySet["Feed"]):
     def for_export(self, user: User):
         return self.for_user(user).select_related("category").order_by("id")
 
+    def for_api(self):
+        return self.select_related("category").prefetch_related("tags")
+
 
 class FeedManager(models.Manager["Feed"]):
     _hints: dict
