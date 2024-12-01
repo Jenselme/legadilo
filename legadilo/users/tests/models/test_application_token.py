@@ -13,9 +13,12 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from datetime import datetime
+from uuid import uuid4
 
 import pytest
 import time_machine
+from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.users.models import ApplicationToken
@@ -45,19 +48,26 @@ class TestApplicationTokenQuerySet:
 @pytest.mark.django_db
 class TestApplicationTokenManager:
     def test_create_always_valid_token(self, user):
-        application_token = ApplicationToken.objects.create_new_token(
+        application_token, raw_token = ApplicationToken.objects.create_new_token(
             user, "My token", validity_end=None
         )
 
         assert application_token.title == "My token"
         assert application_token.user == user
         assert application_token.validity_end is None
-        assert len(application_token.token) == 67
+        assert len(application_token.token) == 59
+        # Note: MD5 is only used to hash passwords in tests. We use a true password hashing
+        # algorithm in production (and local app)!
+        assert application_token.token.startswith("md5$")
+        assert len(raw_token) == 67
+        assert raw_token != application_token.token
 
     def test_create_token_with_validity_end(self, user):
         validity_end = utcdt(2024, 11, 24, 12, 0, 0)
 
-        token = ApplicationToken.objects.create_new_token(user, "My token", validity_end)
+        token, _raw_token = ApplicationToken.objects.create_new_token(
+            user, "My token", validity_end
+        )
 
         assert token.validity_end == validity_end
 
@@ -68,3 +78,79 @@ class TestApplicationTokenManager:
 
         with pytest.raises(IntegrityError):
             ApplicationToken.objects.create_new_token(user, token_title, validity_end=None)
+
+
+@pytest.mark.django_db
+class TestApplicationTokenManagerUseToken:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.application_token, self.token_secret = ApplicationToken.objects.create_new_token(
+            user=user, title="My token", validity_end=None
+        )
+
+    def test_use_inexistant_token(self, user, django_assert_num_queries):
+        with django_assert_num_queries(2):
+            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+                user.email, uuid4(), self.token_secret
+            )
+
+        assert found_app_token is None
+
+    def test_use_with_invalid_secret(self, user, django_assert_num_queries):
+        with django_assert_num_queries(2):
+            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+                user.email, self.application_token.uuid, "toto"
+            )
+
+        assert found_app_token is None
+
+    def test_use_expired(self, user, django_assert_num_queries):
+        self.application_token.validity_end = utcdt(2024, 11, 24)
+        self.application_token.save()
+
+        with django_assert_num_queries(2):
+            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+                user.email, self.application_token.uuid, self.token_secret
+            )
+
+        assert found_app_token is None
+
+    def test_use_with_inactive_user(self, user, django_assert_num_queries):
+        user.is_active = False
+        user.save()
+
+        with django_assert_num_queries(2):
+            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+                user.email, self.application_token.uuid, self.token_secret
+            )
+
+        assert found_app_token is None
+
+    @time_machine.travel("2024-12-01 12:00:00", tick=False)
+    def test_use(self, user, django_assert_num_queries):
+        with django_assert_num_queries(2):
+            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+                user.email, self.application_token.uuid, self.token_secret
+            )
+
+        assert found_app_token is not None
+        self.application_token.refresh_from_db()
+        assert found_app_token == self.application_token
+        assert self.application_token.last_used_at == utcdt(2024, 12, 1, 12, 0, 0)
+        assert found_app_token.validity_end is None
+
+
+class TestApplicationToken:
+    @time_machine.travel("2024-11-24 15:00:00")
+    @pytest.mark.parametrize(
+        ("validity_end", "is_valid"),
+        [
+            pytest.param(None, True, id="no-validity-end"),
+            pytest.param(utcdt(2024, 12, 1), True, id="still-valid"),
+            pytest.param(utcdt(2024, 11, 24, 14, 50), False, id="expired"),
+        ],
+    )
+    def test_is_valid(self, validity_end: datetime | None, is_valid: bool):
+        token = ApplicationTokenFactory.build(validity_end=validity_end)
+
+        assert token.is_valid == is_valid

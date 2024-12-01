@@ -19,8 +19,10 @@ from __future__ import annotations
 import secrets
 from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
 from django.conf import settings
+from django.contrib.auth.hashers import check_password, make_password
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
@@ -49,17 +51,41 @@ class ApplicationTokenManager(models.Manager["ApplicationToken"]):
     @transaction.atomic
     def create_new_token(
         self, user: User, title: str, validity_end: datetime | None = None
-    ) -> ApplicationToken:
+    ) -> tuple[ApplicationToken, str]:
+        token = secrets.token_urlsafe(settings.TOKEN_LENGTH)
+        hashed_token = make_password(token)
+
         return self.create(
             title=title,
-            token=secrets.token_urlsafe(settings.TOKEN_LENGTH),
+            token=hashed_token,
             validity_end=validity_end,
             user=user,
+        ), token
+
+    async def use_application_token(
+        self, user_email: str, token_uuid: UUID, token_secret: str
+    ) -> ApplicationToken | None:
+        qs = (
+            self.get_queryset()
+            .only_valid()
+            .defer(None)
+            .filter(user__email=user_email, user__is_active=True, uuid=token_uuid)
         )
+        await qs.aupdate(last_used_at=utcnow())
+        application_token = await qs.afirst()
+        hashed_token = application_token.token if application_token else "failed-to-find-token"
+
+        if check_password(token_secret, hashed_token):
+            return application_token
+
+        return None
 
 
 class ApplicationToken(models.Model):
-    title = models.CharField(max_length=255)
+    uuid = models.UUIDField(default=uuid4)
+    title = models.CharField(
+        max_length=255, help_text=_("Give the token a nice name to identify its usage more easily.")
+    )
     token = models.CharField(max_length=255)
     validity_end = models.DateTimeField(
         verbose_name=_("Validity end"),
@@ -67,7 +93,11 @@ class ApplicationToken(models.Model):
         null=True,
         blank=True,
     )
-    last_used_at = models.DateTimeField(null=True, blank=True)
+    last_used_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("When this token was last used to create an access token."),
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -81,6 +111,7 @@ class ApplicationToken(models.Model):
         ordering = ["title"]
         constraints = [
             models.UniqueConstraint(fields=["token"], name="%(app_label)s_%(class)s_token_unique"),
+            models.UniqueConstraint(fields=["uuid"], name="%(app_label)s_%(class)s_uuid_unique"),
             models.UniqueConstraint(
                 fields=["title", "user"], name="%(app_label)s_%(class)s_title_user_unique"
             ),
@@ -88,3 +119,7 @@ class ApplicationToken(models.Model):
 
     def __str__(self):
         return f"ApplicationToken(id={self.id}, user_id={self.user_id}, title={self.title})"
+
+    @property
+    def is_valid(self) -> bool:
+        return self.validity_end is None or self.validity_end > utcnow()

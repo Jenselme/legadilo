@@ -50,6 +50,7 @@ class TestManageTokensView:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "users/manage_tokens.html"
         assert response.context_data["new_application_token"] is None
+        assert response.context_data["new_application_token_secret"] is None
         assert list(response.context_data["tokens"]) == [self.application_token]
 
     def test_create_token_invalid_form(
@@ -61,6 +62,7 @@ class TestManageTokensView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "users/manage_tokens.html"
         assert response.context_data["new_application_token"] is None
+        assert response.context_data["new_application_token_secret"] is None
         assert response.context_data["form"].errors == {"title": ["This field is required."]}
 
     def test_create_token(self, user, logged_in_sync_client, django_assert_num_queries):
@@ -74,7 +76,9 @@ class TestManageTokensView:
         assert new_token.user == user
         assert new_token.validity_end is None
         assert response.template_name == "users/manage_tokens.html"
-        assert response.context_data["new_application_token"] is not None
+        assert isinstance(response.context_data["new_application_token"], ApplicationToken)
+        assert isinstance(response.context_data["new_application_token_secret"], str)
+        assert len(response.context_data["new_application_token_secret"]) == 67
         assert list(response.context_data["tokens"]) == [new_token, self.application_token]
 
     def test_create_duplicated_token(self, logged_in_sync_client, django_assert_num_queries):
@@ -87,6 +91,7 @@ class TestManageTokensView:
         assert ApplicationToken.objects.count() == 1
         assert response.template_name == "users/manage_tokens.html"
         assert response.context_data["new_application_token"] is None
+        assert response.context_data["new_application_token_secret"] is None
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
