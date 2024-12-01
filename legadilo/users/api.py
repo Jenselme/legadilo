@@ -15,20 +15,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
+from http import HTTPStatus
+from uuid import UUID
 
 import jwt
+from django.db import models
 from django.http import HttpRequest
-from django.shortcuts import aget_object_or_404
 from ninja import ModelSchema, Router, Schema
 from ninja.errors import AuthenticationError
 from ninja.security import HttpBearer
 from pydantic import BaseModel as BaseSchema
 from pydantic import ValidationError as PydanticValidationError
+from pydantic import field_serializer
 
 from config import settings
 from legadilo.users.models import ApplicationToken
 from legadilo.utils.time_utils import utcnow
 
+from ..utils.api import ApiError
 from .models import User
 from .user_types import AuthenticatedApiRequest
 
@@ -40,67 +44,78 @@ class AuthBearer(HttpBearer):
         if not token:
             return None
 
-        decoded_jwt = _decode_jwt(token)
-        return await _get_user_from_jwt(decoded_jwt)
+        decoded_token = _decode_access_token(token)
+        return await _get_user_from_access_token(decoded_token)
 
 
-class JWT(BaseSchema):
-    application_token_title: str
-    user_id: int
+class AccessToken(BaseSchema):
+    application_token_uuid: UUID
     exp: datetime
 
+    @field_serializer("exp")
+    def serialize_exp(self, value: datetime) -> int:
+        return int(value.timestamp())
 
-def _decode_jwt(token: str) -> JWT:
+
+def _decode_access_token(token: str) -> AccessToken:
     try:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        return JWT.model_validate(decoded_token)
+        return AccessToken.model_validate(decoded_token)
     except jwt.ExpiredSignatureError as e:
         raise AuthenticationError("Expired JWT token") from e
     except (jwt.PyJWTError, PydanticValidationError) as e:
         raise AuthenticationError("Invalid JWT token") from e
 
 
-async def _get_user_from_jwt(decoded_jwt: JWT) -> User | None:
+async def _get_user_from_access_token(access_token: AccessToken) -> User | None:
     try:
-        return await User.objects.aget(id=decoded_jwt.user_id)
-    except User.DoesNotExist:
+        filters = models.Q(application_tokens__validity_end__isnull=True) | models.Q(
+            application_tokens__validity_end__gt=utcnow()
+        )
+        return await User.objects.aget(
+            filters,
+            is_active=True,
+            application_tokens__uuid=access_token.application_token_uuid,
+        )
+    except (User.DoesNotExist, User.MultipleObjectsReturned):
         return None
 
 
-class RefreshTokenPayload(Schema):
-    application_token: str
+class CreateTokensPayload(Schema):
+    email: str
+    application_token_uuid: UUID
+    application_token_secret: str
 
 
-class Token(Schema):
-    jwt: str
+class CreateTokensResponse(Schema):
+    access_token: str
 
 
 @users_api_router.post(
-    "/refresh/",
+    "/tokens/",
     auth=None,
-    response=Token,
-    url_name="refresh_token",
-    summary="Create a new access token from an application token",
+    response={HTTPStatus.OK: CreateTokensResponse, HTTPStatus.UNAUTHORIZED: ApiError},
+    url_name="create_tokens",
+    summary="Create an access token from an application token.",
 )
-async def refresh_token_view(request: HttpRequest, payload: RefreshTokenPayload) -> Token:
-    application_token = await aget_object_or_404(
-        ApplicationToken.objects.get_queryset().only_valid().defer(None),
-        token=payload.application_token,
+async def create_tokens_view(request: HttpRequest, payload: CreateTokensPayload):
+    application_token = await ApplicationToken.objects.use_application_token(
+        payload.email, payload.application_token_uuid, payload.application_token_secret
     )
-    application_token.last_used_at = utcnow()
-    await application_token.asave()
-    jwt = _create_jwt(application_token.user_id, application_token.title)
+    if application_token is None:
+        return HTTPStatus.UNAUTHORIZED, {"detail": "Invalid credentials."}
 
-    return Token(jwt=jwt)
+    access_token = _create_access_token(application_token)
+
+    return CreateTokensResponse(access_token=access_token)
 
 
-def _create_jwt(user_id: int, application_token: str) -> str:
+def _create_access_token(application_token: ApplicationToken) -> str:
+    access_token = AccessToken(
+        application_token_uuid=application_token.uuid, exp=utcnow() + settings.ACCESS_TOKEN_MAX_AGE
+    )
     return jwt.encode(
-        {
-            "application_token_title": application_token,
-            "user_id": user_id,
-            "exp": utcnow() + settings.JWT_MAX_AGE,
-        },
+        access_token.model_dump(mode="json"),
         settings.SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )

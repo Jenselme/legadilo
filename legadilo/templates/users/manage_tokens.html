@@ -3,7 +3,7 @@
 {% load i18n static crispy_forms_tags %}
 
 {% block title %}
-    {% translate "Manage API tokens" %}
+    {% translate "Manage application tokens" %}
 {% endblock title %}
 {% block page_js %}
     <script src="{% static 'js/tag_edition.js' %}"
@@ -18,33 +18,53 @@
                 Successfully created token <em>{{ token_title }}</em>. Copy the token below, you
                 won’t be able to get it back.
             {% endblocktranslate %}
-            <pre>{{ new_application_token.token }}</pre>
+            <ul>
+                <li>
+                    Token id: <pre>{{ new_application_token.uuid }}</pre>
+                </li>
+                <li>
+                    Token secret: <pre>{{ new_application_token_secret }}</pre>
+                </li>
+            </ul>
         </p>
     {% endif %}
     <h2 class="mt-4">{% translate "List of tokens" %}</h2>
-    <ul class="list-group">
-        {% for token in tokens %}
-            <li class="list-group-item" hx-target="this" hx-swap="outerHTML">
-                <strong>{{ token.title }}</strong>
-                <span>
-                    {% blocktranslate with created_at=token.created_at|date:"SHORT_DATETIME_FORMAT" %}
-                        Created on {{ created_at }}
-                    {% endblocktranslate %}
-                </span>
-                {% if token.validity_end %}
-                    <span>
-                        {% blocktranslate with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
-                            Valid until {{ validity_end }}
-                        {% endblocktranslate %}
-                    </span>
+    {% for token in tokens %}
+        <div class="card {% if not token.is_valid %}opacity-50{% endif %}"
+             hx-target="this"
+             hx-swap="outerHTML">
+            <div class="card-body">
+                <h2 class="card-title">{{ token.title }}</h2>
+                {% if not token.is_valid %}
+                    <p class="subtitle">{% translate "Expired" %}</p>
                 {% endif %}
-                {% if token.last_used_at %}
-                    <span>
+                <div class="card-text">
+                    <p class="mb-1">
+                        {% translate "Token id" %}
+                        <pre>{{ token.uuid }}</pre>
+                    </p>
+                    <p class="mb-1">
+                        {% blocktranslate with created_at=token.created_at|date:"SHORT_DATETIME_FORMAT" %}
+                                Created on {{ created_at }}
+                            {% endblocktranslate %}
+                    </p>
+                    <p class="mb-1">
                         {% blocktranslate with last_used_at=token.last_used_at|date:"SHORT_DATETIME_FORMAT" %}
-                            Last used {{ last_used_at }}
-                        {% endblocktranslate %}
-                    </span>
-                {% endif %}
+                                Last used {{ last_used_at }}
+                            {% endblocktranslate %}
+                    </p>
+                    <p class="mb-1">
+                        {% if token.validity_end is None %}
+                            {% translate "Valid forever" %}
+                        {% else %}
+                            {% blocktranslate with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
+                                Valid until {{ validity_end }}
+                            {% endblocktranslate %}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="card-footer">
                 <form hx-post="{% url 'users:delete_token' token_id=token.id %}"
                       data-modal-id="danger-modal"
                       data-modal-title="{% translate 'Confirm token deletion' %}"
@@ -53,11 +73,11 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">{% translate "Delete" %}</button>
                 </form>
-            </li>
-        {% empty %}
-            <div class="list-group-item">{% translate "No token found" %}</div>
-        {% endfor %}
-    </ul>
+            </div>
+        </div>
+    {% empty %}
+        <div class="list-group-item">{% translate "No token found" %}</div>
+    {% endfor %}
     <h2 class="mt-4">{% translate "Create new token" %}</h2>
     <form method="post">
         {% csrf_token %}

@@ -61,12 +61,15 @@ class CreateTokenForm(forms.ModelForm):
 def manage_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     form = CreateTokenForm(initial={"timezone": request.user.settings.timezone})
     new_application_token = None
+    new_application_token_secret = None
     status = HTTPStatus.OK
 
     if request.method == "POST":
         form = CreateTokenForm(request.POST)
         if form.is_valid():
-            new_application_token, form, status = _create_token(request, form)
+            new_application_token, new_application_token_secret, form, status = _create_token(
+                request, form
+            )
         else:
             status = HTTPStatus.BAD_REQUEST
 
@@ -75,6 +78,7 @@ def manage_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
         "users/manage_tokens.html",
         {
             "new_application_token": new_application_token,
+            "new_application_token_secret": new_application_token_secret,
             "tokens": ApplicationToken.objects.filter(user=request.user),
             "form": form,
         },
@@ -84,12 +88,14 @@ def manage_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
 def _create_token(
     request: AuthenticatedHttpRequest, form: CreateTokenForm
-) -> tuple[ApplicationToken | None, CreateTokenForm, HTTPStatus]:
+) -> tuple[ApplicationToken | None, str | None, CreateTokenForm, HTTPStatus]:
     status = HTTPStatus.OK
 
     try:
-        new_application_token = ApplicationToken.objects.create_new_token(
-            request.user, form.cleaned_data["title"], form.cleaned_data["validity_end"]
+        new_application_token, new_application_token_secret = (
+            ApplicationToken.objects.create_new_token(
+                request.user, form.cleaned_data["title"], form.cleaned_data["validity_end"]
+            )
         )
         form = CreateTokenForm(
             initial={
@@ -101,10 +107,11 @@ def _create_token(
         )
     except IntegrityError:
         new_application_token = None
+        new_application_token_secret = None
         status = HTTPStatus.CONFLICT
         messages.error(request, _("A token already exists with this name."))
 
-    return new_application_token, form, status
+    return new_application_token, new_application_token_secret, form, status
 
 
 @login_required

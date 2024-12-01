@@ -8,8 +8,10 @@ const saveOptions = async (event) => {
   const data = new FormData(event.target);
 
   await storeOptions({
-    instanceUrl: data.get("instanceUrl"),
-    applicationToken: data.get("applicationToken"),
+    instanceUrl: data.get("instance-url"),
+    userEmail: data.get("user-email"),
+    tokenId: data.get("token-id"),
+    tokenSecret: data.get("token-secret"),
   });
 
   // Update status to let user know options were saved.
@@ -28,7 +30,9 @@ const restoreOptions = async () => {
 
 const setOptions = (options = {}) => {
   document.getElementById("instance-url").value = options.instanceUrl;
-  document.getElementById("application-token").value = options.applicationToken;
+  document.getElementById("user-email").value = options.userEmail;
+  document.getElementById("token-id").value = options.tokenId;
+  document.getElementById("token-secret").value = options.tokenSecret;
 };
 
 const resetOptions = () => {

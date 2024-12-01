@@ -14,17 +14,37 @@
                 </label>
                 <input id="instance-url"
                        class="form-control"
-                       name="instanceUrl"
+                       name="instance-url"
                        type="url"
                        required />
             </div>
             <div class="mb-3">
-                <label for="application-token" class="form-label">
-                    Application token <span>*</span>
+                <label for="user-email" class="form-label">
+                    Email <span>*</span>
                 </label>
-                <input id="application-token"
+                <input id="user-email"
                        class="form-control"
-                       name="applicationToken"
+                       name="user-email"
+                       type="email"
+                       required />
+            </div>
+            <div class="mb-3">
+                <label for="token-id" class="form-label">
+                    Token id <span>*</span>
+                </label>
+                <input id="token-id"
+                       class="form-control"
+                       name="token-id"
+                       type="text"
+                       required />
+            </div>
+            <div class="mb-3">
+                <label for="token-secret" class="form-label">
+                    Token secret <span>*</span>
+                </label>
+                <input id="token-secret"
+                       class="form-control"
+                       name="token-secret"
                        type="text"
                        required />
             </div>
