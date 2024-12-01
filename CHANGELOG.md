@@ -1,6 +1,6 @@
 # Changelog
 
-## 24.11.1
+## 24.12.1
 
 - Reduced allow times in which daily updates are run. We still support bi-hourly cron runs.
 - Display a contact email to all authenticated users.
@@ -12,6 +12,7 @@
 - Add debug information to feed admin.
 - Add link to feed admin on feed articles list.
 - Can search for feeds in feed admin.
+- Add a browser extension.
 
 ## 24.10.3
 
