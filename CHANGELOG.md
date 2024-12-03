@@ -1,5 +1,10 @@
 # Changelog
 
+## 24.12.2
+
+- Add a privacy policy to release the extension on Chrome webstore.
+- Improve extensions to publish on Chrome & Mozilla webstore.
+
 ## 24.12.1
 
 - Reduced allow times in which daily updates are run. We still support bi-hourly cron runs.
