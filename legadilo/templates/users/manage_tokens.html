@@ -30,7 +30,7 @@
     {% endif %}
     <h2 class="mt-4">{% translate "List of tokens" %}</h2>
     {% for token in tokens %}
-        <div class="card {% if not token.is_valid %}opacity-50{% endif %}"
+        <div class="card {% if not token.is_valid %}opacity-50{% endif %} mb-2"
              hx-target="this"
              hx-swap="outerHTML">
             <div class="card-body">

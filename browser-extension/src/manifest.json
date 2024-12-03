@@ -31,5 +31,11 @@
     "activeTab",
     "scripting",
     "storage"
-  ]
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "contact@legadilo.com"
+    }
+  }
 }

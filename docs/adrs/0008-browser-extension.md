@@ -30,6 +30,13 @@ See:
 * We want an extension for Firefox and Chromium based browsers.
 * We will use bootstrap for the theme and our tags extension to provide a better UX.
   To avoid making the extension more complex, we won’t use any other libs (at least for now).
+* The extension must be configured with:
+  * The URL of the instance (provided as default) so we know where to do the requests.
+  * User email as well as an application token UUID and its corresponding secret to get an access token from the API.
+    The extension must be configured before it can be used.
+    This connection information can live forever in the browser.
+* The extension, once configured, will automatically get an access token and update it if it’s expired before doing any request.
+  If the auth information is expired or invalid, it will fail and display an error message.
 
 
 ## Consequences
@@ -41,3 +48,4 @@ See:
 * We build the `popup.html` the old school way with elements that are displayed/hidden with JS.
   It works and is a bit messy.
   If the extension becomes more complex we may need to load a JS lib like React, Vue or Svelte to control the mess.
+* Once configured, by default, there is no need to change connection information for the extension.
