@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Privacy" %}
+{% endblock title %}
+{% block content %}
+    <h1 class="display-1">{% translate "Privacy" %}</h1>
+    <p>
+        {% blocktranslate %}
+            Legadilo is an open source project released under the <a href="https://www.gnu.org/licenses/agpl-3.0.html#license-text">GNU AGPLv3</a> license.
+            You don’t have to take our word for what we say here, you can check <a href="https://github.com/Jenselme/legadilo">the source code</a>.
+            You can also host it yourself to have even more power over your data!
+        {% endblocktranslate %}
+    </p>
+    <p>
+        {% blocktranslate %}
+            Our servers are provided by <a href="https://www.scaleway.com/en/">Scaleway</a> a French hosting provider.
+            They are located near/in the city of Paris, France (European Union).
+        {% endblocktranslate %}
+    </p>
+    <p>
+        {% blocktranslate %}
+            We don’t read nor sell your data and <em>never</em> will.
+            We may add some tracking to have stats about the site usage.
+            It will <em>be GDPR compatible</em>, and we will collect so little we won’t even need to add a cookie banner.
+        {% endblocktranslate %}
+    </p>
+    <p>
+        {% blocktranslate %}
+            Your data is yours and can be exported at any time from your account.
+            If you want your account closed and your data deleted, please send us an email.
+        {% endblocktranslate %}
+        {% if CONTACT_EMAIL and user.is_authenticated %}
+            {% blocktranslate with email=CONTACT_EMAIL %}
+                Contact us at <a href="mailto:{{ email }}">{{ email }}</a>
+            {% endblocktranslate %}
+        {% endif %}
+        {% if user.is_authenticated %}
+            Go <a href="{% url 'import_export:import_export_articles' %}">here</a> to export your data.
+        {% endif %}
+    </p>
+    {% if request.user.is_authenticated %}
+        <p class="text-center my-4">
+            <a role="button"
+               class="btn btn-primary"
+               href="{% url 'reading:default_reading_list' %}">{% translate "Go to the default reading list" %}</a>
+        </p>
+    {% endif %}
+{% endblock content %}
