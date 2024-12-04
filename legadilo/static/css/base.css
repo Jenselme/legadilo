@@ -1,5 +1,6 @@
 :root {
   --content-footer-height: 104px;
+  --content-mobile-footer-height: 248px;
   --content-header-height: 56px;
 }
 
@@ -9,12 +10,12 @@ html {
 
 .content-body {
   display: grid;
-  grid-template: "main" 1fr "footer" var(--content-footer-height) / 1fr;
+  grid-template: "main" 1fr "footer" var(--content-mobile-footer-height) / 1fr;
   min-height: 100vh;
 }
 
 .content-footer {
-  height: var(--content-footer-height);
+  height: var(--content-mobile-footer-height);
 }
 
 .content-body > .content-main-container {
@@ -101,5 +102,15 @@ html {
 
   .card main img {
     max-height: 200px;
+  }
+}
+
+@media (width >= 768px) {
+  .content-body {
+    grid-template: "main" 1fr "footer" var(--content-footer-height) / 1fr;
+  }
+
+  .content-footer {
+    height: var(--content-footer-height);
   }
 }
