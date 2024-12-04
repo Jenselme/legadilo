@@ -228,7 +228,7 @@ class SearchForm(forms.Form):
                 )
             )
 
-        if len(errors):
+        if errors:
             raise ValidationError(errors)
 
 
