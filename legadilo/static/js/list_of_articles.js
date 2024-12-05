@@ -75,7 +75,7 @@
   };
 
   const readOnScroll = () => {
-    const isReadOnScrollCheckboxTicked = document.getElementById("read-on-scroll-enabled").checked;
+    const isReadOnScrollCheckboxTicked = document.getElementById("read-on-scroll-status").checked;
 
     if (!isReadOnScrollCheckboxTicked) {
       return;
