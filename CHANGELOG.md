@@ -1,5 +1,18 @@
 # Changelog
 
+## 24.12.4
+
+- Use the theme (light or dark) that matches the system theme.
+- Add a theme selector.
+- Use a switch to enable/disable read on scroll. This is more visible and is clearer than what we had before.
+- Don’t disable feeds when saving modifications with enter.
+- Prevent a display issue when linking new email addresses.
+
+## 24.12.3
+
+- Small adjustments for extensions.
+- Add a privacy policy page.
+
 ## 24.12.2
 
 - Add a privacy policy to release the extension on Chrome webstore.
