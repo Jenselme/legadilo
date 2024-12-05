@@ -30,16 +30,20 @@
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        <button form="delete-feed-form"
-                class="btn btn-danger"
-                type="submit"
-                name="delete">{% translate "Delete" %}</button>
-        {% if feed.enabled %}
-            <button class="btn btn-outline-secondary" type="submit" name="disable">{% translate "Disable feed" %}</button>
-        {% else %}
-            <button class="btn btn-outline-secondary" type="submit" name="enable">{% translate "Reenable feed" %}</button>
-        {% endif %}
-        <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
+        <div class="d-flex justify-content-between">
+            <div>
+                <button form="delete-feed-form"
+                        class="btn btn-danger"
+                        type="submit"
+                        name="delete">{% translate "Delete" %}</button>
+                <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
+            </div>
+            {% if feed.enabled %}
+                <button class="btn btn-outline-secondary" type="submit" name="disable">{% translate "Disable feed" %}</button>
+            {% else %}
+                <button class="btn btn-outline-secondary" type="submit" name="enable">{% translate "Reenable feed" %}</button>
+            {% endif %}
+        </div>
     </form>
     <div id="feed-debug-container" class="accordion mt-5">
         <div class="accordion-item">
