@@ -42,7 +42,7 @@ html {
 
 .btn-primary img.bi,
 .btn-danger img.bi {
-  filter: invert(1);
+  filter: invert(1) !important;
 }
 
 .htmx-indicator,
@@ -113,4 +113,18 @@ html {
   .content-footer {
     height: var(--content-footer-height);
   }
+}
+
+/* For the theme switcher */
+svg.bi {
+  width: 1rem;
+  height: 1rem;
+}
+
+.bd-navbar .dropdown-menu .active .bi {
+  display: block !important;
+}
+
+[data-bs-theme="dark"] img.bi {
+  filter: invert(0.715);
 }
