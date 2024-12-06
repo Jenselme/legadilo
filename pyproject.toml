@@ -254,7 +254,7 @@ pyjwt = "2.10.1"  # https://pyjwt.readthedocs.io/en/stable/
 optional = true
 
 [tool.poetry.group.prod.dependencies]
-sentry-sdk = {extras = ["django"], version = "^2.18.0"}
+sentry-sdk = {extras = ["django"], version = "^2.19.2"}
 
 
 [tool.poetry.group.dev]
