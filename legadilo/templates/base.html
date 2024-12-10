@@ -66,7 +66,7 @@
             {% endblock page_js %}
         {% endblock javascript %}
     </head>
-    <body class="content-body">
+    <body class="content-body" data-bs-theme="auto">
         <!-- Icons for theme selector -->
         <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
             <symbol id="check2" viewBox="0 0 16 16">
@@ -228,7 +228,8 @@
                 {% endblock content %}
             </div>
         </div>
-        <footer class="content-footer d-flex flex-column justify-content-center bg-dark text-white py-4">
+        <footer class="content-footer d-flex flex-column justify-content-center bg-gray-700 text-white py-4 bg-body-tertiary"> <!-- adjust bg accordingly -->
+            
             <p class="ps-4 pe-4 text-center">
                 {% if VERSION %}
                     {% blocktranslate with version=VERSION %}

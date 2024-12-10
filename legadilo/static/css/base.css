@@ -2,6 +2,8 @@
   --content-footer-height: 104px;
   --content-mobile-footer-height: 248px;
   --content-header-height: 56px;
+  --bs-body-bg: #f8f9fa; /* Light mode */
+  --bs-body-color: #212529;
 }
 
 html {
@@ -127,4 +129,8 @@ svg.bi {
 
 [data-bs-theme="dark"] img.bi {
   filter: invert(0.715);
+}
+[data-bs-theme="dark"] {
+  --bs-body-bg: #343a40; /* Dark mode */
+  --bs-body-color: #f8f9fa;
 }
