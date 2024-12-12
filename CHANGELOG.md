@@ -2,12 +2,15 @@
 
 ## Unreleased
 
+## 24.12.5
+
 - Add link to changelog in footer.
 - Improve existing links in footer.
 - Allow you to add a custom script.
 - Can fetch feed without an explicit full site URL.
 - Can force feeds to refresh in the admin.
 - Can refresh a reading list no mobile easily, without going to the top of the page or opening the reading list selector.
+- Switch to [`uv`](docs.astral.sh/uv/) to manage dependencies.
 
 ## 24.12.4
 

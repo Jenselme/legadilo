@@ -4,13 +4,21 @@ ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
 ARG PYTHONDEVMODE=1
 
+ENV UV_LINK_MODE copy
+ENV UV_COMPILE_BYTECODE 1
+ENV UV_PYTHON_DOWNLOADS never
+ENV UV_PROJECT_ENVIRONMENT ${APP_HOME}/.venv
+ENV UV_PYTHON /usr/local/bin/python
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONDEVMODE ${PYTHONDEVMODE}
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
-ENV CREATE_VENV 0
+# make sure we use the virtualenv by default
+ENV PATH "${APP_HOME}/.venv/bin:$PATH"
 
 WORKDIR ${APP_HOME}
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY ./devops/compose/production/django/setup-container.sh /
 RUN chmod +x /setup-container.sh
@@ -25,12 +33,10 @@ RUN chmod +x /start.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/start.sh"]
 
-COPY ./devops/compose/production/django/setup-project.sh /
-COPY pyproject.toml .
-COPY poetry.lock .
-COPY README.md .
-RUN chmod +x /setup-project.sh
-RUN /setup-project.sh
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --dev
 
 COPY ./devops/compose/production/django/setup-django.sh /
 RUN chmod +x /setup-django.sh

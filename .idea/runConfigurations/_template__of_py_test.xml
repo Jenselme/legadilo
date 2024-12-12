@@ -13,10 +13,9 @@
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="USE_DOCKER" value="no" />
     </envs>
-    <option name="SDK_HOME" value="$USER_HOME$/.cache/pypoetry/virtualenvs/legadilo-7Fe2y2RD-py3.12/bin/python" />
-    <option name="SDK_NAME" value="Poetry (legadilo)" />
+    <option name="SDK_HOME" value="$PROJECT_DIR$/.venv/bin/python" />
     <option name="WORKING_DIRECTORY" value="" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />

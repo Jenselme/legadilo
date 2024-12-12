@@ -5,6 +5,7 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
+  git \
   # To run the Makefile
   make \
   # Translations dependencies
@@ -19,12 +20,11 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY pyproject.toml .
-COPY poetry.lock .
-RUN pip install -U pip && \
-    pip install poetry==1.8.2 && \
-    poetry config virtualenvs.create false && \
-    poetry install --with dev --with typing --with doc
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --dev --group doc
 
 COPY ./devops/compose/local/docs/start.sh /start-docs.sh
 RUN chmod +x /start-docs.sh

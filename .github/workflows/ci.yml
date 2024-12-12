@@ -19,49 +19,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  linter:
+  lint-and-test:
     runs-on: ubuntu-latest
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: legadilo
+          POSTGRES_USER: django
+          POSTGRES_PASSWORD: django_passwd
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    env:
+      IS_PRODUCTION: "false"
+      PYTHONUNBUFFERED: "1"
+      PYTHONDEVMODE: "1"
+      USE_DOCKER: "no"
+      DATABASE_URL: "postgres://django:django_passwd@localhost:5432/legadilo"
+
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          # Install a specific version of uv.
+          version: "0.5.8"
+
+      - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: "pyproject.toml"
 
-      - name: Install poetry
-        run: pip install poetry==1.8.2
+      - name: Install the project
+        run: uv sync --dev --locked
 
-      - name: Install typing deps
-        run: poetry install --with typing
-
-      # Consider using pre-commit.ci for open source project
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
-
-  # With no caching at all the entire ci process takes 4m 30s to complete!
-  pytest:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code Repository
-        uses: actions/checkout@v4
-
-      - name: Build the Stack
-        run: docker compose -f local.yml build
+        run: uv run pre-commit run -a
 
       - name: Create cache table
-        run: docker compose -f local.yml run --rm django python manage.py createcachetable
+        run: uv run python manage.py createcachetable
 
       - name: Run DB Migrations
-        run: docker compose -f local.yml run --rm django python manage.py migrate
+        run: uv run python manage.py migrate
 
       - name: Run Django Tests
-        run: docker compose -f local.yml run --rm django pytest --cov --cov-report term:skip-covered --cov-fail-under=90
-
-      - name: Tear down the Stack
-        run: docker compose -f local.yml down
+        run: uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
 
       - name: Test build production images
         run: |

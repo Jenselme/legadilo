@@ -4,4 +4,4 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-exec make livehtml
+exec uv run make livehtml
