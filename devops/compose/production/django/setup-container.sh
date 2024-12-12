@@ -12,7 +12,7 @@ adduser --system --ingroup django django
 apt-get update
 apt-get upgrade -y
 # Translations dependencies
-apt-get install --no-install-recommends -y gettext
+apt-get install --no-install-recommends -y gettext git
 
 if [[ "${BUILD_ENV}" == "local" ]]; then
     # devcontainer dependencies and utils
