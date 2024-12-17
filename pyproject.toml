@@ -242,7 +242,7 @@ django-cors-headers = "4.6.0"  # https://github.com/adamchainz/django-cors-heade
 feedparser = {git = "https://github.com/Jenselme/feedparser.git", rev = "correct-media-parsing"}
 httpx = "0.28.0"  # https://www.python-httpx.org/
 beautifulsoup4 = "^4.12.3"  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-nh3 = "^0.2.17"  # https://nh3.readthedocs.io/en/latest/
+nh3 = "^0.2.20"  # https://nh3.readthedocs.io/en/latest/
 python-dateutil = "^2.9.0.post0" # https://github.com/dateutil/dateutil
 defusedxml = "0.7.1"  # https://github.com/tiran/defusedxml
 markdown = "^3.7"  # https://python-markdown.github.io
