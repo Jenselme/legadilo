@@ -8,8 +8,8 @@ set -o nounset
 # For VSCode extension used to edit sphinx projects.
 pip install esbonio
 
-python manage.py createcachetable
-python manage.py migrate
+uv run python manage.py createcachetable
+uv run python manage.py migrate
 
 npm install
 
@@ -21,7 +21,7 @@ function setup-pre-commit() {
         sleep 30
     done
 
-    pre-commit install --hook-type pre-commit --hook-type pre-push
+    uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 }
 
 # Run in the backend to allow VSCode to configure git.
