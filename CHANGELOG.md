@@ -5,6 +5,7 @@
 - Add link to changelog in footer.
 - Improve existing links in footer.
 - Allow you to add a custom script.
+- Can fetch feed without an explicit full site URL.
 
 ## 24.12.4
 

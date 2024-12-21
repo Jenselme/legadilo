@@ -24,6 +24,7 @@ from legadilo.feeds.services.feed_parsing import (
     NoFeedUrlFoundError,
     _find_feed_page_content,
     _find_youtube_rss_feed_link,
+    _get_feed_site_link,
     _parse_articles_in_feed,
     get_feed_data,
     parse_feed,
@@ -313,3 +314,38 @@ class TestParseArticlesInFeed:
         )
 
         snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
+
+
+class TestGetFeedSiteUrl:
+    @pytest.mark.parametrize(
+        ("found_site_link", "feed_link", "expected_site_link"),
+        [
+            pytest.param(
+                None,
+                "https://example.com/feed.xml",
+                "https://example.com",
+                id="failed-to-find-feed",
+            ),
+            pytest.param(
+                "https://example.fr/the-site/",
+                "https://example.com/feed.xml",
+                "https://example.fr/the-site/",
+                id="found-in-full",
+            ),
+            pytest.param(
+                "//example.com",
+                "https://example.com/feed.xml",
+                "https://example.com",
+                id="found-without-scheme-full",
+            ),
+            pytest.param(
+                "/", "https://example.com/feed.xml", "https://example.com", id="not-full-url"
+            ),
+        ],
+    )
+    def test_get_feed_site_url(
+        self, found_site_link: str | None, feed_link: str, expected_site_link: str
+    ):
+        build_site_link = _get_feed_site_link(found_site_link, feed_link)
+
+        assert build_site_link == expected_site_link
