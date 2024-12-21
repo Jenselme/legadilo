@@ -6,6 +6,7 @@
 - Improve existing links in footer.
 - Allow you to add a custom script.
 - Can fetch feed without an explicit full site URL.
+- Can force feeds to refresh in the admin.
 
 ## 24.12.4
 

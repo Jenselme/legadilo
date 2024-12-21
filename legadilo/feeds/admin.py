@@ -14,7 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from django.contrib import admin
+from django.core.management import call_command
 
 from legadilo.feeds.models import (
     Feed,
@@ -24,6 +27,8 @@ from legadilo.feeds.models import (
     FeedTag,
     FeedUpdate,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class FeedTagInline(admin.TabularInline):
@@ -65,6 +70,24 @@ class FeedAdmin(admin.ModelAdmin):
         FeedTagInline,
         FeedUpdateInline,
     ]
+    actions = ["refresh_feeds", "force_refresh_feeds"]
+
+    @admin.action(description="Refresh selected feeds")
+    def refresh_feeds(self, request, queryset):
+        logger.info("Refresh selected feeds from admin")
+        call_command("update_feeds", "--feed-ids", *queryset.values_list("id", flat=True))
+        logger.info(f"Refreshed {len(queryset)} feeds from admin")
+
+    @admin.action(description="Force a refresh of selected feeds")
+    def force_refresh_feeds(self, request, queryset):
+        logger.info("Force refresh selected feeds from admin")
+        call_command(
+            "update_feeds",
+            "--feed-ids",
+            *queryset.values_list("id", flat=True),
+            "--force",
+        )
+        logger.info(f"Refreshed {len(queryset)} feeds from admin")
 
 
 @admin.register(FeedCategory)
