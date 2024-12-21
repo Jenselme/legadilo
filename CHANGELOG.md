@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add link to changelog in footer.
+- Improve existing links in footer.
+
 ## 24.12.4
 
 - Use the theme (light or dark) that matches the system theme.

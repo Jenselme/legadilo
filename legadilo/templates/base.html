@@ -232,7 +232,7 @@
             <p class="ps-4 pe-4 text-center">
                 {% if VERSION %}
                     {% blocktranslate with version=VERSION %}
-                        Legadilo version {{ version }}
+                        Legadilo <a class="text-reset" href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">version {{ version }}</a>
                     {% endblocktranslate %}
                 {% else %}
                     Legadilo
@@ -240,19 +240,19 @@
             </p>
             <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
                 <p class="ps-4 pe-4">
-                    <a class="text-white" href="{% url 'website:home' %}">{% translate "About" %}</a>
+                    <a class="text-reset" href="{% url 'website:home' %}">{% translate "About" %}</a>
                 </p>
                 <p class="ps-4 pe-4">
-                    <a class="text-white" href="{% url 'website:privacy' %}">{% translate "Privacy" %}</a>
+                    <a class="text-reset" href="{% url 'website:privacy' %}">{% translate "Privacy" %}</a>
                 </p>
                 <p class="ps-4 pe-4">
-                    <a class="text-white" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug." %}</a>
+                    <a class="text-reset" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug." %}</a>
                 </p>
                 <p class="ps-4 pe-4">
                     {% if CONTACT_EMAIL and user.is_authenticated %}
                         <span>
                             {% blocktranslate with email=CONTACT_EMAIL %}
-                                Contact us at <a href="mailto:{{ email }}">{{ email }}</a>
+                                Contact us at <a class="text-reset" href="mailto:{{ email }}">{{ email }}</a>
                             {% endblocktranslate %}
                         </span>
                     {% endif %}
