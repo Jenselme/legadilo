@@ -4,6 +4,7 @@
 
 - Add link to changelog in footer.
 - Improve existing links in footer.
+- Allow you to add a custom script.
 
 ## 24.12.4
 
