@@ -90,6 +90,14 @@ html {
     max-height 1s ease-out;
 }
 
+.refresh-btn {
+  right: 0.5rem;
+  bottom: 0.5rem;
+  width: max-content;
+  margin-left: auto;
+  display: block;
+}
+
 @media (width >= 768px) {
   .article-card-container {
     max-height: 500px;

@@ -164,4 +164,8 @@
                value="{{ displayed_reading_list.id }}" />
         <input type="hidden" name="from_url" value="{{ from_url }}" />
     </form>
+    <a class="btn btn-outline-primary sticky-bottom refresh-btn bg-secondary-subtle"
+       aria-label="{% translate 'Refresh current reading list' %}"
+       role="button"
+       href="{{ request.get_full_path }}">{% include "core/partials/bs-icons/refetch.html" %}</a>
 {% endblock content %}
