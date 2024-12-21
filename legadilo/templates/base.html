@@ -62,6 +62,9 @@
             <!-- This cannot be deferred: we want the proper theme to apply immediately, not after the page has loaded -->
             <script src="{% static 'js/theme_chooser.js' %}"
                     nonce="{{ request.csp_nonce }}"></script>
+            {% if CUSTOM_SCRIPT %}
+                <script defer nonce="{{ request.csp_nonce }}" {% for attr, value in CUSTOM_SCRIPT.items %} {{ attr }}="{{ value }}"{% endfor %}></script>
+            {% endif %}
             {% block page_js %}
             {% endblock page_js %}
         {% endblock javascript %}
@@ -187,6 +190,9 @@
                                                 <a class="dropdown-item" href="{% url 'feeds:feed_category_admin' %}">{% translate "Feed categories admin" %}</a>
                                                 <a class="dropdown-item" href="{% url 'reading:reading_lists_admin' %}">{% translate "Reading lists admin" %}</a>
                                                 <a class="dropdown-item" href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
+                                                {% if request.user.is_staff %}
+                                                    <a class="dropdown-item" href="{% url 'admin:index' %}">{% translate "Admin" %}</a>
+                                                {% endif %}
                                                 {# URL provided by django-allauth/account/urls.py #}
                                                 <a class="dropdown-item" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
                                             </div>
@@ -232,7 +238,7 @@
             <p class="ps-4 pe-4 text-center">
                 {% if VERSION %}
                     {% blocktranslate with version=VERSION %}
-                        Legadilo version {{ version }}
+                        Legadilo <a class="text-reset" href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">version {{ version }}</a>
                     {% endblocktranslate %}
                 {% else %}
                     Legadilo
@@ -240,19 +246,19 @@
             </p>
             <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
                 <p class="ps-4 pe-4">
-                    <a class="text-white" href="{% url 'website:home' %}">{% translate "About" %}</a>
+                    <a class="text-reset" href="{% url 'website:home' %}">{% translate "About" %}</a>
                 </p>
                 <p class="ps-4 pe-4">
-                    <a class="text-white" href="{% url 'website:privacy' %}">{% translate "Privacy" %}</a>
+                    <a class="text-reset" href="{% url 'website:privacy' %}">{% translate "Privacy" %}</a>
                 </p>
                 <p class="ps-4 pe-4">
-                    <a class="text-white" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug." %}</a>
+                    <a class="text-reset" href="https://github.com/Jenselme/legadilo/issues">{% translate "Report a bug." %}</a>
                 </p>
                 <p class="ps-4 pe-4">
                     {% if CONTACT_EMAIL and user.is_authenticated %}
                         <span>
                             {% blocktranslate with email=CONTACT_EMAIL %}
-                                Contact us at <a href="mailto:{{ email }}">{{ email }}</a>
+                                Contact us at <a class="text-reset" href="mailto:{{ email }}">{{ email }}</a>
                             {% endblocktranslate %}
                         </span>
                     {% endif %}

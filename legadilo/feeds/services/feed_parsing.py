@@ -41,6 +41,7 @@ from ...utils.validators import (
     FullSanitizeValidator,
     ValidUrlValidator,
     default_frozen_model_config,
+    is_url_valid,
     normalize_url,
     truncate,
 )
@@ -141,7 +142,7 @@ def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: 
 
     return FeedData(
         feed_url=resolved_url,
-        site_url=_normalize_found_link(parsed_feed.feed.get("link", resolved_url)),
+        site_url=_get_feed_site_link(parsed_feed.feed.get("link"), resolved_url),
         title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
@@ -208,6 +209,14 @@ def _find_feed_page_content(page_content: str) -> str:
         raise MultipleFeedFoundError("Found multiple feeds URLs", feed_urls=feed_urls)
 
     return feed_urls[0][0]
+
+
+def _get_feed_site_link(site_link: str | None, feed_link: str) -> str:
+    if site_link is None or not is_url_valid(site_link):
+        parsed_feed_url = urlparse(feed_link)
+        return f"{parsed_feed_url.scheme}://{parsed_feed_url.netloc}"
+
+    return _normalize_found_link(site_link)
 
 
 def _normalize_found_link(link: str):

@@ -21,4 +21,5 @@ def provide_global_context(request):
     return {
         "VERSION": settings.VERSION,
         "CONTACT_EMAIL": settings.CONTACT_EMAIL,
+        "CUSTOM_SCRIPT": settings.CUSTOM_SCRIPT,
     }

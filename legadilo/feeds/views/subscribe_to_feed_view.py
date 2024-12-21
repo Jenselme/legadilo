@@ -13,8 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import json
+import logging
 from http import HTTPMethod, HTTPStatus
 from typing import cast
 
@@ -46,6 +46,8 @@ from ..services.feed_parsing import (
     NoFeedUrlFoundError,
     get_feed_data,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SubscribeToFeedForm(forms.Form):
@@ -207,7 +209,8 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
             _("The feed file is too big, we won't parse it. Try to find a more lightweight feed."),
         )
         return HTTPStatus.BAD_REQUEST, form
-    except (InvalidFeedFileError, PydanticValidationError, ValueError, TypeError):
+    except (InvalidFeedFileError, PydanticValidationError, ValueError, TypeError) as e:
+        logger.debug("Failed to parse feed: %s", e)
         messages.error(
             request,
             _(
