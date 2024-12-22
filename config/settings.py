@@ -626,11 +626,12 @@ NINJA_PAGINATION_MAX_LIMIT = 500
 NINJA_PAGINATION_CLASS = "legadilo.utils.pagination.LimitOffsetPagination"
 
 
-# Your stuff...
+# Legadilo's specific stuff...
 # ------------------------------------------------------------------------------
 ARTICLE_FETCH_TIMEOUT = env.int("LEGADILO_ARTICLE_FETCH_TIMEOUT", default=50)
 RSS_FETCH_TIMEOUT = env.int("LEGADILO_RSS_FETCH_TIMEOUT", default=300)
 CONTACT_EMAIL = env.str("LEGADILO_CONTACT_EMAIL", default=None)
+CUSTOM_SCRIPT = env.json("LEGADILO_CUSTOM_SCRIPT", default=None)
 TOKEN_LENGTH = 50
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_MAX_AGE = timedelta(hours=24)

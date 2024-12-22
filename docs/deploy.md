@@ -104,7 +104,7 @@ These variables are required for the container to start and create the proper da
 | `DJANGO_DEFAULT_FROM_EMAIL`  | Email used as from unless otherwise specified.                                                                                                    |
 | `ADMIN_URL`                  | To change the default admin URL in production for security reason. Will default to `/admin/` in dev.                                              |
 | `ACCOUNT_ALLOW_REGISTRATION` | Whether to enable account registration on the instance or not. If disabled, you will have to create the user in the Django admin or with the CLI. |
-| `DATABASE_URL`               | The URL to the database formatted like this: postgres://POSTGRES_USER:POSTGRES_PASSWORD@POSTGRES_HOST:POSTGRES_PORT/POSTGRES_DB                   |
+| `DATABASE_URL`               | The URL to the database formatted like this: `postgres://POSTGRES_USER:POSTGRES_PASSWORD@POSTGRES_HOST:POSTGRES_PORT/POSTGRES_DB`                 |
 
 ```{admonition} DATABASE_URL
 :class: note
@@ -122,20 +122,20 @@ You can create cryptahpicaly sure secrets in Python with `python3 -c "import sec
 
 ### Other variables
 
-| Variable name                           | Default value      | Description                                                                            |
-|-----------------------------------------|--------------------|----------------------------------------------------------------------------------------|
-| `DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS` | `True`             | See https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains |
-| `DJANGO_SECURE_HSTS_PRELOAD`            | `True`             | See https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload            |
-| `DJANGO_SERVER_EMAIL`                   | DEFAULT_FROM_EMAIL | The email address that error messages come from.                                       |
-| `DJANGO_EMAIL_SUBJECT_PREFIX`           | `[Legadilo]`       | Each email will be prefixed by this.                                                   |
-| `EMAIL_HOST`                            | `mailpit`          | On which host to connect to send an email. Leave the default to not send in production |
-| `EMAIL_PORT`                            | 1025               | On which port to connect to send an email.                                             |
-| `EMAIL_HOST_USER`                       | Empty string       | Username to use for the SMTP server defined in `EMAIL_HOST`                            |
-| `EMAIL_HOST_PASSWORD`                   | Empty string       | The password associated with the above username                                        |
-| `EMAIL_TIMEOUT`                         | 30                 | Max time to wait for when trying to send an email before failing.                      |
-| `EMAIL_USE_TLS`                         | False              | Whether to use TLS to send email with SMTP                                             |
-| `SENTRY_DSN`                            | `None`             | To enable error monitoring with Sentry (leave empty to leave it deactivated).          |
-| `LEGADILO_ARTICLE_FETCH_TIMEOUT`        | 50                 | The fetch timeout when fetching articles in seconds.                                   |
-| `LEGADILO_RSS_FETCH_TIMEOUT`            | 300                | The fetch timeout when fetching feeds in seconds.                                      |
-| `LEGADILO_CONTACT_EMAIL`                | `None`             | The contact email to display to authenticated user.                                    |
-
+| Variable name                           | Default value      | Description                                                                                                                                                                                                    |
+|-----------------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS` | `True`             | See https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains                                                                                                                         |
+| `DJANGO_SECURE_HSTS_PRELOAD`            | `True`             | See https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload                                                                                                                                    |
+| `DJANGO_SERVER_EMAIL`                   | DEFAULT_FROM_EMAIL | The email address that error messages come from.                                                                                                                                                               |
+| `DJANGO_EMAIL_SUBJECT_PREFIX`           | `[Legadilo]`       | Each email will be prefixed by this.                                                                                                                                                                           |
+| `EMAIL_HOST`                            | `mailpit`          | On which host to connect to send an email. Leave the default to not send in production                                                                                                                         |
+| `EMAIL_PORT`                            | 1025               | On which port to connect to send an email.                                                                                                                                                                     |
+| `EMAIL_HOST_USER`                       | Empty string       | Username to use for the SMTP server defined in `EMAIL_HOST`                                                                                                                                                    |
+| `EMAIL_HOST_PASSWORD`                   | Empty string       | The password associated with the above username                                                                                                                                                                |
+| `EMAIL_TIMEOUT`                         | 30                 | Max time to wait for when trying to send an email before failing.                                                                                                                                              |
+| `EMAIL_USE_TLS`                         | False              | Whether to use TLS to send email with SMTP                                                                                                                                                                     |
+| `SENTRY_DSN`                            | `None`             | To enable error monitoring with Sentry (leave empty to leave it deactivated).                                                                                                                                  |
+| `LEGADILO_ARTICLE_FETCH_TIMEOUT`        | 50                 | The fetch timeout when fetching articles in seconds.                                                                                                                                                           |
+| `LEGADILO_RSS_FETCH_TIMEOUT`            | 300                | The fetch timeout when fetching feeds in seconds.                                                                                                                                                              |
+| `LEGADILO_CONTACT_EMAIL`                | `None`             | The contact email to display to authenticated user.                                                                                                                                                            |
+| `LEGADILO_CUSTOM_SCRIPT`                | `None`             | To inject an extra script (typically a visitor tracker) to the site. Must a JSON mapping of attribute to value like this: `{"src": "https://plausible.io"}`.<br>Nonce and `defer` will be added automatically. |
