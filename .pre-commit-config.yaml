@@ -126,7 +126,7 @@ repos:
           - IS_PRODUCTION=True
           - DJANGO_SECRET_KEY=test-key
           - DJANGO_ADMIN_URL=admin/
-          - poetry
+          - uv
           - run
           - mypy
           - legadilo
@@ -141,7 +141,7 @@ repos:
         name: pytest
         entry: env
         args:
-          - poetry
+          - uv
           - run
           - pytest
         language: system

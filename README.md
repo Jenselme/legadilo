@@ -28,9 +28,12 @@ You will have to start Django with the provided run target.
 
 ### Using Pycharm
 
-By default, everything is set up to develop locally with Pycharm. So you will need docker (for the database), poetry, Python 3.12 and nodeJS 20+ installed for this to work. Django will be started automatically. On the first run, you must run `npm install` to install a few JS deps.
+By default, everything is set up to develop locally with Pycharm. So you will need docker (for the database), [uv](https://docs.astral.sh/uv/), Python 3.12 and nodeJS 20+ installed for this to work.
+Django will be started automatically.
+On the first run, you must run `npm install` to install a few JS deps and `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` to configure `pre-commit`.
 
-You should also be able to use devcontainers but the support is more recent and isn’t as good as in VSCode according to my tests. See [here](https://www.jetbrains.com/help/pycharm/connect-to-devcontainer.html) for more.
+You should also be able to use devcontainers but the support is more recent and isn’t as good as in VSCode according to my tests.
+See [here](https://www.jetbrains.com/help/pycharm/connect-to-devcontainer.html) for more.
 
 ### Project structure
 
@@ -46,16 +49,16 @@ You should also be able to use devcontainers but the support is more recent and 
 - `.decontainer/`, `.idea/`, `.vscode/` and `.editorconfig` are editors configuration.
 - `.eslintrc.json`, `prettierrc.json` and `.stylelintrc.json` contains the JS/CSS linters and formatters configurations.
 - `pyproject.toml` defines the Python dependencies and is used to configure Python linting tools.
-- `poetry.lock` and `package-lock.json` are used to lock the dependencies.
+- `uv.lock` and `package-lock.json` are used to lock the dependencies.
 
 ### Basic Commands
 
 All these commands must be run at the root of the project!
 
-- Run the server: `python manage.py runserver`
-- Create migrations files after updating models: `python manage.py makemigrations`
-- Apply migrations: `python manage.py migrate`
-- Create a _superuser_: `python manage.py createsuperuser`
+- Run the server: `uv run python manage.py runserver`
+- Create migrations files after updating models: `uv run python manage.py makemigrations`
+- Apply migrations: `uv run python manage.py migrate`
+- Create a _superuser_: `uv run python manage.py createsuperuser`
 
 ### Email Server
 
@@ -71,7 +74,7 @@ With Mailpit running, to view messages that are sent by your application, open y
 - To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to Mailpit to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
 - To create a **superuser account**, use this command:
 
-      $ python manage.py createsuperuser
+      $ uv run python manage.py createsuperuser
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 

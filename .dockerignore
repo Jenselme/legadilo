@@ -8,7 +8,8 @@
 .pre-commit-config.yaml
 .readthedocs.yml
 .travis.yml
-venv
+venv/
+.venv/
 .git/
 devops/envs/
 .pytest_cache/

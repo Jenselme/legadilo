@@ -4,15 +4,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-# Create user to use to run in production.
-addgroup --system django
-adduser --system --ingroup django django
-
 # Install required system dependencies and updates.
 apt-get update
 apt-get upgrade -y
 # Translations dependencies
-apt-get install --no-install-recommends -y gettext
+apt-get install --no-install-recommends -y gettext git
 
 if [[ "${BUILD_ENV}" == "local" ]]; then
     # devcontainer dependencies and utils
@@ -26,4 +22,4 @@ fi
 
 # cleaning up unused files
 apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
-rm -rf /var/lib/apt/lists/*
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
