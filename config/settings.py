@@ -341,7 +341,7 @@ CSP_OBJECT_SRC = ("'none'",)
 CSP_MEDIA_SRC = ("'self'",)
 CSP_FRAME_SRC = ("'none'",)
 CSP_FONT_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'",)
+CSP_CONNECT_SRC = env.tuple("CSP_CONNECT_SRC", default=("'self'",))
 CSP_STYLE_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
 CSP_STYLE_SRC_ATTR = None
 CSP_STYLE_SRC_ELEM = None
