@@ -63,7 +63,9 @@
             <script src="{% static 'js/theme_chooser.js' %}"
                     nonce="{{ request.csp_nonce }}"></script>
             {% if CUSTOM_SCRIPT %}
-                <script defer nonce="{{ request.csp_nonce }}" {% for attr, value in CUSTOM_SCRIPT.items %} {{ attr }}="{{ value }}"{% endfor %}></script>
+                <script defer
+                        nonce="{{ request.csp_nonce }}"
+                        {% for attr, value in CUSTOM_SCRIPT.items %} {{ attr }}="{{ value }}"{% endfor %}></script>
             {% endif %}
             {% block page_js %}
             {% endblock page_js %}
