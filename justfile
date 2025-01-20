@@ -1,6 +1,9 @@
 docker-cmd := "docker"
 docker-compose-cmd := "docker compose"
 
+update-python-deps:
+    uv sync --upgrade --all-groups
+
 release:
     #!/usr/bin/env bash
     set -eu

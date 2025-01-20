@@ -16,6 +16,11 @@ html {
 
 .content-footer {
   height: var(--content-mobile-footer-height);
+  background-color: var(--bs-dark);
+}
+
+[data-bs-theme="dark"] .content-footer {
+  background-color: var(--bs-tertiary-bg);
 }
 
 .content-body > .content-main-container {
@@ -43,6 +48,10 @@ html {
 .btn-primary img.bi,
 .btn-danger img.bi {
   filter: invert(1) !important;
+}
+
+[data-bs-theme="dark"] img.bi {
+  filter: invert(0.715);
 }
 
 .htmx-indicator,
@@ -131,8 +140,4 @@ svg.bi {
 
 .bd-navbar .dropdown-menu .active .bi {
   display: block !important;
-}
-
-[data-bs-theme="dark"] img.bi {
-  filter: invert(0.715);
 }

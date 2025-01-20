@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Correct footer background on dark mode.
+
+## 24.12.6
+
+- Can change CSP for tracking script
+
 ## 24.12.5
 
 - Add link to changelog in footer.
