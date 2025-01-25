@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from http import HTTPStatus
 
+from allauth.account.decorators import reauthentication_required
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -56,7 +57,7 @@ class CreateTokenForm(forms.ModelForm):
             )
 
 
-@login_required
+@reauthentication_required
 @require_http_methods(["GET", "POST"])
 def manage_tokens_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     form = CreateTokenForm(initial={"timezone": request.user.settings.timezone})

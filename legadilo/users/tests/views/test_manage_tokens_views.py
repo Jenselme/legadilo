@@ -41,10 +41,12 @@ class TestManageTokensView:
 
         assert_redirected_to_login_page(response)
 
-    def test_list(self, logged_in_sync_client, other_user, django_assert_num_queries):
+    def test_list(
+        self, logged_in_sync_client, other_user, django_assert_num_queries, reauthentication_bypass
+    ):
         ApplicationTokenFactory(user=other_user)
 
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(8), reauthentication_bypass():
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -54,9 +56,9 @@ class TestManageTokensView:
         assert list(response.context_data["tokens"]) == [self.application_token]
 
     def test_create_token_invalid_form(
-        self, user, logged_in_sync_client, django_assert_num_queries
+        self, user, logged_in_sync_client, django_assert_num_queries, reauthentication_bypass
     ):
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(8), reauthentication_bypass():
             response = logged_in_sync_client.post(self.url, data={})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -65,8 +67,10 @@ class TestManageTokensView:
         assert response.context_data["new_application_token_secret"] is None
         assert response.context_data["form"].errors == {"title": ["This field is required."]}
 
-    def test_create_token(self, user, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+    def test_create_token(
+        self, user, logged_in_sync_client, django_assert_num_queries, reauthentication_bypass
+    ):
+        with django_assert_num_queries(11), reauthentication_bypass():
             response = logged_in_sync_client.post(self.url, data={"title": "Test token"})
 
         assert response.status_code == HTTPStatus.OK
@@ -81,8 +85,10 @@ class TestManageTokensView:
         assert len(response.context_data["new_application_token_secret"]) == 67
         assert list(response.context_data["tokens"]) == [new_token, self.application_token]
 
-    def test_create_duplicated_token(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
+    def test_create_duplicated_token(
+        self, logged_in_sync_client, django_assert_num_queries, reauthentication_bypass
+    ):
+        with django_assert_num_queries(12), reauthentication_bypass():
             response = logged_in_sync_client.post(
                 self.url, data={"title": self.application_token.title}
             )
@@ -101,9 +107,9 @@ class TestManageTokensView:
         ]
 
     def test_create_token_with_validity_end(
-        self, user, logged_in_sync_client, django_assert_num_queries
+        self, user, logged_in_sync_client, django_assert_num_queries, reauthentication_bypass
     ):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(11), reauthentication_bypass():
             response = logged_in_sync_client.post(
                 self.url, data={"title": "Test token", "validity_end": "2024-11-24 12:00:00Z"}
             )
@@ -116,11 +122,11 @@ class TestManageTokensView:
         assert new_token.validity_end == utcdt(2024, 11, 24, 12)
 
     def test_create_token_with_validity_end_in_timezone(
-        self, user, logged_in_sync_client, django_assert_num_queries
+        self, user, logged_in_sync_client, django_assert_num_queries, reauthentication_bypass
     ):
         new_york_tz, _created = Timezone.objects.get_or_create(name="America/New_York")
 
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(12), reauthentication_bypass():
             response = logged_in_sync_client.post(
                 self.url,
                 data={

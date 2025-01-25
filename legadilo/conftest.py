@@ -16,11 +16,14 @@
 from http import HTTPStatus
 
 import pytest
+from allauth.conftest import reauthentication_bypass as allauth_reauthentication_bypass
 from django.urls import reverse
 
 from legadilo.core.models import Timezone
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory, UserSettingsFactory
+
+reauthentication_bypass = allauth_reauthentication_bypass
 
 
 @pytest.fixture(autouse=True)

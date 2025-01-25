@@ -58,6 +58,7 @@
       return;
     }
 
+    console.log("Setting up read on scroll.");
     // Force a scroll to top after reloading the page: previously read articles won’t be there
     // anymore and the back button of the browser will preserve scroll. We may end up marking some
     // articles as read when we shouldn’t. Clicking the back button on the details page doesn’t have
@@ -66,12 +67,16 @@
     // correctly triggers the scroll to top code. However, when the browser is reopened, it did not.
     // it seems that the browser is restoring the scroll with a little delay after the scroll to
     // top had run. Hence, this timeout block. Improve this if you have a cleaner solution.
-    setTimeout(() => window.scroll(0, 0), 500);
-
-    // Wait before reading on scroll: the user may scroll up again!
-    const readOnScrollDebounced = debounce(readOnScroll, 1_000);
-    document.addEventListener("scrollend", readOnScrollDebounced);
-    console.log("Read on scroll setup!");
+    // We don’t start marking articles as read until the scroll is done: it can take a while and on
+    // some occasions, we may start marking articles as read before the scroll is done.
+    setTimeout(() => {
+      window.scroll(0, 0);
+      // Wait before reading on scroll: the user may scroll up again! We don’t want to mark articles
+      // as read in this case.
+      const readOnScrollDebounced = debounce(readOnScroll, 1_000);
+      document.addEventListener("scrollend", readOnScrollDebounced);
+      console.log("Read on scroll setup!");
+    }, 500);
   };
 
   const readOnScroll = () => {
