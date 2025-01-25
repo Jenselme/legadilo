@@ -345,10 +345,14 @@ class TestListTagsView:
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED
 
-    def test_list(self, other_user, logged_in_sync_client, django_assert_num_queries, snapshot):
+    def test_list(
+        self, user, other_user, logged_in_sync_client, django_assert_num_queries, snapshot
+    ):
         TagFactory(user=other_user, title="Some tag")
+        tag_with_sub_tag = TagFactory(user=user, title="With sub tags")
+        tag_with_sub_tag.sub_tags.add(self.tag)
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(6):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
