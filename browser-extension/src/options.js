@@ -1,4 +1,4 @@
-import { DEFAULT_OPTIONS, loadOptions, storeOptions } from "./legadilo.js";
+import { DEFAULT_OPTIONS, loadOptions, storeOptions, testCredentials } from "./legadilo.js";
 
 /**
  * @param event {SubmitEvent}
@@ -15,8 +15,12 @@ const saveOptions = async (event) => {
   });
 
   // Update status to let user know options were saved.
+  displayMessage("Options saved.");
+};
+
+const displayMessage = (text) => {
   const status = document.getElementById("status");
-  status.textContent = "Options saved.";
+  status.textContent = text;
   setTimeout(() => {
     status.textContent = "";
   }, 750);
@@ -39,6 +43,24 @@ const resetOptions = () => {
   setOptions(DEFAULT_OPTIONS);
 };
 
+const testOptions = async () => {
+  const data = new FormData(document.getElementById("options-form"));
+
+  if (
+    await testCredentials({
+      instanceUrl: data.get("instance-url"),
+      userEmail: data.get("user-email"),
+      tokenId: data.get("token-id"),
+      tokenSecret: data.get("token-secret"),
+    })
+  ) {
+    displayMessage("Instance URL and token are valid");
+  } else {
+    displayMessage("Failed to connect with supplied URL and tokens");
+  }
+};
+
 document.addEventListener("DOMContentLoaded", restoreOptions);
 document.getElementById("options-form").addEventListener("submit", saveOptions);
 document.getElementById("reset-options").addEventListener("click", resetOptions);
+document.getElementById("test-options").addEventListener("click", testOptions);

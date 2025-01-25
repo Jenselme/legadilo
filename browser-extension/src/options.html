@@ -48,8 +48,15 @@
                        type="text"
                        required />
             </div>
-            <button id="reset-options" class="btn btn-danger" type="button">Reset to default</button>
-            <button type="submit" class="btn btn-primary">Save</button>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <button id="test-options" class="btn btn-outline-secondary" type="button">Test</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+                <div>
+                    <button id="reset-options" class="btn btn-danger" type="button">Reset to default</button>
+                </div>
+            </div>
         </form>
         <p id="status"></p>
         <script src="./options.js" type="module"></script>
