@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Correct footer background on dark mode.
+- Prevent articles to be read on scroll before initial scroll to top on page load.
 
 ## 24.12.6
 
