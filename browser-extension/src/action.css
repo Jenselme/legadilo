@@ -10,6 +10,11 @@
   padding: 0.5rem;
 }
 
+#article-container,
+#feed-container {
+  max-width: 300px;
+}
+
 #action-selector-container {
   max-width: 300px;
   padding: 0.5rem;
