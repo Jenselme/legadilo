@@ -4,6 +4,7 @@
 
 - Correct footer background on dark mode.
 - Prevent articles to be read on scroll before initial scroll to top on page load.
+- Force re-authentication before managing tokens.
 
 ## 24.12.6
 
