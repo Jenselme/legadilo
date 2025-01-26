@@ -20,6 +20,7 @@ from typing import Annotated, Self
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
+from django.urls import reverse
 from ninja import ModelSchema, Router, Schema
 from pydantic import Field, model_validator
 
@@ -50,6 +51,14 @@ class OutTagSchema(ModelSchema):
 
 class OutArticleSchema(ModelSchema):
     tags: list[OutTagSchema] = Field(alias="tags_to_display")
+    details_url: str
+
+    @staticmethod
+    def resolve_details_url(obj, context) -> str:
+        url = reverse(
+            "reading:article_details", kwargs={"article_id": obj.id, "article_slug": obj.slug}
+        )
+        return context["request"].build_absolute_uri(url)
 
     class Meta:
         model = Article

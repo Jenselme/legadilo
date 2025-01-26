@@ -35,6 +35,7 @@ def _prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, An
     assert data["slug"] == feed.slug
     assert data["title"] == feed.title
     assert data["feed_url"] == feed.feed_url
+    assert data["details_url"] == f"http://testserver/feeds/articles/{feed.id}-{feed.slug}/"
     assert (feed.category_id is None and data["category"] is None) or (
         feed.category_id == data["category"]["id"]
     )
@@ -43,6 +44,7 @@ def _prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, An
     data["slug"] = "feed-slug"
     data["title"] = "Feed title"
     data["feed_url"] = "https://example.com/feed.rss"
+    data["details_url"] = "https://example.com/feeds/articles/1-feed-slug/"
     if data.get("category"):
         data["category"]["id"] = 10
         data["category"]["title"] = "Category title"

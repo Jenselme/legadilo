@@ -176,6 +176,8 @@ const displayArticle = (article, tags) => {
     document.querySelector("#mark-article-as-for-later").style.display = "block";
     document.querySelector("#unmark-article-as-for-later").style.display = "none";
   }
+
+  document.querySelector("#open-article-details").href = article.details_url;
 };
 
 const hideArticle = () => {
@@ -188,6 +190,8 @@ const displayFeed = (feed, tags, categories) => {
 
   document.querySelector("#feed-refresh-delay").value = feed.refresh_delay;
   document.querySelector("#feed-article-retention-time").value = feed.article_retention_time;
+
+  document.querySelector("#open-feed-details").href = feed.details_url;
 
   const categorySelector = document.querySelector("#feed-category");
   // Clean all existing choices.

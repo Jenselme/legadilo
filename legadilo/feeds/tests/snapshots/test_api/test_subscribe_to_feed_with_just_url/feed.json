@@ -2,6 +2,7 @@
   "article_retention_time": 0,
   "category": null,
   "description": "Some feed description",
+  "details_url": "https://example.com/feeds/articles/1-feed-slug/",
   "disabled_at": null,
   "disabled_reason": "",
   "enabled": true,

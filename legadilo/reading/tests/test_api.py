@@ -35,12 +35,14 @@ def _prepare_article_for_serialization(data: dict[str, Any], article: Article) -
     assert data["slug"] == article.slug
     assert data["external_article_id"] == article.external_article_id
     assert data["link"] == article.link
+    assert data["details_url"] == f"http://testserver/reading/articles/{article.id}-{article.slug}/"
 
     data["id"] = 1
     data["title"] = "Article title"
     data["slug"] = "article-slug"
     data["external_article_id"] = "external-article-id"
     data["link"] = "https://example.com/articles/article.html"
+    data["details_url"] = "http://testserver/reading/articles/1-article-slug/"
 
     return data
 
