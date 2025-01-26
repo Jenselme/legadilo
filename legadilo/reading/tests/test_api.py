@@ -25,7 +25,7 @@ from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt
+from legadilo.utils.time_utils import utcdt, utcnow
 
 
 def _prepare_article_for_serialization(data: dict[str, Any], article: Article) -> dict[str, Any]:
@@ -168,6 +168,36 @@ class TestCreateArticleView:
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
         )
+
+    def test_try_to_create_existing_article(
+        self, user, django_assert_num_queries, logged_in_sync_client, mocker
+    ):
+        existing_article = ArticleFactory(
+            user=user, title="Existing", reading_time=14, link=self.article_link, read_at=utcnow()
+        )
+        mocker.patch(
+            "legadilo.reading.api.get_article_from_url",
+            return_value=ArticleDataFactory(
+                title="Fetched article",
+                link=self.article_link,
+                content="Blabla for reading time " * 50,
+            ),
+        )
+
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                self.url, {"link": self.article_link}, content_type="application/json"
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.link == self.article_link
+        assert article.table_of_content == []
+        assert article.title != existing_article.title
+        assert article.slug != existing_article.slug
+        assert article.reading_time != existing_article.reading_time
+        assert article.read_at is None
 
 
 @pytest.mark.django_db

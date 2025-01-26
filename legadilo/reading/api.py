@@ -88,7 +88,7 @@ class ArticleCreation(Schema):
 
 @reading_api_router.post(
     "/articles/",
-    response={HTTPStatus.CREATED: OutArticleSchema},
+    response={HTTPStatus.CREATED: OutArticleSchema, HTTPStatus.OK: OutArticleSchema},
     url_name="create_article",
     summary="Create a new article",
 )
@@ -106,12 +106,16 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     tags = await sync_to_async(Tag.objects.get_or_create_from_list)(request.auth, payload.tags)
     article_data = article_data.model_copy(update={"tags": ()})
 
-    articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
+    save_results = await sync_to_async(Article.objects.save_from_list_of_data)(
         request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
-    return HTTPStatus.CREATED, await Article.objects.get_queryset().for_api().aget(
-        id=articles[0].id
-    )
+    save_result = save_results[0]
+    article = await Article.objects.get_queryset().for_api().aget(id=save_result.article.id)
+
+    if save_result.was_created:
+        return HTTPStatus.CREATED, article
+
+    return HTTPStatus.OK, article
 
 
 @reading_api_router.get(

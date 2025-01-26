@@ -981,7 +981,7 @@ class TestArticleQuerySet:
 @pytest.mark.django_db
 class TestArticleManager:
     @time_machine.travel("2024-06-01 12:00:00", tick=False)
-    def test_update_and_create_articles(self, user, django_assert_num_queries):
+    def test_save_from_list_of_data(self, user, django_assert_num_queries):
         tag1 = TagFactory(user=user)
         tag2 = TagFactory(user=user)
         existing_article_to_update = ArticleFactory(
@@ -1007,7 +1007,7 @@ class TestArticleManager:
         now_dt = utcnow()
 
         with django_assert_num_queries(7), time_machine.travel("2024-06-02 12:00:00", tick=False):
-            Article.objects.update_or_create_from_articles_list(
+            Article.objects.save_from_list_of_data(
                 user,
                 [
                     ArticleData(
@@ -1129,7 +1129,7 @@ class TestArticleManager:
         now_dt = utcnow()
 
         with django_assert_num_queries(4):
-            Article.objects.update_or_create_from_articles_list(
+            Article.objects.save_from_list_of_data(
                 user,
                 [
                     ArticleData(
@@ -1206,7 +1206,7 @@ class TestArticleManager:
         )
 
         with django_assert_num_queries(4):
-            Article.objects.update_or_create_from_articles_list(
+            Article.objects.save_from_list_of_data(
                 user, [article_data], [], source_type=constants.ArticleSourceType.MANUAL
             )
 
@@ -1242,7 +1242,7 @@ class TestArticleManager:
         )
 
         with django_assert_num_queries(4):
-            Article.objects.update_or_create_from_articles_list(
+            Article.objects.save_from_list_of_data(
                 user, [article_data], [], source_type=constants.ArticleSourceType.FEED
             )
 
