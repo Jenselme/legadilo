@@ -39,8 +39,10 @@ const setOptions = (options = {}) => {
   document.getElementById("token-secret").value = options.tokenSecret;
 };
 
-const resetOptions = () => {
-  setOptions(DEFAULT_OPTIONS);
+const resetOptions = async () => {
+  if (await askConfirmation()) {
+    setOptions(DEFAULT_OPTIONS);
+  }
 };
 
 const testOptions = async () => {
@@ -58,6 +60,34 @@ const testOptions = async () => {
   } else {
     displayMessage("Failed to connect with supplied URL and tokens");
   }
+};
+
+const askConfirmation = () => {
+  const confirmDialog = document.getElementById("confirm-dialog");
+
+  let resolveDeferred;
+  const deferred = new Promise((resolve) => (resolveDeferred = resolve));
+  const cancelBtn = document.getElementById("confirm-dialog-cancel-btn");
+  const confirmBtn = document.getElementById("confirm-dialog-confirm-btn");
+  const cancel = () => {
+    confirmDialog.close();
+    resolveDeferred(false);
+    cancelBtn.removeEventListener("click", cancel);
+    confirmBtn.removeEventListener("click", confirm);
+  };
+  const confirm = () => {
+    confirmDialog.close();
+    resolveDeferred(true);
+    cancelBtn.removeEventListener("click", cancel);
+    confirmBtn.removeEventListener("click", confirm);
+  };
+
+  cancelBtn.addEventListener("click", cancel);
+  confirmBtn.addEventListener("click", confirm);
+
+  confirmDialog.showModal();
+
+  return deferred;
 };
 
 document.addEventListener("DOMContentLoaded", restoreOptions);

@@ -4,7 +4,6 @@
         <meta charset="utf-8" />
         <title>Legadilo Options</title>
         <link rel="stylesheet" type="text/css" href="./vendor/bootstrap.css" />
-        <script src="./vendor/bootstrap.js"></script>
     </head>
     <body>
         <form id="options-form">
@@ -59,6 +58,15 @@
             </div>
         </form>
         <p id="status"></p>
+        <dialog id="confirm-dialog">
+            <div class="modal-header">
+                <h2 class="modal-title">Do you confirm?</h2>
+            </div>
+            <button id="confirm-dialog-cancel-btn"
+                    class="btn btn-outline-secondary"
+                    type="button">No</button>
+            <button id="confirm-dialog-confirm-btn" class="btn btn-danger" type="button">Yes</button>
+        </dialog>
         <script src="./options.js" type="module"></script>
     </body>
 </html>
