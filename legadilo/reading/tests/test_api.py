@@ -194,10 +194,10 @@ class TestCreateArticleView:
         article = Article.objects.get()
         assert article.link == self.article_link
         assert article.table_of_content == []
-        assert article.title != existing_article.title
-        assert article.slug != existing_article.slug
-        assert article.reading_time != existing_article.reading_time
-        assert article.read_at is None
+        assert article.title == existing_article.title
+        assert article.slug == existing_article.slug
+        assert article.reading_time == existing_article.reading_time
+        assert article.read_at == existing_article.read_at
 
 
 @pytest.mark.django_db

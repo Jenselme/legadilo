@@ -503,7 +503,6 @@ class ArticleManager(models.Manager["Article"]):
                         # We force the source type to manual if we manually add it so prevent any
                         # cleanup later one.
                         article_to_update.main_source_type = constants.ArticleSourceType.MANUAL
-                    article_to_update.read_at = None
                     was_updated = True
                     article_to_update.obj_updated_at = utcnow()
                 articles_to_update.append(
@@ -853,16 +852,16 @@ class Article(models.Model):
             return False
 
         if is_more_recent or force_update:
-            self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH] or self.title
-            self.slug = (
-                slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]) or self.slug
-            )
+            # We don't update the title (nor the slug) automatically since it could have been
+            # updated manually. It's also useful to spot an article (and avoids weird redirection
+            # on refresh).
             self.summary = article_data.summary or self.summary
             self.content = article_data.content or self.content
             self.table_of_content = article_data.table_of_content or self.table_of_content
-            self.reading_time = (
+            # Reading time could have been updated manually. Let's update it only if it's 0.
+            self.reading_time = self.reading_time or (
                 get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
-            ) or self.reading_time
+            )
             self.preview_picture_url = article_data.preview_picture_url or self.preview_picture_alt
             self.preview_picture_alt = article_data.preview_picture_alt or self.preview_picture_alt
             # We create the deduplicated list with dict.fromkeys and not sets to preserve the

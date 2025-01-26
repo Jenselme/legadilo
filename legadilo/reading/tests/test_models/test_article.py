@@ -1020,7 +1020,7 @@ class TestArticleManager:
                         authors=("Author",),
                         contributors=(),
                         tags=(),
-                        link="https://example.com/article/1",
+                        link="https://example.com/article/some-new-article-1",
                         preview_picture_url="https://example.com/preview.png",
                         preview_picture_alt="Some image alt",
                         published_at=now_dt,
@@ -1071,7 +1071,7 @@ class TestArticleManager:
                         authors=("Author",),
                         contributors=("Contributor",),
                         tags=("Some tag",),
-                        link="https://example.com/article/3",
+                        link="https://example.com/article/new-article-3",
                         preview_picture_url="",
                         preview_picture_alt="",
                         published_at=now_dt,
@@ -1086,10 +1086,10 @@ class TestArticleManager:
 
         assert Article.objects.count() == 4
         existing_article_to_update.refresh_from_db()
-        assert existing_article_to_update.title == "Article updated"
-        assert existing_article_to_update.slug == "article-updated"
+        assert existing_article_to_update.title == "Old title"
+        assert existing_article_to_update.slug == "old-title"
         assert existing_article_to_update.updated_at == now_dt
-        assert existing_article_to_update.read_at is None
+        assert existing_article_to_update.read_at is not None
         assert existing_article_to_update.main_source_type == constants.ArticleSourceType.MANUAL
         assert existing_article_to_update.obj_created_at == utcdt(2024, 6, 1, 12, 0)
         assert existing_article_to_update.obj_updated_at == utcdt(2024, 6, 2, 12, 0)
@@ -1211,7 +1211,8 @@ class TestArticleManager:
             )
 
         existing_article.refresh_from_db()
-        assert existing_article.read_at is None
+        assert existing_article.read_at is not None
+        assert existing_article.title == "Old title"
 
     def test_readd_read_article_from_a_feed(self, user, django_assert_num_queries):
         now_dt = utcnow()
@@ -1531,7 +1532,7 @@ class TestArticleModel:
                 },
                 True,
                 {
-                    "title": "Updated title",
+                    "title": "Initial title",
                     "content": """<h2 id="my-title">My title</h2> Updated content""",
                     "updated_at": utcdt(2024, 4, 21),
                 },
@@ -1566,7 +1567,7 @@ class TestArticleModel:
                 },
                 False,
                 {
-                    "title": "Updated title",
+                    "title": "Initial title",
                     "summary": "Updated summary",
                     "content": """<h2 id="my-title">My title</h2> Updated content""",
                     "table_of_content": (
@@ -1625,14 +1626,14 @@ class TestArticleModel:
             "summary": "Initial summary",
             "content": "Initial content",
             "updated_at": utcdt(2024, 4, 19),
-            "reading_time": 3,
+            "reading_time": 13,
         }
         expected_data = {
-            "title": "Updated title",
+            "title": "Initial title",
             "summary": "Initial summary",
             "content": "Initial content",
             "updated_at": utcdt(2024, 4, 20),
-            "reading_time": 3,
+            "reading_time": 13,
         }
         article = ArticleFactory.build(**initial_data, user=user)
 

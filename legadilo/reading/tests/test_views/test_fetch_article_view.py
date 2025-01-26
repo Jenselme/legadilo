@@ -187,10 +187,11 @@ class TestAddArticle:
                 f"{article.title}</a>' already existed.",
             )
         ]
-        assert article.read_at is None
-        assert article.title != existing_article.title
-        assert article.slug != existing_article.slug
-        assert article.reading_time != existing_article.reading_time
+        assert article.read_at == existing_article.read_at
+        assert article.title == existing_article.title
+        assert article.slug == existing_article.slug
+        assert article.reading_time == existing_article.reading_time
+        # Only content must be updated.
         assert article.content != existing_article.content
 
     def test_fetch_failure_link_already_saved(self, user, logged_in_sync_client, httpx_mock):
@@ -282,11 +283,11 @@ class TestRefetchArticleView:
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/reading/articles/{self.article.id}-on-the-3-musketeers/"
+        assert response["Location"] == f"/reading/articles/{self.article.id}-{self.article.slug}/"
         assert Article.objects.count() == 1
         article = Article.objects.get()
-        assert article.title == "On the 3 musketeers"
-        assert article.slug == "on-the-3-musketeers"
+        assert article.title == self.article.title
+        assert article.slug == self.article.slug
         assert article.summary.startswith("I just wrote a new book")
         assert "Lorem ipsum" in article.content
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
@@ -308,5 +309,5 @@ class TestRefetchArticleView:
         assert response.status_code == HTTPStatus.FOUND
         assert (
             response["Location"]
-            == f"/reading/articles/{self.article.id}-www-example-com/?from_url=%2Ftoto%2F"
+            == f"/reading/articles/{self.article.id}-initial-slug/?from_url=%2Ftoto%2F"
         )
