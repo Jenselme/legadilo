@@ -99,7 +99,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
             updated_at=wallabag_article.updated_at,
             language=wallabag_article.language,
         )
-        Article.objects.update_or_create_from_articles_list(
+        Article.objects.save_from_list_of_data(
             user=user,
             articles_data=[article_data],
             tags=tags,

@@ -284,7 +284,7 @@ class FeedManager(models.Manager["Feed"]):
         articles = [
             article for article in feed_metadata.articles if article.link not in deleted_feed_links
         ]
-        created_articles = Article.objects.update_or_create_from_articles_list(
+        save_result = Article.objects.save_from_list_of_data(
             feed.user,
             articles,
             feed.tags.all(),
@@ -298,7 +298,7 @@ class FeedManager(models.Manager["Feed"]):
             feed=feed,
         )
         FeedArticle.objects.bulk_create(
-            [FeedArticle(article=article, feed=feed) for article in created_articles],
+            [FeedArticle(article=result.article, feed=feed) for result in save_result],
             ignore_conflicts=True,
         )
 

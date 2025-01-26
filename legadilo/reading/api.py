@@ -20,11 +20,10 @@ from typing import Annotated, Self
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import aget_object_or_404
+from django.urls import reverse
 from ninja import ModelSchema, Router, Schema
-from ninja.pagination import paginate
 from pydantic import Field, model_validator
 
-from config import settings
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.reading.services.article_fetching import (
@@ -52,6 +51,14 @@ class OutTagSchema(ModelSchema):
 
 class OutArticleSchema(ModelSchema):
     tags: list[OutTagSchema] = Field(alias="tags_to_display")
+    details_url: str
+
+    @staticmethod
+    def resolve_details_url(obj, context) -> str:
+        url = reverse(
+            "reading:article_details", kwargs={"article_id": obj.id, "article_slug": obj.slug}
+        )
+        return context["request"].build_absolute_uri(url)
 
     class Meta:
         model = Article
@@ -81,7 +88,7 @@ class ArticleCreation(Schema):
 
 @reading_api_router.post(
     "/articles/",
-    response={HTTPStatus.CREATED: OutArticleSchema},
+    response={HTTPStatus.CREATED: OutArticleSchema, HTTPStatus.OK: OutArticleSchema},
     url_name="create_article",
     summary="Create a new article",
 )
@@ -99,12 +106,16 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     tags = await sync_to_async(Tag.objects.get_or_create_from_list)(request.auth, payload.tags)
     article_data = article_data.model_copy(update={"tags": ()})
 
-    articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
+    save_results = await sync_to_async(Article.objects.save_from_list_of_data)(
         request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
-    return HTTPStatus.CREATED, await Article.objects.get_queryset().for_api().aget(
-        id=articles[0].id
-    )
+    save_result = save_results[0]
+    article = await Article.objects.get_queryset().for_api().aget(id=save_result.article.id)
+
+    if save_result.was_created:
+        return HTTPStatus.CREATED, article
+
+    return HTTPStatus.OK, article
 
 
 @reading_api_router.get(
@@ -174,10 +185,19 @@ async def delete_article_view(request: AuthenticatedApiRequest, article_id: int)
     return HTTPStatus.NO_CONTENT, None
 
 
-@reading_api_router.get(
-    "/tags/", response=list[OutTagSchema], url_name="list_tags", summary="List tags"
-)
-# Let's get all tags.
-@paginate(page_size=settings.NINJA_PAGINATION_MAX_LIMIT * 4)
-async def list_tags_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
-    return Tag.objects.get_queryset().for_user(request.auth)
+@reading_api_router.get("/tags/", url_name="list_tags", summary="List tags")
+async def list_tags_view(request: AuthenticatedApiRequest):
+    choices, hierarchy = await sync_to_async(Tag.objects.get_all_choices_with_hierarchy)(
+        request.auth
+    )
+
+    tags = []
+
+    for slug, title in choices:
+        tags.append({
+            "slug": slug,
+            "title": title,
+            "sub_tags": hierarchy.get(slug, []),
+        })
+
+    return {"count": len(tags), "items": tags}

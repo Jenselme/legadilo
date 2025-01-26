@@ -124,6 +124,27 @@ const hideLoader = () => {
   document.querySelector("#loading-indicator-container").style.display = "none";
 };
 
+const createTagInstance = (element, tags, selectedTags) => {
+  const tagsHierarchy = tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.sub_tags }), {});
+
+  return Tags.init(element, {
+    allowNew: true,
+    allowClear: true,
+    items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
+    selected: selectedTags.map((tag) => tag.slug),
+    onSelectItem(item, instance) {
+      if (!Array.isArray(tagsHierarchy[item.value])) {
+        return;
+      }
+
+      const alreadyAddedItems = instance.getSelectedValues();
+      tagsHierarchy[item.value]
+        .filter((tag) => !alreadyAddedItems.includes(tag.slug))
+        .forEach((tag) => instance.addItem(tag.title, tag.slug));
+    },
+  });
+};
+
 const displayArticle = (article, tags) => {
   document.querySelector("#article-container").style.display = "block";
 
@@ -131,12 +152,7 @@ const displayArticle = (article, tags) => {
   document.querySelector("#saved-article-reading-time").value = article.reading_time;
 
   if (articleTagsInstance === null) {
-    articleTagsInstance = Tags.init("#saved-article-tags", {
-      allowNew: true,
-      allowClear: true,
-      items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
-      selected: article.tags.map((tag) => tag.slug),
-    });
+    articleTagsInstance = createTagInstance("#saved-article-tags", tags, article.tags);
   }
 
   if (article.is_read) {
@@ -160,6 +176,8 @@ const displayArticle = (article, tags) => {
     document.querySelector("#mark-article-as-for-later").style.display = "block";
     document.querySelector("#unmark-article-as-for-later").style.display = "none";
   }
+
+  document.querySelector("#open-article-details").href = article.details_url;
 };
 
 const hideArticle = () => {
@@ -172,6 +190,8 @@ const displayFeed = (feed, tags, categories) => {
 
   document.querySelector("#feed-refresh-delay").value = feed.refresh_delay;
   document.querySelector("#feed-article-retention-time").value = feed.article_retention_time;
+
+  document.querySelector("#open-feed-details").href = feed.details_url;
 
   const categorySelector = document.querySelector("#feed-category");
   // Clean all existing choices.
@@ -189,12 +209,7 @@ const displayFeed = (feed, tags, categories) => {
   categorySelector.value = feed.category ? feed.category.id : "";
 
   if (feedTagsInstance === null) {
-    feedTagsInstance = Tags.init("#feed-tags", {
-      allowNew: true,
-      allowClear: true,
-      items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
-      selected: feed.tags.map((tag) => tag.slug),
-    });
+    feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
   }
 
   document.querySelector("#update-feed-form").addEventListener("submit", (event) => {

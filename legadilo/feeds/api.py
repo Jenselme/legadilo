@@ -22,6 +22,7 @@ from typing import Annotated, Self
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError, transaction
 from django.shortcuts import aget_object_or_404
+from django.urls import reverse
 from ninja import ModelSchema, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
@@ -61,6 +62,12 @@ class OutFeedCategorySchema(ModelSchema):
 class OutFeedSchema(ModelSchema):
     category: OutFeedCategorySchema | None
     tags: list[OutTagSchema]
+    details_url: str
+
+    @staticmethod
+    def resolve_details_url(obj, context) -> str:
+        url = reverse("feeds:feed_articles", kwargs={"feed_id": obj.id, "feed_slug": obj.slug})
+        return context["request"].build_absolute_uri(url)
 
     class Meta:
         model = Feed

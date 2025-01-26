@@ -27,6 +27,7 @@ from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
+from legadilo.utils.time_utils import utcdt, utcnow
 
 
 @pytest.mark.django_db
@@ -124,15 +125,16 @@ class TestAddArticle:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
+        article = Article.objects.get()
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["WARNING"],
-                message="The article 'On the 3 musketeers' was added but we failed to fetch its "
-                "content. Please check that it really points to an article.",
+                message=f'The article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'  # noqa: E501
+                f"On the 3 musketeers</a>' was added but we failed to fetch its content. "
+                "Please check that it really points to an article.",
             )
         ]
-        assert Article.objects.count() == 1
 
     def test_invalid_form(self, logged_in_sync_client):
         response = logged_in_sync_client.post(self.url, {"url": "Some trash"})
@@ -147,16 +149,50 @@ class TestAddArticle:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
+        article = Article.objects.get()
         messages = list(get_messages(response.wsgi_request))
-        assert Article.objects.count() == 1
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["WARNING"],
                 message="Failed to fetch the article. Please check that the URL you entered is "
                 "correct, that the article exists and is accessible. "
-                "We added its URL directly.",
+                "We added its URL directly. "
+                f'Go <a href="/reading/articles/{article.id}-https-www-example-com-posts-en-1-super-article/'  # noqa: E501
+                '">there</a> to access it.',
             )
         ]
+
+    def test_add_already_saved(self, user, logged_in_sync_client, httpx_mock):
+        existing_article = ArticleFactory(
+            user=user,
+            link=self.article_url,
+            read_at=utcnow(),
+            title="Existing",
+            reading_time=10,
+            content="Existing content",
+            updated_at=utcdt(2024, 3, 1),
+        )
+        httpx_mock.add_response(text=self.article_content, url=existing_article.link)
+
+        response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.template_name == "reading/add_article.html"
+        article = Article.objects.get()
+        messages = list(get_messages(response.wsgi_request))
+        assert messages == [
+            Message(
+                level=DEFAULT_LEVELS["INFO"],
+                message=f'Article \'<a href="/reading/articles/{article.id}-{article.slug}/">'
+                f"{article.title}</a>' already existed.",
+            )
+        ]
+        assert article.read_at == existing_article.read_at
+        assert article.title == existing_article.title
+        assert article.slug == existing_article.slug
+        assert article.reading_time == existing_article.reading_time
+        # Only content must be updated.
+        assert article.content != existing_article.content
 
     def test_fetch_failure_link_already_saved(self, user, logged_in_sync_client, httpx_mock):
         article = ArticleFactory(user=user)
@@ -190,12 +226,15 @@ class TestAddArticle:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
+        article = Article.objects.get()
         messages = list(get_messages(response.wsgi_request))
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["WARNING"],
                 message="The article you are trying to fetch is too big and cannot be processed. "
-                "We added its URL directly.",
+                "We added its URL directly. "
+                f'Go <a href="/reading/articles/{article.id}-https-www-example-com-posts-en-1-super-article/"'  # noqa: E501
+                ">there</a> to access it.",
             )
         ]
 
@@ -244,11 +283,11 @@ class TestRefetchArticleView:
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/reading/articles/{self.article.id}-on-the-3-musketeers/"
+        assert response["Location"] == f"/reading/articles/{self.article.id}-{self.article.slug}/"
         assert Article.objects.count() == 1
         article = Article.objects.get()
-        assert article.title == "On the 3 musketeers"
-        assert article.slug == "on-the-3-musketeers"
+        assert article.title == self.article.title
+        assert article.slug == self.article.slug
         assert article.summary.startswith("I just wrote a new book")
         assert "Lorem ipsum" in article.content
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
@@ -270,5 +309,5 @@ class TestRefetchArticleView:
         assert response.status_code == HTTPStatus.FOUND
         assert (
             response["Location"]
-            == f"/reading/articles/{self.article.id}-www-example-com/?from_url=%2Ftoto%2F"
+            == f"/reading/articles/{self.article.id}-initial-slug/?from_url=%2Ftoto%2F"
         )

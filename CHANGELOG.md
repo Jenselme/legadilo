@@ -2,10 +2,18 @@
 
 ## Unreleased
 
+## 25.01.1
+
 - Correct footer background on dark mode.
 - Prevent articles to be read on scroll before initial scroll to top on page load.
 - Force re-authentication before managing tokens.
 - Allow users to change their passwords.
+- Browser extension:
+  - Ask before resetting options.
+  - Can open articles and feeds details.
+  - Prevent extension popup to become too wide.
+  - Can test the options on the settings page.
+  - Support tag hierarchy.
 
 ## 24.12.6
 

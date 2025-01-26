@@ -25,7 +25,7 @@ from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt
+from legadilo.utils.time_utils import utcdt, utcnow
 
 
 def _prepare_article_for_serialization(data: dict[str, Any], article: Article) -> dict[str, Any]:
@@ -35,12 +35,14 @@ def _prepare_article_for_serialization(data: dict[str, Any], article: Article) -
     assert data["slug"] == article.slug
     assert data["external_article_id"] == article.external_article_id
     assert data["link"] == article.link
+    assert data["details_url"] == f"http://testserver/reading/articles/{article.id}-{article.slug}/"
 
     data["id"] = 1
     data["title"] = "Article title"
     data["slug"] = "article-slug"
     data["external_article_id"] = "external-article-id"
     data["link"] = "https://example.com/articles/article.html"
+    data["details_url"] = "http://testserver/reading/articles/1-article-slug/"
 
     return data
 
@@ -166,6 +168,36 @@ class TestCreateArticleView:
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
         )
+
+    def test_try_to_create_existing_article(
+        self, user, django_assert_num_queries, logged_in_sync_client, mocker
+    ):
+        existing_article = ArticleFactory(
+            user=user, title="Existing", reading_time=14, link=self.article_link, read_at=utcnow()
+        )
+        mocker.patch(
+            "legadilo.reading.api.get_article_from_url",
+            return_value=ArticleDataFactory(
+                title="Fetched article",
+                link=self.article_link,
+                content="Blabla for reading time " * 50,
+            ),
+        )
+
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                self.url, {"link": self.article_link}, content_type="application/json"
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.link == self.article_link
+        assert article.table_of_content == []
+        assert article.title == existing_article.title
+        assert article.slug == existing_article.slug
+        assert article.reading_time == existing_article.reading_time
+        assert article.read_at == existing_article.read_at
 
 
 @pytest.mark.django_db
@@ -345,10 +377,14 @@ class TestListTagsView:
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED
 
-    def test_list(self, other_user, logged_in_sync_client, django_assert_num_queries, snapshot):
+    def test_list(
+        self, user, other_user, logged_in_sync_client, django_assert_num_queries, snapshot
+    ):
         TagFactory(user=other_user, title="Some tag")
+        tag_with_sub_tag = TagFactory(user=user, title="With sub tags")
+        tag_with_sub_tag.sub_tags.add(self.tag)
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(6):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK

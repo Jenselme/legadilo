@@ -71,6 +71,13 @@ SEARCH_VECTOR = (
 
 
 @dataclass(frozen=True)
+class SaveArticleResult:
+    article: Article
+    was_updated: bool = False
+    was_created: bool = False
+
+
+@dataclass(frozen=True)
 class ArticleTagSearch:
     filter_type: constants.ReadingListTagFilterType
     tag_id: int
@@ -460,7 +467,7 @@ class ArticleManager(models.Manager["Article"]):
         return ArticleQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     @transaction.atomic()
-    def update_or_create_from_articles_list(
+    def save_from_list_of_data(
         self,
         user: User,
         articles_data: list[ArticleData],
@@ -468,7 +475,7 @@ class ArticleManager(models.Manager["Article"]):
         *,
         source_type: constants.ArticleSourceType,
         force_update: bool = False,
-    ) -> list[Article]:
+    ) -> list[SaveArticleResult]:
         if len(articles_data) == 0:
             return []
 
@@ -478,8 +485,8 @@ class ArticleManager(models.Manager["Article"]):
             .filter(user=user, link__in=[article_data.link for article_data in articles_data])
             .select_related("user", "user__settings")
         }
-        articles_to_create = []
-        articles_to_update = []
+        articles_to_create: list[SaveArticleResult] = []
+        articles_to_update: list[SaveArticleResult] = []
         seen_links = set()
         for article_data in articles_data:
             if article_data.link in seen_links:
@@ -496,44 +503,47 @@ class ArticleManager(models.Manager["Article"]):
                         # We force the source type to manual if we manually add it so prevent any
                         # cleanup later one.
                         article_to_update.main_source_type = constants.ArticleSourceType.MANUAL
-                    article_to_update.read_at = None
                     was_updated = True
                     article_to_update.obj_updated_at = utcnow()
-                if was_updated:
-                    articles_to_update.append(article_to_update)
+                articles_to_update.append(
+                    SaveArticleResult(article=article_to_update, was_updated=was_updated)
+                )
             else:
+                article_to_create = self.model(
+                    user=user,
+                    external_article_id=article_data.external_article_id,
+                    title=article_data.title,
+                    slug=slugify(article_data.title),
+                    summary=article_data.summary,
+                    content=article_data.content,
+                    table_of_content=article_data.table_of_content,
+                    reading_time=get_nb_words_from_html(article_data.content)
+                    // user.settings.default_reading_time,
+                    authors=article_data.authors,
+                    contributors=article_data.contributors,
+                    external_tags=article_data.tags,
+                    link=article_data.link,
+                    preview_picture_url=article_data.preview_picture_url,
+                    preview_picture_alt=article_data.preview_picture_alt,
+                    published_at=article_data.published_at,
+                    updated_at=article_data.updated_at,
+                    main_source_type=source_type,
+                    main_source_title=article_data.source_title,
+                    language=article_data.language,
+                    annotations=article_data.annotations,
+                    read_at=article_data.read_at,
+                    is_favorite=article_data.is_favorite,
+                )
                 articles_to_create.append(
-                    self.model(
-                        user=user,
-                        external_article_id=article_data.external_article_id,
-                        title=article_data.title,
-                        slug=slugify(article_data.title),
-                        summary=article_data.summary,
-                        content=article_data.content,
-                        table_of_content=article_data.table_of_content,
-                        reading_time=get_nb_words_from_html(article_data.content)
-                        // user.settings.default_reading_time,
-                        authors=article_data.authors,
-                        contributors=article_data.contributors,
-                        external_tags=article_data.tags,
-                        link=article_data.link,
-                        preview_picture_url=article_data.preview_picture_url,
-                        preview_picture_alt=article_data.preview_picture_alt,
-                        published_at=article_data.published_at,
-                        updated_at=article_data.updated_at,
-                        main_source_type=source_type,
-                        main_source_title=article_data.source_title,
-                        language=article_data.language,
-                        annotations=article_data.annotations,
-                        read_at=article_data.read_at,
-                        is_favorite=article_data.is_favorite,
-                    )
+                    SaveArticleResult(article=article_to_create, was_created=True)
                 )
 
-        self.bulk_create(articles_to_create, unique_fields=["user", "link"])
+        self.bulk_create(
+            [result.article for result in articles_to_create], unique_fields=["user", "link"]
+        )
 
         self.bulk_update(
-            articles_to_update,
+            [result.article for result in articles_to_update if result.was_updated],
             fields=[
                 "title",
                 "slug",
@@ -553,7 +563,12 @@ class ArticleManager(models.Manager["Article"]):
             ],
         )
 
-        all_articles = [*articles_to_create, *existing_links_to_articles.values()]
+        all_articles = []
+        all_results = []
+        for result in chain(articles_to_create, articles_to_update):
+            all_articles.append(result.article)
+            all_results.append(result)
+
         ArticleTag.objects.associate_articles_with_tags(
             all_articles,
             tags,
@@ -562,7 +577,7 @@ class ArticleManager(models.Manager["Article"]):
             else constants.TaggingReason.ADDED_MANUALLY,
         )
 
-        return all_articles
+        return all_results
 
     @transaction.atomic()
     def create_invalid_article(
@@ -837,16 +852,16 @@ class Article(models.Model):
             return False
 
         if is_more_recent or force_update:
-            self.title = article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH] or self.title
-            self.slug = (
-                slugify(article_data.title[: constants.ARTICLE_TITLE_MAX_LENGTH]) or self.slug
-            )
+            # We don't update the title (nor the slug) automatically since it could have been
+            # updated manually. It's also useful to spot an article (and avoids weird redirection
+            # on refresh).
             self.summary = article_data.summary or self.summary
             self.content = article_data.content or self.content
             self.table_of_content = article_data.table_of_content or self.table_of_content
-            self.reading_time = (
+            # Reading time could have been updated manually. Let's update it only if it's 0.
+            self.reading_time = self.reading_time or (
                 get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
-            ) or self.reading_time
+            )
             self.preview_picture_url = article_data.preview_picture_url or self.preview_picture_alt
             self.preview_picture_alt = article_data.preview_picture_alt or self.preview_picture_alt
             # We create the deduplicated list with dict.fromkeys and not sets to preserve the

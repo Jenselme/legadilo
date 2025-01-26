@@ -8,6 +8,27 @@ export const DEFAULT_OPTIONS = {
   accessToken: "",
 };
 
+export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSecret }) => {
+  try {
+    const resp = await fetch(`${instanceUrl}/api/users/tokens/`, {
+      "Content-Type": "application/json",
+      method: "POST",
+      body: JSON.stringify({
+        email: userEmail,
+        application_token_uuid: tokenId,
+        application_token_secret: tokenSecret,
+      }),
+    });
+    await resp.json();
+
+    return resp.status === 200;
+  } catch (error) {
+    console.error(error);
+
+    return false;
+  }
+};
+
 export const saveArticle = async ({ link, title, content }) => {
   if (!/^https?:\/\//.test(link)) {
     throw new Error("Invalid url");

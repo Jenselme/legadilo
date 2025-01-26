@@ -191,7 +191,7 @@ async def _import_article(user, feed, row):
         read_at=safe_datetime_parse(row["article_read_at"]),
         is_favorite=_get_bool(row["article_is_favorite"]),
     )
-    articles = await sync_to_async(Article.objects.update_or_create_from_articles_list)(
+    save_results = await sync_to_async(Article.objects.save_from_list_of_data)(
         user=user,
         articles_data=[article_data],
         tags=[],
@@ -201,7 +201,7 @@ async def _import_article(user, feed, row):
     )
 
     if feed:
-        await FeedArticle.objects.aget_or_create(feed=feed, article=articles[0])
+        await FeedArticle.objects.aget_or_create(feed=feed, article=save_results[0].article)
 
     return True
 

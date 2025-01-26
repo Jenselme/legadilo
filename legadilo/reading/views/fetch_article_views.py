@@ -34,6 +34,7 @@ from pydantic import ValidationError as PydanticValidationError
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
+from legadilo.reading.models.article import SaveArticleResult
 from legadilo.reading.services.article_fetching import (
     ArticleTooBigError,
     get_article_from_url,
@@ -76,16 +77,8 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
     status = HTTPStatus.OK
 
     if request.method == "POST":
-        status, form = await _handle_save(
-            request,
-            tag_choices,
-            success_message=_("Article '<a href=\"{}\">{}</a>' successfully added!"),
-            no_content_message=_(
-                "The article '%s' was added but we failed to fetch its content. "
-                "Please check that it really points to an article."
-            ),
-            force_update=False,
-        )
+        status, form, save_result = await _handle_save(request, tag_choices, force_update=False)
+        _handle_add_article_save_result(request, save_result)
 
     return TemplateResponse(
         request,
@@ -98,20 +91,60 @@ async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateRespons
     )
 
 
+def _handle_add_article_save_result(
+    request: AuthenticatedHttpRequest, save_result: SaveArticleResult | None
+):
+    if not save_result:
+        return
+
+    details_url = str(article_details_url(save_result.article))
+    sanitized_title = mark_safe(save_result.article.title)  # noqa: S308 valid use of markup safe.
+
+    if not save_result.article.content:
+        messages.warning(
+            request,
+            format_html(
+                str(
+                    _(
+                        "The article '<a href=\"{}\">{}</a>' was added but we failed to fetch its content. "  # noqa: E501
+                        "Please check that it really points to an article."
+                    )
+                ),
+                details_url,
+                sanitized_title,
+            ),
+        )
+    elif save_result.was_created:
+        messages.success(
+            request,
+            format_html(
+                str(_("Article '<a href=\"{}\">{}</a>' successfully added!")),
+                details_url,
+                sanitized_title,
+            ),
+        )
+    else:
+        messages.info(
+            request,
+            format_html(
+                str(_("Article '<a href=\"{}\">{}</a>' already existed.")),
+                details_url,
+                sanitized_title,
+            ),
+        )
+
+
 @require_http_methods(["POST"])  # type: ignore[type-var]
 @login_required
 async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
     article = await aget_object_or_404(Article, link=request.POST.get("url"), user=request.user)
-    await _handle_save(
+    _status, _form, save_result = await _handle_save(
         request,
         [],
-        success_message=_("Article '<a href=\"{}\">{}</a>' successfully re-fetched!"),
-        no_content_message=_(
-            "The article '%s' was re-fetched but we failed to fetch its content. "
-            "Please check that it really points to an article."
-        ),
         force_update=True,
     )
+
+    _handle_refetch_article_save_result(request, save_result)
 
     await article.arefresh_from_db()
     _url, from_url = pop_query_param(
@@ -128,17 +161,33 @@ async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpRespons
     return HttpResponseRedirect(new_article_url)
 
 
+def _handle_refetch_article_save_result(
+    request: AuthenticatedHttpRequest, save_result: SaveArticleResult | None
+):
+    if not save_result:
+        return
+
+    if not save_result.article.content:
+        messages.warning(
+            request,
+            _(
+                "The article was re-fetched but we failed to fetch its content. "
+                "Please check that it really points to an article."
+            ),
+        )
+    else:
+        messages.success(request, _("The article was successfully re-fetched!"))
+
+
 async def _handle_save(
     request: AuthenticatedHttpRequest,
     tag_choices: list[tuple[str, str]],
     *,
-    success_message,
-    no_content_message,
     force_update: bool,
-):
+) -> tuple[HTTPStatus, FetchArticleForm, SaveArticleResult | None]:
     form = FetchArticleForm(request.POST, tag_choices=tag_choices)
     if not form.is_valid():
-        return HTTPStatus.BAD_REQUEST, form
+        return HTTPStatus.BAD_REQUEST, form, None
 
     tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
         request.user, form.cleaned_data["tags"]
@@ -146,8 +195,8 @@ async def _handle_save(
     article_link = form.cleaned_data["url"]
     try:
         article_data = await get_article_from_url(article_link)
-        article = (
-            await sync_to_async(Article.objects.update_or_create_from_articles_list)(
+        save_result = (
+            await sync_to_async(Article.objects.save_from_list_of_data)(
                 request.user,
                 [article_data],
                 tags,
@@ -156,7 +205,7 @@ async def _handle_save(
             )
         )[0]
     except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
-        article, created = await sync_to_async(Article.objects.create_invalid_article)(
+        invalid_article, created = await sync_to_async(Article.objects.create_invalid_article)(
             request.user,
             article_link,
             tags,
@@ -166,21 +215,34 @@ async def _handle_save(
         if created and isinstance(e, httpx.HTTPError):
             messages.warning(
                 request,
-                _(
-                    "Failed to fetch the article. Please check that the URL you entered is "
-                    "correct, that the article exists and is accessible. We added its URL directly."
+                format_html(
+                    str(
+                        _(
+                            "Failed to fetch the article. Please check that the URL you entered is "
+                            "correct, that the article exists and is accessible. "
+                            "We added its URL directly. "
+                            'Go <a href="{}">there</a> to access it.'
+                        )
+                    ),
+                    str(article_details_url(invalid_article)),
                 ),
             )
-            return HTTPStatus.CREATED, form
+            return HTTPStatus.CREATED, form, None
         if created:
             messages.warning(
                 request,
-                _(
-                    "The article you are trying to fetch is too big and cannot be processed. "
-                    "We added its URL directly."
+                format_html(
+                    str(
+                        _(
+                            "The article you are trying to fetch is too big and cannot be processed. "  # noqa: E501
+                            "We added its URL directly. "
+                            'Go <a href="{}">there</a> to access it.'
+                        )
+                    ),
+                    str(article_details_url(invalid_article)),
                 ),
             )
-            return HTTPStatus.CREATED, form
+            return HTTPStatus.CREATED, form, None
         messages.error(
             request,
             _(
@@ -189,19 +251,10 @@ async def _handle_save(
                 "please check its link."
             ),
         )
-        return HTTPStatus.BAD_REQUEST, form
+        return HTTPStatus.BAD_REQUEST, form, None
 
     # Empty form after success
     form = FetchArticleForm(tag_choices=tag_choices)
-    sanitized_title = mark_safe(article.title)  # noqa: S308 valid use of markup safe.
-    if not article.content:
-        messages.warning(
-            request,
-            no_content_message % sanitized_title,
-        )
-    else:
-        messages.success(
-            request,
-            format_html(success_message, str(article_details_url(article)), sanitized_title),
-        )
-    return HTTPStatus.CREATED, form
+    status = HTTPStatus.CREATED
+
+    return status, form, save_result
