@@ -169,13 +169,18 @@ class TagManager(models.Manager["Tag"]):
 
         return [*existing_tags, *tags_to_create]
 
-    def list_for_admin(self, user: User) -> list[Tag]:
-        return list(
+    def list_for_admin(self, user: User, searched_text: str = "") -> list[Tag]:
+        qs = (
             self.get_queryset()
             .for_user(user)
             .annotate(annot_articles_count=models.Count("articles"))
             .order_by("title")
         )
+
+        if len(searched_text) > 3:  # noqa: PLR2004 Magic value used in comparison
+            qs = qs.filter(title__icontains=searched_text)
+
+        return list(qs)
 
 
 class Tag(models.Model):
