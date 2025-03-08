@@ -75,6 +75,7 @@ dev = [
     "types-Markdown >= 3.7.0.20240822",
     "mypy >= 1.13.0",  # https://github.com/python/mypy
     "django-stubs[compatible-mypy] >= 5.1.1",  # https://github.com/typeddjango/django-stubs
+    "types-beautifulsoup4 >= 4.12",
 ]
 prod = [
     "sentry-sdk[django] >= 2.18.0",
@@ -236,6 +237,10 @@ warn_redundant_casts = true
 warn_unused_configs = true
 plugins = [
     "mypy_django_plugin.main",
+]
+exclude = [
+    # mypy gets messed up when factories are used instead of models instances.
+    "test.*\\.py$"
 ]
 
 [[tool.mypy.overrides]]
