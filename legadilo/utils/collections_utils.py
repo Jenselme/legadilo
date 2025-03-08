@@ -17,12 +17,10 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterable, Iterable
-from typing import Any, TypeVar
+from typing import Any
 
 from django.core.serializers.json import DjangoJSONEncoder
 from pydantic import BaseModel as BaseSchema
-
-T = TypeVar("T")
 
 
 class CustomJsonEncoder(DjangoJSONEncoder):
@@ -33,11 +31,11 @@ class CustomJsonEncoder(DjangoJSONEncoder):
         return super().default(o)
 
 
-def min_or_none(collection: Iterable[T]) -> T | None:
+def min_or_none[T](collection: Iterable[T]) -> T | None:
     return _select_item_from_collection(min, collection)
 
 
-def _select_item_from_collection(
+def _select_item_from_collection[T](
     comparison_fn,
     collection: Iterable[T],
 ) -> T | None:
@@ -48,17 +46,17 @@ def _select_item_from_collection(
     return comparison_fn(comparable)
 
 
-def max_or_none(
+def max_or_none[T](
     collection: Iterable[T],
 ) -> T | None:
     return _select_item_from_collection(max, collection)
 
 
-async def alist(collection: AsyncIterable[T]) -> list[T]:
+async def alist[T](collection: AsyncIterable[T]) -> list[T]:
     return [item async for item in collection]
 
 
-async def aset(collection: AsyncIterable[T]) -> set[T]:
+async def aset[T](collection: AsyncIterable[T]) -> set[T]:
     output = set()
     async for item in collection:
         output.add(item)

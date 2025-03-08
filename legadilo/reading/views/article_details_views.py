@@ -71,7 +71,7 @@ def article_details_view(
         slug=article_slug,
         user=request.user,
     )
-    tag_choices = Tag.objects.get_all_choices(request.user)
+    tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
     if request.method == "POST":
         status, edit_article_form, article = _handle_update(request, article, tag_choices)
     else:
@@ -97,6 +97,7 @@ def article_details_view(
             "edit_article_form": edit_article_form,
             "comment_article_form": CommentArticleForm(),
             "from_url": get_from_url_for_article_details(request, request.GET),
+            "tags_hierarchy": hierarchy,
         },
         status=status,
     )

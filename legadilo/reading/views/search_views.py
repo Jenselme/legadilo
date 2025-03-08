@@ -37,6 +37,7 @@ from legadilo.reading.models.article import (
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.security import full_sanitize
 
+from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import User
 from ...utils.collections_utils import alist, aset
 from ...utils.validators import is_url_valid
@@ -45,7 +46,7 @@ from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
 
 class SearchForm(forms.Form):
     # Main fields.
-    q = forms.CharField(required=True, min_length=4, label=_("Search query"))
+    q = forms.CharField(required=True, min_length=SEARCHED_TEXT_MIN_LENGTH, label=_("Search query"))
     search_type = forms.ChoiceField(
         required=False,
         choices=constants.ArticleSearchType.choices,
@@ -125,7 +126,8 @@ class SearchForm(forms.Form):
         q = full_sanitize(q)
         if len(q) < self.fields["q"].min_length:  # type: ignore[attr-defined]
             raise ValidationError(
-                "You must at least enter 3 characters", code="q-too-short-after-cleaning"
+                f"You must at least enter {SEARCHED_TEXT_MIN_LENGTH} characters",
+                code="q-too-short-after-cleaning",
             )
 
         return q

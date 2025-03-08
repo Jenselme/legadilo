@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 25.03.1
+
+- Can filter tags in tags admin.
+- Enable tags hierarchy when updating an article on the details page.
+
 ## 25.01.1
 
 - Correct footer background on dark mode.

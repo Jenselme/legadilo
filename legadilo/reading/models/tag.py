@@ -25,6 +25,7 @@ from django.db import models, transaction
 from django.db.models.functions import Coalesce
 from slugify import slugify
 
+from legadilo.constants import SEARCHED_TEXT_MIN_LENGTH
 from legadilo.core import constants as core_constants
 from legadilo.core.forms import FormChoices
 from legadilo.reading import constants
@@ -169,13 +170,18 @@ class TagManager(models.Manager["Tag"]):
 
         return [*existing_tags, *tags_to_create]
 
-    def list_for_admin(self, user: User) -> list[Tag]:
-        return list(
+    def list_for_admin(self, user: User, searched_text: str = "") -> list[Tag]:
+        qs = (
             self.get_queryset()
             .for_user(user)
             .annotate(annot_articles_count=models.Count("articles"))
             .order_by("title")
         )
+
+        if len(searched_text) > SEARCHED_TEXT_MIN_LENGTH:
+            qs = qs.filter(title__icontains=searched_text)
+
+        return list(qs)
 
 
 class Tag(models.Model):

@@ -66,7 +66,7 @@ class TestSubTagMappingManager:
 class TestTagManager:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
-        self.tag1 = TagFactory(user=user)
+        self.tag1 = TagFactory(user=user, title="Super tag for search")
         self.tag2 = TagFactory(user=user)
         self.existing_tag_with_spaces = TagFactory(
             user=user, title="Existing tag with spaces", slug="existing-tag-with-spaces"
@@ -158,6 +158,13 @@ class TestTagManager:
         assert all_tags[0].annot_articles_count == 0  # type: ignore[attr-defined]
         assert all_tags[1].annot_articles_count == 1  # type: ignore[attr-defined]
         assert all_tags[2].annot_articles_count == 0  # type: ignore[attr-defined]
+
+    def test_list_for_admin_with_search(self, user):
+        all_tags = Tag.objects.list_for_admin(user, searched_text="seArcH")
+
+        assert all_tags == [
+            self.tag1,
+        ]
 
 
 @pytest.mark.django_db

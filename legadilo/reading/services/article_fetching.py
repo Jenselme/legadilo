@@ -189,8 +189,8 @@ async def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
             )
             if (
                 (http_equiv_refresh := soup.find("meta", attrs={"http-equiv": "refresh"}))
-                and (http_equiv_refresh_value := http_equiv_refresh.get("content"))
-                and (http_equiv_refresh_url := _parse_http_equiv_refresh(http_equiv_refresh_value))
+                and (http_equiv_refresh_value := http_equiv_refresh.get("content"))  # type: ignore[union-attr]
+                and (http_equiv_refresh_url := _parse_http_equiv_refresh(http_equiv_refresh_value))  # type: ignore[arg-type]
             ):
                 url = http_equiv_refresh_url
                 continue
@@ -228,7 +228,7 @@ def _build_article_data_from_soup(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
         title=forced_title or _get_title(soup),
-        summary=_get_summary(soup, content),
+        summary=_get_summary(soup),
         content=content,
         authors=tuple(_get_authors(soup)),
         contributors=(),
@@ -242,7 +242,7 @@ def _build_article_data_from_soup(
     )
 
 
-def _get_title(soup: BeautifulSoup) -> str:
+def _get_title(soup) -> str:
     title = ""
     if (og_title := soup.find("meta", attrs={"property": "og:title"})) and og_title.get("content"):
         title = og_title.get("content")
@@ -262,7 +262,7 @@ def _get_title(soup: BeautifulSoup) -> str:
     return title
 
 
-def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
+def _get_site_title(fetched_url: str, soup) -> str:
     site_title = urlparse(fetched_url).netloc
     if (og_site_name := soup.find("meta", attrs={"property": "og:site_name"})) and og_site_name.get(
         "content"
@@ -274,7 +274,7 @@ def _get_site_title(fetched_url: str, soup: BeautifulSoup) -> str:
     return site_title
 
 
-def _get_summary(soup: BeautifulSoup, content: str) -> str:
+def _get_summary(soup) -> str:
     summary = ""
     if (
         og_description := soup.find("meta", attrs={"property": "og:description"})
@@ -302,7 +302,7 @@ def _get_fallback_summary_from_content(content: str) -> str:
     )
 
 
-def _get_content(soup: BeautifulSoup) -> str:
+def _get_content(soup) -> str:
     articles = soup.find_all("article")
     article_content = None
     if len(articles) > 1:
@@ -323,7 +323,7 @@ def _get_content(soup: BeautifulSoup) -> str:
     return str(article_content)
 
 
-def _parse_multiple_articles(soup: BeautifulSoup):
+def _parse_multiple_articles(soup):
     for article in soup.find_all(["article", "section"]):
         attrs = set()
         if article_id := article.get("id"):
@@ -350,12 +350,12 @@ def _parse_multiple_articles(soup: BeautifulSoup):
     return soup.find("article")
 
 
-def _extract_tag_from_content(soup: BeautifulSoup, tag_name: str):
+def _extract_tag_from_content(soup, tag_name: str):
     for tag in soup.find_all(tag_name):
         tag.extract()
 
 
-def _get_authors(soup: BeautifulSoup) -> list[str]:
+def _get_authors(soup) -> list[str]:
     authors = []
     if (meta_author := soup.find("meta", {"name": "author"})) and meta_author.get("content"):
         authors = [meta_author.get("content")]
@@ -363,7 +363,7 @@ def _get_authors(soup: BeautifulSoup) -> list[str]:
     return authors
 
 
-def _get_tags(soup: BeautifulSoup) -> list[str]:
+def _get_tags(soup) -> list[str]:
     tags = set()
 
     if article_tags := soup.find_all("meta", attrs={"property": "article:tag"}):
@@ -388,7 +388,7 @@ def parse_tags_list(tags_str: str) -> set[str]:
     return parsed_tags
 
 
-def _get_link(fetched_url: str, soup: BeautifulSoup) -> str:
+def _get_link(fetched_url: str, soup) -> str:
     link = fetched_url
     if (canonical_link := soup.find("link", {"rel": "canonical"})) and canonical_link.get("href"):
         link = canonical_link.get("href")
@@ -399,7 +399,7 @@ def _get_link(fetched_url: str, soup: BeautifulSoup) -> str:
     return fetched_url
 
 
-def _get_preview_picture_url(fetched_url, soup: BeautifulSoup) -> str:
+def _get_preview_picture_url(fetched_url, soup) -> str:
     preview_picture_url = ""
 
     if (og_image := soup.find("meta", attrs={"property": "og:image"})) and (
@@ -432,7 +432,7 @@ def _get_preview_picture_url(fetched_url, soup: BeautifulSoup) -> str:
     return preview_picture_url
 
 
-def _get_published_at(soup: BeautifulSoup) -> datetime | None:
+def _get_published_at(soup) -> datetime | None:
     published_at = None
     if (
         article_published_time := soup.find("meta", attrs={"property": "article:published_time"})
@@ -442,7 +442,7 @@ def _get_published_at(soup: BeautifulSoup) -> datetime | None:
     return published_at
 
 
-def _get_updated_at(soup: BeautifulSoup) -> datetime | None:
+def _get_updated_at(soup) -> datetime | None:
     updated_at = None
     if (
         article_modified_time := soup.find("meta", attrs={"property": "article:modified_time"})
@@ -452,11 +452,11 @@ def _get_updated_at(soup: BeautifulSoup) -> datetime | None:
     return updated_at
 
 
-def _get_lang(soup: BeautifulSoup, content_language: str | None) -> str:
+def _get_lang(soup, content_language: str | None) -> str:
     if not soup.find("html") or (language := soup.find("html").get("lang")) is None:
         language = content_language
 
-    return language
+    return str(language or "")
 
 
 def _build_table_of_content(content: str) -> tuple[str, list[TableOfContentTopItem]]:

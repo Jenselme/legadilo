@@ -15,6 +15,19 @@
     <a class="btn btn-outline-primary"
        href="{% url 'reading:create_tag' %}"
        role="button">{% translate "Manually create a tag" %}</a>
+    <form class="mt-2" method="get">
+        <div class="input-group">
+            <span id="tags-search-glass" class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
+            <input type="text"
+                   class="form-control"
+                   name="q"
+                   placeholder="{% translate 'Search for tags here...' %}"
+                   value="{{ searched_text }}"
+                   aria-label="Search for tags"
+                   aria-describedby="tags-search-glass" />
+            <button class="btn btn-outline-secondary" type="submit">{% translate "Search" %}</button>
+        </div>
+    </form>
     <div class="grid mt-3">
         {% for tag in tags %}
             <div class="card">
