@@ -25,6 +25,7 @@ from django.db import models, transaction
 from django.db.models.functions import Coalesce
 from slugify import slugify
 
+from legadilo.constants import SEARCHED_TEXT_MIN_LENGTH
 from legadilo.core import constants as core_constants
 from legadilo.core.forms import FormChoices
 from legadilo.reading import constants
@@ -177,7 +178,7 @@ class TagManager(models.Manager["Tag"]):
             .order_by("title")
         )
 
-        if len(searched_text) > 3:  # noqa: PLR2004 Magic value used in comparison
+        if len(searched_text) > SEARCHED_TEXT_MIN_LENGTH:
             qs = qs.filter(title__icontains=searched_text)
 
         return list(qs)

@@ -32,6 +32,7 @@ from legadilo.reading.models.article import Article, ArticleQuerySet
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
+from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import Notification
 from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
@@ -216,7 +217,7 @@ class FeedManager(models.Manager["Feed"]):
             .order_by("category__title", "id")
         )
 
-        if len(searched_text) > 3:  # noqa: PLR2004 Magic value used in comparison
+        if len(searched_text) > SEARCHED_TEXT_MIN_LENGTH:
             qs = qs.filter(title__icontains=searched_text)
 
         for feed in qs:
