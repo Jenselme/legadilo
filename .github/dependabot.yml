@@ -61,11 +61,9 @@ updates:
       interval: "weekly"
 
   # Enable version updates for Python/Pip - Production
-  - package-ecosystem: "pip"
-    # Look for a `requirements.txt` in the `root` directory
-    # also 'setup.cfg', 'runtime.txt' and 'requirements/*.txt'
+  - package-ecosystem: "uv"
     directory: "/"
     open-pull-requests-limit: 15
     # Every weekday
     schedule:
-      interval: "daily"
+      interval: "weekly"

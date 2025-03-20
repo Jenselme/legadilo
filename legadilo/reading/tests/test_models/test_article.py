@@ -1342,11 +1342,18 @@ class TestArticleManager:
         assert created
         assert article.link == link
         assert article.title == link
+        assert article.slug == "toto-com"
         assert article.updated_at is None
         assert article.main_source_type == constants.ArticleSourceType.MANUAL
         assert article.main_source_title == "toto.com"
         assert list(article.tags.all()) == [tag]
         assert article.article_fetch_errors.count() == 1
+
+    def test_create_article_title_cannot_be_slugified(self, user):
+        article = Article.objects.create(link="https://toto.com/article", title="??", user=user)
+
+        assert article.title == "??"
+        assert article.slug == "no-slug"
 
     def test_create_invalid_article_article_already_saved(self, user, django_assert_num_queries):
         initial_article = ArticleFactory(user=user)
