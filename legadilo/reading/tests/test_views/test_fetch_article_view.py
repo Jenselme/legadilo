@@ -157,7 +157,7 @@ class TestAddArticle:
                 message="Failed to fetch the article. Please check that the URL you entered is "
                 "correct, that the article exists and is accessible. "
                 "We added its URL directly. "
-                f'Go <a href="/reading/articles/{article.id}-https-www-example-com-posts-en-1-super-article/'  # noqa: E501
+                f'Go <a href="/reading/articles/{article.id}-www-example-com-posts-en-1-super-article/'  # noqa: E501
                 '">there</a> to access it.',
             )
         ]
@@ -233,7 +233,7 @@ class TestAddArticle:
                 level=DEFAULT_LEVELS["WARNING"],
                 message="The article you are trying to fetch is too big and cannot be processed. "
                 "We added its URL directly. "
-                f'Go <a href="/reading/articles/{article.id}-https-www-example-com-posts-en-1-super-article/"'  # noqa: E501
+                f'Go <a href="/reading/articles/{article.id}-www-example-com-posts-en-1-super-article/"'  # noqa: E501
                 ">there</a> to access it.",
             )
         ]

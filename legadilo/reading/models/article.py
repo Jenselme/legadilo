@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import chain
@@ -599,6 +600,7 @@ class ArticleManager(models.Manager["Article"]):
                 user=user,
                 link=article_link,
                 title=full_sanitize(article_link),
+                slug=slugify(re.sub(r"^https?://", "", article_link)),
                 main_source_type=constants.ArticleSourceType.MANUAL,
                 main_source_title=article_domain,
             )
@@ -834,8 +836,7 @@ class Article(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
+        self.slug = self.slug or slugify(self.title) or str(_("no-slug"))
 
         return super().save(*args, **kwargs)
 
