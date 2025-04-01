@@ -22,7 +22,7 @@ release:
     echo "Creating version ${new_tag} Press enter to accept."
     read -r
 
-    {{docker-cmd}} pull python:3.12-slim-bookworm
+    {{docker-cmd}} pull python:3.13-slim-bookworm
     {{docker-compose-cmd}} -f production.yml build --build-arg "VERSION=${new_tag}" django
     {{docker-cmd}} image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
     {{docker-cmd}} image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest

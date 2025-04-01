@@ -4,7 +4,7 @@ description = "Legadilo is a project to help you subscribe to RSS feeds, save ar
 readme = "README.md"
 license = { file = "LICENSE" }
 version = "0.0.0"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     # General
     "python-slugify >= 8.0.4",  # https://github.com/un33k/python-slugify
@@ -228,7 +228,7 @@ tabindex_no_positive = true
 
 # ==== mypy ====
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true

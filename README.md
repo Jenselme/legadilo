@@ -28,7 +28,7 @@ You will have to start Django with the provided run target.
 
 ### Using Pycharm
 
-By default, everything is set up to develop locally with Pycharm. So you will need docker (for the database), [uv](https://docs.astral.sh/uv/), Python 3.12 and nodeJS 20+ installed for this to work.
+By default, everything is set up to develop locally with Pycharm. So you will need docker (for the database), [uv](https://docs.astral.sh/uv/), Python 3.13 and nodeJS 20+ installed for this to work.
 Django will be started automatically.
 On the first run, you must run `npm install` to install a few JS deps and `uv run pre-commit install --hook-type pre-commit --hook-type pre-push` to configure `pre-commit`.
 
