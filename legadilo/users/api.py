@@ -62,9 +62,9 @@ def _decode_access_token(token: str) -> AccessToken:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return AccessToken.model_validate(decoded_token)
     except jwt.ExpiredSignatureError as e:
-        raise AuthenticationError("Expired JWT token") from e
+        raise AuthenticationError(message="Expired JWT token") from e
     except (jwt.PyJWTError, PydanticValidationError) as e:
-        raise AuthenticationError("Invalid JWT token") from e
+        raise AuthenticationError(message="Invalid JWT token") from e
 
 
 async def _get_user_from_access_token(access_token: AccessToken) -> User | None:
