@@ -26,28 +26,20 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
-from legadilo.feeds.models import Feed
 from legadilo.import_export.services.opml import import_opml_file
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.time_utils import utcnow
 
 from .. import constants
+from ..services.export import build_feeds_export_context
 
 
 @require_GET
 @login_required
 def export_feeds_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    feeds_by_categories = Feed.objects.get_by_categories(request.user)
-    feeds_without_category = feeds_by_categories.pop(None, [])
-
     return TemplateResponse(
         request,
         "import_export/export_feeds.opml",
-        {
-            "feeds_by_categories": feeds_by_categories,
-            "feeds_without_category": feeds_without_category,
-            "export_date": utcnow(),
-        },
+        build_feeds_export_context(request.user),
         content_type="text/x-opml",
     )
 

@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import csv
 from http import HTTPStatus
 from json import JSONDecodeError
 
@@ -28,15 +27,12 @@ from django.views.decorators.http import require_GET, require_http_methods
 from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.import_export.services.exceptions import DataImportError
-from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
-from ...feeds.models import Feed, FeedCategory
-from ...reading.models import Article
 from ...utils.file import ensure_file_on_disk
-from ...utils.text import ClearableStringIO
 from .. import constants
 from ..services.custom_csv import import_custom_csv_file
+from ..services.export import export_articles
 from ..services.wallabag import import_wallabag_file
 
 
@@ -140,24 +136,7 @@ def _import_wallabag(request: AuthenticatedHttpRequest):
 @login_required
 def export_articles_view(request: AuthenticatedHttpRequest) -> StreamingHttpResponse:
     return StreamingHttpResponse(
-        _export_articles(request.user),
+        export_articles(request.user),
         content_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="articles.csv"'},
     )
-
-
-def _export_articles(user: User):
-    buffer = ClearableStringIO()
-    writer = csv.DictWriter(buffer, constants.CSV_HEADER_FIELDS)
-    writer.writeheader()
-    yield buffer.getvalue()
-
-    feed_categories = FeedCategory.objects.export(user)
-    writer.writerows(feed_categories)
-    yield buffer.getvalue()
-    feeds = Feed.objects.export(user)
-    writer.writerows(feeds)
-    yield buffer.getvalue()
-    for articles_batch in Article.objects.export(user):
-        writer.writerows(articles_batch)
-        yield buffer.getvalue()

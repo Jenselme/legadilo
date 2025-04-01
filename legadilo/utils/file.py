@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import contextlib
+import sys
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
@@ -35,3 +37,13 @@ def ensure_file_on_disk(django_file: TemporaryUploadedFile | InMemoryUploadedFil
         f.write(django_file.read())
         f.flush()
         yield f.name
+
+
+@contextlib.contextmanager
+def file_or_stdout(file_path: str | None):
+    if file_path is None:
+        yield sys.stdout
+        return
+
+    with Path(file_path).open(mode="w", encoding="UTF-8") as f:
+        yield f
