@@ -17,12 +17,11 @@
 from http import HTTPStatus
 
 import httpx
-from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.shortcuts import aget_object_or_404
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -67,17 +66,15 @@ class FetchArticleForm(forms.Form):
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
 
 
-@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@require_http_methods(["GET", "POST"])
 @login_required
-async def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    tag_choices, hierarchy = await sync_to_async(Tag.objects.get_all_choices_with_hierarchy)(
-        request.user
-    )
+def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+    tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
     form = FetchArticleForm(tag_choices=tag_choices)
     status = HTTPStatus.OK
 
     if request.method == "POST":
-        status, form, save_result = await _handle_save(request, tag_choices, force_update=False)
+        status, form, save_result = _handle_save(request, tag_choices, force_update=False)
         _handle_add_article_save_result(request, save_result)
 
     return TemplateResponse(
@@ -134,11 +131,11 @@ def _handle_add_article_save_result(
         )
 
 
-@require_http_methods(["POST"])  # type: ignore[type-var]
+@require_http_methods(["POST"])
 @login_required
-async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    article = await aget_object_or_404(Article, link=request.POST.get("url"), user=request.user)
-    _status, _form, save_result = await _handle_save(
+def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
+    article = get_object_or_404(Article, link=request.POST.get("url"), user=request.user)
+    _status, _form, save_result = _handle_save(
         request,
         [],
         force_update=True,
@@ -146,7 +143,7 @@ async def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpRespons
 
     _handle_refetch_article_save_result(request, save_result)
 
-    await article.arefresh_from_db()
+    article.refresh_from_db()
     _url, from_url = pop_query_param(
         validate_referer_url(request, reverse("reading:default_reading_list")), "from_url"
     )
@@ -179,7 +176,7 @@ def _handle_refetch_article_save_result(
         messages.success(request, _("The article was successfully re-fetched!"))
 
 
-async def _handle_save(
+def _handle_save(
     request: AuthenticatedHttpRequest,
     tag_choices: list[tuple[str, str]],
     *,
@@ -189,14 +186,12 @@ async def _handle_save(
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
-    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
-        request.user, form.cleaned_data["tags"]
-    )
+    tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
     article_link = form.cleaned_data["url"]
     try:
-        article_data = await get_article_from_url(article_link)
+        article_data = get_article_from_url(article_link)
         save_result = (
-            await sync_to_async(Article.objects.save_from_list_of_data)(
+            Article.objects.save_from_list_of_data(
                 request.user,
                 [article_data],
                 tags,
@@ -205,7 +200,7 @@ async def _handle_save(
             )
         )[0]
     except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
-        invalid_article, created = await sync_to_async(Article.objects.create_invalid_article)(
+        invalid_article, created = Article.objects.create_invalid_article(
             request.user,
             article_link,
             tags,

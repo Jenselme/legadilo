@@ -21,7 +21,6 @@ from unittest.mock import patch
 
 import pytest
 import time_machine
-from asgiref.sync import async_to_sync
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
@@ -1426,7 +1425,7 @@ class TestArticleManager:
         )
 
         with django_assert_num_queries(5):
-            articles = async_to_sync(self._export_all_articles)(user)
+            articles = self._export_all_articles(user)
 
         assert len(articles) == 2
         assert len(articles[0]) == 2
@@ -1439,9 +1438,9 @@ class TestArticleManager:
         assert articles[1][0]["article_id"] == article_no_feed.id
         snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
 
-    async def _export_all_articles(self, user):
+    def _export_all_articles(self, user):
         all_articles = []
-        async for articles in Article.objects.export(user):
+        for articles in Article.objects.export(user):
             all_articles.append(articles)
 
         return all_articles

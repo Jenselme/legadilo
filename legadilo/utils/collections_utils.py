@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import Iterable
 from typing import Any
 
 from django.core.serializers.json import DjangoJSONEncoder
@@ -50,15 +50,3 @@ def max_or_none[T](
     collection: Iterable[T],
 ) -> T | None:
     return _select_item_from_collection(max, collection)
-
-
-async def alist[T](collection: AsyncIterable[T]) -> list[T]:
-    return [item async for item in collection]
-
-
-async def aset[T](collection: AsyncIterable[T]) -> set[T]:
-    output = set()
-    async for item in collection:
-        output.add(item)
-
-    return output

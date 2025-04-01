@@ -19,7 +19,6 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
@@ -52,7 +51,7 @@ class TestExportArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.headers["Content-Type"] == "text/csv"
-        snapshot.assert_match(async_to_sync(self._get_content)(response), "no_content.csv")
+        snapshot.assert_match(self._get_content(response), "no_content.csv")
 
     def test_export_some_content(self, logged_in_sync_client, user, snapshot):
         FeedCategoryFactory(user=user, id=1, title="Some category")
@@ -70,11 +69,11 @@ class TestExportArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.headers["Content-Type"] == "text/csv"
-        snapshot.assert_match(async_to_sync(self._get_content)(response), "export_all.csv")
+        snapshot.assert_match(self._get_content(response), "export_all.csv")
 
-    async def _get_content(self, response):
+    def _get_content(self, response):
         content = b""
-        async for partial_content in response.streaming_content:
+        for partial_content in response.streaming_content:
             # Correct line ending because we will loose the initial one with git.
             content += partial_content.replace(b"\r\n", b"\n")
 

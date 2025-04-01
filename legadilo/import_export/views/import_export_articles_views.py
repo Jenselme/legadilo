@@ -17,7 +17,6 @@ import csv
 from http import HTTPStatus
 from json import JSONDecodeError
 
-from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -61,18 +60,18 @@ class ImportWallabagForm(forms.Form):
         return self.cleaned_data["wallabag_file"]
 
 
-@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@require_http_methods(["GET", "POST"])
 @login_required
-async def import_export_articles_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+def import_export_articles_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     import_custom_csv_form = ImportCustomCsvForm()
     import_wallabag_form = ImportWallabagForm()
     status = HTTPStatus.OK
 
     if request.method == "POST":
         if "csv_file" in request.FILES:
-            status, import_custom_csv_form = await _import_custom_csv(request)
+            status, import_custom_csv_form = _import_custom_csv(request)
         elif "wallabag_file" in request.FILES:
-            status, import_wallabag_form = await _import_wallabag(request)
+            status, import_wallabag_form = _import_wallabag(request)
         else:
             status = HTTPStatus.BAD_REQUEST
             messages.error(request, _("This file type is not supported for imports."))
@@ -88,7 +87,7 @@ async def import_export_articles_view(request: AuthenticatedHttpRequest) -> Temp
     )
 
 
-async def _import_custom_csv(request: AuthenticatedHttpRequest):
+def _import_custom_csv(request: AuthenticatedHttpRequest):
     import_custom_csv_form = ImportCustomCsvForm(request.POST, request.FILES)
     status = HTTPStatus.OK
     if not import_custom_csv_form.is_valid():
@@ -100,7 +99,7 @@ async def _import_custom_csv(request: AuthenticatedHttpRequest):
                 nb_imported_articles,
                 nb_imported_feeds,
                 nb_imported_categories,
-            ) = await import_custom_csv_file(await request.auser(), file_path)
+            ) = import_custom_csv_file(request.user, file_path)
     except (DataImportError, UnicodeDecodeError, PydanticValidationError):
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
@@ -116,15 +115,15 @@ async def _import_custom_csv(request: AuthenticatedHttpRequest):
     return status, import_custom_csv_form
 
 
-async def _import_wallabag(request: AuthenticatedHttpRequest):
+def _import_wallabag(request: AuthenticatedHttpRequest):
     import_wallabag_form = ImportWallabagForm(request.POST, request.FILES)
     status = HTTPStatus.OK
     if not import_wallabag_form.is_valid():
         return status, import_wallabag_form
 
     try:
-        nb_imported_articles = await sync_to_async(import_wallabag_file)(
-            await request.auser(), import_wallabag_form.cleaned_data["wallabag_file"]
+        nb_imported_articles = import_wallabag_file(
+            request.user, import_wallabag_form.cleaned_data["wallabag_file"]
         )
     except (JSONDecodeError, UnicodeDecodeError, PydanticValidationError):
         status = HTTPStatus.BAD_REQUEST
@@ -137,29 +136,28 @@ async def _import_wallabag(request: AuthenticatedHttpRequest):
     return status, import_wallabag_form
 
 
-@require_GET  # type: ignore[type-var]
+@require_GET
 @login_required
-async def export_articles_view(request: AuthenticatedHttpRequest) -> StreamingHttpResponse:
-    user = await request.auser()
+def export_articles_view(request: AuthenticatedHttpRequest) -> StreamingHttpResponse:
     return StreamingHttpResponse(
-        _export_articles(user),
+        _export_articles(request.user),
         content_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="articles.csv"'},
     )
 
 
-async def _export_articles(user: User):
+def _export_articles(user: User):
     buffer = ClearableStringIO()
     writer = csv.DictWriter(buffer, constants.CSV_HEADER_FIELDS)
     writer.writeheader()
     yield buffer.getvalue()
 
-    feed_categories = await FeedCategory.objects.export(user)
+    feed_categories = FeedCategory.objects.export(user)
     writer.writerows(feed_categories)
     yield buffer.getvalue()
-    feeds = await Feed.objects.export(user)
+    feeds = Feed.objects.export(user)
     writer.writerows(feeds)
     yield buffer.getvalue()
-    async for articles_batch in Article.objects.export(user):
+    for articles_batch in Article.objects.export(user):
         writer.writerows(articles_batch)
         yield buffer.getvalue()

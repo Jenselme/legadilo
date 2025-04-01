@@ -58,9 +58,9 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
     def get_first_for_user(self, user: User, slug: str) -> FeedCategory | None:
         return self.get_queryset().filter(user=user, slug=slug).first()
 
-    async def export(self, user: User) -> list[dict[str, Any]]:
+    def export(self, user: User) -> list[dict[str, Any]]:
         feed_categories = []
-        async for feed_category in self.get_queryset().for_export(user):
+        for feed_category in self.get_queryset().for_export(user):
             feed_categories.append({
                 "category_id": feed_category.id,
                 "category_title": feed_category.title,

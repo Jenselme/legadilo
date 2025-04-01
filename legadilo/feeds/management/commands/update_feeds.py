@@ -15,21 +15,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from asyncio import TaskGroup
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
+from datetime import datetime
 from http import HTTPStatus
 from typing import Any
 
-from asgiref.sync import sync_to_async
-from django.core.management.base import CommandParser
+import httpx
+from django.core.management.base import BaseCommand, CommandParser
 from httpx import HTTPError, HTTPStatusError
 
+from legadilo import constants
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.users.models import User
-from legadilo.utils.command import AsyncCommand
 from legadilo.utils.exceptions import extract_debug_information, format_exception
-from legadilo.utils.http_utils import get_rss_async_client
+from legadilo.utils.http_utils import get_rss_sync_client
 from legadilo.utils.loggers import unlink_logger_from_sentry
 from legadilo.utils.time_utils import utcnow
 
@@ -38,7 +40,7 @@ logger = logging.getLogger(__name__)
 unlink_logger_from_sentry(logger)
 
 
-class Command(AsyncCommand):
+class Command(BaseCommand):
     help = """Update all feeds.
 
     To do this, we check the feed file from its source, parse it and run debug code.
@@ -71,22 +73,38 @@ class Command(AsyncCommand):
             help="Only update the feeds for the supplied user ids.",
         )
 
-    async def run(self, *args, **options):
+    def handle(self, *args, **options):
         logger.info("Starting feed update")
         start_time = utcnow()
-        async with (
-            get_rss_async_client() as client,
-            TaskGroup() as tg,
+        futures = []
+
+        with (
+            get_rss_sync_client() as client,
+            ThreadPoolExecutor(max_workers=constants.MAX_PARALLEL_CONNECTIONS) as executor,
         ):
             # Some updates (like the every morning ones) must run in the user TZ. So, we look at
             # users with feed and find the feeds to update based on their TZ from settings.
-            async for user in (
+            for user in (
                 User.objects.get_queryset()
                 .with_feeds(options["user_ids"])
                 .select_related("settings", "settings__timezone")
             ):
-                async for feed in self._build_feed_qs(user, options):
-                    tg.create_task(self._update_feed(client, feed))
+                for feed in self._build_feed_qs(user, options):
+                    feed_update = FeedUpdate.objects.get_latest_success_for_feed_id(feed.id)
+                    futures.append((
+                        feed,
+                        executor.submit(
+                            self._fetch_feed_metadata,
+                            client,
+                            feed.id,
+                            feed.feed_url,
+                            feed_update.feed_etag if feed_update else None,
+                            feed_update.feed_last_modified if feed_update else None,
+                        ),
+                    ))
+
+        for feed, future in futures:
+            self._update_feed_from_future(feed, future)
 
         duration = utcnow() - start_time
         logger.info("Completed feed update in %s", duration)
@@ -108,32 +126,37 @@ class Command(AsyncCommand):
 
         return feeds_qs
 
-    async def _update_feed(self, client, feed):
-        logger.info("Updating feed %s", feed)
-        feed_update = await FeedUpdate.objects.get_latest_success_for_feed(feed)
+    def _fetch_feed_metadata(
+        self,
+        client: httpx.Client,
+        feed_id: int,
+        feed_url: str,
+        feed_etag: str | None,
+        feed_last_modified: datetime | None,
+    ):
+        logger.info("Updating feed %s", feed_id)
+        return get_feed_data(
+            feed_url,
+            client=client,
+            etag=feed_etag,
+            last_modified=feed_last_modified,
+        )
+
+    def _update_feed_from_future(self, feed: Feed, future: Future):
         try:
-            feed_metadata = await get_feed_data(
-                feed.feed_url,
-                client=client,
-                etag=feed_update.feed_etag if feed_update else None,
-                last_modified=feed_update.feed_last_modified if feed_update else None,
-            )
+            feed_metadata = future.result()
         except HTTPStatusError as e:
             if e.response.status_code == HTTPStatus.NOT_MODIFIED:
-                await sync_to_async(Feed.objects.log_not_modified)(feed)
+                Feed.objects.log_not_modified(feed)
             else:
                 logger.exception("Failed to fetch feed %s", feed)
-                await sync_to_async(Feed.objects.log_error)(
-                    feed, format_exception(e), extract_debug_information(e)
-                )
+                Feed.objects.log_error(feed, format_exception(e), extract_debug_information(e))
         except HTTPError as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.log_error)(
-                feed, format_exception(e), extract_debug_information(e)
-            )
+            Feed.objects.log_error(feed, format_exception(e), extract_debug_information(e))
         except Exception as e:
             logger.exception("Failed to update feed %s", feed)
-            await sync_to_async(Feed.objects.log_error)(feed, format_exception(e))
+            Feed.objects.log_error(feed, format_exception(e))
         else:
-            await sync_to_async(Feed.objects.update_feed)(feed, feed_metadata)
+            Feed.objects.update_feed(feed, feed_metadata)
             logger.info("Updated feed %s", feed)

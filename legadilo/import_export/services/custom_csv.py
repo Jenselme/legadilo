@@ -24,7 +24,6 @@ from ssl import SSLCertVerificationError
 from urllib.parse import urlparse
 
 import httpx
-from asgiref.sync import async_to_sync, sync_to_async
 from django.db import IntegrityError
 
 from legadilo.feeds import constants as feeds_constants
@@ -41,7 +40,7 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.users.models import User
-from legadilo.utils.http_utils import get_rss_async_client
+from legadilo.utils.http_utils import get_rss_sync_client
 from legadilo.utils.security import full_sanitize
 from legadilo.utils.time_utils import safe_datetime_parse
 from legadilo.utils.validators import is_url_valid
@@ -54,15 +53,15 @@ csv.field_size_limit(sys.maxsize)
 
 
 def import_custom_csv_file_sync(user: User, path_to_file: str | Path) -> tuple[int, int, int]:
-    return async_to_sync(import_custom_csv_file)(user, path_to_file)
+    return import_custom_csv_file(user, path_to_file)
 
 
-async def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, int]:
+def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, int]:
     nb_imported_articles = 0
     nb_imported_feeds = 0
     nb_imported_categories = 0
 
-    with Path(path_to_file).open(encoding="utf-8") as f:  # noqa: ASYNC230 async functions calling open
+    with Path(path_to_file).open(encoding="utf-8") as f:
         dict_reader = csv.DictReader(f)
         # This is used to cache feed values: the URL in the file may not be the latest available URL
         # To avoid making too many HTTP requests, we cache the result to reuse the latest URL as
@@ -70,7 +69,7 @@ async def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, in
         feed_url_in_file_to_true_feed: dict[str, Feed] = {}
         for row in dict_reader:
             _check_keys_in_row(row)
-            nb_articles, nb_feeds, nb_categories = await _process_row(
+            nb_articles, nb_feeds, nb_categories = _process_row(
                 user, row, feed_url_in_file_to_true_feed
             )
             nb_imported_articles += nb_articles
@@ -85,20 +84,20 @@ def _check_keys_in_row(row: dict):
         raise DataImportError
 
 
-async def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str, Feed]):
+def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str, Feed]):
     category = None
     created_category = False
     if row["category_title"]:
-        category, created_category = await _import_category(user, row)
+        category, created_category = _import_category(user, row)
 
     feed = None
     created_feed = False
     if row["feed_url"] and is_url_valid(row["feed_url"]) and is_url_valid(row["feed_site_url"]):
-        feed, created_feed = await _import_feed(user, category, row, feed_url_in_file_to_true_feed)
+        feed, created_feed = _import_feed(user, category, row, feed_url_in_file_to_true_feed)
 
     created_article = False
     if row["article_link"] and is_url_valid(row["article_link"]):
-        created_article = await _import_article(user, feed, row)
+        created_article = _import_article(user, feed, row)
 
     return (
         1 if created_article else 0,
@@ -107,23 +106,21 @@ async def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dic
     )
 
 
-async def _import_category(user, row):
-    return await FeedCategory.objects.aget_or_create(
-        user=user, title=full_sanitize(row["category_title"])
-    )
+def _import_category(user, row):
+    return FeedCategory.objects.get_or_create(user=user, title=full_sanitize(row["category_title"]))
 
 
-async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
+def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
     feed = feed_url_in_file_to_true_feed.get(row["feed_url"])
 
     if feed:
         return feed, False
 
     try:
-        async with get_rss_async_client() as client:
-            feed_data = await get_feed_data(row["feed_url"], client=client)
+        with get_rss_sync_client() as client:
+            feed_data = get_feed_data(row["feed_url"], client=client)
 
-        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
+        feed, created = Feed.objects.create_from_metadata(
             feed_data,
             user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
@@ -153,7 +150,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
             last_modified=None,
             articles=[],
         )
-        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
+        feed, created = Feed.objects.create_from_metadata(
             feed_data,
             user=user,
             refresh_delay=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
@@ -163,7 +160,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         )
         if created:
             feed.disable("Failed to reach feed URL while importing from custom CSV.")
-            await feed.asave()
+            feed.save()
 
         feed_url_in_file_to_true_feed[row["feed_url"]] = feed
         return feed, created
@@ -172,7 +169,7 @@ async def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         return None, False
 
 
-async def _import_article(user, feed, row):
+def _import_article(user, feed, row):
     article_data = ArticleData(
         external_article_id=f"custom_csv:{row['article_id']}",
         source_title=feed.title if feed else urlparse(row["article_link"]).netloc,
@@ -191,7 +188,7 @@ async def _import_article(user, feed, row):
         read_at=safe_datetime_parse(row["article_read_at"]),
         is_favorite=_get_bool(row["article_is_favorite"]),
     )
-    save_results = await sync_to_async(Article.objects.save_from_list_of_data)(
+    save_results = Article.objects.save_from_list_of_data(
         user=user,
         articles_data=[article_data],
         tags=[],
@@ -201,7 +198,7 @@ async def _import_article(user, feed, row):
     )
 
     if feed:
-        await FeedArticle.objects.aget_or_create(feed=feed, article=save_results[0].article)
+        FeedArticle.objects.get_or_create(feed=feed, article=save_results[0].article)
 
     return True
 

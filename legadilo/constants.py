@@ -15,3 +15,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SEARCHED_TEXT_MIN_LENGTH = 3
+MAX_PARALLEL_CONNECTIONS = 10

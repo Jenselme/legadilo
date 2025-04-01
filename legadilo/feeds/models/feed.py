@@ -329,9 +329,9 @@ class FeedManager(models.Manager["Feed"]):
             feed=feed,
         )
 
-    async def export(self, user: User) -> list[dict[str, Any]]:
+    def export(self, user: User) -> list[dict[str, Any]]:
         feeds = []
-        async for feed in self.get_queryset().for_export(user):
+        for feed in self.get_queryset().for_export(user):
             feed_category = feed.category
             feeds.append({
                 "category_id": feed_category.id if feed_category else "",

@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from abc import abstractmethod
 
 from django.http import HttpRequest
 from django_htmx.middleware import HtmxDetails
@@ -24,10 +23,6 @@ from legadilo.users.models import User
 class AuthenticatedHttpRequest(HttpRequest):
     user: User
     htmx: HtmxDetails
-
-    @abstractmethod
-    async def auser(self) -> User:
-        pass
 
 
 class AuthenticatedApiRequest(HttpRequest):

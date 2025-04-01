@@ -19,9 +19,8 @@ from http import HTTPStatus
 from operator import xor
 from typing import Annotated, Self
 
-from asgiref.sync import sync_to_async
 from django.db import IntegrityError, transaction
-from django.shortcuts import aget_object_or_404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import ModelSchema, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
@@ -42,7 +41,7 @@ from legadilo.reading.models import Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.api import FIELD_UNSET, ApiError, update_model_from_schema
-from legadilo.utils.http_utils import get_rss_async_client
+from legadilo.utils.http_utils import get_rss_sync_client
 from legadilo.utils.validators import (
     CleanedString,
     FullSanitizeValidator,
@@ -78,7 +77,7 @@ class OutFeedSchema(ModelSchema):
     "", response=list[OutFeedSchema], url_name="list_feeds", summary="List all you feeds"
 )
 @paginate
-async def list_feeds_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
+def list_feeds_view(request: AuthenticatedApiRequest):
     return Feed.objects.get_queryset().for_user(request.auth).for_api()
 
 
@@ -101,15 +100,15 @@ class FeedSubscription(Schema):
     url_name="subscribe_to_feed",
     summary="Subscribe to feed from its link",
 )
-async def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscription):
+def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscription):
     """Many parameters of the feed can be customized directly at creation."""
-    category = await _get_category(request.auth, payload.category_id)
+    category = _get_category(request.auth, payload.category_id)
 
     try:
-        async with get_rss_async_client() as client:
-            feed_medata = await get_feed_data(payload.feed_url, client=client)
-        tags = await sync_to_async(Tag.objects.get_or_create_from_list)(request.auth, payload.tags)
-        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
+        with get_rss_sync_client() as client:
+            feed_medata = get_feed_data(payload.feed_url, client=client)
+        tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
+        feed, created = Feed.objects.create_from_metadata(
             feed_medata,
             request.auth,
             payload.refresh_delay,
@@ -133,15 +132,15 @@ async def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: Feed
 
     status = HTTPStatus.CREATED if created else HTTPStatus.ALREADY_REPORTED
 
-    return status, await Feed.objects.get_queryset().for_api().aget(id=feed.id)
+    return status, Feed.objects.get_queryset().for_api().get(id=feed.id)
 
 
-async def _get_category(user: User, category_id: int | None) -> FeedCategory | None:
+def _get_category(user: User, category_id: int | None) -> FeedCategory | None:
     if category_id is None:
         return None
 
     try:
-        return await FeedCategory.objects.aget(id=category_id, user=user)
+        return FeedCategory.objects.get(id=category_id, user=user)
     except FeedCategory.DoesNotExist as e:
         raise NinjaValidationError([
             {"category_id": f"We failed to find the category with id: {category_id}"}
@@ -154,10 +153,8 @@ async def _get_category(user: User, category_id: int | None) -> FeedCategory | N
     url_name="get_feed",
     summary="View the details of a specific feed",
 )
-async def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
-    return await aget_object_or_404(
-        Feed.objects.get_queryset().for_api(), id=feed_id, user=request.auth
-    )
+def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
+    return get_object_or_404(Feed.objects.get_queryset().for_api(), id=feed_id, user=request.auth)
 
 
 class FeedUpdate(Schema):
@@ -187,26 +184,26 @@ class FeedUpdate(Schema):
 @feeds_api_router.patch(
     "/{int:feed_id}/", response=OutFeedSchema, url_name="update_feed", summary="Update a feed"
 )
-async def update_feed_view(
+def update_feed_view(
     request: AuthenticatedApiRequest,
     feed_id: int,
     payload: FeedUpdate,
 ):
     qs = Feed.objects.get_queryset().select_related("category")
-    feed = await aget_object_or_404(qs, id=feed_id, user=request.auth)
+    feed = get_object_or_404(qs, id=feed_id, user=request.auth)
 
     if payload.tags is not FIELD_UNSET:
-        await _update_feed_tags(request.auth, feed, payload.tags)
+        _update_feed_tags(request.auth, feed, payload.tags)
 
     # We must refresh to update generated fields & tags.
-    await update_model_from_schema(feed, payload, excluded_fields={"tags"})
+    update_model_from_schema(feed, payload, excluded_fields={"tags"})
 
-    return await Feed.objects.get_queryset().for_api().aget(id=feed_id)
+    return Feed.objects.get_queryset().for_api().get(id=feed_id)
 
 
-async def _update_feed_tags(user: User, feed: Feed, new_tags: tuple[str, ...]):
-    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(user, new_tags)
-    await sync_to_async(FeedTag.objects.associate_feed_with_tag_slugs)(
+def _update_feed_tags(user: User, feed: Feed, new_tags: tuple[str, ...]):
+    tags = Tag.objects.get_or_create_from_list(user, new_tags)
+    FeedTag.objects.associate_feed_with_tag_slugs(
         feed, [tag.slug for tag in tags], clear_existing=True
     )
 
@@ -217,10 +214,10 @@ async def _update_feed_tags(user: User, feed: Feed, new_tags: tuple[str, ...]):
     url_name="delete_feed",
     summary="Delete a feed",
 )
-async def delete_feed_view(request: AuthenticatedApiRequest, feed_id: int):
-    feed = await aget_object_or_404(Feed, id=feed_id, user=request.auth)
+def delete_feed_view(request: AuthenticatedApiRequest, feed_id: int):
+    feed = get_object_or_404(Feed, id=feed_id, user=request.auth)
 
-    await feed.adelete()
+    feed.delete()
 
     return HTTPStatus.NO_CONTENT, None
 
@@ -233,7 +230,7 @@ async def delete_feed_view(request: AuthenticatedApiRequest, feed_id: int):
 )
 # Let's get all categories.
 @paginate(page_size=settings.NINJA_PAGINATION_MAX_LIMIT * 4)
-async def list_categories_view(request: AuthenticatedApiRequest):  # noqa: RUF029 paginate is async!
+def list_categories_view(request: AuthenticatedApiRequest):
     return FeedCategory.objects.get_queryset().for_user(request.auth)
 
 
@@ -247,8 +244,8 @@ class FeedCategoryPayload(Schema):
     url_name="create_feed_category",
     summary="Create a feed category",
 )
-async def create_category_view(request: AuthenticatedApiRequest, payload: FeedCategoryPayload):
-    return await sync_to_async(_create_feed_category)(request.auth, payload)
+def create_category_view(request: AuthenticatedApiRequest, payload: FeedCategoryPayload):
+    return _create_feed_category(request.auth, payload)
 
 
 @transaction.atomic()
@@ -268,8 +265,8 @@ def _create_feed_category(user: User, payload: FeedCategoryPayload):
     url_name="get_feed_category",
     summary="View a specific feed category",
 )
-async def get_category_view(request: AuthenticatedApiRequest, category_id: int):
-    return await aget_object_or_404(FeedCategory, id=category_id, user=request.auth)
+def get_category_view(request: AuthenticatedApiRequest, category_id: int):
+    return get_object_or_404(FeedCategory, id=category_id, user=request.auth)
 
 
 @feeds_api_router.patch(
@@ -278,14 +275,14 @@ async def get_category_view(request: AuthenticatedApiRequest, category_id: int):
     url_name="update_feed_category",
     summary="Update a feed category",
 )
-async def update_category_view(
+def update_category_view(
     request: AuthenticatedApiRequest,
     category_id: int,
     payload: FeedCategoryPayload,
 ) -> FeedCategory:
-    category = await aget_object_or_404(FeedCategory, id=category_id, user=request.auth)
+    category = get_object_or_404(FeedCategory, id=category_id, user=request.auth)
 
-    await update_model_from_schema(category, payload)
+    update_model_from_schema(category, payload)
 
     return category
 
@@ -296,9 +293,9 @@ async def update_category_view(
     response={HTTPStatus.NO_CONTENT: None},
     summary="Delete a feed category",
 )
-async def delete_category_view(request: AuthenticatedApiRequest, category_id: int):
-    category = await aget_object_or_404(FeedCategory, id=category_id, user=request.auth)
+def delete_category_view(request: AuthenticatedApiRequest, category_id: int):
+    category = get_object_or_404(FeedCategory, id=category_id, user=request.auth)
 
-    await category.adelete()
+    category.delete()
 
     return HTTPStatus.NO_CONTENT, None

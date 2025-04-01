@@ -28,7 +28,7 @@ from pydantic import model_validator
 from slugify import slugify
 
 from legadilo.reading import constants
-from legadilo.utils.http_utils import get_async_client
+from legadilo.utils.http_utils import get_sync_client
 from legadilo.utils.security import (
     full_sanitize,
     sanitize_keep_safe_tags,
@@ -159,8 +159,8 @@ class ArticleTooBigError(Exception):
     pass
 
 
-async def get_article_from_url(url: str) -> ArticleData:
-    url, soup, content_language = await _get_page_content(url)
+def get_article_from_url(url: str) -> ArticleData:
+    url, soup, content_language = _get_page_content(url)
 
     return _build_article_data_from_soup(
         url,
@@ -175,12 +175,12 @@ def build_article_data_from_content(*, url: str, title: str, content: str) -> Ar
     return _build_article_data_from_soup(url, soup, forced_title=title)
 
 
-async def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
-    async with get_async_client() as client:
+def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
+    with get_sync_client() as client:
         # We can have HTTP redirect with the meta htt-equiv tag. Let's read them to up to 10 time
         # to find the final URL of the article we are looking for.
         for _ in range(10):
-            response = await client.get(url)
+            response = client.get(url)
             response.raise_for_status()
             if sys.getsizeof(response.content) > constants.MAX_ARTICLE_FILE_SIZE:
                 raise ArticleTooBigError

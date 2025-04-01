@@ -18,8 +18,7 @@ from http import HTTPStatus
 from operator import xor
 from typing import Annotated, Self
 
-from asgiref.sync import sync_to_async
-from django.shortcuts import aget_object_or_404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import ModelSchema, Router, Schema
 from pydantic import Field, model_validator
@@ -92,25 +91,25 @@ class ArticleCreation(Schema):
     url_name="create_article",
     summary="Create a new article",
 )
-async def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreation):
+def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreation):
     """Create an article either just with a link or with a link, a title and some content."""
     if payload.has_data:
         article_data = build_article_data_from_content(
             url=payload.link, title=payload.title, content=payload.content
         )
     else:
-        article_data = await get_article_from_url(payload.link)
+        article_data = get_article_from_url(payload.link)
 
     # Tags specified in article data are the raw tags used in feeds, they are not used to link an
     # article to tag objects.
-    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(request.auth, payload.tags)
+    tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
     article_data = article_data.model_copy(update={"tags": ()})
 
-    save_results = await sync_to_async(Article.objects.save_from_list_of_data)(
+    save_results = Article.objects.save_from_list_of_data(
         request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
     )
     save_result = save_results[0]
-    article = await Article.objects.get_queryset().for_api().aget(id=save_result.article.id)
+    article = Article.objects.get_queryset().for_api().get(id=save_result.article.id)
 
     if save_result.was_created:
         return HTTPStatus.CREATED, article
@@ -124,8 +123,8 @@ async def create_article_view(request: AuthenticatedApiRequest, payload: Article
     response=OutArticleSchema,
     summary="View the details of a specific article",
 )
-async def get_article_view(request: AuthenticatedApiRequest, article_id: int) -> Article:
-    return await aget_object_or_404(
+def get_article_view(request: AuthenticatedApiRequest, article_id: int) -> Article:
+    return get_object_or_404(
         Article.objects.get_queryset().for_api(), id=article_id, user=request.auth
     )
 
@@ -145,30 +144,30 @@ class ArticleUpdate(Schema):
     url_name="update_article",
     summary="Update an article",
 )
-async def update_article_view(
+def update_article_view(
     request: AuthenticatedApiRequest,
     article_id: int,
     payload: ArticleUpdate,
 ) -> Article:
-    article = await aget_object_or_404(Article, id=article_id, user=request.auth)
+    article = get_object_or_404(Article, id=article_id, user=request.auth)
 
     if payload.tags is not FIELD_UNSET:
-        await _update_article_tags(request.auth, article, payload.tags)
+        _update_article_tags(request.auth, article, payload.tags)
 
-    await update_model_from_schema(article, payload, excluded_fields={"tags"})
+    update_model_from_schema(article, payload, excluded_fields={"tags"})
 
-    return await Article.objects.get_queryset().for_api().aget(id=article_id)
+    return Article.objects.get_queryset().for_api().get(id=article_id)
 
 
-async def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]):
-    tags = await sync_to_async(Tag.objects.get_or_create_from_list)(user, new_tags)
-    await sync_to_async(ArticleTag.objects.associate_articles_with_tags)(
+def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]):
+    tags = Tag.objects.get_or_create_from_list(user, new_tags)
+    ArticleTag.objects.associate_articles_with_tags(
         [article],
         tags,
         tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         readd_deleted=True,
     )
-    await sync_to_async(ArticleTag.objects.dissociate_article_with_tags_not_in_list)(article, tags)
+    ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
 
 
 @reading_api_router.delete(
@@ -177,19 +176,17 @@ async def _update_article_tags(user: User, article: Article, new_tags: tuple[str
     response={HTTPStatus.NO_CONTENT: None},
     summary="Delete an article",
 )
-async def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
-    article = await aget_object_or_404(Article, id=article_id, user=request.auth)
+def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
+    article = get_object_or_404(Article, id=article_id, user=request.auth)
 
-    await article.adelete()
+    article.delete()
 
     return HTTPStatus.NO_CONTENT, None
 
 
 @reading_api_router.get("/tags/", url_name="list_tags", summary="List tags")
-async def list_tags_view(request: AuthenticatedApiRequest):
-    choices, hierarchy = await sync_to_async(Tag.objects.get_all_choices_with_hierarchy)(
-        request.auth
-    )
+def list_tags_view(request: AuthenticatedApiRequest):
+    choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.auth)
 
     tags = []
 

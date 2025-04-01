@@ -28,7 +28,7 @@ class ApiError(Schema):
 FIELD_UNSET: Any = object()
 
 
-async def update_model_from_schema(
+def update_model_from_schema(
     model: Model,
     schema: Schema,
     *,
@@ -46,7 +46,7 @@ async def update_model_from_schema(
         updated_attrs.append(attr)
         setattr(model, attr, value)
 
-    await model.asave(update_fields=updated_attrs)
+    model.save(update_fields=updated_attrs)
 
     if must_refresh:
-        await model.arefresh_from_db(from_queryset=refresh_qs)
+        model.refresh_from_db(from_queryset=refresh_qs)

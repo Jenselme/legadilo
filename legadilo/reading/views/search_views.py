@@ -13,10 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import asyncio
 from http import HTTPStatus
 
-from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -39,7 +37,6 @@ from legadilo.utils.security import full_sanitize
 
 from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import User
-from ...utils.collections_utils import alist, aset
 from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
 
@@ -234,11 +231,11 @@ class SearchForm(forms.Form):
             raise ValidationError(errors)
 
 
-@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@require_http_methods(["GET", "POST"])
 @login_required
-async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     status = HTTPStatus.OK
-    tag_choices = await sync_to_async(Tag.objects.get_all_choices)(request.user)
+    tag_choices = Tag.objects.get_all_choices(request.user)
     search_form = SearchForm(request.GET, tag_choices=tag_choices)
     update_articles_form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
     # We don't do anything unless we have a valid search.
@@ -257,21 +254,20 @@ async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
     if request.method == "POST":
         # We update the articles of the current search.
-        articles_qs = await _search(request.user, search_form)
+        articles_qs = _search(request.user, search_form)
         # articles_qs is based on a union, so we can't rely on filter or paginators. Since we need
         # these features, we extract the ids of the articles to update and build a new QS.
-        article_ids_to_update = await aset(articles_qs.values_list("id", flat=True))
-        status, update_articles_form = await sync_to_async(update_list_of_articles)(
+        article_ids_to_update = set(articles_qs.values_list("id", flat=True))
+        status, update_articles_form = update_list_of_articles(
             request,
             Article.objects.get_queryset().filter(id__in=article_ids_to_update),
             tag_choices,
         )
 
     # Articles have been updated. Some may not be part of the search anymore. Rerun it.
-    articles_qs = await _search(request.user, search_form)
-    articles, total_results = await asyncio.gather(
-        alist(articles_qs[: constants.MAX_ARTICLES_PER_PAGE]), articles_qs.acount()
-    )
+    articles_qs = _search(request.user, search_form)
+    articles = list(articles_qs[: constants.MAX_ARTICLES_PER_PAGE])
+    total_results = articles_qs.count()
 
     return TemplateResponse(
         request,
@@ -286,14 +282,14 @@ async def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     )
 
 
-async def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
+def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
     tags_to_include = search_form.cleaned_data.get("tags_to_include", [])
     tags_to_exclude = search_form.cleaned_data.get("tags_to_exclude", [])
     all_slugs = {
         *(tag_slug for tag_slug in tags_to_include),
         *(tag_slug for tag_slug in tags_to_exclude),
     }
-    tag_slugs_to_ids = await sync_to_async(Tag.objects.get_slugs_to_ids)(user, all_slugs)
+    tag_slugs_to_ids = Tag.objects.get_slugs_to_ids(user, all_slugs)
     form_data = {
         key: value
         for key, value in search_form.cleaned_data.items()

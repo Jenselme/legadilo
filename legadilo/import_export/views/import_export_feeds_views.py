@@ -66,9 +66,9 @@ class ImportFeedsForm(forms.Form):
         return self.cleaned_data["opml_file"]
 
 
-@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@require_http_methods(["GET", "POST"])
 @login_required
-async def import_feeds_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+def import_feeds_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     form = ImportFeedsForm()
     status = HTTPStatus.OK
 
@@ -76,7 +76,7 @@ async def import_feeds_view(request: AuthenticatedHttpRequest) -> TemplateRespon
         form = ImportFeedsForm(request.POST, files=request.FILES)
         if form.is_valid():
             try:
-                nb_imported_feeds, nb_imported_categories = await import_opml_file(
+                nb_imported_feeds, nb_imported_categories = import_opml_file(
                     request.user, form.cleaned_data["opml_file"]
                 )
             except XmlParseError:

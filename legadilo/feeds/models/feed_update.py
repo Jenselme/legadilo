@@ -55,8 +55,8 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
     def get_queryset(self) -> FeedUpdateQuerySet:
         return FeedUpdateQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    async def get_latest_success_for_feed(self, feed: Feed):
-        return await self.get_queryset().for_feed(feed).only_success().afirst()
+    def get_latest_success_for_feed_id(self, feed_id: int):
+        return self.get_queryset().filter(feed_id=feed_id).only_success().first()
 
     def must_disable_feed(
         self,
