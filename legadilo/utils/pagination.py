@@ -13,13 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Any
 
 from django.core.paginator import Page, Paginator
-from django.db.models import QuerySet
-from ninja.pagination import LimitOffsetPagination as NinjaLimitOffsetPagination
-
-from legadilo.utils.collections_utils import alist
 
 
 def get_requested_page(paginator: Paginator, requested_page: int) -> Page:
@@ -28,22 +23,3 @@ def get_requested_page(paginator: Paginator, requested_page: int) -> Page:
         if 1 <= requested_page <= paginator.num_pages
         else paginator.page(1)
     )
-
-
-class LimitOffsetPagination(NinjaLimitOffsetPagination):
-    """Custom paginator to fix a bug in Ninja pagination.
-
-    There is a bug in Ninja when we try to paginate querysets in async context: we will get a
-    SynchronousOnlyOperation error. This should be solved "soon" with
-    https://github.com/vitalik/django-ninja/pull/1340
-    """
-
-    async def apaginate_queryset(
-        self,
-        queryset: QuerySet,
-        pagination: Any,
-        **params: Any,
-    ) -> Any:
-        result = await super().apaginate_queryset(queryset, pagination, **params)
-        result["items"] = await alist(result["items"])
-        return result
