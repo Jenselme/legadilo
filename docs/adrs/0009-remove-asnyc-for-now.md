@@ -31,5 +31,6 @@ It will impact many files, but it should be relatively straightforward.
 - Use `gunicorn` to run the application in production:
   - It’s kind of a default choice for this, and I’ve used it in the past with great success. 
   - Create an incoming HTTP request timeout. Set it to 60s to allow for slow search.
-  - Use 4 workers: from my experience, it’s a good number.
+  - Use 4 workers: from my experience, it’s a good number. It will increase memory usage.
+    - After deploy, I see a 100MB increase for the 4 workers. Acceptable for me.
 - We may need to allow for incoming request timeout and number of workers to be configured.
