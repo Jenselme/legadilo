@@ -8,6 +8,7 @@ from pathlib import Path
 import asgiref
 import django
 import environ
+from csp.constants import NONCE, NONE, SELF, STRICT_DYNAMIC, UNSAFE_INLINE
 from django.contrib.messages import constants as messages
 from django.utils.translation import gettext_lazy as _
 from template_partials.apps import wrap_loaders
@@ -331,30 +332,31 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 # https://django-csp.readthedocs.io/en/latest/configuration.html
 # https://content-security-policy.com/
 # https://csp-evaluator.withgoogle.com/
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
-CSP_SCRIPT_SRC_ATTR = None
-CSP_SCRIPT_SRC_ELEM = None
-CSP_IMG_SRC = ("'self'", "data:")
-CSP_OBJECT_SRC = ("'none'",)
-CSP_MEDIA_SRC = ("'self'",)
-CSP_FRAME_SRC = ("'none'",)
-CSP_FONT_SRC = ("'self'",)
-CSP_CONNECT_SRC = env.tuple("CSP_CONNECT_SRC", default=("'self'",))
-CSP_STYLE_SRC = ("'strict-dynamic'", "'unsafe-inline'", "https:")
-CSP_STYLE_SRC_ATTR = None
-CSP_STYLE_SRC_ELEM = None
-CSP_BASE_URI = ("'none'",)
-CSP_FRAME_ANCESTORS = ("'none'",)
-CSP_FORM_ACTION = ("'self'",)
-CSP_MANIFEST_SRC = ("'self'",)
-CSP_WORKER_SRC = ("'self'",)
-CSP_PLUGIN_TYPES = None
-CSP_REQUIRE_SRI_FOR = None
-CSP_INCLUDE_NONCE_IN = ("script-src", "style-src")
-# Those are forced to true in production
-CSP_UPGRADE_INSECURE_REQUESTS = IS_PRODUCTION
-CSP_BLOCK_ALL_MIXED_CONTENT = IS_PRODUCTION
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": (SELF,),
+        "script-src": (STRICT_DYNAMIC, UNSAFE_INLINE, "https:", NONCE),
+        "script-src-attr": None,
+        "script-src-elem": None,
+        "img-src": (SELF, "data:"),
+        "object-src": (NONE,),
+        "media-src": (SELF,),
+        "frame-src": (NONE,),
+        "font-src": (SELF,),
+        "connect-src": env.tuple("CSP_CONNECT_SRC", default=(SELF,)),
+        "style-src": (STRICT_DYNAMIC, UNSAFE_INLINE, "https:", NONCE),
+        "style-src-attr": None,
+        "style-src-elem": None,
+        "base-uri": (NONE,),
+        "child-src": (NONE,),
+        "frame-ancestors": (NONE,),
+        "form-action": (SELF,),
+        "manifest-src": (SELF,),
+        "worker-src": (SELF,),
+        "require-sri-for": (NONE,),
+        "upgrade-insecure-requests": IS_PRODUCTION,
+    },
+}
 
 
 # CORS
