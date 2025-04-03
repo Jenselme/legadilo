@@ -173,10 +173,36 @@
     window.addEventListener("scrollend", runRefresh);
   };
 
+  const setupMobileScroll = () => {
+    const headerHeight = getComputedStyle(document.body).getPropertyValue(
+      "--content-header-height",
+    );
+    const readingListTitleContainer = document.getElementById("reading-list-title-container");
+    readingListTitleContainer.style.top = headerHeight;
+    const titleHeight = readingListTitleContainer.getBoundingClientRect().height;
+    const readingListActionsContainer = document.getElementById("reading-list-actions-container");
+    readingListActionsContainer.style.top = `calc(${headerHeight} + ${titleHeight}px)`;
+
+    let currentOffset = window.scrollY;
+
+    window.addEventListener("scroll", () => {
+      if (currentOffset > window.scrollY) {
+        readingListTitleContainer.classList.add("sticky-top");
+        readingListActionsContainer.classList.add("sticky-top");
+      } else {
+        readingListTitleContainer.classList.remove("sticky-top");
+        readingListActionsContainer.classList.remove("sticky-top");
+      }
+
+      currentOffset = window.scrollY;
+    });
+  };
+
   window.addEventListener("load", () => {
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
     setupReadAction();
     setupReadOnScroll();
     setupRefresh();
+    setupMobileScroll();
   });
 })();

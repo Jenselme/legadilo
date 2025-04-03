@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Show reading list title and reading list actions when scrolling up.
+
 ## 25.04.1
 
 - Remove async functions to simplify the code.
