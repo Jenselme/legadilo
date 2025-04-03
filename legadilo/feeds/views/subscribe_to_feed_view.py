@@ -19,7 +19,6 @@ from http import HTTPMethod, HTTPStatus
 from typing import cast
 
 import httpx
-from asgiref.sync import sync_to_async
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -36,7 +35,7 @@ from legadilo.reading.models import Tag
 
 from ...users.models import User
 from ...users.user_types import AuthenticatedHttpRequest
-from ...utils.http_utils import get_rss_async_client
+from ...utils.http_utils import get_rss_sync_client
 from .. import constants
 from ..models import Feed, FeedCategory
 from ..services.feed_parsing import (
@@ -137,40 +136,38 @@ class SubscribeToFeedForm(forms.Form):
         return self.cleaned_data.get("feed_choices") or self.cleaned_data["url"]
 
 
-@require_http_methods(["GET", "POST"])  # type: ignore[type-var]
+@require_http_methods(["GET", "POST"])
 @login_required
-async def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
+def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
     if request.method == HTTPMethod.GET:
         status = HTTPStatus.OK
-        form = await _get_subscribe_to_feed_form(data=None, user=request.user)
+        form = _get_subscribe_to_feed_form(data=None, user=request.user)
     else:
-        status, form = await _handle_creation(request)
+        status, form = _handle_creation(request)
 
     return TemplateResponse(request, "feeds/subscribe_to_feed.html", {"form": form}, status=status)
 
 
-async def _get_subscribe_to_feed_form(data: dict | None, user: User):
-    tag_choices = await sync_to_async(Tag.objects.get_all_choices)(user)
-    category_choices = await sync_to_async(FeedCategory.objects.get_all_choices)(user)
+def _get_subscribe_to_feed_form(data: dict | None, user: User):
+    tag_choices = Tag.objects.get_all_choices(user)
+    category_choices = FeedCategory.objects.get_all_choices(user)
     return SubscribeToFeedForm(data, tag_choices=tag_choices, category_choices=category_choices)
 
 
-async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too many return statements
-    form = await _get_subscribe_to_feed_form(request.POST, user=request.user)
+def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too many return statements
+    form = _get_subscribe_to_feed_form(request.POST, user=request.user)
     if not form.is_valid():
         messages.error(request, _("Failed to create the feed"))
         return HTTPStatus.BAD_REQUEST, form
 
     try:
-        async with get_rss_async_client() as client:
-            feed_medata = await get_feed_data(form.feed_url, client=client)
-        tags = await sync_to_async(Tag.objects.get_or_create_from_list)(
-            request.user, form.cleaned_data["tags"]
-        )
-        category = await sync_to_async(FeedCategory.objects.get_first_for_user)(
+        with get_rss_sync_client() as client:
+            feed_medata = get_feed_data(form.feed_url, client=client)
+        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
+        category = FeedCategory.objects.get_first_for_user(
             request.user, form.cleaned_data.get("category")
         )
-        feed, created = await sync_to_async(Feed.objects.create_from_metadata)(
+        feed, created = Feed.objects.create_from_metadata(
             feed_medata,
             request.user,
             form.cleaned_data["refresh_delay"],
@@ -192,7 +189,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         messages.error(request, _("Failed to find a feed URL on the supplied page."))
         return HTTPStatus.BAD_REQUEST, form
     except MultipleFeedFoundError as e:
-        form = await _get_subscribe_to_feed_form(
+        form = _get_subscribe_to_feed_form(
             {
                 "url": form.feed_url,
                 "proposed_feed_choices": json.dumps(e.feed_urls),
@@ -225,7 +222,7 @@ async def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 
         return HTTPStatus.CONFLICT, form
 
     # Empty form after success.
-    form = await _get_subscribe_to_feed_form(data=None, user=request.user)
+    form = _get_subscribe_to_feed_form(data=None, user=request.user)
     messages.success(
         request,
         format_html(

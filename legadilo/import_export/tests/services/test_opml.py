@@ -69,9 +69,9 @@ def test_import_valid_files(user, httpx_mock):
     assert category.title == "Category 1"
     assert category.slug == "category-1"
     assert Feed.objects.count() == 2
-    assert list(Feed.objects.values_list("feed_url", "site_url")) == [
-        ("https://www.example.eu/feeds/all.atom.xml", "http://example.org/"),
+    assert sorted(Feed.objects.values_list("feed_url", "site_url")) == [
         ("https://www.example.com/feeds/all.rss.xml", "http://example.org/"),
+        ("https://www.example.eu/feeds/all.atom.xml", "http://example.org/"),
     ]
     assert Article.objects.count() == 2
     assert FeedArticle.objects.count() == 3

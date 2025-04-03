@@ -231,7 +231,7 @@
 
 <div id="div_id_login" class="mb-3"> <label
                 for="id_login" class="form-label requiredField">
-                Email<span class="asteriskField">*</span> </label> <input type="email" name="login" placeholder="Email address" autocomplete="email" maxlength="320" class="emailinput form-control is-invalid" required aria-invalid="true" id="id_login"> <p id="error_1_id_login" class="invalid-feedback"><strong>This field is required.</strong></p> </div> <div id="div_id_password" class="mb-3"> <label
+                Email<span class="asteriskField">*</span> </label> <input type="email" name="login" placeholder="Email address" autocomplete="email" maxlength="320" class="emailinput form-control is-invalid" required aria-invalid="true" aria-describedby="id_login_error" id="id_login"> <div id="id_login_error"class="invalid-feedback"> <p id="error_1_id_login"><strong>This field is required.</strong></p> </div> </div> <div id="div_id_password" class="mb-3"> <label
                 for="id_password" class="form-label requiredField">
                 Password<span class="asteriskField">*</span> </label> <input type="password" name="password" placeholder="Password" autocomplete="current-password" class="passwordinput form-control" required aria-describedby="id_password_helptext" id="id_password"> <div id="id_password_helptext" class="form-text"><a href="/accounts/password/reset/">Forgot your password?</a></div> </div> <div class="mb-3"> <div id="div_id_remember" class="form-check"> <input type="checkbox" name="remember" class="checkboxinput form-check-input" id="id_remember"> <label for="id_remember" class="form-check-label">
                     Remember Me

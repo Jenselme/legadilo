@@ -18,7 +18,6 @@ from uuid import uuid4
 
 import pytest
 import time_machine
-from asgiref.sync import async_to_sync
 from django.db import IntegrityError
 
 from legadilo.users.models import ApplicationToken
@@ -90,7 +89,7 @@ class TestApplicationTokenManagerUseToken:
 
     def test_use_inexistant_token(self, user, django_assert_num_queries):
         with django_assert_num_queries(2):
-            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+            found_app_token = ApplicationToken.objects.use_application_token(
                 user.email, uuid4(), self.token_secret
             )
 
@@ -98,7 +97,7 @@ class TestApplicationTokenManagerUseToken:
 
     def test_use_with_invalid_secret(self, user, django_assert_num_queries):
         with django_assert_num_queries(2):
-            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+            found_app_token = ApplicationToken.objects.use_application_token(
                 user.email, self.application_token.uuid, "toto"
             )
 
@@ -109,7 +108,7 @@ class TestApplicationTokenManagerUseToken:
         self.application_token.save()
 
         with django_assert_num_queries(2):
-            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+            found_app_token = ApplicationToken.objects.use_application_token(
                 user.email, self.application_token.uuid, self.token_secret
             )
 
@@ -120,7 +119,7 @@ class TestApplicationTokenManagerUseToken:
         user.save()
 
         with django_assert_num_queries(2):
-            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+            found_app_token = ApplicationToken.objects.use_application_token(
                 user.email, self.application_token.uuid, self.token_secret
             )
 
@@ -129,7 +128,7 @@ class TestApplicationTokenManagerUseToken:
     @time_machine.travel("2024-12-01 12:00:00", tick=False)
     def test_use(self, user, django_assert_num_queries):
         with django_assert_num_queries(2):
-            found_app_token = async_to_sync(ApplicationToken.objects.use_application_token)(
+            found_app_token = ApplicationToken.objects.use_application_token(
                 user.email, self.application_token.uuid, self.token_secret
             )
 

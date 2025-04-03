@@ -61,7 +61,7 @@ class EditArticleForm(forms.Form):
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update(IMG_SRC="https:")
+@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
 def article_details_view(
     request: AuthenticatedHttpRequest, article_id: int, article_slug: str
 ) -> TemplateResponse:

@@ -18,7 +18,6 @@ from datetime import UTC, datetime
 
 import pytest
 import time_machine
-from asgiref.sync import async_to_sync
 
 from legadilo.feeds.models import FeedUpdate
 
@@ -76,7 +75,7 @@ class TestFeedUpdateManager:
             FeedUpdateFactory()
             FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 
-        latest = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
+        latest = FeedUpdate.objects.get_latest_success_for_feed_id(feed.id)
 
         assert latest.pk == latest_feed_update.pk
         assert latest.created_at == datetime(2023, 12, 31, 11, tzinfo=UTC)

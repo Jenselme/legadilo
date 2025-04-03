@@ -62,7 +62,7 @@ class ApplicationTokenManager(models.Manager["ApplicationToken"]):
             user=user,
         ), token
 
-    async def use_application_token(
+    def use_application_token(
         self, user_email: str, token_uuid: UUID, token_secret: str
     ) -> ApplicationToken | None:
         qs = (
@@ -71,8 +71,8 @@ class ApplicationTokenManager(models.Manager["ApplicationToken"]):
             .defer(None)
             .filter(user__email=user_email, user__is_active=True, uuid=token_uuid)
         )
-        await qs.aupdate(last_used_at=utcnow())
-        application_token = await qs.afirst()
+        qs.update(last_used_at=utcnow())
+        application_token = qs.first()
         hashed_token = application_token.token if application_token else "failed-to-find-token"
 
         if check_password(token_secret, hashed_token):

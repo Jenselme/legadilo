@@ -644,9 +644,9 @@ class ArticleManager(models.Manager["Article"]):
     def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
         return self.get_queryset().for_external_tag(user, tag)
 
-    async def export(self, user: User):
+    def export(self, user: User):
         articles_qs = self.get_queryset().for_export(user)
-        nb_pages = math.ceil(await articles_qs.acount() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
+        nb_pages = math.ceil(articles_qs.count() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
         for page in range(nb_pages):
             articles = []
             start_index = page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
@@ -654,7 +654,7 @@ class ArticleManager(models.Manager["Article"]):
                 page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
                 + constants.MAX_EXPORT_ARTICLES_PER_PAGE
             )
-            async for article in articles_qs[start_index:end_index]:
+            for article in articles_qs[start_index:end_index]:
                 articles.append({
                     "category_id": article.annot_feed_category_id,  # type: ignore[attr-defined]
                     "category_title": article.annot_feed_cateory_title,  # type: ignore[attr-defined]

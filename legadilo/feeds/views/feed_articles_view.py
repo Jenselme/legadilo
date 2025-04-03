@@ -30,7 +30,7 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update(IMG_SRC="https:")
+@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
 def feed_articles_view(
     request: AuthenticatedHttpRequest, feed_id: int, feed_slug: str | None = None
 ) -> TemplateResponse:

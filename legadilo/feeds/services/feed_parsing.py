@@ -87,10 +87,10 @@ class FailedToParseArticleError(InvalidFeedFileError):
     pass
 
 
-async def get_feed_data(
+def get_feed_data(
     url: str,
     *,
-    client: httpx.AsyncClient,
+    client: httpx.Client,
     etag: str | None = None,
     last_modified: datetime | None = None,
 ) -> FeedData:
@@ -101,12 +101,10 @@ async def get_feed_data(
     if _is_youtube_link(url):
         url = _find_youtube_rss_feed_link(url)
 
-    parsed_feed, url_content, resolved_url = await _fetch_feed_and_raw_data(client, url)
+    parsed_feed, url_content, resolved_url = _fetch_feed_and_raw_data(client, url)
     if not parsed_feed.get("version"):
         url = _find_feed_page_content(url_content)
-        parsed_feed, resolved_url = await _fetch_feed(
-            client, url, etag=etag, last_modified=last_modified
-        )
+        parsed_feed, resolved_url = _fetch_feed(client, url, etag=etag, last_modified=last_modified)
 
     return build_feed_data_from_parsed_feed(parsed_feed, str(resolved_url))
 
@@ -152,8 +150,8 @@ def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: 
     )
 
 
-async def _fetch_feed_and_raw_data(
-    client: httpx.AsyncClient,
+def _fetch_feed_and_raw_data(
+    client: httpx.Client,
     url: str,
     etag: str | None = None,
     last_modified: datetime | None = None,
@@ -164,7 +162,7 @@ async def _fetch_feed_and_raw_data(
     if last_modified:
         headers["If-Modified-Since"] = dt_to_http_date(last_modified)
 
-    response = await client.get(url, headers=headers, follow_redirects=True)
+    response = client.get(url, headers=headers, follow_redirects=True)
     raw_feed_content = response.raise_for_status().content
     if sys.getsizeof(raw_feed_content) > constants.MAX_FEED_FILE_SIZE:
         raise FeedFileTooBigError
@@ -177,10 +175,10 @@ async def _fetch_feed_and_raw_data(
     )
 
 
-async def _fetch_feed(
-    client: httpx.AsyncClient, url: str, *, etag: str | None, last_modified: datetime | None
+def _fetch_feed(
+    client: httpx.Client, url: str, *, etag: str | None, last_modified: datetime | None
 ) -> tuple[FeedParserDict, httpx.URL]:
-    parsed_feed, _, resolved_url = await _fetch_feed_and_raw_data(
+    parsed_feed, _, resolved_url = _fetch_feed_and_raw_data(
         client, url, etag=etag, last_modified=last_modified
     )
     return parsed_feed, resolved_url

@@ -40,12 +40,12 @@ users_api_router = Router(tags=["auth"])
 
 
 class AuthBearer(HttpBearer):
-    async def authenticate(self, request, token) -> User | None:
+    def authenticate(self, request, token) -> User | None:
         if not token:
             return None
 
         decoded_token = _decode_access_token(token)
-        return await _get_user_from_access_token(decoded_token)
+        return _get_user_from_access_token(decoded_token)
 
 
 class AccessToken(BaseSchema):
@@ -62,17 +62,17 @@ def _decode_access_token(token: str) -> AccessToken:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return AccessToken.model_validate(decoded_token)
     except jwt.ExpiredSignatureError as e:
-        raise AuthenticationError("Expired JWT token") from e
+        raise AuthenticationError(message="Expired JWT token") from e
     except (jwt.PyJWTError, PydanticValidationError) as e:
-        raise AuthenticationError("Invalid JWT token") from e
+        raise AuthenticationError(message="Invalid JWT token") from e
 
 
-async def _get_user_from_access_token(access_token: AccessToken) -> User | None:
+def _get_user_from_access_token(access_token: AccessToken) -> User | None:
     try:
         filters = models.Q(application_tokens__validity_end__isnull=True) | models.Q(
             application_tokens__validity_end__gt=utcnow()
         )
-        return await User.objects.aget(
+        return User.objects.get(
             filters,
             is_active=True,
             application_tokens__uuid=access_token.application_token_uuid,
@@ -98,8 +98,8 @@ class CreateTokensResponse(Schema):
     url_name="create_tokens",
     summary="Create an access token from an application token.",
 )
-async def create_tokens_view(request: HttpRequest, payload: CreateTokensPayload):
-    application_token = await ApplicationToken.objects.use_application_token(
+def create_tokens_view(request: HttpRequest, payload: CreateTokensPayload):
+    application_token = ApplicationToken.objects.use_application_token(
         payload.email, payload.application_token_uuid, payload.application_token_secret
     )
     if application_token is None:
@@ -130,7 +130,7 @@ class UserSchema(ModelSchema):
 @users_api_router.get(
     "", response=UserSchema, url_name="user_info", summary="Get current user info"
 )
-async def get_user_view(request: AuthenticatedApiRequest) -> User:  # noqa: RUF029 auth is async!
+def get_user_view(request: AuthenticatedApiRequest) -> User:
     """Access information about your user.
 
     It mostly serves as an endpoint to check that you are correctly authenticated and can use the

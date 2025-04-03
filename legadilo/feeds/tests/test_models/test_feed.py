@@ -19,7 +19,6 @@ from datetime import UTC, datetime
 
 import pytest
 import time_machine
-from asgiref.sync import async_to_sync
 
 from legadilo.core.models import Timezone
 from legadilo.feeds.models import FeedArticle, FeedDeletedArticle, FeedUpdate
@@ -396,7 +395,7 @@ class TestFeedManager:
         assert feed.refresh_delay == feeds_constants.FeedRefreshDelays.DAILY_AT_NOON
         assert feed.article_retention_time == 7
         assert feed.articles.count() > 0
-        feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
+        feed_update = FeedUpdate.objects.get_latest_success_for_feed_id(feed.id)
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.error_message
         assert feed_update.feed_etag == "W/etag"
@@ -427,7 +426,7 @@ class TestFeedManager:
         assert feed.description == "A description"
         assert feed.feed_type == feeds_constants.SupportedFeedType.atom
         assert feed.articles.count() > 0
-        feed_update = async_to_sync(FeedUpdate.objects.get_latest_success_for_feed)(feed)
+        feed_update = FeedUpdate.objects.get_latest_success_for_feed_id(feed.id)
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
         assert not feed_update.error_message
         assert feed_update.feed_etag == "W/etag"
@@ -645,7 +644,7 @@ class TestFeedManager:
         Feed(user=other_user, title="Feed other user")
 
         with django_assert_num_queries(1):
-            feeds = async_to_sync(Feed.objects.export)(user)
+            feeds = Feed.objects.export(user)
 
         assert len(feeds) == 2
         assert not feeds[0]["category_id"]

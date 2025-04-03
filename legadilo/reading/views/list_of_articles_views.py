@@ -25,7 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -47,10 +47,10 @@ from legadilo.utils.validators import get_page_number_from_request
 
 @require_GET
 @login_required
-@csp_update(IMG_SRC="https:")
+@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
 def reading_list_with_articles_view(
     request: AuthenticatedHttpRequest, reading_list_slug: str | None = None
-):
+) -> HttpResponse:
     try:
         displayed_reading_list = ReadingList.objects.get_reading_list(
             request.user, reading_list_slug
@@ -137,7 +137,7 @@ def _display_list_of_articles(
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update(IMG_SRC="https:")
+@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
 def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> TemplateResponse:
     displayed_tag = get_object_or_404(
         Tag,
@@ -154,7 +154,7 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update(IMG_SRC="https:")
+@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
 def external_tag_with_articles_view(
     request: AuthenticatedHttpRequest, tag: str
 ) -> TemplateResponse:

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 25.04.1
+
+- Remove async functions to simplify the code.
+  - We now run with `gunicorn` instead of `daphne` in production. We use 4 `gunicorn` workers.
+- Switch to Python 3.13
+- Correct title for feeds without sections in feeds admin.
+
+## 25.03.2
+
+- Improve user Django admin page.
+- Prevent errors with empty slugs.
+
 ## 25.03.1
 
 - Can filter tags in tags admin.
