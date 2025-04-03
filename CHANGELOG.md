@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Show reading list title and reading list actions when scrolling up.
+- Improve browser extension:
+  - Display site title instead of nothing for feed links without a title attribute.
 
 ## 25.04.1
 

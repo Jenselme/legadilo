@@ -85,6 +85,12 @@ const displayActionSelector = (tab, pageContent, feedNodes) => {
     const button = document.createElement("button");
     button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
     button.innerText = feedNode.getAttribute("title");
+    if (!button.innerText) {
+      const hostname = new URL(tab.url).hostname;
+      const type = feedNode.getAttribute("type");
+      const feedType = type.replace("application/", "").replace("+xml", "");
+      button.innerText = `${hostname} (${feedType})`;
+    }
     let feedHref = feedNode.getAttribute("href");
     if (feedHref.startsWith("//")) {
       const pageProtocol = new URL(tab.url).protocol;
