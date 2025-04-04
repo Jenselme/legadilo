@@ -569,7 +569,10 @@ if DEBUG:
     MIDDLEWARE.insert(0, "django_browser_reload.middleware.BrowserReloadMiddleware")
     # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
     DEBUG_TOOLBAR_CONFIG = {
-        "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
+        "DISABLE_PANELS": [
+            "debug_toolbar.panels.profiling.ProfilingPanel",
+            "debug_toolbar.panels.redirects.RedirectsPanel",
+        ],
         "SHOW_TEMPLATE_CONTEXT": True,
     }
     # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#internal-ips
