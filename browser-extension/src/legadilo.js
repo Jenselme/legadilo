@@ -50,6 +50,9 @@ export const updateArticle = async (
     is_for_later: isForLater,
   });
 
+export const deleteArticle = async (articleId) =>
+  await httpDelete(`/api/reading/articles/${articleId}/`);
+
 export const subscribeToFeed = async (link) => await post("/api/feeds/", { feed_url: link });
 
 export const updateFeed = async (
@@ -137,6 +140,10 @@ const doFetch = async (url, fetchOptions) => {
     throw new Error(`Response status: ${resp.status} (${resp.statusText})`, { cause: resp.status });
   }
 
+  if (fetchOptions.method === "DELETE") {
+    return {};
+  }
+
   return await resp.json();
 };
 
@@ -145,6 +152,8 @@ const patch = handleAuth(
 );
 
 const get = handleAuth(async (apiUrl) => await doFetch(apiUrl, { method: "GET" }));
+
+const httpDelete = handleAuth(async (apiUrl) => await doFetch(apiUrl, { method: "DELETE" }));
 
 export const loadOptions = async () => chrome.storage.local.get(DEFAULT_OPTIONS);
 

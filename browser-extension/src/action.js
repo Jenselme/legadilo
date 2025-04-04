@@ -67,6 +67,9 @@ const onMessage = (request) => {
     case "updated-article":
       updatedArticleSuccess(request.article, request.tags);
       break;
+    case "deleted-article":
+      displayActionsSelector();
+      break;
     case "subscribed-to-feed":
       feedSubscriptionSuccess(request.feed, request.tags, request.categories);
       break;
@@ -303,6 +306,15 @@ const setupArticleActions = (articleId) => {
     });
   };
 
+  const deleteArticle = () => {
+    hideArticle();
+    displayLoader();
+    sendMessage({
+      name: "delete-article",
+      articleId,
+    });
+  };
+
   const actions = {
     "#update-saved-article": (event) => {
       event.preventDefault();
@@ -333,7 +345,9 @@ const setupArticleActions = (articleId) => {
     "#unmark-article-as-for-later": () => {
       updateArticle({ isForLater: false });
     },
-    "#article-nav-back": async () => {
+    "#delete-article": () =>
+      askConfirmation("Are you sure you want to delete this article?").then(deleteArticle),
+    "#article-nav-back": () => {
       hideArticle();
 
       Object.entries(actions).forEach(([selector, action]) => {
@@ -377,4 +391,39 @@ const sendMessage = async (message) => {
 
   const response = await chrome.runtime.sendMessage(message);
   onMessage(response);
+};
+
+const askConfirmation = (message) => {
+  const confirmDialog = document.getElementById("confirm-dialog");
+
+  const confirmDialogTitle = document.getElementById("confirm-dialog-title");
+  confirmDialogTitle.innerText = message;
+
+  let resolveDeferred;
+  let rejectDeferred;
+  const deferred = new Promise((resolve, reject) => {
+    resolveDeferred = resolve;
+    rejectDeferred = reject;
+  });
+  const cancelBtn = document.getElementById("confirm-dialog-cancel-btn");
+  const confirmBtn = document.getElementById("confirm-dialog-confirm-btn");
+  const cancel = () => {
+    confirmDialog.close();
+    rejectDeferred();
+    cancelBtn.removeEventListener("click", cancel);
+    confirmBtn.removeEventListener("click", confirm);
+  };
+  const confirm = () => {
+    confirmDialog.close();
+    resolveDeferred();
+    cancelBtn.removeEventListener("click", cancel);
+    confirmBtn.removeEventListener("click", confirm);
+  };
+
+  cancelBtn.addEventListener("click", cancel);
+  confirmBtn.addEventListener("click", confirm);
+
+  confirmDialog.showModal();
+
+  return deferred;
 };

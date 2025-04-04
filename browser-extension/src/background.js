@@ -5,6 +5,7 @@ import {
   subscribeToFeed,
   updateFeed,
   listCategories,
+  deleteArticle,
 } from "./legadilo.js";
 
 const isFirefox = typeof browser === "object";
@@ -33,6 +34,9 @@ const onMessage = async (request, sendResponse) => {
       case "update-article":
         await processUpdateArticleRequest(sendResponse, request.articleId, request.payload);
         break;
+      case "delete-article":
+        await processDeleteArticleRequest(sendResponse, request.articleId);
+        break;
       case "subscribe-to-feed":
         await processFeedSubscriptionRequest(sendResponse, request.payload);
         break;
@@ -58,6 +62,11 @@ const processUpdateArticleRequest = async (sendResponse, articleId, payload) => 
   const article = await updateArticle(articleId, payload);
   const tags = await listTags();
   sendResponse({ name: "updated-article", article, tags });
+};
+
+const processDeleteArticleRequest = async (sendResponse, articleId) => {
+  await deleteArticle(articleId);
+  sendResponse({ name: "deleted-article" });
 };
 
 const processFeedSubscriptionRequest = async (sendResponse, payload) => {
