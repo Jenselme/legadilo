@@ -24,6 +24,14 @@
             </div>
         </div>
         <div id="article-container">
+            <button id="article-nav-back"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button">
+                <img class="bi"
+                     src="./vendor/bs-icons/arrow-left.svg"
+                     alt="Go back button" />
+                Back
+            </button>
             <form id="update-saved-article-form">
                 <div class="mb-3">
                     <label for="saved-article-title" class="form-label">
@@ -56,7 +64,9 @@
                     </select>
                 </div>
                 <div class="mb-3 d-flex justify-content-center">
-                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                    <button id="update-saved-article"
+                            class="btn btn-primary btn-sm"
+                            type="submit">Update</button>
                 </div>
             </form>
             <div class="mb-3 d-flex justify-content-evenly">
@@ -105,6 +115,14 @@
             </div>
         </div>
         <div id="feed-container">
+            <button id="feed-nav-back"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button">
+                <img class="bi"
+                     src="./vendor/bs-icons/arrow-left.svg"
+                     alt="Go back button" />
+                Back
+            </button>
             <h2 id="feed-title"></h2>
             <form id="update-feed-form">
                 <div class="mb-3">
@@ -158,6 +176,14 @@
             </form>
         </div>
         <div id="error-container" class="alert alert-danger">
+            <button id="error-nav-back"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button">
+                <img class="bi"
+                     src="./vendor/bs-icons/arrow-left.svg"
+                     alt="Go back button" />
+                Back
+            </button>
             <p>An error occurred</p>
             <pre id="error-message"></pre>
         </div>

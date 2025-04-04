@@ -6,7 +6,7 @@ let feedTagsInstance = null;
 
 const isFirefox = typeof browser === "object";
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   connectToPort();
 
   hideLoader();
@@ -15,14 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   hideArticle();
   hideFeed();
 
-  const tab = await getCurrentTab();
-  const scriptResult = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => document.documentElement.outerHTML,
-  });
-  const pageContent = scriptResult[0].result;
-
-  runDefaultAction(tab, pageContent);
+  runDefaultAction();
 });
 
 const connectToPort = () => {
@@ -34,12 +27,10 @@ const connectToPort = () => {
   port.onMessage.addListener(onMessage);
 };
 
-const runDefaultAction = (tab, pageContent) => {
-  const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, "text/html");
-  const feedNodes = [];
-  feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
-  feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
+const runDefaultAction = async () => {
+  const tab = await getCurrentTab();
+  const pageContent = await getPageContent(tab);
+  const feedNodes = getFeedNodes(pageContent);
 
   // No feed links, let's save immediately.
   if (feedNodes.length === 0) {
@@ -47,7 +38,17 @@ const runDefaultAction = (tab, pageContent) => {
     return;
   }
 
-  displayActionSelector(tab, pageContent, feedNodes);
+  setupActionsSelector(tab, pageContent, feedNodes);
+};
+
+const getFeedNodes = (pageContent) => {
+  const parser = new DOMParser();
+  const htmlDoc = parser.parseFromString(pageContent, "text/html");
+  const feedNodes = [];
+  feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
+  feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
+
+  return feedNodes;
 };
 
 const onMessage = (request) => {
@@ -77,8 +78,8 @@ const onMessage = (request) => {
   }
 };
 
-const displayActionSelector = (tab, pageContent, feedNodes) => {
-  document.querySelector("#action-selector-container").style.display = "block";
+const setupActionsSelector = (tab, pageContent, feedNodes) => {
+  displayActionsSelector();
 
   const chooseFeedsContainer = document.querySelector("#choose-action-container");
   for (const feedNode of feedNodes) {
@@ -109,13 +110,25 @@ const displayActionSelector = (tab, pageContent, feedNodes) => {
   });
 };
 
+const displayActionsSelector = () => {
+  document.querySelector("#action-selector-container").style.display = "block";
+};
+
 const hideActionSelector = () => {
   document.querySelector("#action-selector-container").style.display = "none";
+};
+
+const errorNavBack = () => {
+  hideErrorMessage();
+  displayActionsSelector();
+  document.querySelector("#error-nav-back").removeEventListener("click", errorNavBack);
 };
 
 const displayErrorMessage = (message) => {
   document.querySelector("#error-message").innerText = message;
   document.querySelector("#error-container").style.display = "block";
+
+  document.querySelector("#error-nav-back").addEventListener("click", errorNavBack);
 };
 
 const hideErrorMessage = () => {
@@ -218,7 +231,7 @@ const displayFeed = (feed, tags, categories) => {
     feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
   }
 
-  document.querySelector("#update-feed-form").addEventListener("submit", (event) => {
+  const updateFeed = (event) => {
     event.preventDefault();
 
     const data = new FormData(event.target);
@@ -235,7 +248,17 @@ const displayFeed = (feed, tags, categories) => {
         tags: data.getAll("tags"),
       },
     });
-  });
+  };
+  document.querySelector("#update-feed-form").addEventListener("submit", updateFeed);
+
+  const feedNavBack = () => {
+    document.querySelector("#feed-nav-back").removeEventListener("click", feedNavBack);
+    document.querySelector("#update-feed-form").removeEventListener("submit", updateFeed);
+
+    hideFeed();
+    displayActionsSelector();
+  };
+  document.querySelector("#feed-nav-back").addEventListener("click", feedNavBack);
 };
 
 const hideFeed = () => {
@@ -247,6 +270,14 @@ const hideFeed = () => {
  */
 const getCurrentTab = () =>
   chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
+
+const getPageContent = async (tab) => {
+  const scriptResult = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => document.documentElement.outerHTML,
+  });
+  return scriptResult[0].result;
+};
 
 const saveArticle = (tab, pageContent) => {
   displayLoader();
@@ -262,37 +293,6 @@ const savedArticleSuccess = (article, tags) => {
 };
 
 const setupArticleActions = (articleId) => {
-  document.querySelector("#update-saved-article-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const data = new FormData(event.target);
-
-    updateArticle({
-      title: data.get("title"),
-      tags: data.getAll("tags"),
-      readingTime: data.get("reading-time"),
-    });
-  });
-
-  document.querySelector("#mark-article-as-read").addEventListener("click", () => {
-    updateArticle({ readAt: new Date().toISOString() });
-  });
-  document.querySelector("#mark-article-as-unread").addEventListener("click", () => {
-    updateArticle({ readAt: null });
-  });
-  document.querySelector("#mark-article-as-favorite").addEventListener("click", () => {
-    updateArticle({ isFavorite: true });
-  });
-  document.querySelector("#unmark-article-as-favorite").addEventListener("click", () => {
-    updateArticle({ isFavorite: false });
-  });
-  document.querySelector("#mark-article-as-for-later").addEventListener("click", () => {
-    updateArticle({ isForLater: true });
-  });
-  document.querySelector("#unmark-article-as-for-later").addEventListener("click", () => {
-    updateArticle({ isForLater: false });
-  });
-
   const updateArticle = (payload) => {
     hideArticle();
     displayLoader();
@@ -302,6 +302,51 @@ const setupArticleActions = (articleId) => {
       payload,
     });
   };
+
+  const actions = {
+    "#update-saved-article": (event) => {
+      event.preventDefault();
+
+      const data = new FormData(document.querySelector("#update-saved-article-form"));
+
+      updateArticle({
+        title: data.get("title"),
+        tags: data.getAll("tags"),
+        readingTime: data.get("reading-time"),
+      });
+    },
+    "#mark-article-as-read": () => {
+      updateArticle({ readAt: new Date().toISOString() });
+    },
+    "#mark-article-as-unread": () => {
+      updateArticle({ readAt: null });
+    },
+    "#mark-article-as-favorite": () => {
+      updateArticle({ isFavorite: true });
+    },
+    "#unmark-article-as-favorite": () => {
+      updateArticle({ isFavorite: false });
+    },
+    "#mark-article-as-for-later": () => {
+      updateArticle({ isForLater: true });
+    },
+    "#unmark-article-as-for-later": () => {
+      updateArticle({ isForLater: false });
+    },
+    "#article-nav-back": async () => {
+      hideArticle();
+
+      Object.entries(actions).forEach(([selector, action]) => {
+        document.querySelector(selector).removeEventListener("click", action);
+      });
+
+      displayActionsSelector();
+    },
+  };
+
+  Object.entries(actions).forEach(([selector, action]) => {
+    document.querySelector(selector).addEventListener("click", action);
+  });
 };
 
 const updatedArticleSuccess = (article, tags) => {
