@@ -228,6 +228,7 @@ class TestListFeedsView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.feed = FeedFactory(user=user)
+        self.other_feed = FeedFactory(user=user)
         self.url = reverse("api-1.0.0:list_feeds")
 
     def test_not_logged_in(self, client):
@@ -247,9 +248,16 @@ class TestListFeedsView:
 
         assert response.status_code == HTTPStatus.OK
         data = response.json()
-        assert len(data["items"]) == 1
+        assert len(data["items"]) == 2
         data["items"][0] = _prepare_feed_for_snapshot(data["items"][0], self.feed)
+        data["items"][1] = _prepare_feed_for_snapshot(data["items"][1], self.other_feed)
         snapshot.assert_match(serialize_for_snapshot(data), "feeds.json")
+
+    def test_filter_by_urls(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url, {"feed_urls": [self.feed.feed_url]})
+
+        assert response.status_code == HTTPStatus.OK
+        assert len(response.json()["items"]) == 1
 
 
 @pytest.mark.django_db

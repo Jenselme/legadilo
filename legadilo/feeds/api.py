@@ -22,10 +22,10 @@ from typing import Annotated, Self
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Router, Schema
+from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from config import settings
 from legadilo.feeds import constants
@@ -73,12 +73,20 @@ class OutFeedSchema(ModelSchema):
         exclude = ("user", "created_at", "updated_at", "articles")
 
 
+class FeedsSearchQuery(Schema):
+    feed_urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
+
+
 @feeds_api_router.get(
     "", response=list[OutFeedSchema], url_name="list_feeds", summary="List all you feeds"
 )
 @paginate
-def list_feeds_view(request: AuthenticatedApiRequest):
-    return Feed.objects.get_queryset().for_user(request.auth).for_api()
+def list_feeds_view(request: AuthenticatedApiRequest, query: Query[FeedsSearchQuery]):
+    qs = Feed.objects.get_queryset().for_user(request.auth).for_api()
+    if query.feed_urls:
+        qs = qs.for_feed_urls_search(query.feed_urls)
+
+    return qs
 
 
 class FeedSubscription(Schema):

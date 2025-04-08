@@ -199,6 +199,13 @@ class FeedQuerySet(models.QuerySet["Feed"]):
     def for_api(self):
         return self.select_related("category").prefetch_related("tags")
 
+    def for_feed_urls_search(self, urls: list[str]):
+        filters = models.Q()
+        for url in urls:
+            filters |= models.Q(feed_url=url)
+
+        return self.filter(filters)
+
 
 class FeedManager(models.Manager["Feed"]):
     _hints: dict
