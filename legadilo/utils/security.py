@@ -41,6 +41,7 @@ def sanitize_keep_safe_tags(data: str, extra_tags_to_cleanup: Set[str] = frozens
         data,
         tags=allowed_tags,
         attributes=_add_attribute_to_allowed_attributes(DEFAULT_ALLOWED_ATTRIBUTES, {"id"}),
+        url_schemes=nh3.ALLOWED_URL_SCHEMES | {"data"},
         strip_comments=True,
     )
 
