@@ -1,4 +1,5 @@
 import Tags from "./vendor/tags.js";
+import { listFeeds } from "./legadilo.js";
 
 let port;
 let articleTagsInstance = null;
@@ -38,7 +39,7 @@ const runDefaultAction = async () => {
     return;
   }
 
-  setupActionsSelector(tab, pageContent, feedNodes);
+  await displayActionsSelector();
 };
 
 const getFeedNodes = (pageContent) => {
@@ -81,25 +82,39 @@ const onMessage = (request) => {
   }
 };
 
-const setupActionsSelector = (tab, pageContent, feedNodes) => {
-  displayActionsSelector();
+const displayActionsSelector = async () => {
+  displayLoader();
+  const tab = await getCurrentTab();
+  const pageContent = await getPageContent(tab);
+  const feedNodes = getFeedNodes(pageContent);
+  const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
+  const subscribedFeedUrls = (await listFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
+  hideLoader();
 
-  const chooseFeedsContainer = document.querySelector("#choose-action-container");
+  document.querySelector("#action-selector-container").style.display = "block";
+
+  const chooseFeedsContainer = document.querySelector("#subscribe-to-feeds-container");
+  chooseFeedsContainer.replaceChildren();
+
   for (const feedNode of feedNodes) {
+    let feedHref = getFeedHref(tab, feedNode);
+
     const button = document.createElement("button");
     button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
-    button.innerText = feedNode.getAttribute("title");
-    if (!button.innerText) {
+    let feedTitle = feedNode.getAttribute("title");
+    if (!feedTitle) {
       const hostname = new URL(tab.url).hostname;
       const type = feedNode.getAttribute("type");
       const feedType = type.replace("application/", "").replace("+xml", "");
-      button.innerText = `${hostname} (${feedType})`;
+      feedTitle = `${hostname} (${feedType})`;
     }
-    let feedHref = feedNode.getAttribute("href");
-    if (feedHref.startsWith("//")) {
-      const pageProtocol = new URL(tab.url).protocol;
-      feedHref = `${pageProtocol}${feedHref}`;
-    }
+
+    button.innerHTML = `${feedTitle} ${
+      subscribedFeedUrls.includes(feedHref)
+        ? '<img class="bi" src="./vendor/bs-icons/rss-fill.svg" alt="Already subscribed to this feed" />'
+        : ""
+    }`;
+
     button.addEventListener("click", () => {
       hideActionSelector();
       subscribeToFeed(feedHref);
@@ -113,17 +128,23 @@ const setupActionsSelector = (tab, pageContent, feedNodes) => {
   });
 };
 
-const displayActionsSelector = () => {
-  document.querySelector("#action-selector-container").style.display = "block";
+const getFeedHref = (tab, feedNode) => {
+  let feedHref = feedNode.getAttribute("href");
+  if (feedHref.startsWith("//")) {
+    const pageProtocol = new URL(tab.url).protocol;
+    feedHref = `${pageProtocol}${feedHref}`;
+  }
+
+  return feedHref;
 };
 
 const hideActionSelector = () => {
   document.querySelector("#action-selector-container").style.display = "none";
 };
 
-const errorNavBack = () => {
+const errorNavBack = async () => {
   hideErrorMessage();
-  displayActionsSelector();
+  await displayActionsSelector();
   document.querySelector("#error-nav-back").removeEventListener("click", errorNavBack);
 };
 
@@ -254,12 +275,12 @@ const displayFeed = (feed, tags, categories) => {
   };
   document.querySelector("#update-feed-form").addEventListener("submit", updateFeed);
 
-  const feedNavBack = () => {
+  const feedNavBack = async () => {
     document.querySelector("#feed-nav-back").removeEventListener("click", feedNavBack);
     document.querySelector("#update-feed-form").removeEventListener("submit", updateFeed);
 
     hideFeed();
-    displayActionsSelector();
+    await displayActionsSelector();
   };
   document.querySelector("#feed-nav-back").addEventListener("click", feedNavBack);
 };
@@ -347,14 +368,14 @@ const setupArticleActions = (articleId) => {
     },
     "#delete-article": () =>
       askConfirmation("Are you sure you want to delete this article?").then(deleteArticle),
-    "#article-nav-back": () => {
+    "#article-nav-back": async () => {
       hideArticle();
 
       Object.entries(actions).forEach(([selector, action]) => {
         document.querySelector(selector).removeEventListener("click", action);
       });
 
-      displayActionsSelector();
+      await displayActionsSelector();
     },
   };
 
