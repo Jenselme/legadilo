@@ -970,7 +970,9 @@ class TestArticleQuerySet:
         article_with_partial_url = ArticleFactory(title="Partial url", user=user, url=searched_url)
         ArticleFactory(title="Other URL", user=user)
 
-        articles = list(Article.objects.get_queryset().for_url_search(searched_url).order_by("id"))
+        articles = list(
+            Article.objects.get_queryset().for_url_search([searched_url]).order_by("id")
+        )
 
         assert articles == [article_with_full_url, article_with_partial_url]
 

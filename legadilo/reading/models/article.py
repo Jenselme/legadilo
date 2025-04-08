@@ -454,8 +454,12 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .filter(lower_tags_title=search_query.q.lower())
         )
 
-    def for_url_search(self, url: str) -> Self:
-        return self.filter(url__icontains=url)
+    def for_url_search(self, urls: list[str]) -> Self:
+        filters = models.Q()
+        for url in urls:
+            filters |= models.Q(url__icontains=url)
+
+        return self.filter(filters)
 
     def for_api(self):
         return self.prefetch_related(_build_prefetch_article_tags())
@@ -693,7 +697,7 @@ class ArticleManager(models.Manager["Article"]):
             .filter(_build_filters_from_reading_list(search_query))
         )
         if search_query.search_type == constants.ArticleSearchType.URL:
-            articles_qs = articles_qs.for_url_search(search_query.q)
+            articles_qs = articles_qs.for_url_search([search_query.q])
         elif search_query.q:
             full_text_articles_qs = articles_qs.for_search(search_query)
             tags_articles_qs = articles_qs.for_tags_search(search_query)

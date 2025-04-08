@@ -201,6 +201,44 @@ class TestCreateArticleView:
 
 
 @pytest.mark.django_db
+class TestListArticleView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.article = ArticleFactory(
+            user=user,
+            published_at=utcdt(2024, 11, 24, 17, 57, 0),
+            updated_at=utcdt(2024, 11, 24, 17, 57, 0),
+        )
+        ArticleFactory(
+            user=user,
+        )
+        self.url = reverse("api-1.0.0:list_articles")
+
+    def test_not_logged_in(self, client):
+        response = client.get(self.url)
+
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_list_other_user(self, logged_in_other_user_sync_client):
+        response = logged_in_other_user_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json()["count"] == 0
+
+    def test_list(self, logged_in_sync_client, snapshot):
+        response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json()["count"] == 2
+
+    def test_filter_by_urls(self, logged_in_sync_client, snapshot):
+        response = logged_in_sync_client.get(self.url, {"urls": [self.article.url]})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json()["count"] == 1
+
+
+@pytest.mark.django_db
 class TestGetArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):

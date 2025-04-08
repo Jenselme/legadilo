@@ -20,7 +20,8 @@ from typing import Annotated, Self
 
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Router, Schema
+from ninja import ModelSchema, Query, Router, Schema
+from ninja.pagination import paginate
 from pydantic import Field, model_validator
 
 from legadilo.reading import constants
@@ -116,6 +117,25 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
         return HTTPStatus.CREATED, article
 
     return HTTPStatus.OK, article
+
+
+class ArticlesSearchQuery(Schema):
+    urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
+
+
+@reading_api_router.get(
+    "/articles/",
+    response={HTTPStatus.OK: list[OutArticleSchema]},
+    url_name="list_articles",
+    summary="List articles",
+)
+@paginate
+def list_articles_view(request: AuthenticatedApiRequest, query: Query[ArticlesSearchQuery]):
+    qs = Article.objects.get_queryset().for_user(request.auth).for_api()
+    if query.urls:
+        qs = qs.for_url_search(query.urls)
+
+    return qs
 
 
 @reading_api_router.get(
