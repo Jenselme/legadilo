@@ -318,7 +318,13 @@ def _get_content(soup) -> str:
     if not article_content:
         return ""
 
-    for tag_name in ["noscript", "h1", "footer", "header", "nav", "aside"]:
+    tags_to_cleanup = {"noscript", "footer", "header", "nav", "aside"}
+    # Some invalid articles may have multiple h1, keep them in this case since they are "normal"
+    # article titles and thus must be kept.
+    if len(soup.find_all("h1")) == 1:
+        tags_to_cleanup.add("h1")
+
+    for tag_name in tags_to_cleanup:
         _extract_tag_from_content(article_content, tag_name)
     return str(article_content)
 
