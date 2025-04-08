@@ -10,7 +10,6 @@
     "is_for_later": false,
     "is_read": false,
     "language": "",
-    "link": "https://example.com/article/existing",
     "main_source_title": "",
     "main_source_type": "FEED",
     "opened_at": null,
@@ -24,6 +23,7 @@
     "table_of_content": [],
     "title": "Existing article",
     "updated_at": "2024-05-17T13:00:00Z",
+    "url": "https://example.com/article/existing",
     "was_opened": false
   },
   {
@@ -37,7 +37,6 @@
     "is_for_later": false,
     "is_read": false,
     "language": "",
-    "link": "http://example.org/entry/3",
     "main_source_title": "Sample Feed",
     "main_source_type": "FEED",
     "opened_at": null,
@@ -51,6 +50,7 @@
     "table_of_content": [],
     "title": "First entry title",
     "updated_at": "2005-11-09T11:56:34Z",
+    "url": "http://example.org/entry/3",
     "was_opened": false
   },
   {
@@ -68,7 +68,6 @@
     "is_for_later": false,
     "is_read": true,
     "language": "fr",
-    "link": "https://example.com/article/3",
     "main_source_title": "example.com",
     "main_source_type": "MANUAL",
     "opened_at": null,
@@ -82,6 +81,7 @@
     "table_of_content": [],
     "title": "Article 3",
     "updated_at": "2024-05-03T19:46:15Z",
+    "url": "https://example.com/article/3",
     "was_opened": false
   },
   {
@@ -98,7 +98,6 @@
     "is_for_later": false,
     "is_read": false,
     "language": "en",
-    "link": "https://example.com/articles/with-tags",
     "main_source_title": "Sample Feed",
     "main_source_type": "FEED",
     "opened_at": null,
@@ -112,6 +111,7 @@
     "table_of_content": [],
     "title": "With tags",
     "updated_at": null,
+    "url": "https://example.com/articles/with-tags",
     "was_opened": false
   },
   {
@@ -127,7 +127,6 @@
     "is_for_later": false,
     "is_read": true,
     "language": "en_US",
-    "link": "https://example.com/article/4",
     "main_source_title": "Sample Feed",
     "main_source_type": "FEED",
     "opened_at": null,
@@ -141,6 +140,7 @@
     "table_of_content": [],
     "title": "Article 4",
     "updated_at": "2024-05-03T19:46:15Z",
+    "url": "https://example.com/article/4",
     "was_opened": false
   },
   {
@@ -158,7 +158,6 @@
     "is_for_later": false,
     "is_read": true,
     "language": "",
-    "link": "https://example.com/article/5",
     "main_source_title": "example.com",
     "main_source_type": "MANUAL",
     "opened_at": null,
@@ -172,6 +171,7 @@
     "table_of_content": [],
     "title": "Article 5",
     "updated_at": "2024-05-03T19:46:15Z",
+    "url": "https://example.com/article/5",
     "was_opened": false
   },
   {
@@ -187,7 +187,6 @@
     "is_for_later": false,
     "is_read": false,
     "language": "",
-    "link": "https://example.com/article/6",
     "main_source_title": "example.com",
     "main_source_type": "MANUAL",
     "opened_at": null,
@@ -201,6 +200,7 @@
     "table_of_content": [],
     "title": "Article 6",
     "updated_at": "2024-05-03T19:46:15Z",
+    "url": "https://example.com/article/6",
     "was_opened": false
   },
   {
@@ -216,7 +216,6 @@
     "is_for_later": false,
     "is_read": true,
     "language": "",
-    "link": "https://example.com/article/7",
     "main_source_title": "example.com",
     "main_source_type": "MANUAL",
     "opened_at": null,
@@ -230,6 +229,7 @@
     "table_of_content": [],
     "title": "Article 7",
     "updated_at": "2020-10-04T19:00:19.463Z",
+    "url": "https://example.com/article/7",
     "was_opened": false
   }
 ]

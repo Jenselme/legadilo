@@ -34,14 +34,14 @@ def _prepare_article_for_serialization(data: dict[str, Any], article: Article) -
     assert data["title"] == article.title
     assert data["slug"] == article.slug
     assert data["external_article_id"] == article.external_article_id
-    assert data["link"] == article.link
+    assert data["url"] == article.url
     assert data["details_url"] == f"http://testserver/reading/articles/{article.id}-{article.slug}/"
 
     data["id"] = 1
     data["title"] = "Article title"
     data["slug"] = "article-slug"
     data["external_article_id"] = "external-article-id"
-    data["link"] = "https://example.com/articles/article.html"
+    data["url"] = "https://example.com/articles/article.html"
     data["details_url"] = "http://testserver/reading/articles/1-article-slug/"
 
     return data
@@ -52,7 +52,7 @@ class TestCreateArticleView:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
         self.url = reverse("api-1.0.0:create_article")
-        self.article_link = "https://example.com/articles/legadilo.html"
+        self.article_url = "https://example.com/articles/legadilo.html"
 
     def test_not_logged_in(self, client):
         response = client.post(self.url)
@@ -65,14 +65,14 @@ class TestCreateArticleView:
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
         assert response.json() == {
             "detail": [
-                {"type": "missing", "loc": ["body", "payload", "link"], "msg": "Field required"}
+                {"type": "missing", "loc": ["body", "payload", "url"], "msg": "Field required"}
             ]
         }
 
     def test_create_article_invalid_data(self, user, logged_in_sync_client):
         response = logged_in_sync_client.post(
             self.url,
-            {"link": self.article_link, "content": "Some content"},
+            {"url": self.article_url, "content": "Some content"},
             content_type="application/json",
         )
 
@@ -90,24 +90,24 @@ class TestCreateArticleView:
             ]
         }
 
-    def test_create_article_from_link_only(
+    def test_create_article_from_url_only(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
         mocked_get_article_from_url = mocker.patch(
             "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(link=self.article_link),
+            return_value=ArticleDataFactory(url=self.article_url),
         )
 
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
-                self.url, {"link": self.article_link}, content_type="application/json"
+                self.url, {"url": self.article_url}, content_type="application/json"
             )
 
         assert response.status_code == HTTPStatus.CREATED
         assert Article.objects.count() == 1
         article = Article.objects.get()
-        assert article.link == self.article_link
-        mocked_get_article_from_url.assert_called_once_with(self.article_link)
+        assert article.url == self.article_url
+        mocked_get_article_from_url.assert_called_once_with(self.article_url)
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
@@ -118,22 +118,22 @@ class TestCreateArticleView:
     ):
         mocked_get_article_from_url = mocker.patch(
             "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(link=self.article_link),
+            return_value=ArticleDataFactory(url=self.article_url),
         )
 
         with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.url,
-                {"link": self.article_link, "tags": ["Some tag"]},
+                {"url": self.article_url, "tags": ["Some tag"]},
                 content_type="application/json",
             )
 
         assert response.status_code == HTTPStatus.CREATED
         assert Article.objects.count() == 1
         article = Article.objects.get()
-        assert article.link == self.article_link
+        assert article.url == self.article_url
         assert list(article.tags.all().values_list("title", flat=True)) == ["Some tag"]
-        mocked_get_article_from_url.assert_called_once_with(self.article_link)
+        mocked_get_article_from_url.assert_called_once_with(self.article_url)
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
@@ -144,14 +144,14 @@ class TestCreateArticleView:
     ):
         mocked_get_article_from_url = mocker.patch(
             "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(link=self.article_link),
+            return_value=ArticleDataFactory(url=self.article_url),
         )
 
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url,
                 {
-                    "link": self.article_link,
+                    "url": self.article_url,
                     "content": get_article_fixture_content("sample_blog_article.html"),
                     "title": "My article",
                 },
@@ -161,7 +161,7 @@ class TestCreateArticleView:
         assert response.status_code == HTTPStatus.CREATED
         assert Article.objects.count() == 1
         article = Article.objects.get()
-        assert article.link == "https://www.example.com/posts/en/1-super-article/"
+        assert article.url == "https://www.example.com/posts/en/1-super-article/"
         assert article.table_of_content == []
         assert not mocked_get_article_from_url.called
         snapshot.assert_match(
@@ -173,26 +173,26 @@ class TestCreateArticleView:
         self, user, django_assert_num_queries, logged_in_sync_client, mocker
     ):
         existing_article = ArticleFactory(
-            user=user, title="Existing", reading_time=14, link=self.article_link, read_at=utcnow()
+            user=user, title="Existing", reading_time=14, url=self.article_url, read_at=utcnow()
         )
         mocker.patch(
             "legadilo.reading.api.get_article_from_url",
             return_value=ArticleDataFactory(
                 title="Fetched article",
-                link=self.article_link,
+                url=self.article_url,
                 content="Blabla for reading time " * 50,
             ),
         )
 
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
-                self.url, {"link": self.article_link}, content_type="application/json"
+                self.url, {"url": self.article_url}, content_type="application/json"
             )
 
         assert response.status_code == HTTPStatus.OK
         assert Article.objects.count() == 1
         article = Article.objects.get()
-        assert article.link == self.article_link
+        assert article.url == self.article_url
         assert article.table_of_content == []
         assert article.title == existing_article.title
         assert article.slug == existing_article.slug

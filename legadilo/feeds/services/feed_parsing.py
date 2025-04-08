@@ -98,8 +98,8 @@ def get_feed_data(
 
     It's either a feed or a page containing a link to a feed.
     """
-    if _is_youtube_link(url):
-        url = _find_youtube_rss_feed_link(url)
+    if _is_youtube_url(url):
+        url = _find_youtube_rss_feed_url(url)
 
     parsed_feed, url_content, resolved_url = _fetch_feed_and_raw_data(client, url)
     if not parsed_feed.get("version"):
@@ -109,7 +109,7 @@ def get_feed_data(
     return build_feed_data_from_parsed_feed(parsed_feed, str(resolved_url))
 
 
-def _find_youtube_rss_feed_link(url: str) -> str:
+def _find_youtube_rss_feed_url(url: str) -> str:
     is_youtube_feed = (
         re.match(
             r"https://[^/]+/feeds/videos.xml\?(channel_id|playlist_id)=.+",
@@ -126,8 +126,8 @@ def _find_youtube_rss_feed_link(url: str) -> str:
     ):
         return f"https://www.youtube.com/feeds/videos.xml?channel_id={match_channel_with_id.group('channel_id')}"
 
-    parsed_link = urlparse(url)
-    params = parse_qs(parsed_link.query)
+    parsed_url = urlparse(url)
+    params = parse_qs(parsed_url.query)
     if params.get("list"):
         return f"https://www.youtube.com/feeds/videos.xml?playlist_id={params['list'][0]}"
 
@@ -140,7 +140,7 @@ def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: 
 
     return FeedData(
         feed_url=resolved_url,
-        site_url=_get_feed_site_link(parsed_feed.feed.get("link"), resolved_url),
+        site_url=_get_feed_site_url(parsed_feed.feed.get("link"), resolved_url),
         title=feed_title,
         description=full_sanitize(parsed_feed.feed.get("description", "")),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
@@ -194,12 +194,12 @@ def _find_feed_page_content(page_content: str) -> str:
         if not (href := feed.get("href")):
             continue
 
-        normalized_link = _normalize_found_link(href)
-        if normalized_link in seen_feed_urls:
+        normalized_url = _normalize_found_url(href)
+        if normalized_url in seen_feed_urls:
             continue
 
-        feed_urls.append((normalized_link, feed.get("title") or normalized_link))
-        seen_feed_urls.add(normalized_link)
+        feed_urls.append((normalized_url, feed.get("title") or normalized_url))
+        seen_feed_urls.add(normalized_url)
 
     if len(feed_urls) == 0:
         raise NoFeedUrlFoundError
@@ -209,19 +209,19 @@ def _find_feed_page_content(page_content: str) -> str:
     return feed_urls[0][0]
 
 
-def _get_feed_site_link(site_link: str | None, feed_link: str) -> str:
-    if site_link is None or not is_url_valid(site_link):
-        parsed_feed_url = urlparse(feed_link)
+def _get_feed_site_url(site_url: str | None, feed_url: str) -> str:
+    if site_url is None or not is_url_valid(site_url):
+        parsed_feed_url = urlparse(feed_url)
         return f"{parsed_feed_url.scheme}://{parsed_feed_url.netloc}"
 
-    return _normalize_found_link(site_link)
+    return _normalize_found_url(site_url)
 
 
-def _normalize_found_link(link: str):
-    if link.startswith("//"):
-        link = f"https:{link}"
+def _normalize_found_url(url: str):
+    if url.startswith("//"):
+        url = f"https:{url}"
 
-    return link
+    return url
 
 
 def _parse_articles_in_feed(
@@ -230,19 +230,19 @@ def _parse_articles_in_feed(
     articles_data = []
     for entry in parsed_feed.entries:
         try:
-            article_link = _get_article_link(feed_url, entry)
+            article_url = _get_article_url(feed_url, entry)
             content = _get_article_content(entry)
             articles_data.append(
                 ArticleData(
                     external_article_id=entry.get("id", ""),
                     title=entry.title,
-                    summary=_get_summary(article_link, entry),
+                    summary=_get_summary(article_url, entry),
                     content=content,
                     authors=_get_article_authors(entry),
                     contributors=_get_article_contributors(entry),
                     tags=_get_articles_tags(entry),
-                    link=article_link,
-                    preview_picture_url=_get_preview_picture_url(article_link, entry),
+                    url=article_url,
+                    preview_picture_url=_get_preview_picture_url(article_url, entry),
                     preview_picture_alt=_get_preview_picture_alt(entry),
                     published_at=_feed_time_to_datetime(entry.get("published_parsed")),
                     updated_at=_feed_time_to_datetime(entry.get("updated_parsed")),
@@ -261,13 +261,13 @@ def _get_summary(article_url: str, entry) -> str:
     if proper_summary := entry.get("summary"):
         summary = proper_summary
 
-    if not summary and _is_youtube_link(article_url):
+    if not summary and _is_youtube_url(article_url):
         summary = _get_preview_picture_alt(entry)
 
     return summary
 
 
-def _is_youtube_link(link: str) -> bool:
+def _is_youtube_url(url: str) -> bool:
     youtube_domains = {
         "youtube.com",
         "www.youtube.com",
@@ -275,9 +275,9 @@ def _is_youtube_link(link: str) -> bool:
         "youtube.googleapis.com",
         "m.youtube.com",
     }
-    parsed_link = urlparse(link)
+    parsed_url = urlparse(url)
 
-    return parsed_link.netloc in youtube_domains
+    return parsed_url.netloc in youtube_domains
 
 
 def _get_article_authors(entry):
@@ -334,7 +334,7 @@ def _get_articles_tags(entry):
     return sorted(parsed_tags)
 
 
-def _get_article_link(feed_url, entry):
+def _get_article_url(feed_url, entry):
     try:
         return normalize_url(feed_url, entry.link)
     except ValueError as e:
@@ -362,7 +362,7 @@ def _get_preview_picture_url(article_url, entry) -> str:
             # It can be a video. Normally, if it's the case we expect to have a thumbnail.
             # But we cannot be sure.
             normalized_picture_url = normalize_url(article_url, media_content_url)
-            if media_content[0].get("medium") == "image" or _is_image_link(normalized_picture_url):
+            if media_content[0].get("medium") == "image" or _is_image_url(normalized_picture_url):
                 preview_picture_url = normalized_picture_url
         except ValueError:
             preview_picture_url = ""
@@ -370,12 +370,12 @@ def _get_preview_picture_url(article_url, entry) -> str:
     return preview_picture_url
 
 
-def _is_image_link(link: str) -> bool:
-    parsed_link = urlparse(link)
+def _is_image_url(url: str) -> bool:
+    parsed_url = urlparse(url)
     return (
         re.match(
             r".*\.(png|apng|avif|gif|jpg|jpeg|jfif|pjpeg|pjp|svg|bmp|tiff|tif|webp)$",
-            parsed_link.path,
+            parsed_url.path,
         )
         is not None
     )

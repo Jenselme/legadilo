@@ -60,7 +60,7 @@ class FeedUpdateFactory(DjangoModelFactory):
 
 
 class FeedDeletedArticleFactory(DjangoModelFactory):
-    article_link = factory.Sequence(lambda n: f"https://example.com/articles/{n}.html")
+    article_url = factory.Sequence(lambda n: f"https://example.com/articles/{n}.html")
     feed = factory.SubFactory(FeedFactory)
 
     class Meta:

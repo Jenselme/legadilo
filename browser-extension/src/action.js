@@ -286,7 +286,7 @@ const saveArticle = (tab, pageContent) => {
   displayLoader();
   sendMessage({
     name: "save-article",
-    payload: { link: tab.url, title: tab.title, content: pageContent },
+    payload: { url: tab.url, title: tab.title, content: pageContent },
   });
 };
 

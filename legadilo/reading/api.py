@@ -65,7 +65,7 @@ class OutArticleSchema(ModelSchema):
 
 
 class ArticleCreation(Schema):
-    link: Annotated[str, ValidUrlValidator]
+    url: Annotated[str, ValidUrlValidator]
     title: Annotated[str, FullSanitizeValidator] = ""
     # We must not sanitize this yet: we need the raw content when building the article to fetch some
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
@@ -95,10 +95,10 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     """Create an article either just with a link or with a link, a title and some content."""
     if payload.has_data:
         article_data = build_article_data_from_content(
-            url=payload.link, title=payload.title, content=payload.content
+            url=payload.url, title=payload.title, content=payload.content
         )
     else:
-        article_data = get_article_from_url(payload.link)
+        article_data = get_article_from_url(payload.url)
 
     # Tags specified in article data are the raw tags used in feeds, they are not used to link an
     # article to tag objects.

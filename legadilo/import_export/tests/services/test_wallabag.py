@@ -84,7 +84,7 @@ def test_import_valid_data(user):
                 "is_public": False,
                 "id": 4949,
                 "title": "Some article",
-                "url": existing_article.link,
+                "url": existing_article.url,
                 "content": "<p>Some <script>Content</script>",
                 "created_at": "2024-04-19T19:18:29+02:00",
                 "updated_at": "2024-04-20T19:17:54+02:00",
@@ -106,7 +106,7 @@ def test_import_valid_data(user):
     assert article is not None
     assert article.user == user
     assert article.title == "Some article"
-    assert article.link == "https://www.example.com/articles/podcasts/test-article.html"
+    assert article.url == "https://www.example.com/articles/podcasts/test-article.html"
     assert article.content == "<p>Some </p>"
     assert article.external_article_id == "wallabag:4947"
     assert article.main_source_type == reading_constants.ArticleSourceType.MANUAL

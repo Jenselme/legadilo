@@ -13,7 +13,7 @@
   "feed_type": "rss",
   "feed_url": "https://example.com/feed.rss",
   "id": 1,
-  "open_original_link_by_default": false,
+  "open_original_url_by_default": false,
   "refresh_delay": "DAILY_AT_NOON",
   "site_url": "https://example.com",
   "slug": "feed-slug",

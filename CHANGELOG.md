@@ -5,6 +5,8 @@
 - Show reading list title and reading list actions when scrolling up.
 - Improve browser extension:
   - Display site title instead of nothing for feed links without a title attribute.
+- API changes:
+  - Switch from `link` to `url` to save articles. This is done to have a consistant naming in the codebase.
 
 ## 25.04.1
 

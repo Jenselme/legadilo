@@ -66,7 +66,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         user=user,
         title="Existing article",
         external_article_id="",
-        link="https://example.com/article/existing",
+        url="https://example.com/article/existing",
         published_at="2024-05-17T13:00:00+00:00",
         updated_at="2024-05-17T13:00:00+00:00",
     )

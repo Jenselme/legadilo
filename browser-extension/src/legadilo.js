@@ -29,12 +29,12 @@ export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSe
   }
 };
 
-export const saveArticle = async ({ link, title, content }) => {
-  if (!/^https?:\/\//.test(link)) {
+export const saveArticle = async ({ url, title, content }) => {
+  if (!/^https?:\/\//.test(url)) {
     throw new Error("Invalid url");
   }
 
-  return await post("/api/reading/articles/", { link, title, content });
+  return await post("/api/reading/articles/", { url, title, content });
 };
 
 export const updateArticle = async (

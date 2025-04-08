@@ -47,7 +47,7 @@ def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
 
     article_data = get_article_from_url(url)
 
-    assert article_data.link == "https://www.example.com/posts/en/1-super-article/"
+    assert article_data.url == "https://www.example.com/posts/en/1-super-article/"
     assert article_data.title == "On the 3 musketeers"
 
 
@@ -108,7 +108,7 @@ def test_get_article_from_url_process_fixture(
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
-                "link": "https://example.com/articles/1",
+                "url": "https://example.com/articles/1",
                 "preview_picture_url": "https://example.com/articles/1.png",
                 "preview_picture_alt": "<p>Hi there!</p>",
                 "published_at": None,
@@ -129,7 +129,7 @@ def test_get_article_from_url_process_fixture(
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
-                "link": "https://example.com/articles/1",
+                "url": "https://example.com/articles/1",
                 "preview_picture_url": "https://example.com/articles/1.png",
                 "preview_picture_alt": "<p>Hi there!</p>",
                 "published_at": None,
@@ -150,7 +150,7 @@ def test_get_article_from_url_process_fixture(
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
-                "link": "https://example.com/articles/1",
+                "url": "https://example.com/articles/1",
                 "preview_picture_url": "https://example.com/articles/1.png",
                 "preview_picture_alt": "<p>Hi there!</p>",
                 "published_at": None,
@@ -171,7 +171,7 @@ def test_get_article_from_url_process_fixture(
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
-                "link": "https://example.com/articles/1",
+                "url": "https://example.com/articles/1",
                 "preview_picture_url": "https://example.com/articles/1.png",
                 "preview_picture_alt": "<p>Hi there!</p>",
                 "published_at": None,
@@ -198,7 +198,7 @@ def test_get_article_from_url_process_fixture(
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
-                "link": "https://example.com/articles/1",
+                "url": "https://example.com/articles/1",
                 "preview_picture_url": "https://example.com/articles/1.png",
                 "preview_picture_alt": "<p>Hi there!</p>",
                 "published_at": None,

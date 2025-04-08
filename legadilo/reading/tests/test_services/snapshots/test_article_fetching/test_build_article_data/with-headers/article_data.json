@@ -10,7 +10,6 @@
   "external_article_id": "external article id",
   "is_favorite": false,
   "language": "en",
-  "link": "https://example.com/articles/1",
   "preview_picture_alt": "Hi there!",
   "preview_picture_url": "https://example.com/articles/1.png",
   "published_at": null,
@@ -46,5 +45,6 @@
     "tag"
   ],
   "title": "Title",
-  "updated_at": null
+  "updated_at": null,
+  "url": "https://example.com/articles/1"
 }

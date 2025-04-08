@@ -10,7 +10,7 @@
                 {% else %}
                     <a class="open-original"
                        data-article-id="{{ article.id }}"
-                       href="{{ article.link }}"
+                       href="{{ article.url }}"
                        target="_blank">
                         {{ article.title | safe }}
                         <span>{% include "core/partials/bs-icons/new-tab.html" %}</span>

@@ -69,7 +69,7 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    search_fields = ["title", "main_source_title", "link"]
+    search_fields = ["title", "main_source_title", "url"]
     autocomplete_fields = ["user"]
     list_display = ["__str__", "obj_created_at", "obj_updated_at"]
     list_filter = ["is_read", "is_favorite", "is_for_later", "main_source_type"]
@@ -97,7 +97,7 @@ class ReadingListAdmin(admin.ModelAdmin):
 
 @admin.register(ArticleFetchError)
 class ArticleFetchErrorAdmin(admin.ModelAdmin):
-    search_fields = ["article__title", "article__link"]
+    search_fields = ["article__title", "article__url"]
     readonly_fields = ("article",)
     list_display = ["__str__", "created_at"]
     formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}

@@ -92,7 +92,7 @@ class SubscribeToFeedForm(forms.Form):
             "Tags to associate to articles of this feed. To create a new tag, type and press enter."
         ),
     )
-    open_original_link_by_default = forms.BooleanField(required=False)
+    open_original_url_by_default = forms.BooleanField(required=False)
 
     def __init__(
         self,
@@ -174,7 +174,7 @@ def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too ma
             form.cleaned_data["article_retention_time"],
             tags,
             category,
-            open_original_link_by_default=form.cleaned_data["open_original_link_by_default"],
+            open_original_url_by_default=form.cleaned_data["open_original_url_by_default"],
         )
     except httpx.HTTPError:
         messages.error(

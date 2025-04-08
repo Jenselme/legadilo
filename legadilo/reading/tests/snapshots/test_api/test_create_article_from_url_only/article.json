@@ -11,7 +11,6 @@
   "is_for_later": false,
   "is_read": false,
   "language": "en",
-  "link": "https://example.com/articles/article.html",
   "main_source_title": "Source 0",
   "main_source_type": "MANUAL",
   "opened_at": null,
@@ -26,5 +25,6 @@
   "tags": [],
   "title": "Article title",
   "updated_at": null,
+  "url": "https://example.com/articles/article.html",
   "was_opened": false
 }

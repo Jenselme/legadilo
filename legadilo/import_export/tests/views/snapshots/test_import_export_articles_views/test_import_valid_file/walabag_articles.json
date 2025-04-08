@@ -10,7 +10,6 @@
     "is_for_later": false,
     "is_read": false,
     "language": "en",
-    "link": "https://www.example.com/article/1-article",
     "main_source_title": "www.thoughtworks.com",
     "main_source_type": "MANUAL",
     "opened_at": null,
@@ -24,6 +23,7 @@
     "table_of_content": [],
     "title": "Refactoring with AI",
     "updated_at": "2024-04-20T17:17:54Z",
+    "url": "https://www.example.com/article/1-article",
     "was_opened": false
   }
 ]

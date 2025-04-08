@@ -87,7 +87,7 @@ class FeedSubscription(Schema):
     article_retention_time: int = 0
     category_id: int | None = None
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    open_original_link_by_default: bool = False
+    open_original_url_by_default: bool = False
 
 
 @feeds_api_router.post(
@@ -115,7 +115,7 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
             payload.article_retention_time,
             tags,
             category,
-            open_original_link_by_default=payload.open_original_link_by_default,
+            open_original_url_by_default=payload.open_original_url_by_default,
         )
     except (NoFeedUrlFoundError, MultipleFeedFoundError):
         return HTTPStatus.NOT_ACCEPTABLE, {
@@ -164,7 +164,7 @@ class FeedUpdate(Schema):
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
     refresh_delay: constants.FeedRefreshDelays = FIELD_UNSET
     article_retention_time: int = FIELD_UNSET
-    open_original_link_by_default: bool = FIELD_UNSET
+    open_original_url_by_default: bool = FIELD_UNSET
 
     @model_validator(mode="after")
     def check_disabled(self) -> Self:

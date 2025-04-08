@@ -57,7 +57,7 @@ ONE_ARTICLE_FEED_DATA = FeedData(
             authors=("Author",),
             contributors=(),
             tags=(),
-            link="https://example.com/article/1",
+            url="https://example.com/article/1",
             preview_picture_url="https://example.com/preview.png",
             preview_picture_alt="Some image alt",
             published_at=datetime.now(tz=UTC),
@@ -366,7 +366,7 @@ class TestFeedManager:
                             authors=("Author",),
                             contributors=(),
                             tags=(),
-                            link="https://example.com/article/1",
+                            url="https://example.com/article/1",
                             preview_picture_url="https://example.com/preview.png",
                             preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
@@ -476,12 +476,12 @@ class TestFeedManager:
         assert not notification.is_read
         assert notification.title == f"Feed '{self.feed.title}' was disabled"
         assert notification.content == "We failed too many times to fetch the feed"
-        assert re.match(r"/feeds/\d+/", notification.link)
-        assert notification.link_text == "Edit feed"
+        assert re.match(r"/feeds/\d+/", notification.url)
+        assert notification.url_text == "Edit feed"
 
     def test_update_feed(self, django_assert_num_queries):
         existing_article = ArticleFactory(
-            link="https://example.com/article/existing",
+            url="https://example.com/article/existing",
             main_source_type=reading_constants.ArticleSourceType.MANUAL,
             main_source_title="Not a feed",
             user=self.feed.user,
@@ -509,7 +509,7 @@ class TestFeedManager:
                             authors=("Author",),
                             contributors=(),
                             tags=(),
-                            link="https://example.com/article/1",
+                            url="https://example.com/article/1",
                             preview_picture_url="https://example.com/preview.png",
                             preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
@@ -526,7 +526,7 @@ class TestFeedManager:
                             authors=("Author",),
                             contributors=(),
                             tags=(),
-                            link=existing_article.link,
+                            url=existing_article.url,
                             preview_picture_url="",
                             preview_picture_alt="",
                             published_at=datetime.now(tz=UTC),
@@ -549,8 +549,8 @@ class TestFeedManager:
         assert existing_article.main_source_title != self.feed.title
 
     def test_update_feed_with_deleted_articles(self, django_assert_num_queries):
-        deleted_link = "https://example.com/deleted/"
-        FeedDeletedArticle.objects.create(article_link=deleted_link, feed=self.feed)
+        deleted_url = "https://example.com/deleted/"
+        FeedDeletedArticle.objects.create(article_url=deleted_url, feed=self.feed)
 
         with django_assert_num_queries(10):
             Feed.objects.update_feed(
@@ -573,7 +573,7 @@ class TestFeedManager:
                             authors=("Author",),
                             contributors=(),
                             tags=(),
-                            link="https://example.com/article/1",
+                            url="https://example.com/article/1",
                             preview_picture_url="https://example.com/preview.png",
                             preview_picture_alt="Some image alt",
                             published_at=datetime.now(tz=UTC),
@@ -590,7 +590,7 @@ class TestFeedManager:
                             authors=("Author",),
                             contributors=(),
                             tags=(),
-                            link=deleted_link,
+                            url=deleted_url,
                             preview_picture_url="",
                             preview_picture_alt="",
                             published_at=datetime.now(tz=UTC),
@@ -604,11 +604,11 @@ class TestFeedManager:
 
         assert self.feed.articles.count() == 1
         article = self.feed.articles.get()
-        assert article.link != deleted_link
+        assert article.url != deleted_url
         assert self.feed.feed_updates.count() == 1
         feed_update = self.feed.feed_updates.get()
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
-        assert feed_update.ignored_article_links == [deleted_link]
+        assert feed_update.ignored_article_urls == [deleted_url]
 
     def test_get_feed_update_for_cleanup(self):
         feed = FeedFactory()

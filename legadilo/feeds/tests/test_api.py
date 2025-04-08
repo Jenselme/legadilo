@@ -322,7 +322,7 @@ class TestSubscribeToFeedView:
                     "article_retention_time": 100,
                     "category_id": category.id,
                     "tags": ["", "<p>Some tag</p>", existing_tag.slug],
-                    "open_original_link_by_default": True,
+                    "open_original_url_by_default": True,
                 },
                 content_type="application/json",
             )
@@ -501,7 +501,7 @@ class TestUpdateFeedView:
 
         assert response.status_code == HTTPStatus.OK
         self.feed.refresh_from_db()
-        assert not self.feed.open_original_link_by_default
+        assert not self.feed.open_original_url_by_default
         assert self.feed.enabled
         assert self.feed.refresh_delay == constants.FeedRefreshDelays.TWICE_A_WEEK
         assert self.feed.article_retention_time == 600

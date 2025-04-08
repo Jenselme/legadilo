@@ -9,7 +9,6 @@
     "external_article_id": "yt:video:SOME_VIDEO_ID",
     "is_favorite": false,
     "language": "",
-    "link": "https://www.youtube.com/watch?v=SOME_VIDEO_ID",
     "preview_picture_alt": "The lengthy description of my video!",
     "preview_picture_url": "https://i2.ytimg.com/vi/SOME_VIDEO_ID/hqdefault.jpg",
     "published_at": "2024-03-08T17:00:00Z",
@@ -19,6 +18,7 @@
     "table_of_content": [],
     "tags": [],
     "title": "What a good video!",
-    "updated_at": "2024-03-14T18:49:15Z"
+    "updated_at": "2024-03-14T18:49:15Z",
+    "url": "https://www.youtube.com/watch?v=SOME_VIDEO_ID"
   }
 ]

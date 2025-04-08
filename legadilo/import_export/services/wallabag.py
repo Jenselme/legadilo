@@ -79,7 +79,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
     wallabag_articles = ListOfWallabagArticles.validate_python(data)
     nb_added_articles = 0
     for wallabag_article in wallabag_articles:
-        link = wallabag_article.url
+        url = wallabag_article.url
 
         tags = Tag.objects.get_or_create_from_list(user, wallabag_article.tags)
         article_data = ArticleData(
@@ -91,7 +91,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
             authors=wallabag_article.published_by,
             contributors=(),
             tags=(),
-            link=link,
+            url=url,
             annotations=wallabag_article.annotations,
             preview_picture_url=str(wallabag_article.preview_picture),
             preview_picture_alt="",

@@ -252,7 +252,7 @@ class FeedManager(models.Manager["Feed"]):
         tags: list[Tag],
         category: FeedCategory | None = None,
         *,
-        open_original_link_by_default=False,
+        open_original_url_by_default=False,
     ) -> tuple[Feed, bool]:
         feed, created = self.get_or_create(
             user=user,
@@ -262,7 +262,7 @@ class FeedManager(models.Manager["Feed"]):
                 "title": feed_metadata.title,
                 "refresh_delay": refresh_delay,
                 "article_retention_time": article_retention_time,
-                "open_original_link_by_default": open_original_link_by_default,
+                "open_original_url_by_default": open_original_url_by_default,
                 "description": feed_metadata.description,
                 "feed_type": feed_metadata.feed_type,
                 "category": category,
@@ -281,9 +281,9 @@ class FeedManager(models.Manager["Feed"]):
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_metadata: FeedData):
-        deleted_feed_links = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
+        deleted_feed_urls = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
         articles = [
-            article for article in feed_metadata.articles if article.link not in deleted_feed_links
+            article for article in feed_metadata.articles if article.url not in deleted_feed_urls
         ]
         save_result = Article.objects.save_from_list_of_data(
             feed.user,
@@ -293,7 +293,7 @@ class FeedManager(models.Manager["Feed"]):
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,
-            ignored_article_links=list(deleted_feed_links),
+            ignored_article_urls=list(deleted_feed_urls),
             feed_etag=feed_metadata.etag,
             feed_last_modified=feed_metadata.last_modified,
             feed=feed,
@@ -319,8 +319,8 @@ class FeedManager(models.Manager["Feed"]):
                 user=feed.user,
                 title=_("Feed '%s' was disabled") % feed.title,
                 content=str(message),
-                link=reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}),
-                link_text=str(_("Edit feed")),
+                url=reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}),
+                url_text=str(_("Edit feed")),
             )
 
     def log_not_modified(self, feed: Feed):
@@ -342,7 +342,7 @@ class FeedManager(models.Manager["Feed"]):
                 "feed_site_url": feed.site_url if feed else "",
                 "article_id": "",
                 "article_title": "",
-                "article_link": "",
+                "article_url": "",
                 "article_content": "",
                 "article_date_published": "",
                 "article_date_updated": "",
@@ -386,7 +386,7 @@ class Feed(models.Model):
             "always keep the articles."
         ),
     )
-    open_original_link_by_default = models.BooleanField(default=False)
+    open_original_url_by_default = models.BooleanField(default=False)
 
     user = models.ForeignKey("users.User", related_name="feeds", on_delete=models.CASCADE)
     category = models.ForeignKey(

@@ -8,7 +8,6 @@
   "external_article_id": "",
   "is_favorite": false,
   "language": "fr",
-  "link": "https://www.example.com/posts/en/1-super-article/",
   "preview_picture_alt": "",
   "preview_picture_url": "https://www.example.com/images/profile.png",
   "published_at": "2024-02-26T23:00:00Z",
@@ -20,5 +19,6 @@
     "Musketeers"
   ],
   "title": "On the 3 musketeers",
-  "updated_at": "2024-03-08T23:00:00Z"
+  "updated_at": "2024-03-08T23:00:00Z",
+  "url": "https://www.example.com/posts/en/1-super-article/"
 }

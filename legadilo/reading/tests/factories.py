@@ -32,7 +32,7 @@ class ArticleFactory(DjangoModelFactory):
     authors: list[str] = []
     contributors: list[str] = []
     external_tags: list[str] = []
-    link = factory.Sequence(lambda n: f"https://example.com/article/{n}")
+    url = factory.Sequence(lambda n: f"https://example.com/article/{n}")
     published_at = datetime.now(tz=UTC)
     updated_at = datetime.now(tz=UTC)
     external_article_id = factory.Sequence(lambda n: f"article-{n}")
@@ -84,7 +84,7 @@ class ArticleDataFactory(factory.DictFactory):
     title = factory.Sequence(lambda n: f"Article {n}")
     summary = ""
     content = ""
-    link = factory.Sequence(lambda n: f"https://example.com/article-{n}.html")
+    url = factory.Sequence(lambda n: f"https://example.com/article-{n}.html")
     language = "en"
 
     class Meta:

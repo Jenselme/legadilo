@@ -102,7 +102,7 @@
                                           hx-push-url="true"
                                           hx-indicator=".{{ article|article_action_indicator }}">
                                         {% csrf_token %}
-                                        <input type="hidden" name="url" value="{{ article.link }}" />
+                                        <input type="hidden" name="url" value="{{ article.url }}" />
                                         <button class="btn btn-outline-secondary text-start col-12 text-center">
                                             <span class="icon-indicator {{ article|article_action_indicator }}">
                                                 {% include "core/partials/button_loading_indicator.html" %}
