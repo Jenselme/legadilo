@@ -353,7 +353,6 @@ CONTENT_SECURITY_POLICY = {
         "form-action": (SELF,),
         "manifest-src": (SELF,),
         "worker-src": (SELF,),
-        "require-sri-for": (NONE,),
         "upgrade-insecure-requests": IS_PRODUCTION,
     },
 }
