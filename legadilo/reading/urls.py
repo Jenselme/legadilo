@@ -51,6 +51,7 @@ urlpatterns = [
         views.update_article_view,
         name="update_article",
     ),
+    path("articles/<int:article_id>/delete/", views.delete_article_view, name="delete_article"),
     path(
         "articles/mark-as-read-in-bulk/",
         views.mark_articles_as_read_in_bulk_view,

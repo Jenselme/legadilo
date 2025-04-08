@@ -29,6 +29,7 @@ from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
     get_article_from_url,
 )
+from legadilo.reading.services.delete_article import delete_article
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.api import FIELD_UNSET, update_model_from_schema
@@ -179,7 +180,7 @@ def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]
 def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
     article = get_object_or_404(Article, id=article_id, user=request.auth)
 
-    article.delete()
+    delete_article(article)
 
     return HTTPStatus.NO_CONTENT, None
 

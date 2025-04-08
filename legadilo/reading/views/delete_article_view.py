@@ -20,9 +20,9 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 
-from legadilo.feeds.models import FeedDeletedArticle
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
+from legadilo.reading.services.delete_article import delete_article
 from legadilo.reading.services.views import get_from_url_for_article_details
 from legadilo.reading.templatetags import article_card_id
 from legadilo.reading.views.article_actions_views import (
@@ -45,7 +45,7 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
     )
     hx_target = f"#{article_card_id(article)}"
 
-    FeedDeletedArticle.objects.delete_article(article)
+    delete_article(article)
 
     for_article_details = request.POST.get("for_article_details", "")
     if for_article_details:

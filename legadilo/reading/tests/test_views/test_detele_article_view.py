@@ -36,7 +36,7 @@ class TestDeleteArticleView:
         )
         self.article = ArticleFactory(user=user)
         self.url = reverse(
-            "feeds:delete_article",
+            "reading:delete_article",
             kwargs={
                 "article_id": self.article.id,
             },

@@ -14,21 +14,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .feed_articles_view import feed_articles_view
-from .feed_categories_admin_views import (
-    create_feed_category_view,
-    edit_feed_category_view,
-    feed_category_admin_view,
-)
-from .feeds_admin_view import edit_feed_view, feeds_admin_view
-from .subscribe_to_feed_view import subscribe_to_feed_view
+from legadilo.reading.models import Article
 
-__all__ = [
-    "create_feed_category_view",
-    "edit_feed_category_view",
-    "edit_feed_view",
-    "feed_articles_view",
-    "feed_category_admin_view",
-    "feeds_admin_view",
-    "subscribe_to_feed_view",
-]
+
+def delete_article(article: Article):
+    """Delete article even if linked to a feed.
+
+    Rely on FeedDeletedArticle to do this properly. This is an acceptable exceptoin to our
+    boundary policy since it's isolated from the rest and very limited.
+    """
+    from legadilo.feeds.models import (  # noqa: PLC0415 `import` should be at the top-level of a file
+        FeedDeletedArticle,
+    )
+
+    FeedDeletedArticle.objects.delete_article(article)
