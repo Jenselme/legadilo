@@ -285,17 +285,19 @@ const displayFeed = (feed, tags, categories) => {
   if (feedTagsInstance === null) {
     feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
   }
+};
 
+const setupFeedActions = (feedId) => {
   const updateFeed = (event) => {
     event.preventDefault();
 
-    const data = new FormData(event.target);
+    const data = new FormData(document.querySelector("#update-feed-form"));
 
     hideFeed();
     displayLoader();
     sendMessage({
       name: "update-feed",
-      feedId: feed.id,
+      feedId: feedId,
       payload: {
         categoryId: data.get("category") || null,
         refreshDelay: data.get("refresh-delay"),
@@ -304,16 +306,24 @@ const displayFeed = (feed, tags, categories) => {
       },
     });
   };
-  document.querySelector("#update-feed-form").addEventListener("submit", updateFeed);
 
   const feedNavBack = async () => {
-    document.querySelector("#feed-nav-back").removeEventListener("click", feedNavBack);
-    document.querySelector("#update-feed-form").removeEventListener("submit", updateFeed);
+    Object.entries(actions).forEach(([selector, action]) => {
+      document.querySelector(selector).removeEventListener("click", action);
+    });
 
     hideFeed();
     await displayActionsSelector();
   };
-  document.querySelector("#feed-nav-back").addEventListener("click", feedNavBack);
+
+  const actions = {
+    "#update-feed": updateFeed,
+    "#feed-nav-back": feedNavBack,
+  };
+
+  Object.entries(actions).forEach(([selector, action]) => {
+    document.querySelector(selector).addEventListener("click", action);
+  });
 };
 
 const hideFeed = () => {
@@ -429,6 +439,7 @@ const subscribeToFeed = (link) => {
 
 const feedSubscriptionSuccess = (feed, tags, categories) => {
   displayFeed(feed, tags, categories);
+  setupFeedActions(feed.id);
 };
 
 const updatedFeedSuccess = (feed, tags, categories) => {

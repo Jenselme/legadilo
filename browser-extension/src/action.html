@@ -178,13 +178,15 @@
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>
-                <button class="btn btn-primary btn-sm">Update</button>
-                <a id="open-feed-details"
-                   class="btn btn-outline-secondary btn-sm"
-                   role="button"
-                   href="">
-                    <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
-                </a>
+                <div class="mb-3 d-flex justify-content-evenly">
+                    <button id="update-feed" class="btn btn-primary btn-sm" type="submit">Update</button>
+                    <a id="open-feed-details"
+                       class="btn btn-outline-secondary btn-sm"
+                       role="button"
+                       href="">
+                        <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
+                    </a>
+                </div>
             </form>
         </div>
         <div id="error-container" class="alert alert-danger">
