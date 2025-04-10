@@ -580,7 +580,7 @@ if DEBUG:
         import socket
 
         hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())  # type: ignore[assignment]
-        INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+        INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]  # noqa: RUF005
 
 
 # Sentry
