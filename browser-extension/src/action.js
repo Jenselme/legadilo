@@ -1,5 +1,5 @@
 import Tags from "./vendor/tags.js";
-import { listFeeds } from "./legadilo.js";
+import { listArticles, listFeeds } from "./legadilo.js";
 
 let port;
 let articleTagsInstance = null;
@@ -52,6 +52,18 @@ const getFeedNodes = (pageContent) => {
   return feedNodes;
 };
 
+const getCanonicalUrl = (tab, pageContent) => {
+  const parser = new DOMParser();
+  const htmlDoc = parser.parseFromString(pageContent, "text/html");
+
+  const canonicalLink = htmlDoc.querySelector("link[rel='canonical']");
+  if (!canonicalLink) {
+    return null;
+  }
+
+  return buildFullUrl(tab, canonicalLink.getAttribute("href"));
+};
+
 const onMessage = (request) => {
   if (request.error) {
     hideLoader();
@@ -88,8 +100,21 @@ const displayActionsSelector = async () => {
   const pageContent = await getPageContent(tab);
   const feedNodes = getFeedNodes(pageContent);
   const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
+  const articleUrls = [tab.url];
+  const articleCanonicalUrl = getCanonicalUrl(tab, pageContent);
+  if (articleCanonicalUrl) {
+    articleUrls.push(articleCanonicalUrl);
+  }
+  const savedArticles = (await listArticles({ articleUrls })).items;
   const subscribedFeedUrls = (await listFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
   hideLoader();
+
+  const articleAlreadySaved = document.querySelector("#article-already-saved");
+  if (savedArticles.length > 0) {
+    articleAlreadySaved.style.display = "inline";
+  } else {
+    articleAlreadySaved.style.display = "none";
+  }
 
   document.querySelector("#action-selector-container").style.display = "block";
 
@@ -130,12 +155,18 @@ const displayActionsSelector = async () => {
 
 const getFeedHref = (tab, feedNode) => {
   let feedHref = feedNode.getAttribute("href");
-  if (feedHref.startsWith("//")) {
-    const pageProtocol = new URL(tab.url).protocol;
-    feedHref = `${pageProtocol}${feedHref}`;
-  }
+  feedHref = buildFullUrl(tab, feedHref);
 
   return feedHref;
+};
+
+const buildFullUrl = (tab, url) => {
+  if (!url.startsWith("//")) {
+    return url;
+  }
+
+  const pageProtocol = new URL(tab.url).protocol;
+  return `${pageProtocol}${url}`;
 };
 
 const hideActionSelector = () => {
