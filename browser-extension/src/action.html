@@ -178,16 +178,27 @@
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>
-                <div class="mb-3 d-flex justify-content-evenly">
+                <div class="mb-3 d-flex justify-content-center">
                     <button id="update-feed" class="btn btn-primary btn-sm" type="submit">Update</button>
-                    <a id="open-feed-details"
-                       class="btn btn-outline-secondary btn-sm"
-                       role="button"
-                       href="">
-                        <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
-                    </a>
                 </div>
             </form>
+            <div class="mb-3 d-flex justify-content-evenly">
+                <button id="enable-feed"
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button">Enable</button>
+                <button id="disable-feed"
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button">Disable</button>
+                <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
+                    <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete feed" />
+                </button>
+                <a id="open-feed-details"
+                   class="btn btn-outline-secondary btn-sm"
+                   role="button"
+                   href="">
+                    <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
+                </a>
+            </div>
         </div>
         <div id="error-container" class="alert alert-danger">
             <button id="error-nav-back"

@@ -77,15 +77,19 @@ export const listEnabledFeeds = async ({ feedUrls }) => {
   return await get(`/api/feeds/${qs}`);
 };
 
+export const deleteFeed = async (feedId) => await httpDelete(`/api/feeds/${feedId}/`);
+
 export const updateFeed = async (
   feedId,
-  { categoryId, tags, refreshDelay, articleRetentionTime },
+  { categoryId, tags, refreshDelay, articleRetentionTime, disabledAt, disabledReason },
 ) =>
   await patch(`/api/feeds/${feedId}/`, {
     category_id: categoryId,
     tags,
     refresh_delay: refreshDelay,
     article_retention_time: articleRetentionTime,
+    disabled_at: disabledAt,
+    disabled_reason: disabledReason,
   });
 
 export const listTags = async () => {

@@ -6,6 +6,7 @@ import {
   updateFeed,
   listCategories,
   deleteArticle,
+  deleteFeed,
 } from "./legadilo.js";
 
 const isFirefox = typeof browser === "object";
@@ -43,6 +44,9 @@ const onMessage = async (request, sendResponse) => {
       case "update-feed":
         await processUpdateFeedRequest(sendResponse, request.feedId, request.payload);
         break;
+      case "delete-feed":
+        await processDeleteFeedRequest(sendResponse, request.feedId);
+        break;
       default:
         console.warn(`Unknown action ${request.name}`);
         break;
@@ -79,4 +83,9 @@ const processUpdateFeedRequest = async (sendResponse, feedId, payload) => {
   const feed = await updateFeed(feedId, payload);
   const [tags, categories] = await Promise.all([listTags(), listCategories()]);
   sendResponse({ name: "updated-feed", feed, tags, categories });
+};
+
+const processDeleteFeedRequest = async (sendResponse, feedId) => {
+  await deleteFeed(feedId);
+  sendResponse({ name: "deleted-feed" });
 };

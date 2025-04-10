@@ -89,6 +89,9 @@ const onMessage = (request) => {
     case "updated-feed":
       updatedFeedSuccess(request.feed, request.tags, request.categories);
       break;
+    case "deleted-feed":
+      displayActionsSelector();
+      break;
     default:
       console.warn(`Unknown action ${request.name}`);
   }
@@ -269,6 +272,14 @@ const displayFeed = (feed, tags, categories) => {
 
   document.querySelector("#open-feed-details").href = feed.details_url;
 
+  if (feed.enabled) {
+    document.querySelector("#enable-feed").style.display = "none";
+    document.querySelector("#disable-feed").style.display = "block";
+  } else {
+    document.querySelector("#enable-feed").style.display = "block";
+    document.querySelector("#disable-feed").style.display = "none";
+  }
+
   const categorySelector = document.querySelector("#feed-category");
   // Clean all existing choices.
   categorySelector.innerHTML = "";
@@ -290,37 +301,52 @@ const displayFeed = (feed, tags, categories) => {
 };
 
 const setupFeedActions = (feedId) => {
-  const updateFeed = (event) => {
-    event.preventDefault();
-
-    const data = new FormData(document.querySelector("#update-feed-form"));
-
+  const updateFeed = (payload) => {
     hideFeed();
     displayLoader();
     sendMessage({
       name: "update-feed",
       feedId: feedId,
-      payload: {
+      payload,
+    });
+  };
+
+  const deleteFeed = () => {
+    hideFeed();
+    displayLoader();
+    sendMessage({
+      name: "delete-feed",
+      feedId,
+    });
+  };
+
+  const actions = {
+    "#update-feed": (event) => {
+      event.preventDefault();
+      const data = new FormData(document.querySelector("#update-feed-form"));
+      updateFeed({
         categoryId: data.get("category") || null,
         refreshDelay: data.get("refresh-delay"),
         articleRetentionTime: data.get("retention-time"),
         tags: data.getAll("tags"),
-      },
-    });
-  };
+      });
+    },
+    "#enable-feed": () => updateFeed({ disabledAt: null, disabledReason: null }),
+    "#disable-feed": () =>
+      updateFeed({
+        disabledAt: new Date().toISOString(),
+        disabledReason: "Disable manually in the browser extension",
+      }),
+    "#delete-feed": () =>
+      askConfirmation("Are you sure you want to delete this feed?").then(deleteFeed),
+    "#feed-nav-back": async () => {
+      Object.entries(actions).forEach(([selector, action]) => {
+        document.querySelector(selector).removeEventListener("click", action);
+      });
 
-  const feedNavBack = async () => {
-    Object.entries(actions).forEach(([selector, action]) => {
-      document.querySelector(selector).removeEventListener("click", action);
-    });
-
-    hideFeed();
-    await displayActionsSelector();
-  };
-
-  const actions = {
-    "#update-feed": updateFeed,
-    "#feed-nav-back": feedNavBack,
+      hideFeed();
+      await displayActionsSelector();
+    },
   };
 
   Object.entries(actions).forEach(([selector, action]) => {
