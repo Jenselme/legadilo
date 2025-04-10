@@ -159,7 +159,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
         return self.filter(id__in=feed_ids)
 
     def only_enabled(self):
-        return self.filter(enabled=True)
+        return self.for_status_search(enabled=True)
 
     def for_update(self, user: User):
         return (
@@ -205,6 +205,9 @@ class FeedQuerySet(models.QuerySet["Feed"]):
             filters |= models.Q(feed_url=url)
 
         return self.filter(filters)
+
+    def for_status_search(self, *, enabled: bool):
+        return self.filter(enabled=enabled)
 
 
 class FeedManager(models.Manager["Feed"]):

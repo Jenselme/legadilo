@@ -1,5 +1,5 @@
 import Tags from "./vendor/tags.js";
-import { listArticles, listFeeds } from "./legadilo.js";
+import { listArticles, listEnabledFeeds } from "./legadilo.js";
 
 let port;
 let articleTagsInstance = null;
@@ -106,7 +106,9 @@ const displayActionsSelector = async () => {
     articleUrls.push(articleCanonicalUrl);
   }
   const savedArticles = (await listArticles({ articleUrls })).items;
-  const subscribedFeedUrls = (await listFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
+  const subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map(
+    (feed) => feed.feed_url,
+  );
   hideLoader();
 
   const articleAlreadySaved = document.querySelector("#article-already-saved");

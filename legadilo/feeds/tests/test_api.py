@@ -228,7 +228,9 @@ class TestListFeedsView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.feed = FeedFactory(user=user)
-        self.other_feed = FeedFactory(user=user)
+        self.other_feed = FeedFactory(
+            user=user, disabled_at=utcdt(2025, 4, 1), disabled_reason="Disabled"
+        )
         self.url = reverse("api-1.0.0:list_feeds")
 
     def test_not_logged_in(self, client):
@@ -255,6 +257,12 @@ class TestListFeedsView:
 
     def test_filter_by_urls(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url, {"feed_urls": [self.feed.feed_url]})
+
+        assert response.status_code == HTTPStatus.OK
+        assert len(response.json()["items"]) == 1
+
+    def test_filter_by_status(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url, {"enabled": "true"})
 
         assert response.status_code == HTTPStatus.OK
         assert len(response.json()["items"]) == 1

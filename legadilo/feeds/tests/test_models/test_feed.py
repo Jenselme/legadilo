@@ -216,6 +216,26 @@ class TestFeedQuerySet:
 
         assert feeds == [feed1]
 
+    def test_for_url_search(self):
+        feed1 = FeedFactory()
+        FeedFactory()
+
+        feeds = list(
+            Feed.objects.get_queryset().for_feed_urls_search([
+                "https://example.com/toto",
+                feed1.feed_url,
+            ])
+        )
+
+        assert feeds == [feed1]
+
+    def test_for_status_search(self):
+        feed1 = FeedFactory(disabled_at=None)
+        feed2 = FeedFactory(disabled_at=utcnow())
+
+        assert list(Feed.objects.get_queryset().for_status_search(enabled=True)) == [feed1]
+        assert list(Feed.objects.get_queryset().for_status_search(enabled=False)) == [feed2]
+
 
 @pytest.mark.django_db
 class TestFeedManager:

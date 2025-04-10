@@ -66,12 +66,12 @@ export const listArticles = async ({ articleUrls }) => {
 
 export const subscribeToFeed = async (link) => await post("/api/feeds/", { feed_url: link });
 
-export const listFeeds = async ({ feedUrls }) => {
+export const listEnabledFeeds = async ({ feedUrls }) => {
   let qs = "";
   const isFilteringByUrls = feedUrls && feedUrls.length > 0;
   if (isFilteringByUrls) {
     qs = feedUrls.map((feedUrl) => `feed_urls=${encodeURIComponent(feedUrl)}`).join("&");
-    qs = `?${qs}`;
+    qs = `?${qs}&enabled=true`;
   }
 
   return await get(`/api/feeds/${qs}`);

@@ -75,6 +75,7 @@ class OutFeedSchema(ModelSchema):
 
 class FeedsSearchQuery(Schema):
     feed_urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
+    enabled: bool | None = None
 
 
 @feeds_api_router.get(
@@ -85,6 +86,9 @@ def list_feeds_view(request: AuthenticatedApiRequest, query: Query[FeedsSearchQu
     qs = Feed.objects.get_queryset().for_user(request.auth).for_api()
     if query.feed_urls:
         qs = qs.for_feed_urls_search(query.feed_urls)
+
+    if query.enabled is not None:
+        qs = qs.for_status_search(enabled=query.enabled)
 
     return qs
 
