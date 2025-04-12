@@ -83,8 +83,8 @@ class NotificationManager(models.Manager["Notification"]):
 class Notification(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField(blank=True)
-    link = models.URLField(blank=True)
-    link_text = models.CharField(max_length=100, blank=True)
+    info_link = models.URLField(blank=True)
+    info_link_text = models.CharField(max_length=100, blank=True)
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.GeneratedField(
         expression=models.Case(
@@ -104,9 +104,9 @@ class Notification(models.Model):
     class Meta(TypedModelMeta):
         constraints = [
             models.CheckConstraint(
-                name="%(app_label)s_%(class)s_link_and_text_set_together",
-                condition=(models.Q(link__length=0) & models.Q(link_text__length=0))
-                | (models.Q(link__length__gt=0) & models.Q(link_text__length__gt=0)),
+                name="%(app_label)s_%(class)s_info_link_and_info_link_text_set_together",
+                condition=(models.Q(info_link__length=0) & models.Q(info_link_text__length=0))
+                | (models.Q(info_link__length__gt=0) & models.Q(info_link_text__length__gt=0)),
             ),
         ]
 

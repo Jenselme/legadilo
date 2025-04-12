@@ -13,7 +13,6 @@
   "is_for_later": false,
   "is_read": false,
   "language": "fr",
-  "link": "https://example.com/articles/article.html",
   "main_source_title": "Super blog",
   "main_source_type": "MANUAL",
   "opened_at": null,
@@ -28,5 +27,6 @@
   "tags": [],
   "title": "Article title",
   "updated_at": "2024-03-08T23:00:00Z",
+  "url": "https://example.com/articles/article.html",
   "was_opened": false
 }

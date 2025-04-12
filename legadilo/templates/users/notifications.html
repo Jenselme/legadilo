@@ -20,8 +20,8 @@
                 </header>
                 <main class="card-text">
                     <p class="mb-1">{{ notification.content }}</p>
-                    {% if notification.link %}
-                        <a class="card-link" href="{{ notification.link }}">{{ notification.link_text }}</a>
+                    {% if notification.info_link %}
+                        <a class="card-link" href="{{ notification.info_link }}">{{ notification.info_link_text }}</a>
                     {% endif %}
                 </main>
                 <form class="mt-2" method="post" hx-boost="true" hx-push-url="false">

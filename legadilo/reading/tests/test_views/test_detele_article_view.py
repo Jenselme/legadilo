@@ -36,7 +36,7 @@ class TestDeleteArticleView:
         )
         self.article = ArticleFactory(user=user)
         self.url = reverse(
-            "feeds:delete_article",
+            "reading:delete_article",
             kwargs={
                 "article_id": self.article.id,
             },
@@ -125,4 +125,4 @@ class TestDeleteArticleView:
         assert FeedDeletedArticle.objects.count() == 1
         feed_deleted_article = FeedDeletedArticle.objects.get()
         assert feed_deleted_article.feed == feed
-        assert feed_deleted_article.article_link == self.article.link
+        assert feed_deleted_article.article_url == self.article.url

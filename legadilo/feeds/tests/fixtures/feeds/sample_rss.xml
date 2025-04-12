@@ -10,7 +10,7 @@
         <item>
             <title>First entry title</title>
             <link>
-            {{ item_link }}</link>
+            {{ item_url }}</link>
             <description>Watch out for &lt;span style="background-image:
                 url(javascript:window.location='http://example.org/')"&gt;nasty
                 tricks&lt;/span&gt;

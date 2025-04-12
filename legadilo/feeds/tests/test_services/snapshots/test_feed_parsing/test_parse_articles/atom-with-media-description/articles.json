@@ -7,7 +7,6 @@
     "external_article_id": "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
     "is_favorite": false,
     "language": "en-US",
-    "link": "http://example.org/entry/3",
     "preview_picture_alt": "My image description My image credit",
     "preview_picture_url": "https://example.com/my-image.jpg",
     "published_at": "2005-11-09T00:23:47Z",
@@ -17,7 +16,8 @@
     "table_of_content": [],
     "tags": [],
     "title": "First entry title",
-    "updated_at": "2005-11-09T11:56:34Z"
+    "updated_at": "2005-11-09T11:56:34Z",
+    "url": "http://example.org/entry/3"
   },
   {
     "annotations": [],
@@ -27,7 +27,6 @@
     "external_article_id": "",
     "is_favorite": false,
     "language": "en",
-    "link": "https://example.com/articles/with-tags",
     "preview_picture_alt": "",
     "preview_picture_url": "",
     "published_at": null,
@@ -40,6 +39,7 @@
       "Tag"
     ],
     "title": "With tags",
-    "updated_at": null
+    "updated_at": null,
+    "url": "https://example.com/articles/with-tags"
   }
 ]

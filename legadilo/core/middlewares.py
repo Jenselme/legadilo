@@ -16,7 +16,10 @@
 from zoneinfo import ZoneInfo
 
 from csp.middleware import CSPMiddleware as DjangoCSPMiddleware
+from csp.middleware import PolicyParts
 from django.conf import settings
+from django.http.request import HttpRequest
+from django.http.response import HttpResponseBase
 from django.utils import timezone
 
 
@@ -26,13 +29,23 @@ class CSPMiddleware(DjangoCSPMiddleware):
     It's the easiest solution and avoid having to override many templates with the nonce.
     """
 
-    def build_policy(self, request, response):
-        if request.path.startswith(f"/{settings.ADMIN_URL}"):
-            response._csp_replace = {
-                "script-src": "'self'",
-                "style-src": "'self'",
-            }
-        return super().build_policy(request, response)
+    def get_policy_parts(
+        self,
+        request: HttpRequest,
+        response: HttpResponseBase,
+        report_only: bool = False,  # noqa: FBT001,FBT002 Boolean default positional argument in function definition
+    ):
+        policy_parts = super().get_policy_parts(request, response, report_only=report_only)
+        if not request.path.startswith(f"/{settings.ADMIN_URL}"):
+            return policy_parts
+
+        base_replace = policy_parts.replace or {}
+        replace = {
+            **base_replace,
+            "script-src": "'self'",
+            "style-src": "'self'",
+        }
+        return PolicyParts(policy_parts.config, policy_parts.update, replace, policy_parts.nonce)
 
 
 class TimezoneMiddleware:

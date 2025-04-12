@@ -25,7 +25,7 @@ CSV_HEADER_FIELDS = (
     "feed_site_url",
     "article_id",
     "article_title",
-    "article_link",
+    "article_url",
     "article_content",
     "article_date_published",
     "article_date_updated",

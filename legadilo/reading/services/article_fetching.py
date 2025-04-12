@@ -82,7 +82,7 @@ class ArticleData(BaseSchema):
     authors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     contributors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    link: Annotated[str, ValidUrlValidator]
+    url: Annotated[str, ValidUrlValidator]
     preview_picture_url: OptionalUrl = ""
     preview_picture_alt: Annotated[str, FullSanitizeValidator, none_to_value("")] = ""
     published_at: datetime | None = None
@@ -101,13 +101,13 @@ class ArticleData(BaseSchema):
         content = values.get("content", "")
         title = values.get("title", "")
         source_title = values.get("source_title", "")
-        link = values.get("link")
+        url = values.get("url")
 
         # Consider link optional here to please mypy. It's mandatory anyway so validation will fail
         # later if needed.
-        if link:
-            summary = _resolve_relative_links(link, summary)
-            content = _resolve_relative_links(link, content)
+        if url:
+            summary = _resolve_relative_urls(url, summary)
+            content = _resolve_relative_urls(url, content)
 
         content, table_of_content = _build_table_of_content(content)
 
@@ -115,10 +115,10 @@ class ArticleData(BaseSchema):
             summary = _get_fallback_summary_from_content(content)
 
         if not title:
-            title = urlparse(values.get("link")).netloc
+            title = urlparse(values.get("url")).netloc
 
         if not source_title:
-            source_title = urlparse(values.get("link")).netloc
+            source_title = urlparse(values.get("url")).netloc
 
         return {
             **values,
@@ -130,29 +130,29 @@ class ArticleData(BaseSchema):
         }
 
 
-def _resolve_relative_links(article_link: str, content: str) -> str:
+def _resolve_relative_urls(article_url: str, content: str) -> str:
     soup = BeautifulSoup(content, "html.parser")
     for link in soup.find_all("a"):
         if (href := link.get("href")) is None:
             continue
 
-        link["href"] = _normalize_url(article_link, href)
+        link["href"] = _normalize_url(article_url, href)
 
     for image in soup.find_all("img"):
         if (src := image.get("src")) is None:
             continue
 
-        image["src"] = _normalize_url(article_link, src)
+        image["src"] = _normalize_url(article_url, src)
 
     return str(soup)
 
 
-def _normalize_url(article_link: str, elt_link: str):
+def _normalize_url(article_url: str, elt_url: str):
     try:
-        return normalize_url(article_link, elt_link)
+        return normalize_url(article_url, elt_url)
     except ValueError:
-        logger.info(f"Failed to normalize url {elt_link=} against {article_link=}")
-        return elt_link
+        logger.info(f"Failed to normalize url {elt_url=} against {article_url=}")
+        return elt_url
 
 
 class ArticleTooBigError(Exception):
@@ -233,7 +233,7 @@ def _build_article_data_from_soup(
         authors=tuple(_get_authors(soup)),
         contributors=(),
         tags=tuple(_get_tags(soup)),
-        link=_get_link(fetched_url, soup),
+        url=_get_url(fetched_url, soup),
         preview_picture_url=_get_preview_picture_url(fetched_url, soup),
         preview_picture_alt="",
         published_at=_get_published_at(soup),
@@ -318,7 +318,13 @@ def _get_content(soup) -> str:
     if not article_content:
         return ""
 
-    for tag_name in ["noscript", "h1", "footer", "header", "nav", "aside"]:
+    tags_to_cleanup = {"noscript", "footer", "header", "nav", "aside"}
+    # Some invalid articles may have multiple h1, keep them in this case since they are "normal"
+    # article titles and thus must be kept.
+    if len(soup.find_all("h1")) == 1:
+        tags_to_cleanup.add("h1")
+
+    for tag_name in tags_to_cleanup:
         _extract_tag_from_content(article_content, tag_name)
     return str(article_content)
 
@@ -388,13 +394,13 @@ def parse_tags_list(tags_str: str) -> set[str]:
     return parsed_tags
 
 
-def _get_link(fetched_url: str, soup) -> str:
-    link = fetched_url
-    if (canonical_link := soup.find("link", {"rel": "canonical"})) and canonical_link.get("href"):
-        link = canonical_link.get("href")
+def _get_url(fetched_url: str, soup) -> str:
+    url = fetched_url
+    if (canonical_url := soup.find("link", {"rel": "canonical"})) and canonical_url.get("href"):
+        url = canonical_url.get("href")
 
-    if is_url_valid(link):
-        return normalize_url(fetched_url, link)
+    if is_url_valid(url):
+        return normalize_url(fetched_url, url)
 
     return fetched_url
 
@@ -403,29 +409,29 @@ def _get_preview_picture_url(fetched_url, soup) -> str:
     preview_picture_url = ""
 
     if (og_image := soup.find("meta", attrs={"property": "og:image"})) and (
-        og_image_link := og_image.get("content")
+        og_image_url := og_image.get("content")
     ):
         try:
-            preview_picture_url = normalize_url(fetched_url, og_image_link)
+            preview_picture_url = normalize_url(fetched_url, og_image_url)
         except ValueError:
             preview_picture_url = ""
     if (
         not preview_picture_url
         and (itemprop_image := soup.find("meta", attrs={"itemprop": "image"}))
-        and (itemprop_link := itemprop_image.get("content"))
+        and (itemprop_url := itemprop_image.get("content"))
     ):
         try:
-            preview_picture_url = normalize_url(fetched_url, itemprop_link)
+            preview_picture_url = normalize_url(fetched_url, itemprop_url)
         except ValueError:
             preview_picture_url = ""
     if (
         not preview_picture_url
         and (twitter_image := soup.find("meta", attrs={"property": "twitter:image"}))
-        and (twitter_image_link := twitter_image.get("content"))
-        and is_url_valid(twitter_image_link)
+        and (twitter_image_url := twitter_image.get("content"))
+        and is_url_valid(twitter_image_url)
     ):
         try:
-            preview_picture_url = normalize_url(fetched_url, twitter_image_link)
+            preview_picture_url = normalize_url(fetched_url, twitter_image_url)
         except ValueError:
             preview_picture_url = ""
 

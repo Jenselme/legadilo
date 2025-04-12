@@ -134,7 +134,7 @@ def _handle_add_article_save_result(
 @require_http_methods(["POST"])
 @login_required
 def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedirect:
-    article = get_object_or_404(Article, link=request.POST.get("url"), user=request.user)
+    article = get_object_or_404(Article, url=request.POST.get("url"), user=request.user)
     _status, _form, save_result = _handle_save(
         request,
         [],
@@ -187,9 +187,9 @@ def _handle_save(
         return HTTPStatus.BAD_REQUEST, form, None
 
     tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
-    article_link = form.cleaned_data["url"]
+    article_url = form.cleaned_data["url"]
     try:
-        article_data = get_article_from_url(article_link)
+        article_data = get_article_from_url(article_url)
         save_result = (
             Article.objects.save_from_list_of_data(
                 request.user,
@@ -202,7 +202,7 @@ def _handle_save(
     except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
         invalid_article, created = Article.objects.create_invalid_article(
             request.user,
-            article_link,
+            article_url,
             tags,
             error_message=format_exception(e),
             technical_debug_data=extract_debug_information(e),

@@ -24,6 +24,7 @@ from .comment_views import (
     display_comment_view,
     edit_comment_view,
 )
+from .delete_article_view import delete_article_view
 from .fetch_article_views import add_article_view, refetch_article_view
 from .list_of_articles_views import (
     external_tag_with_articles_view,
@@ -43,6 +44,7 @@ __all__ = [
     "article_details_view",
     "create_comment_view",
     "create_tag_view",
+    "delete_article_view",
     "delete_comment_view",
     "display_comment_view",
     "edit_comment_view",

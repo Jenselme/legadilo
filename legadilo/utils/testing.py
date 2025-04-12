@@ -31,7 +31,7 @@ def serialize_for_snapshot(value: Any) -> str:
 
     value = json.dumps(value, indent=2, sort_keys=True, cls=CustomJsonEncoder)
 
-    return str(value)
+    return str(value) + "\n"
 
 
 def all_model_fields_except(model: type[models.Model], excluded_fields: set[str]):

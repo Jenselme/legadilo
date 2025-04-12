@@ -188,7 +188,7 @@ class TestArticleQuerySet:
         article_two_feeds = ArticleFactory(user=user, title="Two feed")
         article_two_feeds.feeds.add(feed, other_feed)
         feed_no_slug = FeedFactory(
-            user=user, title="No slug", slug="", open_original_link_by_default=True
+            user=user, title="No slug", slug="", open_original_url_by_default=True
         )
         article_feed_no_slug = ArticleFactory(user=user, title="Article feed no slug")
         article_feed_no_slug.feeds.add(feed_no_slug)
@@ -963,16 +963,16 @@ class TestArticleQuerySet:
         assert searched_articles == [article]
 
     def test_for_url_search(self, user):
-        searched_link = "https://example.com/articles/1"
+        searched_url = "https://example.com/articles/1"
         article_with_full_url = ArticleFactory(
-            title="Full url", user=user, link=f"{searched_link}.html"
+            title="Full url", user=user, url=f"{searched_url}.html"
         )
-        article_with_partial_url = ArticleFactory(
-            title="Partial url", user=user, link=searched_link
-        )
+        article_with_partial_url = ArticleFactory(title="Partial url", user=user, url=searched_url)
         ArticleFactory(title="Other URL", user=user)
 
-        articles = list(Article.objects.get_queryset().for_url_search(searched_link).order_by("id"))
+        articles = list(
+            Article.objects.get_queryset().for_url_search([searched_url]).order_by("id")
+        )
 
         assert articles == [article_with_full_url, article_with_partial_url]
 
@@ -1019,7 +1019,7 @@ class TestArticleManager:
                         authors=("Author",),
                         contributors=(),
                         tags=(),
-                        link="https://example.com/article/some-new-article-1",
+                        url="https://example.com/article/some-new-article-1",
                         preview_picture_url="https://example.com/preview.png",
                         preview_picture_alt="Some image alt",
                         published_at=now_dt,
@@ -1029,7 +1029,7 @@ class TestArticleManager:
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_update.external_article_id,
-                        link=existing_article_to_update.link,
+                        url=existing_article_to_update.url,
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
@@ -1046,7 +1046,7 @@ class TestArticleManager:
                     ),
                     ArticleData(
                         external_article_id=existing_article_to_keep.external_article_id,
-                        link=existing_article_to_keep.link,
+                        url=existing_article_to_keep.url,
                         title="Updated article",
                         summary="Summary updated",
                         content="Description updated",
@@ -1070,7 +1070,7 @@ class TestArticleManager:
                         authors=("Author",),
                         contributors=("Contributor",),
                         tags=("Some tag",),
-                        link="https://example.com/article/new-article-3",
+                        url="https://example.com/article/new-article-3",
                         preview_picture_url="",
                         preview_picture_alt="",
                         published_at=now_dt,
@@ -1124,7 +1124,7 @@ class TestArticleManager:
             [tag1.slug, tag2.slug],
         ]
 
-    def test_same_link_multiple_times(self, user, django_assert_num_queries):
+    def test_same_urlmultiple_times(self, user, django_assert_num_queries):
         now_dt = utcnow()
 
         with django_assert_num_queries(4):
@@ -1140,7 +1140,7 @@ class TestArticleManager:
                         authors=("Author",),
                         contributors=(),
                         tags=(),
-                        link="https://example.com/article/1",
+                        url="https://example.com/article/1",
                         preview_picture_url="https://example.com/preview.png",
                         preview_picture_alt="Some image alt",
                         published_at=now_dt,
@@ -1150,7 +1150,7 @@ class TestArticleManager:
                     ),
                     ArticleData(
                         external_article_id="some-article-1",
-                        link="https://example.com/article/1",
+                        url="https://example.com/article/1",
                         title="Article updated",
                         summary="Summary updated",
                         content="Description updated",
@@ -1188,7 +1188,7 @@ class TestArticleManager:
         )
         article_data = ArticleData(
             external_article_id=existing_article.external_article_id,
-            link=existing_article.link,
+            url=existing_article.url,
             title=existing_article.title,
             summary=existing_article.summary,
             content=existing_article.content,
@@ -1225,7 +1225,7 @@ class TestArticleManager:
         )
         article_data = ArticleData(
             external_article_id=existing_article.external_article_id,
-            link=existing_article.link,
+            url=existing_article.url,
             title=existing_article.title,
             summary=existing_article.summary,
             content=existing_article.content,
@@ -1292,15 +1292,15 @@ class TestArticleManager:
         )
         article_linked_to_other_tag = ArticleFactory(title="Article linked to other tag", user=user)
         ArticleTag.objects.create(tag=other_tag, article=article_linked_to_other_tag)
-        article_link_to_tag_to_display_and_deleted_tag = ArticleFactory(
+        article_linked_to_tag_to_display_and_deleted_tag = ArticleFactory(
             title="Article linked to tag to display and some other deleted tag", user=user
         )
         ArticleTag.objects.create(
-            tag=tag_to_display, article=article_link_to_tag_to_display_and_deleted_tag
+            tag=tag_to_display, article=article_linked_to_tag_to_display_and_deleted_tag
         )
         ArticleTag.objects.create(
             tag=other_tag,
-            article=article_link_to_tag_to_display_and_deleted_tag,
+            article=article_linked_to_tag_to_display_and_deleted_tag,
             tagging_reason=constants.TaggingReason.DELETED,
         )
 
@@ -1310,7 +1310,7 @@ class TestArticleManager:
         assert list(articles) == [
             article_linked_only_to_tag_to_display,
             article_linked_to_all_tags,
-            article_link_to_tag_to_display_and_deleted_tag,
+            article_linked_to_tag_to_display_and_deleted_tag,
         ]
 
     def test_get_articles_with_external_tag(self, user, django_assert_num_queries):
@@ -1339,7 +1339,7 @@ class TestArticleManager:
             )
 
         assert created
-        assert article.link == link
+        assert article.url == link
         assert article.title == link
         assert article.slug == "toto-com"
         assert article.updated_at is None
@@ -1349,7 +1349,7 @@ class TestArticleManager:
         assert article.article_fetch_errors.count() == 1
 
     def test_create_article_title_cannot_be_slugified(self, user):
-        article = Article.objects.create(link="https://toto.com/article", title="??", user=user)
+        article = Article.objects.create(url="https://toto.com/article", title="??", user=user)
 
         assert article.title == "??"
         assert article.slug == "no-slug"
@@ -1361,13 +1361,13 @@ class TestArticleManager:
         with django_assert_num_queries(4):
             article, created = Article.objects.create_invalid_article(
                 user,
-                initial_article.link,
+                initial_article.url,
                 [tag],
             )
 
         assert not created
-        assert article.link == initial_article.link
-        assert article.title != initial_article.link
+        assert article.url == initial_article.url
+        assert article.title != initial_article.url
         assert article.title == initial_article.title
         assert article.tags.count() == 0
         assert article.article_fetch_errors.count() == 1
@@ -1393,7 +1393,7 @@ class TestArticleManager:
             id=1,
             user=user,
             title="Article from feed",
-            link="https://example.com/article/feed-article/",
+            url="https://example.com/article/feed-article/",
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
             authors=["Author 1", "Author 2"],
@@ -1409,7 +1409,7 @@ class TestArticleManager:
             id=2,
             user=user,
             title="Article with 2 feeds",
-            link="https://example.com/article/multiple-feeds-article/",
+            url="https://example.com/article/multiple-feeds-article/",
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
@@ -1419,7 +1419,7 @@ class TestArticleManager:
             user=user,
             is_favorite=True,
             title="Article",
-            link="https://example.com/article/independant-article/",
+            url="https://example.com/article/independant-article/",
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
@@ -1457,7 +1457,7 @@ class TestArticleManager:
     def test_search_url(self, user):
         article = ArticleFactory(title="Test", user=user)
         search_query = ArticleFullTextSearchQuery(
-            q=article.link, search_type=constants.ArticleSearchType.URL
+            q=article.url, search_type=constants.ArticleSearchType.URL
         )
 
         found_articles = list(Article.objects.search(user, search_query))
@@ -1611,7 +1611,7 @@ class TestArticleModel:
                 authors=("Author 2", "Author 3"),
                 contributors=("Contributor 2", "Contributor 3"),
                 tags=("Some tag", "Updated tag"),
-                link="https://example.com/article/1",
+                url="https://example.com/article/1",
                 preview_picture_url="https://example.com/preview.png",
                 preview_picture_alt="Some image alt",
                 published_at=utcdt(2024, 4, 20),
@@ -1653,7 +1653,7 @@ class TestArticleModel:
                 authors=("Author",),
                 contributors=(),
                 tags=(),
-                link="https://example.com/article/1",
+                url="https://example.com/article/1",
                 preview_picture_url="",
                 preview_picture_alt="",
                 published_at=utcdt(2024, 4, 20),

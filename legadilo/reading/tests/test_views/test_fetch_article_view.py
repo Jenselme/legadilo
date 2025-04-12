@@ -104,7 +104,7 @@ class TestAddArticle:
     def test_add_article_with_tags_other_user(
         self, user, other_user, logged_in_other_user_sync_client, httpx_mock
     ):
-        ArticleFactory(user=user, link=self.article_url)
+        ArticleFactory(user=user, url=self.article_url)
         TagFactory(user=other_user, title=self.existing_tag.title, slug=self.existing_tag.slug)
         httpx_mock.add_response(text=self.article_content, url=self.article_url)
 
@@ -165,14 +165,14 @@ class TestAddArticle:
     def test_add_already_saved(self, user, logged_in_sync_client, httpx_mock):
         existing_article = ArticleFactory(
             user=user,
-            link=self.article_url,
+            url=self.article_url,
             read_at=utcnow(),
             title="Existing",
             reading_time=10,
             content="Existing content",
             updated_at=utcdt(2024, 3, 1),
         )
-        httpx_mock.add_response(text=self.article_content, url=existing_article.link)
+        httpx_mock.add_response(text=self.article_content, url=existing_article.url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -194,13 +194,11 @@ class TestAddArticle:
         # Only content must be updated.
         assert article.content != existing_article.content
 
-    def test_fetch_failure_link_already_saved(self, user, logged_in_sync_client, httpx_mock):
+    def test_fetch_failure_url_already_saved(self, user, logged_in_sync_client, httpx_mock):
         article = ArticleFactory(user=user)
         httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
 
-        response = logged_in_sync_client.post(
-            self.url, {**self.sample_payload, "url": article.link}
-        )
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "url": article.url})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "reading/add_article.html"
@@ -247,7 +245,7 @@ class TestRefetchArticleView:
         self.article_url = "https://www.example.com/posts/en/1-super-article/"
         self.article = ArticleFactory(
             user=user,
-            link=self.article_url,
+            url=self.article_url,
             slug="initial-slug",
             title="Initial title",
             summary="Initial summary",

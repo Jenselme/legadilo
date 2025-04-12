@@ -47,7 +47,7 @@ class TestSubscribeToFeedView:
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.BIHOURLY.name,
             "article_retention_time": 7,
-            "open_original_link_by_default": True,
+            "open_original_url_by_default": True,
         }
         self.existing_tag = TagFactory(user=user)
         self.sample_payload_with_tags = {
@@ -92,7 +92,7 @@ class TestSubscribeToFeedView:
             )
         ]
         assert feed.tags.count() == 0
-        assert feed.open_original_link_by_default
+        assert feed.open_original_url_by_default
         assert feed.refresh_delay == feeds_constants.FeedRefreshDelays.BIHOURLY
         assert feed.article_retention_time == 7
         assert Article.objects.count() > 0
@@ -119,7 +119,7 @@ class TestSubscribeToFeedView:
                 message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
             )
         ]
-        assert not feed.open_original_link_by_default
+        assert not feed.open_original_url_by_default
         assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
         assert Article.objects.count() > 0
         article = Article.objects.first()
@@ -236,7 +236,7 @@ class TestSubscribeToFeedView:
 
     def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx_mock):
         sample_rss_feed = get_feed_fixture_content(
-            "sample_rss.xml", {"item_link": """<link>Just trash</link>"""}
+            "sample_rss.xml", {"item_url": """<link>Just trash</link>"""}
         )
         httpx_mock.add_response(
             text=sample_rss_feed,
@@ -266,7 +266,7 @@ class TestSubscribeToFeedView:
         ]
 
     def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
-        sample_html_template = get_page_for_feed_subscription_content({"feed_links": ""})
+        sample_html_template = get_page_for_feed_subscription_content({"feed_urls": ""})
         httpx_mock.add_response(text=sample_html_template, url=self.page_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_page_payload)
@@ -283,7 +283,7 @@ class TestSubscribeToFeedView:
 
     def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx_mock):
         sample_html_template = get_page_for_feed_subscription_content({
-            "feed_links": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
+            "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">"""  # noqa: E501
         })
         httpx_mock.add_response(

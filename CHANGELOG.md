@@ -2,7 +2,25 @@
 
 ## Unreleased
 
+## 25.04.2
+
 - Show reading list title and reading list actions when scrolling up.
+- Improve browser extension:
+  - Display site title instead of nothing for feed links without a title attribute.
+  - Can go back to list of actions from error, article & feed.
+  - Can delete article from extension.
+  - Display on actions chooser whether the sure is subscribed feeds.
+  - Display on actions chooser whether the article is already saved.
+  - Can delete and disable/enable a feed from the extension.
+- API changes:
+  - Switch from `link` to `url` to save articles. This is done to have a consistant naming in the codebase.
+  - Can list articles and filter them by URLs.
+  - Can list feeds and filter them by feed URLs and enabled status.
+- Correct Django admin styling.
+  - This was caused by the update to `django-csp` 4.0 which changed how CSP rules are computed. It caused the admin to be unable to load its script files and stylesheets.
+- Allow base64 encoded images.
+- Keep h1 titles when we have more than 1.
+  - Some invalid articles may have multiple h1, keep them in this case since they are "normal" article titles and thus must be kept.
 
 ## 25.04.1
 

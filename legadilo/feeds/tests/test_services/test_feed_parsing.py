@@ -23,8 +23,8 @@ from legadilo.feeds.services.feed_parsing import (
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
     _find_feed_page_content,
-    _find_youtube_rss_feed_link,
-    _get_feed_site_link,
+    _find_youtube_rss_feed_url,
+    _get_feed_site_url,
     _parse_articles_in_feed,
     get_feed_data,
     parse_feed,
@@ -39,25 +39,25 @@ from ..fixtures import (
 
 class TestFindFeedUrl:
     @pytest.mark.parametrize(
-        ("content", "expected_link"),
+        ("content", "expected_url"),
         [
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="https://www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
+                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
                 }),
                 "https://www.jujens.eu/feeds/all.rss.xml",
                 id="single-rss-link",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
+                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
                 }),
                 "https://www.jujens.eu/feeds/all.atom.xml",
                 id="single-atom-link",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">
+                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">
                     <link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
                 }),
                 "https://www.jujens.eu/feeds/all.atom.xml",
@@ -65,37 +65,37 @@ class TestFindFeedUrl:
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">>""",  # noqa: E501
+                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">>""",  # noqa: E501
                 }),
                 "https://www.jujens.eu/feeds/all.atom.xml",
                 id="link-no-scheme",
             ),
         ],
     )
-    def test_find_one_link(self, content: str, expected_link: str):
-        link = _find_feed_page_content(content)
+    def test_find_one_url(self, content: str, expected_url: str):
+        url = _find_feed_page_content(content)
 
-        assert link == expected_link
+        assert url == expected_url
 
     @pytest.mark.parametrize(
         "content",
         [
             pytest.param("", id="empty-string"),
             pytest.param("<head></head", id="bad-html"),
-            pytest.param(get_page_for_feed_subscription_content({"feed_links": ""}), id="no-links"),
+            pytest.param(get_page_for_feed_subscription_content({"feed_urls": ""}), id="no-links"),
             pytest.param(
-                get_page_for_feed_subscription_content({"feed_links": "invalid data"}),
+                get_page_for_feed_subscription_content({"feed_urls": "invalid data"}),
                 id="invalid-data-in-head",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
+                    "feed_urls": """<link type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
                 }),
                 id="no-href",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
+                    "feed_urls": """<link href="" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
                 }),
                 id="empty-href",
             ),
@@ -110,7 +110,7 @@ class TestFindFeedUrl:
         [
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
+                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.rss.xml" type="application/rss+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
                 }),
                 [
@@ -121,7 +121,7 @@ class TestFindFeedUrl:
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Full feed">
+                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
                 }),
                 [
@@ -132,7 +132,7 @@ class TestFindFeedUrl:
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
+                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
                 }),
                 [
@@ -143,7 +143,7 @@ class TestFindFeedUrl:
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_links": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate">
+                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="">""",  # noqa: E501
                 }),
                 [
@@ -227,14 +227,14 @@ class TestGetFeedMetadata:
             ),
         ],
     )
-    def test_find_youtube_rss_feed_link(self, user_entered_url: str, expected_url: str):
-        youtube_feed_url = _find_youtube_rss_feed_link(user_entered_url)
+    def test_find_youtube_rss_feed_url(self, user_entered_url: str, expected_url: str):
+        youtube_feed_url = _find_youtube_rss_feed_url(user_entered_url)
 
         assert youtube_feed_url == expected_url
 
     def test_get_feed_metadata_from_page_url(self, httpx_mock, snapshot):
         page_content = get_page_for_feed_subscription_content({
-            "feed_links": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
+            "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
         })
         page_url = "https://www.jujens.eu"
         feed_url = "https://www.jujens.eu/feeds/all.atom.xml"
@@ -313,7 +313,7 @@ class TestParseArticlesInFeed:
 
 class TestGetFeedSiteUrl:
     @pytest.mark.parametrize(
-        ("found_site_link", "feed_link", "expected_site_link"),
+        ("found_site_url", "feed_url", "expected_site_url"),
         [
             pytest.param(
                 None,
@@ -339,8 +339,8 @@ class TestGetFeedSiteUrl:
         ],
     )
     def test_get_feed_site_url(
-        self, found_site_link: str | None, feed_link: str, expected_site_link: str
+        self, found_site_url: str | None, feed_url: str, expected_site_url: str
     ):
-        build_site_link = _get_feed_site_link(found_site_link, feed_link)
+        build_site_url = _get_feed_site_url(found_site_url, feed_url)
 
-        assert build_site_link == expected_site_link
+        assert build_site_url == expected_site_url

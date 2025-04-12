@@ -22,10 +22,10 @@ from typing import Annotated, Self
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Router, Schema
+from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from config import settings
 from legadilo.feeds import constants
@@ -73,12 +73,24 @@ class OutFeedSchema(ModelSchema):
         exclude = ("user", "created_at", "updated_at", "articles")
 
 
+class FeedsSearchQuery(Schema):
+    feed_urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
+    enabled: bool | None = None
+
+
 @feeds_api_router.get(
     "", response=list[OutFeedSchema], url_name="list_feeds", summary="List all you feeds"
 )
 @paginate
-def list_feeds_view(request: AuthenticatedApiRequest):
-    return Feed.objects.get_queryset().for_user(request.auth).for_api()
+def list_feeds_view(request: AuthenticatedApiRequest, query: Query[FeedsSearchQuery]):
+    qs = Feed.objects.get_queryset().for_user(request.auth).for_api()
+    if query.feed_urls:
+        qs = qs.for_feed_urls_search(query.feed_urls)
+
+    if query.enabled is not None:
+        qs = qs.for_status_search(enabled=query.enabled)
+
+    return qs
 
 
 class FeedSubscription(Schema):
@@ -87,7 +99,7 @@ class FeedSubscription(Schema):
     article_retention_time: int = 0
     category_id: int | None = None
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    open_original_link_by_default: bool = False
+    open_original_url_by_default: bool = False
 
 
 @feeds_api_router.post(
@@ -115,7 +127,7 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
             payload.article_retention_time,
             tags,
             category,
-            open_original_link_by_default=payload.open_original_link_by_default,
+            open_original_url_by_default=payload.open_original_url_by_default,
         )
     except (NoFeedUrlFoundError, MultipleFeedFoundError):
         return HTTPStatus.NOT_ACCEPTABLE, {
@@ -164,7 +176,7 @@ class FeedUpdate(Schema):
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
     refresh_delay: constants.FeedRefreshDelays = FIELD_UNSET
     article_retention_time: int = FIELD_UNSET
-    open_original_link_by_default: bool = FIELD_UNSET
+    open_original_url_by_default: bool = FIELD_UNSET
 
     @model_validator(mode="after")
     def check_disabled(self) -> Self:

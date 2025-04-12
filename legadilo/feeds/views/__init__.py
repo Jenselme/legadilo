@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .delete_article_view import delete_article_view
 from .feed_articles_view import feed_articles_view
 from .feed_categories_admin_views import (
     create_feed_category_view,
@@ -26,7 +25,6 @@ from .subscribe_to_feed_view import subscribe_to_feed_view
 
 __all__ = [
     "create_feed_category_view",
-    "delete_article_view",
     "edit_feed_category_view",
     "edit_feed_view",
     "feed_articles_view",

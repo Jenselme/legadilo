@@ -194,10 +194,10 @@ class TestSearchView:
         assert response.context_data["total_results"] == 1
 
     def test_search_with_url(self, user, logged_in_sync_client):
-        article_link = "https://example.com/articles/1.html"
-        article = ArticleFactory(title="Claudius", user=user, link=article_link)
+        article_url = "https://example.com/articles/1.html"
+        article = ArticleFactory(title="Claudius", user=user, url=article_url)
 
-        response = logged_in_sync_client.get(self.url, data={"q": article_link})
+        response = logged_in_sync_client.get(self.url, data={"q": article_url})
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/search.html"

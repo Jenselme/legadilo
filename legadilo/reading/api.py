@@ -20,7 +20,8 @@ from typing import Annotated, Self
 
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Router, Schema
+from ninja import ModelSchema, Query, Router, Schema
+from ninja.pagination import paginate
 from pydantic import Field, model_validator
 
 from legadilo.reading import constants
@@ -29,6 +30,7 @@ from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
     get_article_from_url,
 )
+from legadilo.reading.services.delete_article import delete_article
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.api import FIELD_UNSET, update_model_from_schema
@@ -65,7 +67,7 @@ class OutArticleSchema(ModelSchema):
 
 
 class ArticleCreation(Schema):
-    link: Annotated[str, ValidUrlValidator]
+    url: Annotated[str, ValidUrlValidator]
     title: Annotated[str, FullSanitizeValidator] = ""
     # We must not sanitize this yet: we need the raw content when building the article to fetch some
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
@@ -95,10 +97,10 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     """Create an article either just with a link or with a link, a title and some content."""
     if payload.has_data:
         article_data = build_article_data_from_content(
-            url=payload.link, title=payload.title, content=payload.content
+            url=payload.url, title=payload.title, content=payload.content
         )
     else:
-        article_data = get_article_from_url(payload.link)
+        article_data = get_article_from_url(payload.url)
 
     # Tags specified in article data are the raw tags used in feeds, they are not used to link an
     # article to tag objects.
@@ -115,6 +117,25 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
         return HTTPStatus.CREATED, article
 
     return HTTPStatus.OK, article
+
+
+class ArticlesSearchQuery(Schema):
+    urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
+
+
+@reading_api_router.get(
+    "/articles/",
+    response={HTTPStatus.OK: list[OutArticleSchema]},
+    url_name="list_articles",
+    summary="List articles",
+)
+@paginate
+def list_articles_view(request: AuthenticatedApiRequest, query: Query[ArticlesSearchQuery]):
+    qs = Article.objects.get_queryset().for_user(request.auth).for_api()
+    if query.urls:
+        qs = qs.for_url_search(query.urls)
+
+    return qs
 
 
 @reading_api_router.get(
@@ -179,7 +200,7 @@ def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]
 def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
     article = get_object_or_404(Article, id=article_id, user=request.auth)
 
-    article.delete()
+    delete_article(article)
 
     return HTTPStatus.NO_CONTENT, None
 

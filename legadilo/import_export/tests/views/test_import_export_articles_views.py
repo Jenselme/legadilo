@@ -60,7 +60,7 @@ class TestExportArticlesView:
             user=user,
             id=1,
             title="Some article",
-            link="https://example.com/article/0",
+            url="https://example.com/article/0",
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
@@ -335,7 +335,7 @@ class TestImportWallabag:
         snapshot.assert_match(
             serialize_for_snapshot(
                 list(
-                    Article.objects.order_by("link").values(
+                    Article.objects.order_by("url").values(
                         *all_model_fields_except(
                             Article, {"id", "user", "obj_created_at", "obj_updated_at"}
                         )

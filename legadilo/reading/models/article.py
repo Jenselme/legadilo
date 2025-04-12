@@ -261,13 +261,13 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.alias(
             feed_ids=ArrayAgg("feeds__id", order="feeds__id"),
             feed_slugs=ArrayAgg("feeds__slug", ordering="feeds__id"),
-            feed_open_original_link_by_default=ArrayAgg(
-                "feeds__open_original_link_by_default", ordering="feeds__id"
+            feed_open_original_url_by_default=ArrayAgg(
+                "feeds__open_original_url_by_default", ordering="feeds__id"
             ),
         ).annotate(
             annot_feed_id=models.F("feed_ids__0"),
             annot_feed_slug=models.F("feed_slugs__0"),
-            annot_open_original_by_default=models.F("feed_open_original_link_by_default__0"),
+            annot_open_original_by_default=models.F("feed_open_original_url_by_default__0"),
         )
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
@@ -454,8 +454,12 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .filter(lower_tags_title=search_query.q.lower())
         )
 
-    def for_url_search(self, url: str) -> Self:
-        return self.filter(link__icontains=url)
+    def for_url_search(self, urls: list[str]) -> Self:
+        filters = models.Q()
+        for url in urls:
+            filters |= models.Q(url__icontains=url)
+
+        return self.filter(filters)
 
     def for_api(self):
         return self.prefetch_related(_build_prefetch_article_tags())
@@ -480,22 +484,22 @@ class ArticleManager(models.Manager["Article"]):
         if len(articles_data) == 0:
             return []
 
-        existing_links_to_articles = {
-            article.link: article
+        existing_urls_to_articles = {
+            article.url: article
             for article in self.get_queryset()
-            .filter(user=user, link__in=[article_data.link for article_data in articles_data])
+            .filter(user=user, url__in=[article_data.url for article_data in articles_data])
             .select_related("user", "user__settings")
         }
         articles_to_create: list[SaveArticleResult] = []
         articles_to_update: list[SaveArticleResult] = []
-        seen_links = set()
+        seen_urls = set()
         for article_data in articles_data:
-            if article_data.link in seen_links:
+            if article_data.url in seen_urls:
                 continue
 
-            seen_links.add(article_data.link)
-            if article_data.link in existing_links_to_articles:
-                article_to_update = existing_links_to_articles[article_data.link]
+            seen_urls.add(article_data.url)
+            if article_data.url in existing_urls_to_articles:
+                article_to_update = existing_urls_to_articles[article_data.url]
                 was_updated = article_to_update.update_article_from_data(
                     article_data, force_update=force_update
                 )
@@ -523,7 +527,7 @@ class ArticleManager(models.Manager["Article"]):
                     authors=article_data.authors,
                     contributors=article_data.contributors,
                     external_tags=article_data.tags,
-                    link=article_data.link,
+                    url=article_data.url,
                     preview_picture_url=article_data.preview_picture_url,
                     preview_picture_alt=article_data.preview_picture_alt,
                     published_at=article_data.published_at,
@@ -540,7 +544,7 @@ class ArticleManager(models.Manager["Article"]):
                 )
 
         self.bulk_create(
-            [result.article for result in articles_to_create], unique_fields=["user", "link"]
+            [result.article for result in articles_to_create], unique_fields=["user", "url"]
         )
 
         self.bulk_update(
@@ -584,23 +588,23 @@ class ArticleManager(models.Manager["Article"]):
     def create_invalid_article(
         self,
         user: User,
-        article_link: str,
+        article_url: str,
         tags: Iterable[Tag],
         *,
         error_message="",
         technical_debug_data: dict | None = None,
     ) -> tuple[Article, bool]:
         try:
-            article = self.get(user=user, link=article_link)
+            article = self.get(user=user, url=article_url)
             created = False
         except self.model.DoesNotExist:
             created = True
-            article_domain = urlparse(article_link).netloc
+            article_domain = urlparse(article_url).netloc
             article = Article.objects.create(
                 user=user,
-                link=article_link,
-                title=full_sanitize(article_link),
-                slug=slugify(re.sub(r"^https?://", "", article_link)),
+                url=article_url,
+                title=full_sanitize(article_url),
+                slug=slugify(re.sub(r"^https?://", "", article_url)),
                 main_source_type=constants.ArticleSourceType.MANUAL,
                 main_source_title=article_domain,
             )
@@ -664,7 +668,7 @@ class ArticleManager(models.Manager["Article"]):
                     "feed_site_url": article.annot_feed_site_url,  # type: ignore[attr-defined]
                     "article_id": article.id,
                     "article_title": article.title,
-                    "article_link": article.link,
+                    "article_url": article.url,
                     "article_content": article.content,
                     "article_date_published": article.published_at.isoformat()
                     if article.published_at
@@ -693,7 +697,7 @@ class ArticleManager(models.Manager["Article"]):
             .filter(_build_filters_from_reading_list(search_query))
         )
         if search_query.search_type == constants.ArticleSearchType.URL:
-            articles_qs = articles_qs.for_url_search(search_query.q)
+            articles_qs = articles_qs.for_url_search([search_query.q])
         elif search_query.q:
             full_text_articles_qs = articles_qs.for_search(search_query)
             tags_articles_qs = articles_qs.for_tags_search(search_query)
@@ -721,7 +725,7 @@ class Article(models.Model):
     contributors = models.JSONField(
         validators=[list_of_strings_validator], blank=True, default=list
     )
-    link = models.URLField(max_length=1_024)
+    url = models.URLField(max_length=1_024)
     preview_picture_url = models.URLField(blank=True, max_length=1_024)
     preview_picture_alt = models.TextField(blank=True)
     external_tags = models.JSONField(
@@ -810,7 +814,7 @@ class Article(models.Model):
         ordering = ["-updated_at", "-published_at", "id"]
         constraints = [
             models.UniqueConstraint(
-                "user", "link", name="%(app_label)s_%(class)s_article_unique_for_user"
+                "user", "url", name="%(app_label)s_%(class)s_article_unique_for_user"
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_main_source_type_valid",

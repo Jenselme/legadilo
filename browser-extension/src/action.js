@@ -1,4 +1,5 @@
 import Tags from "./vendor/tags.js";
+import { listArticles, listEnabledFeeds } from "./legadilo.js";
 
 let port;
 let articleTagsInstance = null;
@@ -6,7 +7,7 @@ let feedTagsInstance = null;
 
 const isFirefox = typeof browser === "object";
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   connectToPort();
 
   hideLoader();
@@ -15,14 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   hideArticle();
   hideFeed();
 
-  const tab = await getCurrentTab();
-  const scriptResult = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => document.documentElement.outerHTML,
-  });
-  const pageContent = scriptResult[0].result;
-
-  runDefaultAction(tab, pageContent);
+  runDefaultAction();
 });
 
 const connectToPort = () => {
@@ -34,20 +28,40 @@ const connectToPort = () => {
   port.onMessage.addListener(onMessage);
 };
 
-const runDefaultAction = (tab, pageContent) => {
+const runDefaultAction = async () => {
+  const tab = await getCurrentTab();
+  const pageContent = await getPageContent(tab);
+  const feedNodes = getFeedNodes(pageContent);
+
+  // No feed links, let's save immediately.
+  if (feedNodes.length === 0) {
+    await saveArticle(tab, pageContent);
+    return;
+  }
+
+  await displayActionsSelector();
+};
+
+const getFeedNodes = (pageContent) => {
   const parser = new DOMParser();
   const htmlDoc = parser.parseFromString(pageContent, "text/html");
   const feedNodes = [];
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
 
-  // No feed links, let's save immediately.
-  if (feedNodes.length === 0) {
-    saveArticle(tab, pageContent);
-    return;
+  return feedNodes;
+};
+
+const getCanonicalUrl = (tab, pageContent) => {
+  const parser = new DOMParser();
+  const htmlDoc = parser.parseFromString(pageContent, "text/html");
+
+  const canonicalLink = htmlDoc.querySelector("link[rel='canonical']");
+  if (!canonicalLink) {
+    return null;
   }
 
-  displayActionSelector(tab, pageContent, feedNodes);
+  return buildFullUrl(tab, canonicalLink.getAttribute("href"));
 };
 
 const onMessage = (request) => {
@@ -66,30 +80,71 @@ const onMessage = (request) => {
     case "updated-article":
       updatedArticleSuccess(request.article, request.tags);
       break;
+    case "deleted-article":
+      displayActionsSelector();
+      break;
     case "subscribed-to-feed":
       feedSubscriptionSuccess(request.feed, request.tags, request.categories);
       break;
     case "updated-feed":
       updatedFeedSuccess(request.feed, request.tags, request.categories);
       break;
+    case "deleted-feed":
+      displayActionsSelector();
+      break;
     default:
       console.warn(`Unknown action ${request.name}`);
   }
 };
 
-const displayActionSelector = (tab, pageContent, feedNodes) => {
+const displayActionsSelector = async () => {
+  displayLoader();
+  const tab = await getCurrentTab();
+  const pageContent = await getPageContent(tab);
+  const feedNodes = getFeedNodes(pageContent);
+  const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
+  const articleUrls = [tab.url];
+  const articleCanonicalUrl = getCanonicalUrl(tab, pageContent);
+  if (articleCanonicalUrl) {
+    articleUrls.push(articleCanonicalUrl);
+  }
+  const savedArticles = (await listArticles({ articleUrls })).items;
+  const subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map(
+    (feed) => feed.feed_url,
+  );
+  hideLoader();
+
+  const articleAlreadySaved = document.querySelector("#article-already-saved");
+  if (savedArticles.length > 0) {
+    articleAlreadySaved.style.display = "inline";
+  } else {
+    articleAlreadySaved.style.display = "none";
+  }
+
   document.querySelector("#action-selector-container").style.display = "block";
 
-  const chooseFeedsContainer = document.querySelector("#choose-action-container");
+  const chooseFeedsContainer = document.querySelector("#subscribe-to-feeds-container");
+  chooseFeedsContainer.replaceChildren();
+
   for (const feedNode of feedNodes) {
+    let feedHref = getFeedHref(tab, feedNode);
+
     const button = document.createElement("button");
     button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
-    button.innerText = feedNode.getAttribute("title");
-    let feedHref = feedNode.getAttribute("href");
-    if (feedHref.startsWith("//")) {
-      const pageProtocol = new URL(tab.url).protocol;
-      feedHref = `${pageProtocol}${feedHref}`;
+    let feedTitle = feedNode.getAttribute("title");
+    if (!feedTitle) {
+      const hostname = new URL(tab.url).hostname;
+      const type = feedNode.getAttribute("type");
+      const feedType = type.replace("application/", "").replace("+xml", "");
+      feedTitle = `${hostname} (${feedType})`;
     }
+
+    button.innerHTML = `${feedTitle} ${
+      subscribedFeedUrls.includes(feedHref)
+        ? '<img class="bi" src="./vendor/bs-icons/rss-fill.svg" alt="Already subscribed to this feed" />'
+        : ""
+    }`;
+
     button.addEventListener("click", () => {
       hideActionSelector();
       subscribeToFeed(feedHref);
@@ -97,19 +152,43 @@ const displayActionSelector = (tab, pageContent, feedNodes) => {
     chooseFeedsContainer.appendChild(button);
   }
 
-  document.querySelector("#save-article-action-btn").addEventListener("click", () => {
+  document.querySelector("#save-article-action-btn").addEventListener("click", async () => {
     hideActionSelector();
-    saveArticle(tab, pageContent);
+    await saveArticle(tab, pageContent);
   });
+};
+
+const getFeedHref = (tab, feedNode) => {
+  let feedHref = feedNode.getAttribute("href");
+  feedHref = buildFullUrl(tab, feedHref);
+
+  return feedHref;
+};
+
+const buildFullUrl = (tab, url) => {
+  if (!url.startsWith("//")) {
+    return url;
+  }
+
+  const pageProtocol = new URL(tab.url).protocol;
+  return `${pageProtocol}${url}`;
 };
 
 const hideActionSelector = () => {
   document.querySelector("#action-selector-container").style.display = "none";
 };
 
+const errorNavBack = async () => {
+  hideErrorMessage();
+  await displayActionsSelector();
+  document.querySelector("#error-nav-back").removeEventListener("click", errorNavBack);
+};
+
 const displayErrorMessage = (message) => {
   document.querySelector("#error-message").innerText = message;
   document.querySelector("#error-container").style.display = "block";
+
+  document.querySelector("#error-nav-back").addEventListener("click", errorNavBack);
 };
 
 const hideErrorMessage = () => {
@@ -193,6 +272,14 @@ const displayFeed = (feed, tags, categories) => {
 
   document.querySelector("#open-feed-details").href = feed.details_url;
 
+  if (feed.enabled) {
+    document.querySelector("#enable-feed").style.display = "none";
+    document.querySelector("#disable-feed").style.display = "block";
+  } else {
+    document.querySelector("#enable-feed").style.display = "block";
+    document.querySelector("#disable-feed").style.display = "none";
+  }
+
   const categorySelector = document.querySelector("#feed-category");
   // Clean all existing choices.
   categorySelector.innerHTML = "";
@@ -211,24 +298,59 @@ const displayFeed = (feed, tags, categories) => {
   if (feedTagsInstance === null) {
     feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
   }
+};
 
-  document.querySelector("#update-feed-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const data = new FormData(event.target);
-
+const setupFeedActions = (feedId) => {
+  const updateFeed = (payload) => {
     hideFeed();
     displayLoader();
     sendMessage({
       name: "update-feed",
-      feedId: feed.id,
-      payload: {
+      feedId: feedId,
+      payload,
+    });
+  };
+
+  const deleteFeed = () => {
+    hideFeed();
+    displayLoader();
+    sendMessage({
+      name: "delete-feed",
+      feedId,
+    });
+  };
+
+  const actions = {
+    "#update-feed": (event) => {
+      event.preventDefault();
+      const data = new FormData(document.querySelector("#update-feed-form"));
+      updateFeed({
         categoryId: data.get("category") || null,
         refreshDelay: data.get("refresh-delay"),
         articleRetentionTime: data.get("retention-time"),
         tags: data.getAll("tags"),
-      },
-    });
+      });
+    },
+    "#enable-feed": () => updateFeed({ disabledAt: null, disabledReason: null }),
+    "#disable-feed": () =>
+      updateFeed({
+        disabledAt: new Date().toISOString(),
+        disabledReason: "Disable manually in the browser extension",
+      }),
+    "#delete-feed": () =>
+      askConfirmation("Are you sure you want to delete this feed?").then(deleteFeed),
+    "#feed-nav-back": async () => {
+      Object.entries(actions).forEach(([selector, action]) => {
+        document.querySelector(selector).removeEventListener("click", action);
+      });
+
+      hideFeed();
+      await displayActionsSelector();
+    },
+  };
+
+  Object.entries(actions).forEach(([selector, action]) => {
+    document.querySelector(selector).addEventListener("click", action);
   });
 };
 
@@ -242,11 +364,19 @@ const hideFeed = () => {
 const getCurrentTab = () =>
   chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
 
+const getPageContent = async (tab) => {
+  const scriptResult = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => document.documentElement.outerHTML,
+  });
+  return scriptResult[0].result;
+};
+
 const saveArticle = (tab, pageContent) => {
   displayLoader();
   sendMessage({
     name: "save-article",
-    payload: { link: tab.url, title: tab.title, content: pageContent },
+    payload: { url: tab.url, title: tab.title, content: pageContent },
   });
 };
 
@@ -256,37 +386,6 @@ const savedArticleSuccess = (article, tags) => {
 };
 
 const setupArticleActions = (articleId) => {
-  document.querySelector("#update-saved-article-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const data = new FormData(event.target);
-
-    updateArticle({
-      title: data.get("title"),
-      tags: data.getAll("tags"),
-      readingTime: data.get("reading-time"),
-    });
-  });
-
-  document.querySelector("#mark-article-as-read").addEventListener("click", () => {
-    updateArticle({ readAt: new Date().toISOString() });
-  });
-  document.querySelector("#mark-article-as-unread").addEventListener("click", () => {
-    updateArticle({ readAt: null });
-  });
-  document.querySelector("#mark-article-as-favorite").addEventListener("click", () => {
-    updateArticle({ isFavorite: true });
-  });
-  document.querySelector("#unmark-article-as-favorite").addEventListener("click", () => {
-    updateArticle({ isFavorite: false });
-  });
-  document.querySelector("#mark-article-as-for-later").addEventListener("click", () => {
-    updateArticle({ isForLater: true });
-  });
-  document.querySelector("#unmark-article-as-for-later").addEventListener("click", () => {
-    updateArticle({ isForLater: false });
-  });
-
   const updateArticle = (payload) => {
     hideArticle();
     displayLoader();
@@ -296,6 +395,62 @@ const setupArticleActions = (articleId) => {
       payload,
     });
   };
+
+  const deleteArticle = () => {
+    hideArticle();
+    displayLoader();
+    sendMessage({
+      name: "delete-article",
+      articleId,
+    });
+  };
+
+  const actions = {
+    "#update-saved-article": (event) => {
+      event.preventDefault();
+
+      const data = new FormData(document.querySelector("#update-saved-article-form"));
+
+      updateArticle({
+        title: data.get("title"),
+        tags: data.getAll("tags"),
+        readingTime: data.get("reading-time"),
+      });
+    },
+    "#mark-article-as-read": () => {
+      updateArticle({ readAt: new Date().toISOString() });
+    },
+    "#mark-article-as-unread": () => {
+      updateArticle({ readAt: null });
+    },
+    "#mark-article-as-favorite": () => {
+      updateArticle({ isFavorite: true });
+    },
+    "#unmark-article-as-favorite": () => {
+      updateArticle({ isFavorite: false });
+    },
+    "#mark-article-as-for-later": () => {
+      updateArticle({ isForLater: true });
+    },
+    "#unmark-article-as-for-later": () => {
+      updateArticle({ isForLater: false });
+    },
+    "#delete-article": () =>
+      askConfirmation("Are you sure you want to delete this article?").then(deleteArticle),
+    "#article-nav-back": async () => {
+      hideArticle();
+
+      Object.entries(actions).forEach(([selector, action]) => {
+        document.querySelector(selector).removeEventListener("click", action);
+      });
+
+      await displayActionsSelector();
+    },
+  };
+
+  Object.entries(actions).forEach(([selector, action]) => {
+    document.querySelector(selector).addEventListener("click", action);
+  });
 };
 
 const updatedArticleSuccess = (article, tags) => {
@@ -312,6 +467,7 @@ const subscribeToFeed = (link) => {
 
 const feedSubscriptionSuccess = (feed, tags, categories) => {
   displayFeed(feed, tags, categories);
+  setupFeedActions(feed.id);
 };
 
 const updatedFeedSuccess = (feed, tags, categories) => {
@@ -326,4 +482,39 @@ const sendMessage = async (message) => {
 
   const response = await chrome.runtime.sendMessage(message);
   onMessage(response);
+};
+
+const askConfirmation = (message) => {
+  const confirmDialog = document.getElementById("confirm-dialog");
+
+  const confirmDialogTitle = document.getElementById("confirm-dialog-title");
+  confirmDialogTitle.innerText = message;
+
+  let resolveDeferred;
+  let rejectDeferred;
+  const deferred = new Promise((resolve, reject) => {
+    resolveDeferred = resolve;
+    rejectDeferred = reject;
+  });
+  const cancelBtn = document.getElementById("confirm-dialog-cancel-btn");
+  const confirmBtn = document.getElementById("confirm-dialog-confirm-btn");
+  const cancel = () => {
+    confirmDialog.close();
+    rejectDeferred();
+    cancelBtn.removeEventListener("click", cancel);
+    confirmBtn.removeEventListener("click", confirm);
+  };
+  const confirm = () => {
+    confirmDialog.close();
+    resolveDeferred();
+    cancelBtn.removeEventListener("click", cancel);
+    confirmBtn.removeEventListener("click", confirm);
+  };
+
+  cancelBtn.addEventListener("click", cancel);
+  confirmBtn.addEventListener("click", confirm);
+
+  confirmDialog.showModal();
+
+  return deferred;
 };

@@ -34,12 +34,12 @@ class FeedDeletedArticleQuerySet(models.QuerySet["FeedDeletedArticle"]):
 
 class FeedDeletedArticleManager(models.Manager["FeedDeletedArticle"]):
     def list_deleted_for_feed(self, feed: Feed) -> set[str]:
-        deleted_links = (
+        deleted_urls = (
             self.get_queryset()
             .filter(feed=feed)
-            .aggregate(deleted=Coalesce(ArrayAgg("article_link"), []))
+            .aggregate(deleted=Coalesce(ArrayAgg("article_url"), []))
         )
-        return set(deleted_links["deleted"])
+        return set(deleted_urls["deleted"])
 
     def delete_article(self, article: Article):
         feed_deleted_articles = []
@@ -47,11 +47,11 @@ class FeedDeletedArticleManager(models.Manager["FeedDeletedArticle"]):
         feed_articles_qs = article.feed_articles.all()
         for feed_article in feed_articles_qs:
             feed_deleted_articles.append(
-                self.model(article_link=article.link, feed=feed_article.feed)
+                self.model(article_url=article.url, feed=feed_article.feed)
             )
 
         feed_articles_qs.delete()
-        self.bulk_create(feed_deleted_articles, unique_fields=["article_link", "feed"])
+        self.bulk_create(feed_deleted_articles, unique_fields=["article_url", "feed"])
 
         article.delete()
 
@@ -65,7 +65,7 @@ class FeedDeletedArticleManager(models.Manager["FeedDeletedArticle"]):
 
 
 class FeedDeletedArticle(models.Model):
-    article_link = models.URLField(max_length=1_024)
+    article_url = models.URLField(max_length=1_024)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -82,11 +82,11 @@ class FeedDeletedArticle(models.Model):
         )
         constraints = [
             models.UniqueConstraint(
-                "article_link",
+                "article_url",
                 "feed",
                 name="%(app_label)s_%(class)s_delete_article_once_per_feed",
             )
         ]
 
     def __str__(self):
-        return f"FeedDeletedArticle(article_link={self.article_link})"
+        return f"FeedDeletedArticle(article_url={self.article_url})"

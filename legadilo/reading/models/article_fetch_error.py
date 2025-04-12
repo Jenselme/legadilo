@@ -49,4 +49,4 @@ class ArticleFetchError(models.Model):
     objects = ArticleFetchErrorManager()
 
     def __str__(self):
-        return f"ArticleFetchError(article_link={self.article.link})"
+        return f"ArticleFetchError(article_url={self.article.url})"

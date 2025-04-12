@@ -20,10 +20,25 @@
             <div id="choose-action-container" class="row row-cols-1 m-auto">
                 <button id="save-article-action-btn"
                         class="btn btn-primary mb-2 col"
-                        type="button">Save this article</button>
+                        type="button">
+                    Save this article
+                    <img id="article-already-saved"
+                         class="bi hidden"
+                         src="./vendor/bs-icons/save-fill.svg"
+                         alt="Article already saved" />
+                </button>
             </div>
+            <div id="subscribe-to-feeds-container" class="row row-cols-1 m-auto"></div>
         </div>
         <div id="article-container">
+            <button id="article-nav-back"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button">
+                <img class="bi"
+                     src="./vendor/bs-icons/arrow-left.svg"
+                     alt="Go back button" />
+                Back
+            </button>
             <form id="update-saved-article-form">
                 <div class="mb-3">
                     <label for="saved-article-title" class="form-label">
@@ -56,7 +71,9 @@
                     </select>
                 </div>
                 <div class="mb-3 d-flex justify-content-center">
-                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                    <button id="update-saved-article"
+                            class="btn btn-primary btn-sm"
+                            type="submit">Update</button>
                 </div>
             </form>
             <div class="mb-3 d-flex justify-content-evenly">
@@ -96,6 +113,11 @@
                          src="./vendor/bs-icons/bookmark-fill.svg"
                          alt="Unmark as for later" />
                 </button>
+                <button class="btn btn-outline-danger btn-sm"
+                        type="button"
+                        id="delete-article">
+                    <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete article" />
+                </button>
                 <a id="open-article-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
@@ -105,6 +127,14 @@
             </div>
         </div>
         <div id="feed-container">
+            <button id="feed-nav-back"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button">
+                <img class="bi"
+                     src="./vendor/bs-icons/arrow-left.svg"
+                     alt="Go back button" />
+                Back
+            </button>
             <h2 id="feed-title"></h2>
             <form id="update-feed-form">
                 <div class="mb-3">
@@ -148,19 +178,49 @@
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>
-                <button class="btn btn-primary btn-sm">Update</button>
+                <div class="mb-3 d-flex justify-content-center">
+                    <button id="update-feed" class="btn btn-primary btn-sm" type="submit">Update</button>
+                </div>
+            </form>
+            <div class="mb-3 d-flex justify-content-evenly">
+                <button id="enable-feed"
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button">Enable</button>
+                <button id="disable-feed"
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button">Disable</button>
+                <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
+                    <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete feed" />
+                </button>
                 <a id="open-feed-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
                    href="">
                     <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
                 </a>
-            </form>
+            </div>
         </div>
         <div id="error-container" class="alert alert-danger">
+            <button id="error-nav-back"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button">
+                <img class="bi"
+                     src="./vendor/bs-icons/arrow-left.svg"
+                     alt="Go back button" />
+                Back
+            </button>
             <p>An error occurred</p>
             <pre id="error-message"></pre>
         </div>
+        <dialog id="confirm-dialog">
+            <div class="modal-header">
+                <h2 id="confirm-dialog-title" class="modal-title">Do you confirm?</h2>
+            </div>
+            <button id="confirm-dialog-cancel-btn"
+                    class="btn btn-outline-secondary"
+                    type="button">No</button>
+            <button id="confirm-dialog-confirm-btn" class="btn btn-danger" type="button">Yes</button>
+        </dialog>
         <script src="action.js" type="module"></script>
     </body>
 </html>

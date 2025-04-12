@@ -98,7 +98,7 @@ class FeedCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(FeedArticle)
 class FeedArticleAdmin(admin.ModelAdmin):
-    search_fields = ["feed__title", "article__title", "article__link"]
+    search_fields = ["feed__title", "article__title", "article__url"]
     autocomplete_fields = ["feed", "article"]
 
 

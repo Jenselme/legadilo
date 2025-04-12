@@ -96,7 +96,7 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str,
         feed, created_feed = _import_feed(user, category, row, feed_url_in_file_to_true_feed)
 
     created_article = False
-    if row["article_link"] and is_url_valid(row["article_link"]):
+    if row["article_url"] and is_url_valid(row["article_url"]):
         created_article = _import_article(user, feed, row)
 
     return (
@@ -172,14 +172,14 @@ def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
 def _import_article(user, feed, row):
     article_data = ArticleData(
         external_article_id=f"custom_csv:{row['article_id']}",
-        source_title=feed.title if feed else urlparse(row["article_link"]).netloc,
+        source_title=feed.title if feed else urlparse(row["article_url"]).netloc,
         title=row["article_title"],
         summary="",
         content=row["article_content"],
         authors=_safe_json_parse(row["article_authors"], []),
         contributors=(),
         tags=_safe_json_parse(row["article_tags"], []),
-        link=row["article_link"],
+        url=row["article_url"],
         preview_picture_url="",
         preview_picture_alt="",
         published_at=safe_datetime_parse(row["article_date_published"]),

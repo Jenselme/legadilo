@@ -29,12 +29,12 @@ export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSe
   }
 };
 
-export const saveArticle = async ({ link, title, content }) => {
-  if (!/^https?:\/\//.test(link)) {
+export const saveArticle = async ({ url, title, content }) => {
+  if (!/^https?:\/\//.test(url)) {
     throw new Error("Invalid url");
   }
 
-  return await post("/api/reading/articles/", { link, title, content });
+  return await post("/api/reading/articles/", { url, title, content });
 };
 
 export const updateArticle = async (
@@ -50,17 +50,46 @@ export const updateArticle = async (
     is_for_later: isForLater,
   });
 
+export const deleteArticle = async (articleId) =>
+  await httpDelete(`/api/reading/articles/${articleId}/`);
+
+export const listArticles = async ({ articleUrls }) => {
+  let qs = "";
+  const isFilteringByUrls = articleUrls && articleUrls.length > 0;
+  if (isFilteringByUrls) {
+    qs = articleUrls.map((articleUrl) => `urls=${encodeURIComponent(articleUrl)}`).join("&");
+    qs = `?${qs}`;
+  }
+
+  return await get(`/api/reading/articles/${qs}`);
+};
+
 export const subscribeToFeed = async (link) => await post("/api/feeds/", { feed_url: link });
+
+export const listEnabledFeeds = async ({ feedUrls }) => {
+  let qs = "";
+  const isFilteringByUrls = feedUrls && feedUrls.length > 0;
+  if (isFilteringByUrls) {
+    qs = feedUrls.map((feedUrl) => `feed_urls=${encodeURIComponent(feedUrl)}`).join("&");
+    qs = `?${qs}&enabled=true`;
+  }
+
+  return await get(`/api/feeds/${qs}`);
+};
+
+export const deleteFeed = async (feedId) => await httpDelete(`/api/feeds/${feedId}/`);
 
 export const updateFeed = async (
   feedId,
-  { categoryId, tags, refreshDelay, articleRetentionTime },
+  { categoryId, tags, refreshDelay, articleRetentionTime, disabledAt, disabledReason },
 ) =>
   await patch(`/api/feeds/${feedId}/`, {
     category_id: categoryId,
     tags,
     refresh_delay: refreshDelay,
     article_retention_time: articleRetentionTime,
+    disabled_at: disabledAt,
+    disabled_reason: disabledReason,
   });
 
 export const listTags = async () => {
@@ -137,6 +166,10 @@ const doFetch = async (url, fetchOptions) => {
     throw new Error(`Response status: ${resp.status} (${resp.statusText})`, { cause: resp.status });
   }
 
+  if (fetchOptions.method === "DELETE") {
+    return {};
+  }
+
   return await resp.json();
 };
 
@@ -145,6 +178,8 @@ const patch = handleAuth(
 );
 
 const get = handleAuth(async (apiUrl) => await doFetch(apiUrl, { method: "GET" }));
+
+const httpDelete = handleAuth(async (apiUrl) => await doFetch(apiUrl, { method: "DELETE" }));
 
 export const loadOptions = async () => chrome.storage.local.get(DEFAULT_OPTIONS);
 
