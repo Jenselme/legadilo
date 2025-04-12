@@ -35,7 +35,7 @@ const runDefaultAction = async () => {
 
   // No feed links, let's save immediately.
   if (feedNodes.length === 0) {
-    saveArticle(tab, pageContent);
+    await saveArticle(tab, pageContent);
     return;
   }
 
@@ -152,9 +152,9 @@ const displayActionsSelector = async () => {
     chooseFeedsContainer.appendChild(button);
   }
 
-  document.querySelector("#save-article-action-btn").addEventListener("click", () => {
+  document.querySelector("#save-article-action-btn").addEventListener("click", async () => {
     hideActionSelector();
-    saveArticle(tab, pageContent);
+    await saveArticle(tab, pageContent);
   });
 };
 
