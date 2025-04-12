@@ -496,8 +496,8 @@ class TestFeedManager:
         assert not notification.is_read
         assert notification.title == f"Feed '{self.feed.title}' was disabled"
         assert notification.content == "We failed too many times to fetch the feed"
-        assert re.match(r"/feeds/\d+/", notification.url)
-        assert notification.url_text == "Edit feed"
+        assert re.match(r"/feeds/\d+/", notification.info_link)
+        assert notification.info_link_text == "Edit feed"
 
     def test_update_feed(self, django_assert_num_queries):
         existing_article = ArticleFactory(

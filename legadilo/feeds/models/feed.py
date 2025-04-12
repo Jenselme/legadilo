@@ -329,8 +329,8 @@ class FeedManager(models.Manager["Feed"]):
                 user=feed.user,
                 title=_("Feed '%s' was disabled") % feed.title,
                 content=str(message),
-                url=reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}),
-                url_text=str(_("Edit feed")),
+                info_link=reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}),
+                info_link_text=str(_("Edit feed")),
             )
 
     def log_not_modified(self, feed: Feed):
