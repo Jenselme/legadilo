@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 25.04.3
+
+- Fix bugs in browser extension:
+  - Correctly build more relative URLs.
+  - Handle errors when listing enabled feeds and articles.
+
 ## 25.04.2
 
 - Show reading list title and reading list actions when scrolling up.

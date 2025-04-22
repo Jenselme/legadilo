@@ -108,10 +108,18 @@ const displayActionsSelector = async () => {
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
   }
-  const savedArticles = (await listArticles({ articleUrls })).items;
-  const subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map(
-    (feed) => feed.feed_url,
-  );
+  let savedArticles = [];
+  try {
+    savedArticles = (await listArticles({ articleUrls })).items;
+  } catch {
+    console.error("Failed to list saved articles.");
+  }
+  let subscribedFeedUrls = [];
+  try {
+    subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
+  } catch {
+    console.error("Failed to list enabled feeds.");
+  }
   hideLoader();
 
   const articleAlreadySaved = document.querySelector("#article-already-saved");
@@ -166,12 +174,17 @@ const getFeedHref = (tab, feedNode) => {
 };
 
 const buildFullUrl = (tab, url) => {
-  if (!url.startsWith("//")) {
+  if (/^https?:\/\//.test(url)) {
     return url;
   }
 
-  const pageProtocol = new URL(tab.url).protocol;
-  return `${pageProtocol}${url}`;
+  if (url.startsWith("//")) {
+    const pageProtocol = new URL(tab.url).protocol;
+    return `${pageProtocol}${url}`;
+  }
+
+  const origin = new URL(tab.url).origin;
+  return `${origin}${url}`;
 };
 
 const hideActionSelector = () => {
