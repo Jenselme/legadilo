@@ -166,12 +166,17 @@ const getFeedHref = (tab, feedNode) => {
 };
 
 const buildFullUrl = (tab, url) => {
-  if (!url.startsWith("//")) {
+  if (/^https?:\/\//.test(url)) {
     return url;
   }
 
-  const pageProtocol = new URL(tab.url).protocol;
-  return `${pageProtocol}${url}`;
+  if (url.startsWith("//")) {
+    const pageProtocol = new URL(tab.url).protocol;
+    return `${pageProtocol}${url}`;
+  }
+
+  const origin = new URL(tab.url).origin;
+  return `${origin}${url}`;
 };
 
 const hideActionSelector = () => {
