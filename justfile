@@ -4,6 +4,12 @@ docker-compose-cmd := "docker compose"
 update-python-deps:
     uv sync --upgrade --all-groups
 
+dev:
+    {{docker-compose-cmd}} -f local.yml up
+
+clean-dev-container:
+    {{docker-compose-cmd}} -f local.yml down
+
 release:
     #!/usr/bin/env bash
     set -eu
