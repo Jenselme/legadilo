@@ -33,9 +33,9 @@ RUN /setup-container.sh
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+RUN --mount=type=cache,target=/root/.cache/uv,z \
+    --mount=type=bind,source=uv.lock,target=uv.lock,readonly,z \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,readonly,z \
     uv sync --locked --no-install-project --group prod --no-group dev --no-group doc
 
 COPY . ${APP_HOME}
