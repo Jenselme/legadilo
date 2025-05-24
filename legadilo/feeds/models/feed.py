@@ -383,9 +383,12 @@ class Feed(models.Model):
     title = models.CharField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH)
     slug = models.SlugField(max_length=feeds_constants.FEED_TITLE_MAX_LENGTH, blank=True)
     description = models.TextField(blank=True)
-    feed_type = models.CharField(choices=feeds_constants.SupportedFeedType.choices, max_length=100)
+    feed_type = models.CharField(
+        choices=feeds_constants.SupportedFeedType.choices,  # type: ignore[misc]
+        max_length=100,
+    )
     refresh_delay = models.CharField(
-        choices=feeds_constants.FeedRefreshDelays.choices,
+        choices=feeds_constants.FeedRefreshDelays.choices,  # type: ignore[misc]
         max_length=100,
         default=feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
     )

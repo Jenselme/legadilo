@@ -55,7 +55,7 @@ class EditFeedForm(forms.ModelForm):
     site_url = forms.URLField(assume_scheme="https", disabled=True)
     refresh_delay = forms.ChoiceField(
         required=True,
-        choices=constants.FeedRefreshDelays.choices,
+        choices=constants.FeedRefreshDelays.choices,  # type: ignore[misc]
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
     article_retention_time = forms.IntegerField(

@@ -69,7 +69,7 @@ class SubscribeToFeedForm(forms.Form):
     )
     refresh_delay = forms.ChoiceField(
         required=True,
-        choices=constants.FeedRefreshDelays.choices,
+        choices=constants.FeedRefreshDelays.choices,  # type: ignore[misc]
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
     article_retention_time = forms.IntegerField(
@@ -107,7 +107,7 @@ class SubscribeToFeedForm(forms.Form):
         self.fields["category"].choices = category_choices  # type: ignore[attr-defined]
         if data and (proposed_feed_choices := data.get("proposed_feed_choices")):
             self.fields["url"].widget.attrs["readonly"] = "true"
-            self.initial["proposed_feed_choices"] = proposed_feed_choices  # type: ignore[index]
+            self.initial["proposed_feed_choices"] = proposed_feed_choices
             self.fields["feed_choices"].widget = forms.RadioSelect()
             cast(
                 forms.ChoiceField, self.fields["feed_choices"]

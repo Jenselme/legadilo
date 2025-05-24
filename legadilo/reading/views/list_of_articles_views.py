@@ -213,7 +213,7 @@ class UpdateArticlesForm(forms.Form):
     update_action = forms.ChoiceField(
         required=False,
         initial=constants.UpdateArticleActions.DO_NOTHING,
-        choices=constants.UpdateArticleActions.choices,
+        choices=constants.UpdateArticleActions.choices,  # type: ignore[misc]
     )
 
     def __init__(self, data=None, *, tag_choices: FormChoices, **kwargs):
