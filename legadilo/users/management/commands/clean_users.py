@@ -29,5 +29,5 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        nb_deleted = User.objects.cleanup_invalid_accounts()
-        logger.info("Removed %s inactive accounts.", nb_deleted)
+        deletion_result = User.objects.cleanup_invalid_accounts()
+        logger.info("Removed %s inactive accounts.", deletion_result)

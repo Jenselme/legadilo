@@ -155,9 +155,9 @@ class TestUserManager:
             user_to_keep = UserFactory(email="other-hacker@example.com", is_active=True)
             EmailAddress.objects.create(user=user_to_keep, email=user_to_keep.email, verified=True)
 
-        nb_deleted = User.objects.cleanup_invalid_accounts()
+        deletion_result = User.objects.cleanup_invalid_accounts()
 
-        assert nb_deleted == (
+        assert deletion_result == (
             3,
             {"users.UserSettings": 1, "account.EmailAddress": 1, "users.User": 1},
         )

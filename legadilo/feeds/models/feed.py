@@ -33,6 +33,7 @@ from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 
 from ...constants import SEARCHED_TEXT_MIN_LENGTH
+from ...types import DeletionResult
 from ...users.models import Notification
 from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
@@ -40,7 +41,7 @@ from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
 from .feed_deleted_article import FeedDeletedArticle
 from .feed_tag import FeedTag
-from .feed_update import FeedUpdate, FeedUpdateQuerySet
+from .feed_update import FeedUpdate
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
@@ -251,7 +252,7 @@ class FeedManager(models.Manager["Feed"]):
     def get_articles(self, feed: Feed) -> ArticleQuerySet:
         return cast(ArticleQuerySet, feed.articles.all()).for_feed()
 
-    def get_feed_update_for_cleanup(self) -> FeedUpdateQuerySet:
+    def cleanup_feed_updates(self) -> DeletionResult:
         latest_feed_update_ids = (
             self.get_queryset()
             .alias(
@@ -262,7 +263,7 @@ class FeedManager(models.Manager["Feed"]):
             .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
             .values_list("annot_latest_feed_update_id", flat=True)
         )
-        return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids))
+        return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids)).delete()
 
     @transaction.atomic()
     def create_from_metadata(  # noqa: PLR0913 too many arguments

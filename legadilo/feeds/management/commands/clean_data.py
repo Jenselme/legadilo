@@ -31,9 +31,9 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        nb_deleted = Feed.objects.get_feed_update_for_cleanup().delete()
-        logger.info("Deleted %s feed updates.", nb_deleted)
-        nb_deleted = ArticleFetchError.objects.get_queryset().for_cleanup().delete()
-        logger.info("Deleted %s article fetch errors.", nb_deleted)
-        nb_deleted = FeedDeletedArticle.objects.cleanup_articles()
-        logger.info("Deleted %s articles.", nb_deleted)
+        deletion_result = Feed.objects.cleanup_feed_updates()
+        logger.info("Deleted %s feed updates.", deletion_result)
+        deletion_result = ArticleFetchError.objects.cleanup_article_fetch_errors()
+        logger.info("Deleted %s article fetch errors.", deletion_result)
+        deletion_result = FeedDeletedArticle.objects.cleanup_articles()
+        logger.info("Deleted %s articles.", deletion_result)

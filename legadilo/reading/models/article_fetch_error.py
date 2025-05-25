@@ -20,6 +20,7 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from legadilo.reading import constants
+from legadilo.types import DeletionResult
 from legadilo.utils.time_utils import utcnow
 
 
@@ -35,6 +36,9 @@ class ArticleFetchErrorManager(models.Manager["ArticleFetchError"]):
 
     def get_queryset(self) -> ArticleFetchErrorQuerySet:
         return ArticleFetchErrorQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    def cleanup_article_fetch_errors(self) -> DeletionResult:
+        return self.get_queryset().for_cleanup().delete()
 
 
 class ArticleFetchError(models.Model):
