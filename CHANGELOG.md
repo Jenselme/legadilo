@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Correct search of `EmailAddress` in the Django admin.
+
 ## 25.05.1
 
 - Can configure how `gunicorn` is run.
