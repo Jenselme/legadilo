@@ -22,7 +22,6 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
-from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import MultipleTagsWidget
 from legadilo.reading import constants
@@ -32,6 +31,7 @@ from legadilo.reading.models.article import (
     ArticleQuerySet,
     ArticleTagSearch,
 )
+from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.security import full_sanitize
 

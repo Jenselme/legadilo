@@ -27,8 +27,8 @@ from slugify import slugify
 
 from legadilo.constants import SEARCHED_TEXT_MIN_LENGTH
 from legadilo.core import constants as core_constants
-from legadilo.core.forms import FormChoices
 from legadilo.reading import constants
+from legadilo.types import FormChoices
 from legadilo.users.models import User
 
 if TYPE_CHECKING:

@@ -22,7 +22,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
-from legadilo.core.forms import FormChoices
+from legadilo.types import FormChoices
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta

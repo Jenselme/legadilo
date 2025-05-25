@@ -26,10 +26,10 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
-from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading.models import Tag
 from legadilo.reading.models.tag import SubTagMapping
+from legadilo.types import FormChoices
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.security import full_sanitize

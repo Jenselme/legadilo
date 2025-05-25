@@ -16,3 +16,5 @@
 
 # This is for: (TotalNbModelsDeleted, {"RelatedModel": NbDeleted, "Model": NbDeleted})
 type DeletionResult = tuple[int, dict[str, int]]
+type FormChoice = tuple[str, str]
+type FormChoices = list[FormChoice]

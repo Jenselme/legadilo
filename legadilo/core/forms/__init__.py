@@ -13,8 +13,3 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from typing import TypeAlias
-
-FormChoice: TypeAlias = tuple[str, str]  # noqa: UP040 use the type keyword (mypy doesn't support it)
-FormChoices: TypeAlias = list[FormChoice]  # noqa: UP040 use the type keyword (mypy doesn't support it)
