@@ -10,6 +10,7 @@
 - Browser extension:
   - Can save YouTube videos.
   - Can save any big HTML pages without triggering an error in the API.
+  - Can save a page even when the reader mode is enabled in Firefox. It already worked correctly in Chromium-based browsers.
 
 ## 25.04.3
 

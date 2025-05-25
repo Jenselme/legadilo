@@ -103,7 +103,8 @@ const displayActionsSelector = async () => {
   const pageContent = await getPageContent(tab);
   const feedNodes = getFeedNodes(pageContent);
   const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
-  const articleUrls = [tab.url];
+  const pageUrl = getPageUrlFromTab(tab);
+  const articleUrls = [pageUrl];
   const articleCanonicalUrl = getCanonicalUrl(tab, pageContent);
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
@@ -141,7 +142,7 @@ const displayActionsSelector = async () => {
     button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
     let feedTitle = feedNode.getAttribute("title");
     if (!feedTitle) {
-      const hostname = new URL(tab.url).hostname;
+      const hostname = new URL(pageUrl).hostname;
       const type = feedNode.getAttribute("type");
       const feedType = type.replace("application/", "").replace("+xml", "");
       feedTitle = `${hostname} (${feedType})`;
@@ -178,12 +179,13 @@ const buildFullUrl = (tab, url) => {
     return url;
   }
 
+  const pageUrl = getPageUrlFromTab(tab);
   if (url.startsWith("//")) {
-    const pageProtocol = new URL(tab.url).protocol;
+    const pageProtocol = new URL(pageUrl).protocol;
     return `${pageProtocol}${url}`;
   }
 
-  const origin = new URL(tab.url).origin;
+  const origin = new URL(pageUrl).origin;
   return `${origin}${url}`;
 };
 
@@ -378,19 +380,34 @@ const getCurrentTab = () =>
   chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
 
 const getPageContent = async (tab) => {
-  const scriptResult = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => document.documentElement.outerHTML,
-  });
-  return scriptResult[0].result;
+  try {
+    const scriptResult = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => document.documentElement.outerHTML,
+    });
+    return scriptResult[0].result;
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
 };
 
 const saveArticle = (tab, pageContent) => {
   displayLoader();
   sendMessage({
     name: "save-article",
-    payload: { url: tab.url, title: tab.title, content: pageContent },
+    payload: { url: getPageUrlFromTab(tab), title: tab.title, content: pageContent },
   });
+};
+
+const getPageUrlFromTab = (tab) => {
+  if (tab.url.startsWith("about:")) {
+    const internalUrlLike = tab.url.replace("about:", "http://");
+    const parsedInternalUrl = new URL(internalUrlLike);
+    return parsedInternalUrl.searchParams.get("url");
+  }
+
+  return tab.url;
 };
 
 const savedArticleSuccess = (article, tags) => {
