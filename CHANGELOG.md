@@ -6,6 +6,7 @@
 - Correctly refresh feeds configured to run on a precise day of the month.
 - Delete accounts without any verified emails after a default retention period.
 - Try to improve action buttons order to make order more consistent and the buttons easier to find and use.
+- Can edit "open original URL by default" checkbox in admin.
 
 ## 25.04.3
 

@@ -66,6 +66,7 @@ class EditFeedForm(forms.ModelForm):
             "always keep the articles."
         ),
     )
+    open_original_url_by_default = forms.BooleanField(required=False)
     category = forms.ChoiceField(
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
@@ -99,6 +100,7 @@ class EditFeedForm(forms.ModelForm):
             "site_url",
             "refresh_delay",
             "article_retention_time",
+            "open_original_url_by_default",
             "category",
             "tags",
         )
