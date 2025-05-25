@@ -70,23 +70,19 @@
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>
-                <div class="mb-3 d-flex justify-content-center">
+                <div class="mb-3 d-flex justify-content-around">
                     <button id="update-saved-article"
                             class="btn btn-primary btn-sm"
                             type="submit">Update</button>
+                    <button class="btn btn-danger btn-sm"
+                        type="button"
+                        id="delete-article">
+                        <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete article" />
+                        Delete
+                    </button>
                 </div>
             </form>
             <div class="mb-3 d-flex justify-content-evenly">
-                <button class="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        id="mark-article-as-read">
-                    <img class="bi" src="./vendor/bs-icons/book.svg" alt="Mark as read" />
-                </button>
-                <button class="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        id="mark-article-as-unread">
-                    <img class="bi" src="./vendor/bs-icons/book-fill.svg" alt="Mark as unread" />
-                </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-favorite">
@@ -113,17 +109,22 @@
                          src="./vendor/bs-icons/bookmark-fill.svg"
                          alt="Unmark as for later" />
                 </button>
-                <button class="btn btn-outline-danger btn-sm"
-                        type="button"
-                        id="delete-article">
-                    <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete article" />
-                </button>
-                <a id="open-article-details"
+                 <a id="open-article-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
                    href="">
                     <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open article details" />
                 </a>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="mark-article-as-read">
+                    <img class="bi" src="./vendor/bs-icons/book.svg" alt="Mark as read" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        id="mark-article-as-unread">
+                    <img class="bi" src="./vendor/bs-icons/book-fill.svg" alt="Mark as unread" />
+                </button>
             </div>
         </div>
         <div id="feed-container">
