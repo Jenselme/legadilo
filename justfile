@@ -10,6 +10,10 @@ dev:
 clean-dev-container:
     {{docker-compose-cmd}} -f local.yml down
 
+[working-directory: 'browser-extension']
+build-browser-extension:
+    npm run build
+
 release:
     #!/usr/bin/env bash
     set -eu
