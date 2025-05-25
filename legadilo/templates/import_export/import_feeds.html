@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
-{% load i18n static crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
 {% block title %}
     {% translate "Import feeds" %}
 {% endblock title %}
+
 {% block content %}
     <h1>{% translate "Import feeds" %}</h1>
     <form method="post"

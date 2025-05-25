@@ -10,11 +10,11 @@
     {% if article.updated_at %}
         <span class="me-2">
             {% include "core/partials/bs-icons/updated_at.html" %}
-            {{ article.updated_at | date:"SHORT_DATETIME_FORMAT" }}
+            {{ article.updated_at|date:"SHORT_DATETIME_FORMAT" }}
         </span>
     {% elif article.published_at %}
         {% include "core/partials/bs-icons/published_at.html" %}
-        {{ article.published_at | date:"SHORT_DATETIME_FORMAT" }}
+        {{ article.published_at|date:"SHORT_DATETIME_FORMAT" }}
     {% endif %}
     <span class="me-2">
         {% if article.main_source_type == 'FEED' and article.annot_feed_id %}

@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-{% load i18n static crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
 {% block page_js %}
     <script src="{% static 'js/tag_edition.js' %}"
-            nonce="{{request.csp_nonce}}"
+            nonce="{{ request.csp_nonce }}"
             type="module"></script>
 {% endblock page_js %}
+
 {% block title %}
     {% translate "Subscribe to a new feed" %}
 {% endblock title %}
+
 {% block content %}
     <h1>{% translate "Subscribe to a new feed" %}</h1>
     <form method="post" action="{% url 'feeds:subscribe_to_feed' %}">

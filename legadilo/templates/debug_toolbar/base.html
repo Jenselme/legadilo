@@ -12,6 +12,7 @@
           href="{% static 'debug_toolbar/css/toolbar.css' %}"
           nonce="{{ toolbar.request.csp_nonce }}" />
 {% endblock css %}
+
 {% block js %}
     <script nonce="{{ toolbar.request.csp_nonce }}"
             type="module"

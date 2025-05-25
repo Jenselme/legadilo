@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load i18n static %}
 
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
@@ -39,26 +39,26 @@
         {# Placed at the top of the document so pages load faster with defer #}
         {% block javascript %}
             {% if debug %}
-                <script src="{% static 'popper.js' %}" nonce="{{request.csp_nonce}}" defer></script>
+                <script src="{% static 'popper.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
                 <script src="{% static 'js/bootstrap.js' %}"
-                        nonce="{{request.csp_nonce}}"
+                        nonce="{{ request.csp_nonce }}"
                         defer></script>
-                <script src="{% static 'htmx.js' %}" nonce="{{request.csp_nonce}}" defer></script>
+                <script src="{% static 'htmx.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
                 <script src="{% static 'django-browser-reload/reload-listener.js' %}"
-                        data-worker-script-path="{%  static 'django-browser-reload/reload-worker.js' %}"
-                        data-events-path="{%  url 'django_browser_reload:events' %}"
-                        nonce="{{request.csp_nonce}}"
+                        data-worker-script-path="{% static 'django-browser-reload/reload-worker.js' %}"
+                        data-events-path="{% url 'django_browser_reload:events' %}"
+                        nonce="{{ request.csp_nonce }}"
                         defer></script>
             {% else %}
                 <script src="{% static 'popper.min.js' %}"
-                        nonce="{{request.csp_nonce}}"
+                        nonce="{{ request.csp_nonce }}"
                         defer></script>
                 <script src="{% static 'js/bootstrap.min.js' %}"
-                        nonce="{{request.csp_nonce}}"
+                        nonce="{{ request.csp_nonce }}"
                         defer></script>
-                <script src="{% static 'htmx.min.js' %}" nonce="{{request.csp_nonce}}" defer></script>
+                <script src="{% static 'htmx.min.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
             {% endif %}
-            <script src="{% static 'js/base.js' %}" nonce="{{request.csp_nonce}}" defer></script>
+            <script src="{% static 'js/base.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
             <!-- This cannot be deferred: we want the proper theme to apply immediately, not after the page has loaded -->
             <script src="{% static 'js/theme_chooser.js' %}"
                     nonce="{{ request.csp_nonce }}"></script>

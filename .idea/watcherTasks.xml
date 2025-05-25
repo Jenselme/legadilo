@@ -61,8 +61,8 @@
       <option name="workingDir" value="$ProjectFileDir$" />
       <envs />
     </TaskOptions>
-    <TaskOptions isEnabled="false">
-      <option name="arguments" value="run djlint-reformat-django --files $FilePathRelativeToProjectRoot$" />
+    <TaskOptions isEnabled="true">
+      <option name="arguments" value="run djade --files $FilePathRelativeToProjectRoot$" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="NEVER" />

@@ -79,9 +79,13 @@ repos:
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.36.4
     hooks:
-      - id: djlint-reformat-django
-        exclude: "ninja/swagger.html"
       - id: djlint-django
+
+  - repo: https://github.com/adamchainz/djade-pre-commit
+    rev: 1.4.0
+    hooks:
+      - id: djade
+        args: [--target-version, "5.2"]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1

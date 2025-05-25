@@ -17,7 +17,7 @@
             	Beware: if this file gets reformatted, we can loose the proper syntax below. This
             	will breaks the swagger template!
             {% endcomment %}
-            {{ swagger_settings | safe }}
+            {{ swagger_settings|safe }}
         </script>
         <div id="swagger-ui"></div>
         <script src="{% static 'ninja/swagger-ui-bundle.js' %}"

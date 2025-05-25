@@ -7,9 +7,11 @@
           href="{% static 'css/grid.css' %}"
           nonce="{{ request.csp_nonce }}" />
 {% endblock page_css %}
+
 {% block title %}
     {% translate "Tags admin" %}
 {% endblock title %}
+
 {% block content %}
     <h1>{% translate "Tags admin" %}</h1>
     <a class="btn btn-outline-primary"
