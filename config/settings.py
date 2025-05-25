@@ -128,7 +128,6 @@ THIRD_PARTY_APPS = [
     "django_htmx",
     "template_partials.apps.SimpleAppConfig",
     "corsheaders",
-    "django_minify_html",
 ]
 LOCAL_APPS = [
     "legadilo.core",
@@ -184,7 +183,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
-    "django_minify_html.middleware.MinifyHtmlMiddleware",
     "legadilo.core.middlewares.CSPMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -567,13 +565,7 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar", "django_watchfiles", "django_browser_reload"]
     # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#middleware
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-    last_response_encoding_middleware_index = MIDDLEWARE.index(
-        "django_minify_html.middleware.MinifyHtmlMiddleware"
-    )
-    MIDDLEWARE.insert(
-        last_response_encoding_middleware_index + 1,
-        "django_browser_reload.middleware.BrowserReloadMiddleware",
-    )
+    MIDDLEWARE.insert(0, "django_browser_reload.middleware.BrowserReloadMiddleware")
     # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
     DEBUG_TOOLBAR_CONFIG = {
         "DISABLE_PANELS": [

@@ -17,7 +17,6 @@
 import json
 from typing import Any
 
-from bs4 import BeautifulSoup
 from django.db import models
 from pydantic import BaseModel as BaseSchema
 
@@ -33,10 +32,6 @@ def serialize_for_snapshot(value: Any) -> str:
     value = json.dumps(value, indent=2, sort_keys=True, cls=CustomJsonEncoder)
 
     return str(value) + "\n"
-
-
-def prettify_html_for_snapshot(value: str) -> str:
-    return BeautifulSoup(value, "html.parser").prettify()
 
 
 def all_model_fields_except(model: type[models.Model], excluded_fields: set[str]):
