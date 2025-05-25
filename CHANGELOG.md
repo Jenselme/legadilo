@@ -19,7 +19,7 @@
   - Display on actions chooser whether the article is already saved.
   - Can delete and disable/enable a feed from the extension.
 - API changes:
-  - Switch from `link` to `url` to save articles. This is done to have a consistant naming in the codebase.
+  - Switch from `link` to `url` to save articles. This is done to have a consistent naming in the codebase.
   - Can list articles and filter them by URLs.
   - Can list feeds and filter them by feed URLs and enabled status.
 - Correct Django admin styling.

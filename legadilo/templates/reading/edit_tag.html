@@ -28,7 +28,7 @@
           hx-confirm="Delete?"
           data-modal-id="danger-modal"
           data-modal-title="{% translate 'Confirm tag deletion' %}"
-          data-modal-body="{% blocktranslate with tag_title=tag.title %}Are you sure you want to delete the tage '{{ tag_title }}'?{% endblocktranslate %}">
+          data-modal-body="{% blocktranslate with tag_title=tag.title %}Are you sure you want to delete the tag '{{ tag_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
         <input type="hidden" name="delete" value="true" />
     </form>

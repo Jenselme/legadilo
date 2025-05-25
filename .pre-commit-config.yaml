@@ -120,6 +120,12 @@ repos:
         types_or: [yaml, css, javascript, json]
         exclude: (\.vscode)
 
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.32.0
+    hooks:
+      - id: typos
+        exclude: ".+\\.po$"
+
   - repo: local
     hooks:
       - id: mypy

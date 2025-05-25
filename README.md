@@ -6,7 +6,7 @@ Read your RSS feeds & save other articles
 [![Black code style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-[Legadilo](https://www.legadilo.eu/) is a project to help you subscribe to RSS feeds, save articles and organize them easily with tags and full customizable reading lists! It’s written with the [Django web framework](https://www.djangoproject.com/), [the boostrap 5 frontend toolkit](https://getbootstrap.com/) and with enhancements given by [htmx](https://htmx.org/).
+[Legadilo](https://www.legadilo.eu/) is a project to help you subscribe to RSS feeds, save articles and organize them easily with tags and full customizable reading lists! It’s written with the [Django web framework](https://www.djangoproject.com/), [the bootstrap 5 frontend toolkit](https://getbootstrap.com/) and with enhancements given by [htmx](https://htmx.org/).
 
 It’s opensource and published under [the GNU AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html#license-text) and is designed to be self-hostable, so you can run your own instance.
 Your [ideas](https://github.com/Jenselme/legadilo/issues/new), [contributions](https://github.com/Jenselme/legadilo/pulls) and [feedback](https://github.com/Jenselme/legadilo/discussions) are welcomed! You can also check the [official instance](https://www.legadilo.eu/) to start using it more easily (you will be able to export and import your data in any instance)! If you contribute, don’t forget to add yourselves to the `CONTRIBUTORS.txt` file.
@@ -22,7 +22,7 @@ Your [ideas](https://github.com/Jenselme/legadilo/issues/new), [contributions](h
 
 ### Using VSCode
 
-You can rely on the `devcontainer.json` file to start the project and develop teh project inside a container. This way, you don’t need to install anything on your machine to make it work (besides docker). VSCode should propose you continue in a container the first time you open the project and will take care of the rest for you. See [here](https://containers.dev/supporting) for more.
+You can rely on the `devcontainer.json` file to start the project and develop the project inside a container. This way, you don’t need to install anything on your machine to make it work (besides docker). VSCode should propose you continue in a container the first time you open the project and will take care of the rest for you. See [here](https://containers.dev/supporting) for more.
 
 You will have to start Django with the provided run target.
 
@@ -88,7 +88,7 @@ All code should be tested and type annotated. We use [pytest](https://docs.pytes
 - Format the Python file: `pre-commit run ruff-format` (this should be done automatically on save)
 - Format HTML files: `pre-commit run djlint-reformat-django`
 
-### Commiting
+### Committing
 
 To ease development, we use [pre-commit](https://pre-commit.com/) to run all our linters before each commit.
 
@@ -149,5 +149,5 @@ Some files are copied from other projects and vendored here for convenience.
 Their license allows use within this project.
 These files are:
 
-- `legadilo/static/js/theme_chooser.js`: it’s published under [the Creative Commons Attribution 3.0 Unported License](https://creativecommons.org/licenses/by/3.0/deed.en). It’s copyrighted to the Boostrap Authors.
-- `legadilo/static/images/bs/*.svg`: those SVG are [icons from the Boostrap project](https://icons.getbootstrap.com). They are published under [the MIT license](https://github.com/twbs/icons/blob/main/LICENSE) and are copyrighted to the Boostrap Authors.
+- `legadilo/static/js/theme_chooser.js`: it’s published under [the Creative Commons Attribution 3.0 Unported License](https://creativecommons.org/licenses/by/3.0/deed.en). It’s copyrighted to the Bootstrap Authors.
+- `legadilo/static/images/bs/*.svg`: those SVG are [icons from the Bootstrap project](https://icons.getbootstrap.com). They are published under [the MIT license](https://github.com/twbs/icons/blob/main/LICENSE) and are copyrighted to the Bootstrap Authors.

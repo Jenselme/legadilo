@@ -292,7 +292,7 @@ ignore_imports = [
     "legadilo.reading.tests.test_models.test_article -> legadilo.feeds.tests.factories",
     "legadilo.users.tests.test_registration -> legadilo.core.middlewares",
     "legadilo.users.tests.models.test_user -> legadilo.feeds.tests.factories",
-    "legadilo.reading.tests.test_views.test_detele_article_view -> legadilo.feeds.tests.factories",
-    "legadilo.reading.tests.test_views.test_detele_article_view -> legadilo.feeds.models",
+    "legadilo.reading.tests.test_views.test_delete_article_view -> legadilo.feeds.tests.factories",
+    "legadilo.reading.tests.test_views.test_delete_article_view -> legadilo.feeds.models",
     "legadilo.reading.services.delete_article -> legadilo.feeds.models",
 ]

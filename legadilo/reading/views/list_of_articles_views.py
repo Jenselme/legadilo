@@ -226,7 +226,7 @@ class UpdateArticlesForm(forms.Form):
         for tag in self.cleaned_data["remove_tags"]:
             if tag not in self._tag_value_choices:
                 raise ValidationError(
-                    _("%s is not a known tag") % tag, code="tried-to-remove-inexistant-tag"
+                    _("%s is not a known tag") % tag, code="tried-to-remove-inexistent-tag"
                 )
 
         return self.cleaned_data["remove_tags"]
