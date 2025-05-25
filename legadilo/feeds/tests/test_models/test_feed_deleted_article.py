@@ -15,11 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
+import time_machine
 
 from legadilo.feeds.models import FeedArticle, FeedDeletedArticle
 from legadilo.feeds.tests.factories import FeedDeletedArticleFactory, FeedFactory
+from legadilo.reading import constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory
+from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db
@@ -67,3 +70,36 @@ class TestFeedDeletedArticleManager:
         assert feed1.deleted_articles.count() == 1
         deleted_article = feed1.deleted_articles.get()
         assert deleted_article.article_url == article.url
+
+    def test_cleanup_articles(self, user):
+        ArticleFactory(
+            title="Read not linked to a feed (to keep)",
+            user=user,
+            read_at=utcdt(2024, 6, 1),
+            main_source_type=constants.ArticleSourceType.MANUAL,
+        )
+        read_keep_one_and_seven_days_retention_to_keep = ArticleFactory(
+            title="Read keep 1 and 7 days (to keep)",
+            user=user,
+            read_at=utcdt(2024, 6, 1),
+            main_source_type=constants.ArticleSourceType.FEED,
+        )
+        feed_forever_retention = FeedFactory(user=user, article_retention_time=0)
+        feed_forever_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
+        read_1_day_retention_to_cleanup = ArticleFactory(
+            title="Read, 1 day retention (to cleanup)",
+            user=user,
+            read_at=utcdt(2024, 6, 1),
+            main_source_type=constants.ArticleSourceType.FEED,
+        )
+        feed_one_day_retention = FeedFactory(user=user, article_retention_time=1)
+        feed_one_day_retention.articles.add(read_1_day_retention_to_cleanup)
+
+        with time_machine.travel("2024-06-07 00:00:00"):
+            deletion_result = FeedDeletedArticle.objects.cleanup_articles()
+
+        assert deletion_result == (1, {"reading.Article": 1})
+        assert list(FeedDeletedArticle.objects.all().values_list("article_url", flat=True)) == [
+            read_1_day_retention_to_cleanup.url
+        ]
+        assert Article.objects.count() == 2

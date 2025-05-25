@@ -18,22 +18,16 @@ import logging
 
 from django.core.management import BaseCommand
 
-from legadilo.feeds.models import Feed, FeedDeletedArticle
-from legadilo.reading.models import ArticleFetchError
+from legadilo.users.models import User
 
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     help = (
-        "Clean data from database: old feed updates, article fetch errors and articles whose "
-        "retention dates are passed"
+        "Remove users whose account has never been created but not activated in the last 90 days."
     )
 
     def handle(self, *args, **options):
-        deletion_result = Feed.objects.cleanup_feed_updates()
-        logger.info("Deleted %s feed updates.", deletion_result)
-        deletion_result = ArticleFetchError.objects.cleanup_article_fetch_errors()
-        logger.info("Deleted %s article fetch errors.", deletion_result)
-        deletion_result = FeedDeletedArticle.objects.cleanup_articles()
-        logger.info("Deleted %s articles.", deletion_result)
+        deletion_result = User.objects.cleanup_invalid_accounts()
+        logger.info("Removed %s inactive accounts.", deletion_result)

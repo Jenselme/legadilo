@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n crispy_forms_tags %}
+{% load crispy_forms_tags i18n %}
 
 {% block title %}
     {% if category %}
@@ -11,6 +11,7 @@
         {% translate "Create a feed category" %}
     {% endif %}
 {% endblock title %}
+
 {% block content %}
     <form id="delete-category-form"
           class="visually-hidden"

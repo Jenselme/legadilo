@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% load i18n crispy_forms_tags %}
+{% load crispy_forms_tags i18n %}
 
 {% block title %}
-    {% trans "Two-Factor Authentication" %}
+    {% translate "Two-Factor Authentication" %}
 {% endblock title %}
+
 {% block content %}
-    <h1>{% trans "Two-Factor Authentication" %}</h1>
+    <h1>{% translate "Two-Factor Authentication" %}</h1>
     <p>
         {% blocktranslate %}Your account is protected by two-factor authentication. Please enter an authenticator code:{% endblocktranslate %}
     </p>

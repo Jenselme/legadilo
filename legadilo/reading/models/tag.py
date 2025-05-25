@@ -27,8 +27,8 @@ from slugify import slugify
 
 from legadilo.constants import SEARCHED_TEXT_MIN_LENGTH
 from legadilo.core import constants as core_constants
-from legadilo.core.forms import FormChoices
 from legadilo.reading import constants
+from legadilo.types import FormChoices
 from legadilo.users.models import User
 
 if TYPE_CHECKING:
@@ -311,7 +311,7 @@ class ArticleTag(models.Model):
     tag = models.ForeignKey("reading.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
     tagging_reason = models.CharField(
-        choices=constants.TaggingReason.choices,
+        choices=constants.TaggingReason.choices,  # type: ignore[misc]
         default=constants.TaggingReason.ADDED_MANUALLY,
         max_length=100,
     )
@@ -388,7 +388,7 @@ class ReadingListTag(models.Model):
     )
 
     filter_type = models.CharField(
-        choices=constants.ReadingListTagFilterType.choices,
+        choices=constants.ReadingListTagFilterType.choices,  # type: ignore[misc]
         default=constants.ReadingListTagFilterType.INCLUDE,
         max_length=100,
     )

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
-{% load i18n static crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
 {% block title %}
     {% translate "Import/Export articles" %}
 {% endblock title %}
+
 {% block content %}
     <h1>{% translate "Import/Export articles" %}</h1>
     <h2>{% translate "Export articles into a CSV" %}</h2>

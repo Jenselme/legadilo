@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 
-{% load i18n static %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
 {% block page_js %}
     <script src="{% static 'js/tag_edition.js' %}"
-            nonce="{{request.csp_nonce}}"
+            nonce="{{ request.csp_nonce }}"
             type="module"></script>
     {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
+
 {% block title %}
     {% translate "Add an article" %}
 {% endblock title %}
+
 {% block content %}
     <h1>{% translate "Add an article" %}</h1>
     <form method="post" action="{% url 'reading:add_article' %}">

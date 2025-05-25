@@ -51,20 +51,20 @@ repos:
           - --allow-past-years
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: "1.24.0"
+    rev: "1.25.0"
     hooks:
       - id: django-upgrade
         args: ["--target-version", "5.0"]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.20.0
     hooks:
       - id: pyupgrade
-        args: [--py312-plus]
+        args: [--py313-plus]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.11.6
+    rev: v0.11.11
     hooks:
       - id: ruff
         args: [--fix, --preview]
@@ -79,9 +79,13 @@ repos:
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.36.4
     hooks:
-      - id: djlint-reformat-django
-        exclude: "ninja/swagger.html"
       - id: djlint-django
+
+  - repo: https://github.com/adamchainz/djade-pre-commit
+    rev: 1.4.0
+    hooks:
+      - id: djade
+        args: [--target-version, "5.2"]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
@@ -91,7 +95,7 @@ repos:
         args: [-e, SC1091]
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v16.18.0
+    rev: v16.19.1
     hooks:
       - id: stylelint
         args: [--fix]
@@ -100,7 +104,7 @@ repos:
           - "stylelint-config-standard@36.0.0"
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: "v9.24.0"
+    rev: "v9.27.0"
     hooks:
       - id: eslint
         args: [--fix]
@@ -115,6 +119,12 @@ repos:
       - id: prettier
         types_or: [yaml, css, javascript, json]
         exclude: (\.vscode)
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.32.0
+    hooks:
+      - id: typos
+        exclude: ".+\\.po$"
 
   - repo: local
     hooks:

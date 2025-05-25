@@ -24,9 +24,9 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.feeds.models import Feed, FeedCategory, FeedTag
+from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
-from ...core.forms import FormChoices
 from ...core.forms.fields import MultipleTagsField
 from ...reading.models import Tag
 from ...utils.security import full_sanitize
@@ -55,7 +55,7 @@ class EditFeedForm(forms.ModelForm):
     site_url = forms.URLField(assume_scheme="https", disabled=True)
     refresh_delay = forms.ChoiceField(
         required=True,
-        choices=constants.FeedRefreshDelays.choices,
+        choices=constants.FeedRefreshDelays.choices,  # type: ignore[misc]
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
     article_retention_time = forms.IntegerField(
@@ -66,6 +66,7 @@ class EditFeedForm(forms.ModelForm):
             "always keep the articles."
         ),
     )
+    open_original_url_by_default = forms.BooleanField(required=False)
     category = forms.ChoiceField(
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
@@ -99,6 +100,7 @@ class EditFeedForm(forms.ModelForm):
             "site_url",
             "refresh_delay",
             "article_retention_time",
+            "open_original_url_by_default",
             "category",
             "tags",
         )

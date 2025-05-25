@@ -49,6 +49,7 @@ class Command(BaseCommand):
             call_command("update_feeds")
             call_command("clearsessions")
             call_command("clean_data")
+            call_command("clean_users")
             logger.info("Finished running commands")
 
             if schedule <= 0:

@@ -29,9 +29,9 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 from pydantic import ValidationError as PydanticValidationError
 
-from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading.models import Tag
+from legadilo.types import FormChoices
 
 from ...users.models import User
 from ...users.user_types import AuthenticatedHttpRequest
@@ -69,7 +69,7 @@ class SubscribeToFeedForm(forms.Form):
     )
     refresh_delay = forms.ChoiceField(
         required=True,
-        choices=constants.FeedRefreshDelays.choices,
+        choices=constants.FeedRefreshDelays.choices,  # type: ignore[misc]
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
     article_retention_time = forms.IntegerField(
@@ -107,7 +107,7 @@ class SubscribeToFeedForm(forms.Form):
         self.fields["category"].choices = category_choices  # type: ignore[attr-defined]
         if data and (proposed_feed_choices := data.get("proposed_feed_choices")):
             self.fields["url"].widget.attrs["readonly"] = "true"
-            self.initial["proposed_feed_choices"] = proposed_feed_choices  # type: ignore[index]
+            self.initial["proposed_feed_choices"] = proposed_feed_choices
             self.fields["feed_choices"].widget = forms.RadioSelect()
             cast(
                 forms.ChoiceField, self.fields["feed_choices"]

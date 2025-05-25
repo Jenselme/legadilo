@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% load static i18n %}
+{% load i18n static %}
 
 {% block title %}
     {% blocktranslate with email=object.email %}
         User: {{ email }}
     {% endblocktranslate %}
 {% endblock title %}
+
 {% block content %}
     <div class="container">
         <div class="row">

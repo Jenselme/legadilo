@@ -17,12 +17,15 @@
 from io import StringIO
 
 import pytest
+import time_machine
+from allauth.account.models import EmailAddress
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
 
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.users.models import User
+from legadilo.users.tests.factories import UserFactory
 
 
 @pytest.mark.django_db
@@ -41,6 +44,61 @@ class TestUserQuerySet:
         users = list(User.objects.get_queryset().with_feeds([user.id]))
 
         assert users == [user]
+
+    def test_invalid_accounts(self):
+        with time_machine.travel("2023-01-01"):
+            user_to_delete_no_email_address = UserFactory(
+                email="user_to_delete_no_email_address@example.com", is_active=False
+            )
+            user_to_delete_inactive_and_no_verified_email = UserFactory(
+                email="user_to_delete_inactive_and_no_verified_email@example.com", is_active=False
+            )
+            EmailAddress.objects.create(
+                user=user_to_delete_inactive_and_no_verified_email,
+                email=user_to_delete_inactive_and_no_verified_email.email,
+                verified=False,
+            )
+            user_to_delete_active_and_no_verified_email = UserFactory(
+                email="user_to_delete_active_and_no_verified_email@example.com", is_active=True
+            )
+            EmailAddress.objects.create(
+                user=user_to_delete_active_and_no_verified_email,
+                email=user_to_delete_active_and_no_verified_email.email,
+                verified=False,
+            )
+            user_to_keep_active_and_verified_email = UserFactory(
+                email="user_to_keep_active_and_verified_email@example.com", is_active=True
+            )
+            EmailAddress.objects.create(
+                user=user_to_keep_active_and_verified_email,
+                email=user_to_keep_active_and_verified_email.email,
+                verified=True,
+            )
+            user_to_keep_inactive_but_verified_email = UserFactory(
+                email="user_to_keep_inactive_but_verified_email@example.com", is_active=False
+            )
+            EmailAddress.objects.create(
+                user=user_to_keep_inactive_but_verified_email,
+                email=user_to_keep_inactive_but_verified_email.email,
+                verified=True,
+            )
+        user_to_keep_inactive_no_verified_email_too_recent_for_deletion = UserFactory(
+            email="user_to_keep_inactive_no_verified_email_too_recent_for_deletion@example.com",
+            is_active=False,
+        )
+        EmailAddress.objects.create(
+            user=user_to_keep_inactive_no_verified_email_too_recent_for_deletion,
+            email=user_to_keep_inactive_no_verified_email_too_recent_for_deletion.email,
+            verified=False,
+        )
+
+        invalid_users = list(User.objects.get_queryset().invalid_accounts().order_by("id"))
+
+        assert invalid_users == [
+            user_to_delete_no_email_address,
+            user_to_delete_inactive_and_no_verified_email,
+            user_to_delete_active_and_no_verified_email,
+        ]
 
 
 @pytest.mark.django_db
@@ -87,6 +145,23 @@ class TestUserManager:
         msg = 'duplicate key value violates unique constraint "users_user_email_key"'
         with pytest.raises(IntegrityError, match=msg):
             User.objects.create(email="hacker@example.com")
+
+    def test_cleanup_invalid_users(self):
+        with time_machine.travel("2023-01-01"):
+            user_to_deleted = UserFactory(email="hacker@example.com", is_active=True)
+            EmailAddress.objects.create(
+                user=user_to_deleted, email=user_to_deleted.email, verified=False
+            )
+            user_to_keep = UserFactory(email="other-hacker@example.com", is_active=True)
+            EmailAddress.objects.create(user=user_to_keep, email=user_to_keep.email, verified=True)
+
+        deletion_result = User.objects.cleanup_invalid_accounts()
+
+        assert deletion_result == (
+            3,
+            {"users.UserSettings": 1, "account.EmailAddress": 1, "users.User": 1},
+        )
+        assert list(User.objects.all()) == [user_to_keep]
 
 
 @pytest.mark.django_db

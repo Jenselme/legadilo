@@ -32,7 +32,6 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
-from legadilo.core.forms import FormChoices
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import MultipleTagsWidget
 from legadilo.reading import constants
@@ -40,6 +39,7 @@ from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
 from legadilo.reading.services.views import get_js_cfg_from_reading_list
 from legadilo.reading.templatetags import decode_external_tag
+from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
 from legadilo.utils.validators import get_page_number_from_request
@@ -213,7 +213,7 @@ class UpdateArticlesForm(forms.Form):
     update_action = forms.ChoiceField(
         required=False,
         initial=constants.UpdateArticleActions.DO_NOTHING,
-        choices=constants.UpdateArticleActions.choices,
+        choices=constants.UpdateArticleActions.choices,  # type: ignore[misc]
     )
 
     def __init__(self, data=None, *, tag_choices: FormChoices, **kwargs):
@@ -226,7 +226,7 @@ class UpdateArticlesForm(forms.Form):
         for tag in self.cleaned_data["remove_tags"]:
             if tag not in self._tag_value_choices:
                 raise ValidationError(
-                    _("%s is not a known tag") % tag, code="tried-to-remove-inexistant-tag"
+                    _("%s is not a known tag") % tag, code="tried-to-remove-inexistent-tag"
                 )
 
         return self.cleaned_data["remove_tags"]

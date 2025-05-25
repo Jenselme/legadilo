@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING, Self
 
 from django.contrib.auth.hashers import make_password
@@ -23,6 +24,11 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.core.validators import validate_email
 from django.db import models
+
+from legadilo.types import DeletionResult
+from legadilo.utils.time_utils import utcnow
+
+from . import constants as users_constants
 
 if TYPE_CHECKING:
     from .models import User
@@ -37,6 +43,17 @@ class UserQuerySet(models.QuerySet):
             qs = qs.filter(id__in=user_ids)
 
         return qs.distinct()
+
+    def invalid_accounts(self):
+        # Users are created as active, no point in filtering on the active status here.
+        return self.alias(
+            nb_verified_emails=models.Count(
+                "emailaddress", filter=models.Q(emailaddress__verified=True)
+            )
+        ).filter(
+            date_joined__lt=utcnow() - timedelta(days=users_constants.INVALID_USERS_RETENTION_DAYS),
+            nb_verified_emails=0,
+        )
 
 
 class UserManager(DjangoUserManager[User]):
@@ -76,3 +93,6 @@ class UserManager(DjangoUserManager[User]):
 
     def get(self, *args, **kwargs):
         return self.select_related("settings", "settings__timezone").get(*args, **kwargs)
+
+    def cleanup_invalid_accounts(self) -> DeletionResult:
+        return self.get_queryset().invalid_accounts().delete()

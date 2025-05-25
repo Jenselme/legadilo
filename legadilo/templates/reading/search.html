@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-{% load i18n static humanize crispy_forms_tags %}
+{% load crispy_forms_tags humanize i18n static %}
 
 {% block title %}
     {% translate "Searching articles..." %}
 {% endblock title %}
+
 {% block page_js %}
     <script src="{% static 'js/tag_edition.js' %}"
-            nonce="{{request.csp_nonce}}"
+            nonce="{{ request.csp_nonce }}"
             type="module"></script>
 {% endblock page_js %}
+
 {% block content %}
     <h1>{% translate "Searching articles..." %}</h1>
     <form method="get">

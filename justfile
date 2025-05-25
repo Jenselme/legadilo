@@ -4,6 +4,16 @@ docker-compose-cmd := "docker compose"
 update-python-deps:
     uv sync --upgrade --all-groups
 
+dev:
+    {{docker-compose-cmd}} -f local.yml up
+
+clean-dev-container:
+    {{docker-compose-cmd}} -f local.yml down
+
+[working-directory: 'browser-extension']
+build-browser-extension:
+    npm run build
+
 release:
     #!/usr/bin/env bash
     set -eu

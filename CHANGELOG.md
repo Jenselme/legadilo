@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Can configure how `gunicorn` is run.
+- Correctly refresh feeds configured to run on a precise day of the month.
+- Delete accounts without any verified emails after a default retention period.
+- Try to improve action buttons order to make order more consistent and the buttons easier to find and use.
+- Can edit "open original URL by default" checkbox in admin.
+- Browser extension:
+  - Can save YouTube videos.
+  - Can save any big HTML pages without triggering an error in the API.
+  - Can save a page even when the reader mode is enabled in Firefox. It already worked correctly in Chromium-based browsers.
+
 ## 25.04.3
 
 - Fix bugs in browser extension:
@@ -19,7 +29,7 @@
   - Display on actions chooser whether the article is already saved.
   - Can delete and disable/enable a feed from the extension.
 - API changes:
-  - Switch from `link` to `url` to save articles. This is done to have a consistant naming in the codebase.
+  - Switch from `link` to `url` to save articles. This is done to have a consistent naming in the codebase.
   - Can list articles and filter them by URLs.
   - Can list feeds and filter them by feed URLs and enabled status.
 - Correct Django admin styling.

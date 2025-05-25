@@ -87,7 +87,7 @@ class TestApplicationTokenManagerUseToken:
             user=user, title="My token", validity_end=None
         )
 
-    def test_use_inexistant_token(self, user, django_assert_num_queries):
+    def test_use_inexistent_token(self, user, django_assert_num_queries):
         with django_assert_num_queries(2):
             found_app_token = ApplicationToken.objects.use_application_token(
                 user.email, uuid4(), self.token_secret

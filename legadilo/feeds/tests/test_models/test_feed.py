@@ -200,6 +200,18 @@ class TestFeedQuerySet:
 
         assert list(feeds_to_update) == []
 
+    def test_update_feed_once_a_month(self, user):
+        feed_to_update_on_first_day_of_month = FeedFactory(
+            user=user, refresh_delay=feeds_constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH
+        )
+        with time_machine.travel("2024-01-01 00:00:00"):
+            FeedUpdateFactory(feed=feed_to_update_on_first_day_of_month)
+
+        with time_machine.travel("2024-02-01 00:00:00"):
+            feeds_to_update = Feed.objects.get_queryset().for_update(user)
+
+        assert list(feeds_to_update) == [feed_to_update_on_first_day_of_month]
+
     def test_only_with_ids(self):
         feed1 = FeedFactory(disabled_at=None)
         FeedFactory(disabled_at=None)
@@ -630,7 +642,7 @@ class TestFeedManager:
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
         assert feed_update.ignored_article_urls == [deleted_url]
 
-    def test_get_feed_update_for_cleanup(self):
+    def test_cleanup_feed_updates(self):
         feed = FeedFactory()
         other_feed = FeedFactory()
         with time_machine.travel("2024-03-15 12:00:00"):
@@ -646,11 +658,11 @@ class TestFeedManager:
             FeedUpdateFactory(feed=other_feed)  # Too recent.
 
         with time_machine.travel("2024-06-01 12:00:00"):
-            feed_updates_to_cleanup = Feed.objects.get_feed_update_for_cleanup()
+            deletion_result = Feed.objects.cleanup_feed_updates()
 
-        assert list(feed_updates_to_cleanup) == [
-            feed_update_to_cleanup,
-        ]
+        assert FeedUpdate.objects.filter(id=feed_update_to_cleanup.id).count() == 0
+        assert FeedUpdate.objects.count() == 4
+        assert deletion_result == (1, {"feeds.FeedUpdate": 1})
 
     def test_export(self, user, other_user, snapshot, django_assert_num_queries):
         feed_category = FeedCategoryFactory(user=user, id=1, title="Some category")

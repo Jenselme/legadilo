@@ -50,10 +50,10 @@ class TestFeedCategoryManager:
         FeedCategoryFactory(user=other_user, title="Slug", slug="slug")
 
         found_category = FeedCategory.objects.get_first_for_user(user, "slug")
-        inexistant_slug = FeedCategory.objects.get_first_for_user(user, "some trash")
+        inexistent_slug = FeedCategory.objects.get_first_for_user(user, "some trash")
 
         assert found_category == feed_category_user
-        assert inexistant_slug is None
+        assert inexistent_slug is None
 
     def test_export(self, user, other_user, snapshot, django_assert_num_queries):
         feed_category_user = FeedCategoryFactory(user=user, id=1, title="Slug", slug="slug")

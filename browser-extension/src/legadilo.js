@@ -34,7 +34,19 @@ export const saveArticle = async ({ url, title, content }) => {
     throw new Error("Invalid url");
   }
 
-  return await post("/api/reading/articles/", { url, title, content });
+  // If content or title is empty, pass only the URL to avoid a 422 error.
+  const data = !!title && !!content ? { url, title, content } : { url };
+
+  try {
+    return await post("/api/reading/articles/", data);
+  } catch (error) {
+    if (error.message === "Response status: 400 (Bad Request)") {
+      // Content might be too big (we don't have a clean way to catch this yet), let's try to save only the URL.
+      return await post("/api/reading/articles/", { url });
+    }
+
+    throw error;
+  }
 };
 
 export const updateArticle = async (
@@ -163,7 +175,7 @@ const doFetch = async (url, fetchOptions) => {
   const resp = await fetch(`${options.instanceUrl}${url}`, fetchOptions);
 
   if (!resp.ok) {
-    throw new Error(`Response status: ${resp.status} (${resp.statusText})`, { cause: resp.status });
+    throw new Error(`Response status: ${resp.status} (${resp.statusText})`);
   }
 
   if (fetchOptions.method === "DELETE") {

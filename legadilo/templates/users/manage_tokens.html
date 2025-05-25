@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-{% load i18n static crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
 {% block title %}
     {% translate "Manage application tokens" %}
 {% endblock title %}
+
 {% block page_js %}
     <script src="{% static 'js/tag_edition.js' %}"
-            nonce="{{request.csp_nonce}}"
+            nonce="{{ request.csp_nonce }}"
             type="module"></script>
 {% endblock page_js %}
+
 {% block content %}
     <h1>{% translate "Manage API tokens" %}</h1>
     {% if new_application_token %}

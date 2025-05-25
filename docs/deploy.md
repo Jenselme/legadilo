@@ -49,6 +49,7 @@ You will need to configure these commands on the CRON of the host to update the 
 0 * * * * cd LEGADILO && docker compose -f production.yml exec django python manage.py update_feeds |& systemd-cat -t legadilo
 0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clearsessions |& systemd-cat -t legadilo
 0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_data |& systemd-cat -t legadilo
+0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_users |& systemd-cat -t legadilo
 ```
 
 ```{admonition} Why not use the cron command?
@@ -97,14 +98,14 @@ These variables are required for the container to start and create the proper da
 
 ### Required env variables
 
-| Variable name                | Description                                                                                                                                       |
-|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DJANGO_SECRET_KEY`          | This is used to provide cryptographic signing, should be set to a unique, unpredictable value.                                                    |
-| `DJANGO_ALLOWED_HOSTS`       | The domain on which the app is hosted and from which traffic is allowed.                                                                          |
-| `DJANGO_DEFAULT_FROM_EMAIL`  | Email used as from unless otherwise specified.                                                                                                    |
-| `ADMIN_URL`                  | To change the default admin URL in production for security reason. Will default to `/admin/` in dev.                                              |
-| `ACCOUNT_ALLOW_REGISTRATION` | Whether to enable account registration on the instance or not. If disabled, you will have to create the user in the Django admin or with the CLI. |
-| `DATABASE_URL`               | The URL to the database formatted like this: `postgres://POSTGRES_USER:POSTGRES_PASSWORD@POSTGRES_HOST:POSTGRES_PORT/POSTGRES_DB`                 |
+| Variable name                | Description                                                                                                                                                                      |
+|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DJANGO_SECRET_KEY`          | This is used to provide cryptographic signing, should be set to a unique, unpredictable value.                                                                                   |
+| `DJANGO_ALLOWED_HOSTS`       | The domain on which the app is hosted and from which traffic is allowed. Gunicorn can validate the host too (it’s disabled by default). See the `GUNICORN_SERVER_HOST` variable. |
+| `DJANGO_DEFAULT_FROM_EMAIL`  | Email used as from unless otherwise specified.                                                                                                                                   |
+| `ADMIN_URL`                  | To change the default admin URL in production for security reason. Will default to `/admin/` in dev.                                                                             |
+| `ACCOUNT_ALLOW_REGISTRATION` | Whether to enable account registration on the instance or not. If disabled, you will have to create the user in the Django admin or with the CLI.                                |
+| `DATABASE_URL`               | The URL to the database formatted like this: `postgres://POSTGRES_USER:POSTGRES_PASSWORD@POSTGRES_HOST:POSTGRES_PORT/POSTGRES_DB`                                                |
 
 ```{admonition} DATABASE_URL
 :class: note
@@ -121,6 +122,8 @@ You can create cryptahpicaly sure secrets in Python with `python3 -c "import sec
 ```
 
 ### Other variables
+
+Project related:
 
 | Variable name                           | Default value      | Description                                                                                                                                                                                                    |
 |-----------------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -140,3 +143,12 @@ You can create cryptahpicaly sure secrets in Python with `python3 -c "import sec
 | `LEGADILO_CONTACT_EMAIL`                | `None`             | The contact email to display to authenticated user.                                                                                                                                                            |
 | `LEGADILO_CUSTOM_SCRIPT`                | `None`             | To inject an extra script (typically a visitor tracker) to the site. Must a JSON mapping of attribute to value like this: `{"src": "https://plausible.io"}`.<br>Nonce and `defer` will be added automatically. |
 | `CSP_CONNECT_SRC`                       | `("'self'",)`      | To change the default `connect-src` of the CSP.<br>Must be like `"'self',https://plausible.io/"`                                                                                                               |
+
+Running related with the `devops/compose/production/django/start.sh` script:
+
+| Variable name              | Default value | Description                                                                                                                                     |
+|----------------------------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `GUNICORN_SERVER_HOST`     | 0.0.0.0       | On which host to listen for new requests. Django will validate the host on its side too. See the `DJANGO_ALLOWED_HOSTS` variable documentation. |
+| `GUNICORN_SERVER_PORT`     | 8000          | On which port to start Gunicorn.                                                                                                                |
+| `GUNICORN_NB_WORKERS`      | 4             | How many Gunicorn workers to spawn (also used in the container).                                                                                |
+| `GUNICORN_REQUEST_TIMEOUT` | 60            | Request taking longer that this (in seconds) will be aborted automatically by Gunicorn.                                                         |

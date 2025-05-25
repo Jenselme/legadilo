@@ -23,6 +23,9 @@ from django.db import models
 from django.db.models.functions import Coalesce
 
 from legadilo.reading.models import Article
+from legadilo.types import DeletionResult
+
+from ...utils.collections_utils import merge_deletion_results
 
 if TYPE_CHECKING:
     from .feed import Feed
@@ -53,15 +56,16 @@ class FeedDeletedArticleManager(models.Manager["FeedDeletedArticle"]):
         feed_articles_qs.delete()
         self.bulk_create(feed_deleted_articles, unique_fields=["article_url", "feed"])
 
-        article.delete()
+        return article.delete()
 
-    def cleanup_articles(self):
+    def cleanup_articles(self) -> DeletionResult:
         articles_qs = Article.objects.get_queryset().for_cleanup()
+        deletion_results = []
 
         for article in articles_qs:
-            self.delete_article(article)
+            deletion_results.append(self.delete_article(article))
 
-        return articles_qs.delete()
+        return merge_deletion_results(deletion_results)
 
 
 class FeedDeletedArticle(models.Model):

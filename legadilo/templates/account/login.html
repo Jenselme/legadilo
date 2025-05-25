@@ -1,12 +1,11 @@
 {% extends "account/base.html" %}
 
-{% load i18n %}
-{% load account socialaccount %}
-{% load crispy_forms_tags %}
+{% load account crispy_forms_tags i18n socialaccount %}
 
 {% block head_title %}
     {% translate "Sign In" %}
 {% endblock head_title %}
+
 {% block inner %}
     <h1>{% translate "Sign In" %}</h1>
     {% get_providers as socialaccount_providers %}

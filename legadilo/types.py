@@ -13,3 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# This is for: (TotalNbModelsDeleted, {"RelatedModel": NbDeleted, "Model": NbDeleted})
+type DeletionResult = tuple[int, dict[str, int]]
+type FormChoice = tuple[str, str]
+type FormChoices = list[FormChoice]

@@ -1,17 +1,17 @@
 {% extends "account/base.html" %}
 
-{% load i18n %}
-{% load account %}
+{% load account i18n %}
 
 {% block head_title %}
     {% translate "Confirm E-mail Address" %}
 {% endblock head_title %}
+
 {% block inner %}
     <h1>{% translate "Confirm E-mail Address" %}</h1>
     {% if confirmation %}
         {% user_display confirmation.email_address.user as user_display %}
         <p>
-            {% blocktranslate with confirmation.email_address.email as email %}Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktranslate %}
+            {% blocktranslate with email=confirmation.email_address.email %}Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktranslate %}
         </p>
         <form method="post"
               action="{% url 'account_confirm_email' confirmation.key %}">

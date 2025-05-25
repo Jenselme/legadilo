@@ -129,15 +129,17 @@ class ReadingList(models.Model):
     order = models.IntegerField(default=0)
 
     read_status = models.CharField(
-        choices=constants.ReadStatus.choices, default=constants.ReadStatus.ALL, max_length=100
+        choices=constants.ReadStatus.choices,  # type: ignore[misc]
+        default=constants.ReadStatus.ALL,
+        max_length=100,
     )
     favorite_status = models.CharField(
-        choices=constants.FavoriteStatus.choices,
+        choices=constants.FavoriteStatus.choices,  # type: ignore[misc]
         default=constants.FavoriteStatus.ALL,
         max_length=100,
     )
     for_later_status = models.CharField(
-        choices=constants.ForLaterStatus.choices,
+        choices=constants.ForLaterStatus.choices,  # type: ignore[misc]
         default=constants.ForLaterStatus.ALL,
         max_length=100,
     )
@@ -148,7 +150,7 @@ class ReadingList(models.Model):
         ),
     )
     articles_max_age_unit = models.CharField(
-        choices=constants.ArticlesMaxAgeUnit.choices,
+        choices=constants.ArticlesMaxAgeUnit.choices,  # type: ignore[misc]
         default=constants.ArticlesMaxAgeUnit.UNSET,
         max_length=100,
         help_text=_(
@@ -160,13 +162,13 @@ class ReadingList(models.Model):
         help_text=_("Include only articles that take more or less than this time to read."),
     )
     articles_reading_time_operator = models.CharField(
-        choices=constants.ArticlesReadingTimeOperator.choices,
+        choices=constants.ArticlesReadingTimeOperator.choices,  # type: ignore[misc]
         default=constants.ArticlesReadingTimeOperator.UNSET,
         max_length=100,
         help_text=_("Whether the reading must be more or less that the supplied value."),
     )
     include_tag_operator = models.CharField(
-        choices=constants.ReadingListTagOperator.choices,
+        choices=constants.ReadingListTagOperator.choices,  # type: ignore[misc]
         default=constants.ReadingListTagOperator.ALL,
         max_length=100,
         help_text=_(
@@ -174,7 +176,7 @@ class ReadingList(models.Model):
         ),
     )
     exclude_tag_operator = models.CharField(
-        choices=constants.ReadingListTagOperator.choices,
+        choices=constants.ReadingListTagOperator.choices,  # type: ignore[misc]
         default=constants.ReadingListTagOperator.ALL,
         max_length=100,
         help_text=_(
@@ -182,7 +184,7 @@ class ReadingList(models.Model):
         ),
     )
     order_direction = models.CharField(
-        choices=constants.ReadingListOrderDirection.choices,
+        choices=constants.ReadingListOrderDirection.choices,  # type: ignore[misc]
         default=constants.ReadingListOrderDirection.DESC,
         max_length=10,
         help_text=_(
