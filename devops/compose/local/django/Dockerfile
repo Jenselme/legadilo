@@ -33,9 +33,9 @@ RUN chmod +x /start.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/start.sh"]
 
-RUN --mount=type=cache,target=/root/.cache/uv,z \
-    --mount=type=bind,source=uv.lock,target=uv.lock,readonly,z \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,readonly,z \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock,readonly \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,readonly \
     uv sync --locked --no-install-project --dev
 
 COPY ./devops/compose/production/django/setup-django.sh /
