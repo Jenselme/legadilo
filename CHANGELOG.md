@@ -7,6 +7,9 @@
 - Delete accounts without any verified emails after a default retention period.
 - Try to improve action buttons order to make order more consistent and the buttons easier to find and use.
 - Can edit "open original URL by default" checkbox in admin.
+- Browser extension:
+  - Can save YouTube videos.
+  - Can save any big HTML pages without triggering an error in the API.
 
 ## 25.04.3
 
