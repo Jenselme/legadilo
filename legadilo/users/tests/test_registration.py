@@ -28,6 +28,7 @@ from legadilo.core.middlewares import CSPMiddleware
 from legadilo.core.models import Timezone
 from legadilo.users.admin import User
 from legadilo.users.models import UserSettings
+from legadilo.utils.testing import prettify_html_for_snapshot
 
 
 def create_nonce(self, request, *args, **kwargs):
@@ -104,7 +105,9 @@ class TestUserRegistration:
         )
 
         assert response.status_code == HTTPStatus.OK
-        self.snapshot.assert_match(response.content, "login_failure_response.html")
+        self.snapshot.assert_match(
+            prettify_html_for_snapshot(response.content), "login_failure_response.html"
+        )
 
     def _test_confirm_email(self):
         email_address = EmailAddress.objects.get()
@@ -115,7 +118,9 @@ class TestUserRegistration:
         confirm_page = self.client.get("http://testserver/accounts/confirm-email/mockkey/")
 
         assert confirm_page.status_code == HTTPStatus.OK
-        self.snapshot.assert_match(confirm_page.content, "confirm_email_page.html")
+        self.snapshot.assert_match(
+            prettify_html_for_snapshot(confirm_page.content), "confirm_email_page.html"
+        )
 
         submit_confirmation_response = self.client.post(
             "http://testserver/accounts/confirm-email/mockkey/"
@@ -126,7 +131,7 @@ class TestUserRegistration:
     def _test_login(self):
         response = self.client.get("/accounts/login/")
         assert response.status_code == HTTPStatus.OK
-        self.snapshot.assert_match(response.content, "login_page.html")
+        self.snapshot.assert_match(prettify_html_for_snapshot(response.content), "login_page.html")
 
         login_response = self.client.post(
             "/accounts/login/", {"login": self.user_email, "password": self.password}
@@ -140,4 +145,6 @@ class TestUserRegistration:
 
         page_response = self.client.get(login_redirect_response["Location"])
         assert page_response.status_code == HTTPStatus.OK
-        self.snapshot.assert_match(page_response.content, "page_response.html")
+        self.snapshot.assert_match(
+            prettify_html_for_snapshot(page_response.content), "page_response.html"
+        )
