@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Can configure how `gunicorn` is run.
+
 ## 25.04.3
 
 - Fix bugs in browser extension:
