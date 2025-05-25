@@ -77,73 +77,85 @@ def _build_refresh_filters(  # noqa: C901, PLR0911, PLR0912 too complex
         case feeds_constants.FeedRefreshDelays.EVERY_MORNING:
             if 8 <= now.hour <= 10:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.DAILY_AT_NOON:
             if 12 <= now.hour <= 14:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.EVERY_EVENING:
             if 20 <= now.hour <= 22:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.ON_MONDAYS:
             if now.weekday() == calendar.MONDAY:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.ON_THURSDAYS:
             if now.weekday() == calendar.THURSDAY:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.ON_SATURDAYS:
             if now.weekday() == calendar.SATURDAY:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.ON_SUNDAYS:
             if now.weekday() == calendar.SUNDAY:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.TWICE_A_WEEK:
             if now.weekday() in {calendar.MONDAY, calendar.THURSDAY}:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH:
             if now.day == 1:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.MIDDLE_OF_THE_MONTH:
             if now.day == 15:  # noqa: PLR2004 Magic value used in comparison
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.END_OF_THE_MONTH:
             if now.day == last_day_of_month:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case feeds_constants.FeedRefreshDelays.THRICE_A_MONTH:
             if now.day in {1, 15, last_day_of_month}:
                 return models.When(
-                    base_filters & ~models.Q(latest_feed_update__created_at__day=now.day), then=True
+                    base_filters & ~models.Q(latest_feed_update__created_at__date=now.date()),
+                    then=True,
                 )
             return models.When(base_filters, then=False)
         case _:

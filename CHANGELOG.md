@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Can configure how `gunicorn` is run.
+- Correctly refresh feeds configured to run on a precise day of the month.
 
 ## 25.04.3
 

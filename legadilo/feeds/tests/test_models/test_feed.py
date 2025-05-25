@@ -200,6 +200,18 @@ class TestFeedQuerySet:
 
         assert list(feeds_to_update) == []
 
+    def test_update_feed_once_a_month(self, user):
+        feed_to_update_on_first_day_of_month = FeedFactory(
+            user=user, refresh_delay=feeds_constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH
+        )
+        with time_machine.travel("2024-01-01 00:00:00"):
+            FeedUpdateFactory(feed=feed_to_update_on_first_day_of_month)
+
+        with time_machine.travel("2024-02-01 00:00:00"):
+            feeds_to_update = Feed.objects.get_queryset().for_update(user)
+
+        assert list(feeds_to_update) == [feed_to_update_on_first_day_of_month]
+
     def test_only_with_ids(self):
         feed1 = FeedFactory(disabled_at=None)
         FeedFactory(disabled_at=None)
