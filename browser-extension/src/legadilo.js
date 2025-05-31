@@ -175,7 +175,9 @@ const doFetch = async (url, fetchOptions) => {
   const resp = await fetch(`${options.instanceUrl}${url}`, fetchOptions);
 
   if (!resp.ok) {
-    throw new Error(`Response status: ${resp.status} (${resp.statusText})`);
+    throw new Error(`Response status: ${resp.status} (${resp.statusText})`, {
+      cause: resp.status,
+    });
   }
 
   if (fetchOptions.method === "DELETE") {

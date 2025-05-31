@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Correct search of `EmailAddress` in the Django admin.
+- Browser extension:
+  - Correct refresh of the access token.
 
 ## 25.05.1
 
