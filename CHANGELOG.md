@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 25.05.2
+
+- Correct search of `EmailAddress` in the Django admin.
+- Browser extension:
+  - Correct refresh of the access token.
+
 ## 25.05.1
 
 - Can configure how `gunicorn` is run.

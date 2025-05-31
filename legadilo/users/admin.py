@@ -13,7 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from allauth.account.admin import EmailAddressAdmin as DjangoAllAuthEmailAddress
+from allauth.account.models import EmailAddress
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
@@ -25,6 +26,8 @@ from legadilo.users.forms import UserAdminChangeForm, UserAdminCreationForm
 from legadilo.users.models import ApplicationToken, Notification, UserSettings
 
 User = get_user_model()
+
+admin.site.unregister(EmailAddress)
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
@@ -95,3 +98,19 @@ class NotificationAdmin(admin.ModelAdmin):
 @admin.register(ApplicationToken)
 class ApplicationTokenAdmin(admin.ModelAdmin):
     autocomplete_fields = ("user",)
+
+
+@admin.register(EmailAddress)
+class EmailAddressAdmin(DjangoAllAuthEmailAddress):
+    def get_search_fields(self, request):
+        return ["email_deterministic", "user__name", "user_email_deterministic"]
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .alias(
+                email_deterministic=Collate("email", "und-x-icu"),
+                user_email_deterministic=Collate("user__email", "und-x-icu"),
+            )
+        )
