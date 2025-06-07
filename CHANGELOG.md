@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Refresh the reading list near HH:00 The goal is to refresh the reading list closer to when the feeds where updated.
+
 ## 25.05.2
 
 - Correct search of `EmailAddress` in the Django admin.
