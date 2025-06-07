@@ -3,9 +3,11 @@
 <select name="{{ widget.name }}"
         {% include "bootstrap5/layout/attrs.html" %}
         class="visually-hidden">
-    <option disabled hidden value="">{% translate "Choose tags" %}</option>
+    {% if widget.empty_label %}
+        <option disabled hidden value="">{{ widget.empty_label }}</option>
+    {% endif %}
     {% for group_name, group_choices, group_index in widget.optgroups %}
         <option value="{{ group_choices.0.value }}"
-                {% if group_choices.0.value in widget.value %}selected{% endif %}>{{ group_choices.0.label }}</option>
+                {% if group_choices.0.selected %}selected{% endif %}>{{ group_choices.0.label }}</option>
     {% endfor %}
 </select>

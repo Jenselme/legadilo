@@ -26,7 +26,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
-from legadilo.core.forms.widgets import MultipleTagsWidget
+from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.models.article import (
@@ -97,7 +97,7 @@ class SearchForm(forms.Form):
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be included in the search."),
-        widget=MultipleTagsWidget(allow_new=False),
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
     exclude_tag_operator = forms.ChoiceField(
         required=False,
@@ -109,7 +109,7 @@ class SearchForm(forms.Form):
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be excluded from the search."),
-        widget=MultipleTagsWidget(allow_new=False),
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
 
     def __init__(self, data=None, *, tag_choices: FormChoices):

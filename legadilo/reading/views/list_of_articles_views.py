@@ -35,7 +35,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
-from legadilo.core.forms.widgets import MultipleTagsWidget
+from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
@@ -210,7 +210,7 @@ class UpdateArticlesForm(forms.Form):
         help_text=_(
             "Tags to dissociate with all articles of this search (not only the visible ones)."
         ),
-        widget=MultipleTagsWidget(allow_new=False),
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
     update_action = forms.ChoiceField(
         required=False,
