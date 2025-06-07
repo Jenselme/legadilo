@@ -23,7 +23,7 @@ from django.contrib.auth import get_user_model
 from django.forms import EmailField, ModelChoiceField, ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from legadilo.core.forms.widgets import AutocompleteSelectWidget
+from legadilo.core.forms.widgets import SelectAutocompleteWidget
 from legadilo.core.models import Timezone
 from legadilo.users.models import UserSettings
 
@@ -61,7 +61,7 @@ class UserSignupForm(SignupForm):
     timezone = ModelChoiceField(
         Timezone.objects.all(),
         required=True,
-        widget=AutocompleteSelectWidget(),
+        widget=SelectAutocompleteWidget(),
         help_text=_("Used to display times and updated feeds at a convenient time."),
     )
 
@@ -82,7 +82,7 @@ class UserSettingsForm(ModelForm):
     timezone = ModelChoiceField(
         Timezone.objects.all(),
         required=True,
-        widget=AutocompleteSelectWidget(),
+        widget=SelectAutocompleteWidget(),
         help_text=_("Used to display times and updated feeds at a convenient time."),
     )
 

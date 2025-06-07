@@ -39,7 +39,7 @@ class SelectMultipleAutocompleteWidget(widgets.SelectMultiple):
         return ctx
 
 
-class AutocompleteSelectWidget(widgets.Select):
+class SelectAutocompleteWidget(widgets.Select):
     template_name = "core/widgets/select_autocomplete.html"
 
     def __init__(self, attrs=None, choices=(), *, allow_new: bool = True):
