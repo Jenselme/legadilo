@@ -13,6 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 MAX_SIZE_OPML_FILE = 1024 * 1024  # 1MiB in bytes.
 MAX_ARTICLES_FILE = 10 * 1024 * 1024  # 10MiB in bytes.

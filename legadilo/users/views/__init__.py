@@ -13,6 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 from .manage_tokens_views import delete_token_view, manage_tokens_view
 from .notifications_views import list_notifications_view
