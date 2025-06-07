@@ -39,7 +39,7 @@ class TestReadingListWithArticlesView:
             is_default=True, user=user, read_status=constants.ReadStatus.ONLY_UNREAD, order=0
         )
         self.reading_list = ReadingListFactory(
-            user=user, order=10, enable_reading_on_scroll=True, auto_refresh_interval=60 * 60
+            user=user, order=10, enable_reading_on_scroll=True, auto_refresh_interval=1
         )
         self.default_reading_list_url = reverse("reading:default_reading_list")
         self.reading_list_url = reverse(
@@ -91,7 +91,6 @@ class TestReadingListWithArticlesView:
         ]
         assert response.context_data["displayed_reading_list"] == self.default_reading_list
         assert response.context_data["js_cfg"] == {
-            "articles_list_min_refresh_timeout": 300,
             "auto_refresh_interval": 0,
             "is_reading_on_scroll_enabled": False,
         }
@@ -113,8 +112,7 @@ class TestReadingListWithArticlesView:
         ]
         assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
-            "auto_refresh_interval": 60 * 60,
-            "articles_list_min_refresh_timeout": 300,
+            "auto_refresh_interval": 1,
         }
         assert isinstance(response.context_data["articles_paginator"], Paginator)
         assert response.context_data["articles_page"].object_list == [
@@ -141,8 +139,7 @@ class TestReadingListWithArticlesView:
         ]
         assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": True,
-            "auto_refresh_interval": 60 * 60,
-            "articles_list_min_refresh_timeout": 300,
+            "auto_refresh_interval": 1,
         }
         assert isinstance(response.context_data["articles_paginator"], Paginator)
         assert response.context_data["articles_page"].object_list == [

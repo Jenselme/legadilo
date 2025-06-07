@@ -90,7 +90,6 @@ class TestDeleteArticleView:
         assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
-            "articles_list_min_refresh_timeout": 300,
         }
         assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
         assert response["HX-Retarget"] == f"#article-card-{self.article.id}"

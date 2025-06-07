@@ -148,12 +148,9 @@
     });
   };
 
-  const setupRefresh = () => {
-    const timeout = jsCfg.auto_refresh_interval * 1000;
-    if (
-      !Number.isInteger(jsCfg.auto_refresh_interval) ||
-      timeout < jsCfg.articles_list_min_refresh_timeout
-    ) {
+  const setupAutoRefresh = () => {
+    const timeout = jsCfg.auto_refresh_interval * 3600 * 1000;
+    if (!Number.isInteger(jsCfg.auto_refresh_interval)) {
       return;
     }
 
@@ -204,7 +201,7 @@
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
     setupReadAction();
     setupReadOnScroll();
-    setupRefresh();
+    setupAutoRefresh();
     setupMobileScroll();
   });
 })();
