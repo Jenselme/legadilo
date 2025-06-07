@@ -3,7 +3,7 @@
 Read your RSS feeds & save other articles
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
-[![Black code style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff/)
+[![Ruff code style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 [Legadilo](https://www.legadilo.eu/) is a project to help you subscribe to RSS feeds, save articles and organize them easily with tags and full customizable reading lists! It’s written with the [Django web framework](https://www.djangoproject.com/), [the bootstrap 5 frontend toolkit](https://getbootstrap.com/) and with enhancements given by [htmx](https://htmx.org/).
