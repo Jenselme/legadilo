@@ -294,10 +294,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .default_order_by()
         )
 
-    def for_external_tag(self, user: User, tag: str) -> Self:
+    def for_external_tag(self, tag: str) -> Self:
         return (
-            self.for_user(user)
-            .for_feed_links()
+            self.for_feed_links()
             .filter(external_tags__icontains=tag)
             .prefetch_related(_build_prefetch_article_tags())
             .default_order_by()
@@ -651,7 +650,7 @@ class ArticleManager(models.Manager["Article"]):
         return self.get_queryset().for_tag(tag)
 
     def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
-        return self.get_queryset().for_external_tag(user, tag)
+        return self.get_queryset().for_user(user).for_external_tag(tag)
 
     def export(self, user: User):
         articles_qs = self.get_queryset().for_export(user)
