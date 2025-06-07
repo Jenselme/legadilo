@@ -79,7 +79,7 @@ class TestReadingListWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_default_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.get(self.default_reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
@@ -99,7 +99,7 @@ class TestReadingListWithArticlesView:
         assert response.context_data.get("update_articles_form") is None
 
     def test_reading_list_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.get(self.reading_list_url)
 
         assert response.status_code == HTTPStatus.OK
@@ -123,7 +123,7 @@ class TestReadingListWithArticlesView:
         assert response.context_data.get("update_articles_form") is None
 
     def test_reading_list_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.get(
                 self.reading_list_url,
                 HTTP_HX_Request="true",

@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+import logging
 from http import HTTPStatus
 
 from django import forms
@@ -44,6 +44,8 @@ from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import User
 from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
+
+logger = logging.getLogger(__name__)
 
 
 class FeedMultipleChoiceField(forms.ModelMultipleChoiceField):
@@ -139,6 +141,13 @@ class SearchForm(forms.Form):
 
     def __init__(self, data: QueryDict, *, tag_choices: FormChoices, feeds_qs: models.QuerySet):
         super().__init__(data.copy())
+        # The goal is to spot invalid params when coming from "Advanced search" links.
+        if data and (extra_fields := set(data.keys()) - set(self.fields.keys())):
+            logger.warning(
+                "SearchForm received extra fields: %s. These will be ignored.",
+                ", ".join(extra_fields),
+            )
+
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["external_tags_to_include"].choices = [  # type: ignore[attr-defined]

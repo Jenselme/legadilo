@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import urlencode
 
 from csp.decorators import csp_update
 from django import forms
@@ -69,6 +70,26 @@ def reading_list_with_articles_view(
             "page_title": displayed_reading_list.title,
             "displayed_reading_list": displayed_reading_list,
             "js_cfg": get_js_cfg_from_reading_list(displayed_reading_list),
+            "search_query": urlencode(
+                {
+                    "read_status": displayed_reading_list.read_status,
+                    "favorite_status": displayed_reading_list.favorite_status,
+                    "for_later_status": displayed_reading_list.for_later_status,
+                    "articles_max_age_value": displayed_reading_list.articles_max_age_value,
+                    "articles_max_age_unit": displayed_reading_list.articles_max_age_unit,
+                    "articles_reading_time": displayed_reading_list.articles_reading_time,
+                    "articles_reading_time_operator": displayed_reading_list.articles_reading_time_operator,  # noqa: E501
+                    "include_tag_operator": displayed_reading_list.include_tag_operator,
+                    "tags_to_include": displayed_reading_list.reading_list_tags.get_selected_values(
+                        constants.ReadingListTagFilterType.INCLUDE
+                    ),
+                    "exclude_tag_operator": displayed_reading_list.exclude_tag_operator,
+                    "tags_to_exclude": displayed_reading_list.reading_list_tags.get_selected_values(
+                        constants.ReadingListTagFilterType.EXCLUDE
+                    ),
+                },
+                doseq=True,
+            ),
         },
     )
 
@@ -151,6 +172,7 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
         request,
         Article.objects.get_articles_of_tag(displayed_tag),
         _("Articles with tag '%(tag_title)s'") % {"tag_title": displayed_tag.title},
+        {"tags_to_include": [displayed_tag.slug]},
     )
 
 
@@ -165,6 +187,7 @@ def external_tag_with_articles_view(
         request,
         Article.objects.get_articles_with_external_tag(request.user, tag_title),
         _("Articles with external tag '%(tag_title)s'") % {"tag_title": tag_title},
+        {"external_tags_to_include": [tag_title]},
     )
 
 
@@ -172,6 +195,7 @@ def list_or_update_articles(
     request: AuthenticatedHttpRequest,
     articles_qs: ArticleQuerySet,
     page_title: str,
+    search_dict: dict,
     extra_ctx: dict | None = None,
 ) -> TemplateResponse:
     extra_ctx = extra_ctx or {}
@@ -190,6 +214,7 @@ def list_or_update_articles(
             "displayed_reading_list": None,
             "js_cfg": {},
             "update_articles_form": form,
+            "search_query": urlencode(search_dict, doseq=True),
         },
         status=status,
     )
