@@ -4,6 +4,8 @@
 
 - Refresh the reading list near HH:00 The goal is to refresh the reading list closer to when the feeds where updated.
 - Hide the "Make default" button when creating a reading list.
+- Search improvements:
+  - Can search without a search text. This enables the usage of other fields without the need to find a text to search for.
 
 ## 25.05.2
 

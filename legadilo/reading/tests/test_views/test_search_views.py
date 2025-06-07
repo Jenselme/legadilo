@@ -33,8 +33,7 @@ class TestSearchForm:
     def test_without_data(self):
         form = SearchForm({}, tag_choices=[])
 
-        assert not form.is_valid()
-        assert form.errors == {"q": ["This field is required."]}
+        assert form.is_valid()
 
     def test_with_only_q(self):
         form = SearchForm({"q": "Claudius"}, tag_choices=[])
@@ -172,16 +171,6 @@ class TestSearchView:
         response = client.get(self.url)
 
         assert_redirected_to_login_page(response)
-
-    def test_invalid_form(self, logged_in_sync_client):
-        response = logged_in_sync_client.get(self.url)
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.template_name == "reading/search.html"
-        assert not response.context_data["search_form"].is_valid()
-        assert response.context_data["search_form"].errors == {"q": ["This field is required."]}
-        assert response.context_data["articles"] == []
-        assert response.context_data["total_results"] == 0
 
     def test_search(self, user, logged_in_sync_client):
         article = ArticleFactory(title="Claudius", user=user)
