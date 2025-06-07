@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Refresh the reading list near HH:00 The goal is to refresh the reading list closer to when the feeds where updated.
+- Hide the "Make default" button when creating a reading list.
 
 ## 25.05.2
 
