@@ -460,6 +460,11 @@ LOGGING = {
             "level": "ERROR",
             "propagate": False,
         },
+        "django.server": {
+            "handlers": ["rich"],
+            "level": "WARNING",
+            "propagate": False,
+        },
         "django.security.DisallowedHost": {
             "level": "ERROR",
             "handlers": ["rich"],
