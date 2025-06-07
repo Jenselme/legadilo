@@ -1483,16 +1483,21 @@ class TestArticleManager:
     def test_search_with_advanced_filters(self, user, other_user):
         ArticleFactory(user=user, title="Claudius read", read_at=utcnow())
         ArticleFactory(user=user, title="Claudius", read_at=None)
-        search_in_title_and_feed = ArticleFactory(user=user, title="Claudius", read_at=None)
+        search_in_multiple_fields = ArticleFactory(
+            user=user, title="Claudius", read_at=None, external_tags=["Claudius", "Maximus"]
+        )
         feed = FeedFactory(user=user, title="Claudius feed")
-        feed.articles.add(search_in_title_and_feed)
+        feed.articles.add(search_in_multiple_fields)
         search_query = ArticleFullTextSearchQuery(
-            q="Claudius", read_status=constants.ReadStatus.ONLY_UNREAD, linked_with_feeds=[feed.id]
+            q="Claudius",
+            read_status=constants.ReadStatus.ONLY_UNREAD,
+            linked_with_feeds=frozenset([feed.id]),
+            external_tags_to_include=frozenset(["Maximus", "Not there!"]),
         )
 
         found_articles = list(Article.objects.search(user, search_query))
 
-        assert found_articles == [search_in_title_and_feed]
+        assert found_articles == [search_in_multiple_fields]
 
     def test_search_order_by(self, user):
         article_1 = ArticleFactory(title="Read at", user=user, read_at=utcdt(2024, 6, 1))

@@ -7,6 +7,7 @@
 - Search improvements:
   - Can search without a search text. This enables the usage of other fields without the need to find a text to search for.
   - Can search for articles linked to specific feeds.
+  - Can search articles with some external tags.
 
 ## 25.05.2
 

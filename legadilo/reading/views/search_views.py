@@ -22,6 +22,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.http import QueryDict
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
@@ -119,6 +120,16 @@ class SearchForm(forms.Form):
         help_text=_("Articles with these tags will be excluded from the search."),
         widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
+    external_tags_to_include = forms.MultipleChoiceField(
+        required=False,
+        help_text=_(
+            "Articles with these external tags will be included in the search. "
+            "Any tag you type will be searched as typed."
+        ),
+        widget=SelectMultipleAutocompleteWidget(
+            allow_new=True, empty_label=_("Choose external tags")
+        ),
+    )
     # Feeds
     linked_with_feeds = FeedMultipleChoiceField(
         required=False,
@@ -126,10 +137,13 @@ class SearchForm(forms.Form):
         widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose feeds")),
     )
 
-    def __init__(self, data=None, *, tag_choices: FormChoices, feeds_qs: models.QuerySet):
+    def __init__(self, data: QueryDict, *, tag_choices: FormChoices, feeds_qs: models.QuerySet):
         super().__init__(data.copy())
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["external_tags_to_include"].choices = [  # type: ignore[attr-defined]
+            (tag, tag) for tag in data.getlist("external_tags_to_include", [])
+        ]
         self.fields["linked_with_feeds"].queryset = feeds_qs  # type: ignore[attr-defined]
 
         # Make sure we set the proper search type is correct when we do a URL search. By default,
