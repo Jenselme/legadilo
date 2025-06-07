@@ -148,31 +148,52 @@
     });
   };
 
-  const setupRefresh = () => {
-    const timeout = jsCfg.auto_refresh_interval * 1000;
-    if (
-      !Number.isInteger(jsCfg.auto_refresh_interval) ||
-      timeout < jsCfg.articles_list_min_refresh_timeout
-    ) {
+  const setupAutoRefresh = () => {
+    const autoRefreshEveryNbHours = jsCfg.auto_refresh_interval;
+    if (!Number.isInteger(autoRefreshEveryNbHours) || autoRefreshEveryNbHours <= 0) {
       return;
     }
 
-    let timeoutId = null;
+    const getTimeUntilNextHour = () => {
+      const now = new Date();
+      const nextHour = new Date(now);
+      nextHour.setHours(nextHour.getHours() + 1);
+      nextHour.setMinutes(0);
+      nextHour.setSeconds(0);
+      nextHour.setMilliseconds(0);
 
-    const runRefresh = () => {
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-      }
-
-      timeoutId = setTimeout(() => {
-        window.scroll(0, 0);
-        location.reload();
-      }, timeout);
+      return nextHour - now;
     };
 
-    runRefresh();
+    const randomIntegerFromInterval = (min, max) =>
+      Math.floor(Math.random() * (max - min + 1)) + min;
+
+    let refreshTimeoutId = null;
+
+    const scheduleRefresh = () => {
+      if (refreshTimeoutId !== null) {
+        clearTimeout(refreshTimeoutId);
+      }
+
+      const timeUntilNextAutoRefresh =
+        // Refresh on the next full hour by default. This allows a refresh in the next hour after
+        // the page was initially loaded and at the scheduled time even after a scroll.
+        getTimeUntilNextHour() +
+        // If the user configured for a longer delay, add it.
+        (autoRefreshEveryNbHours - 1) * 60 * 60 * 1000 +
+        // Add a delay to be sure the feeds were updated. Make it random to avoid all users
+        // reloading at the same time.
+        randomIntegerFromInterval(1, 5) * 60 * 1000;
+
+      refreshTimeoutId = setTimeout(() => {
+        window.scroll(0, 0);
+        location.reload();
+      }, timeUntilNextAutoRefresh);
+    };
+
+    scheduleRefresh();
     // Reset after each scrollend: we want to avoid messing up with reading.
-    window.addEventListener("scrollend", runRefresh);
+    window.addEventListener("scrollend", scheduleRefresh);
   };
 
   const setupMobileScroll = () => {
@@ -204,7 +225,7 @@
     jsCfg = JSON.parse(document.head.querySelector("#js-cfg").textContent);
     setupReadAction();
     setupReadOnScroll();
-    setupRefresh();
+    setupAutoRefresh();
     setupMobileScroll();
   });
 })();

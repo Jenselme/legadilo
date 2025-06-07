@@ -91,7 +91,6 @@ class TestUpdateArticleView:
         assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
-            "articles_list_min_refresh_timeout": 300,
         }
         assert response["HX-Reswap"] == "none show:none"
         assert "HX-Retarget" not in response.headers
@@ -263,7 +262,6 @@ class TestMarkArticlesAsReadInBulkView:
         assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
-            "articles_list_min_refresh_timeout": 300,
         }
         assert "HX-Reswap" not in response.headers
         assert "HX-Retarget" not in response.headers
@@ -297,7 +295,6 @@ class TestMarkArticlesAsReadInBulkView:
         assert response.context_data["js_cfg"] == {
             "is_reading_on_scroll_enabled": False,
             "auto_refresh_interval": 0,
-            "articles_list_min_refresh_timeout": 300,
         }
         assert "HX-Reswap" not in response.headers
         assert "HX-Retarget" not in response.headers

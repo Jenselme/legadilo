@@ -57,7 +57,7 @@ class ReadingListManager(models.Manager["ReadingList"]):
             create_defaults={
                 **base_default_list_values,
                 "is_default": True,
-                "auto_refresh_interval": 60 * 60,
+                "auto_refresh_interval": 1,
             },
             defaults=base_default_list_values,
         )
@@ -123,9 +123,8 @@ class ReadingList(models.Model):
     auto_refresh_interval = models.PositiveIntegerField(
         default=0,
         help_text=_(
-            "Time in seconds after which to refresh reading lists automatically. "
-            "It must be at least 5 minutes. Any values lower that that will disable the feature "
-            "for this reading list."
+            "Number of hours after which to refresh reading lists automatically. "
+            "0 will disable the feature."
         ),
     )
     order = models.IntegerField(default=0)
