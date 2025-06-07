@@ -87,7 +87,7 @@ class TableOfContentTopItem(TableOfContentItem):
 
 def table_of_content_validator(value: Any):
     try:
-        TypeAdapter(TableOfContentItem).validate_python(value)
+        TypeAdapter(list[TableOfContentTopItem]).validate_python(value)
     except PydanticValidationError as e:
         raise ValidationError(str(e)) from e
 

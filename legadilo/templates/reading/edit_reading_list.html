@@ -56,7 +56,7 @@
                     <button class="btn btn-primary" type="submit">{% translate "Create" %}</button>
                 {% endif %}
             </div>
-            {% if not reading_list.is_default %}
+            {% if reading_list and not reading_list.is_default %}
                 <button class="btn btn-outline-secondary" type="submit" name="make-default">{% translate "Make default" %}</button>
             {% endif %}
         </div>

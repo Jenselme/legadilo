@@ -51,5 +51,6 @@ def feed_articles_view(
         request,
         Feed.objects.get_articles(feed),
         _("Articles of feed '%(feed_title)s'") % {"feed_title": feed.title},
+        {"linked_with_feeds": [feed.id]},
         extra_ctx={"feed": feed},
     )

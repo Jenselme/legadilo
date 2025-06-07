@@ -15,18 +15,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+import logging
 from http import HTTPStatus
 
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db import models
+from django.http import QueryDict
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
-from legadilo.core.forms.widgets import MultipleTagsWidget
+from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.models.article import (
@@ -43,10 +45,19 @@ from ...users.models import User
 from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
 
+logger = logging.getLogger(__name__)
+
+
+class FeedMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return obj.title
+
 
 class SearchForm(forms.Form):
     # Main fields.
-    q = forms.CharField(required=True, min_length=SEARCHED_TEXT_MIN_LENGTH, label=_("Search query"))
+    q = forms.CharField(
+        required=False, min_length=SEARCHED_TEXT_MIN_LENGTH, label=_("Search query")
+    )
     search_type = forms.ChoiceField(
         required=False,
         choices=constants.ArticleSearchType.choices,  # type: ignore[misc]
@@ -97,7 +108,7 @@ class SearchForm(forms.Form):
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be included in the search."),
-        widget=MultipleTagsWidget(allow_new=False),
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
     exclude_tag_operator = forms.ChoiceField(
         required=False,
@@ -109,13 +120,40 @@ class SearchForm(forms.Form):
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be excluded from the search."),
-        widget=MultipleTagsWidget(allow_new=False),
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
+    )
+    external_tags_to_include = forms.MultipleChoiceField(
+        required=False,
+        help_text=_(
+            "Articles with these external tags will be included in the search. "
+            "Any tag you type will be searched as typed."
+        ),
+        widget=SelectMultipleAutocompleteWidget(
+            allow_new=True, empty_label=_("Choose external tags")
+        ),
+    )
+    # Feeds
+    linked_with_feeds = FeedMultipleChoiceField(
+        required=False,
+        queryset=None,
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose feeds")),
     )
 
-    def __init__(self, data=None, *, tag_choices: FormChoices):
+    def __init__(self, data: QueryDict, *, tag_choices: FormChoices, feeds_qs: models.QuerySet):
         super().__init__(data.copy())
+        # The goal is to spot invalid params when coming from "Advanced search" links.
+        if data and (extra_fields := set(data.keys()) - set(self.fields.keys())):
+            logger.warning(
+                "SearchForm received extra fields: %s. These will be ignored.",
+                ", ".join(extra_fields),
+            )
+
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["external_tags_to_include"].choices = [  # type: ignore[attr-defined]
+            (tag, tag) for tag in data.getlist("external_tags_to_include", [])
+        ]
+        self.fields["linked_with_feeds"].queryset = feeds_qs  # type: ignore[attr-defined]
 
         # Make sure we set the proper search type is correct when we do a URL search. By default,
         # it's a word search.
@@ -126,7 +164,7 @@ class SearchForm(forms.Form):
     def clean_q(self):
         q = self.cleaned_data["q"]
         q = full_sanitize(q)
-        if len(q) < self.fields["q"].min_length:  # type: ignore[attr-defined]
+        if q and len(q) < self.fields["q"].min_length:  # type: ignore[attr-defined]
             raise ValidationError(
                 f"You must at least enter {SEARCHED_TEXT_MIN_LENGTH} characters",
                 code="q-too-short-after-cleaning",
@@ -241,7 +279,9 @@ class SearchForm(forms.Form):
 def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     status = HTTPStatus.OK
     tag_choices = Tag.objects.get_all_choices(request.user)
-    search_form = SearchForm(request.GET, tag_choices=tag_choices)
+    search_form = SearchForm(
+        request.GET, tag_choices=tag_choices, feeds_qs=request.user.feeds.all()
+    )
     update_articles_form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
     # We don't do anything unless we have a valid search.
     if not search_form.is_valid():
@@ -300,6 +340,7 @@ def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
         for key, value in search_form.cleaned_data.items()
         if key not in {"tags_to_include", "tags_to_exclude"}
     }
+    form_data["linked_with_feeds"] = frozenset(feed.id for feed in form_data["linked_with_feeds"])
     query = ArticleFullTextSearchQuery(
         **form_data,
         tags=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),

@@ -16,16 +16,10 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django import forms
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
+from django.http import QueryDict
 
-from .widgets import SelectMultipleAutocompleteWidget
+from legadilo.utils.http_utils import dict_to_query_dict
 
 
-class MultipleTagsField(forms.MultipleChoiceField):
-    widget = SelectMultipleAutocompleteWidget(empty_label=_("Choose tags"))
-
-    def validate(self, value):
-        if self.required and not value:
-            raise ValidationError(self.error_messages["required"], code="required")
+def test_dict_to_query_dict():
+    assert dict_to_query_dict({"a": 1, "b": [2, 3]}) == QueryDict("a=1&b=2&b=3")
