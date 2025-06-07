@@ -134,6 +134,7 @@ class ArticleFullTextSearchQuery(ArticleSearchQuery):
     q: str = ""
     search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
     order: constants.ArticleSearchOrderBy = constants.ArticleSearchOrderBy.RANK_DESC
+    linked_with_feeds: frozenset[int] = frozenset()
 
     @property
     def order_by(self) -> str:  # noqa: PLR0911 Too many return statements
@@ -700,6 +701,10 @@ class ArticleManager(models.Manager["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
             .filter(_build_filters_from_reading_list(search_query))
         )
+
+        if search_query.linked_with_feeds:
+            articles_qs = articles_qs.filter(feeds__id__in=search_query.linked_with_feeds)
+
         if search_query.search_type == constants.ArticleSearchType.URL:
             articles_qs = articles_qs.for_url_search([search_query.q])
         elif search_query.q:

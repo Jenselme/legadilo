@@ -23,20 +23,23 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.feeds.models import Feed
+from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.views.search_views import SearchForm
+from legadilo.utils.testing import AnyOfType
 
 
 class TestSearchForm:
     def test_without_data(self):
-        form = SearchForm({}, tag_choices=[])
+        form = SearchForm({}, tag_choices=[], feeds_qs=Feed.objects.none())
 
         assert form.is_valid()
 
     def test_with_only_q(self):
-        form = SearchForm({"q": "Claudius"}, tag_choices=[])
+        form = SearchForm({"q": "Claudius"}, tag_choices=[], feeds_qs=Feed.objects.none())
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -54,10 +57,13 @@ class TestSearchForm:
             "tags_to_include": [],
             "exclude_tag_operator": constants.ReadingListTagOperator.ALL,
             "tags_to_exclude": [],
+            "linked_with_feeds": AnyOfType(Feed.objects.none()),
         }
 
     def test_q_cleaning(self):
-        form = SearchForm({"q": "<span>Claudius</span>"}, tag_choices=[])
+        form = SearchForm(
+            {"q": "<span>Claudius</span>"}, tag_choices=[], feeds_qs=Feed.objects.none()
+        )
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -75,10 +81,11 @@ class TestSearchForm:
             "tags_to_include": [],
             "exclude_tag_operator": constants.ReadingListTagOperator.ALL,
             "tags_to_exclude": [],
+            "linked_with_feeds": AnyOfType(Feed.objects.none()),
         }
 
     def test_q_cleaning_result_too_small_after_cleaning(self):
-        form = SearchForm({"q": "<span>C</span>"}, tag_choices=[])
+        form = SearchForm({"q": "<span>C</span>"}, tag_choices=[], feeds_qs=Feed.objects.none())
 
         assert not form.is_valid()
         assert form.errors == {
@@ -93,6 +100,7 @@ class TestSearchForm:
                 "articles_reading_time": 12,
             },
             tag_choices=[],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert not form.is_valid()
@@ -111,6 +119,7 @@ class TestSearchForm:
                 "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
             },
             tag_choices=[],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert not form.is_valid()
@@ -121,7 +130,7 @@ class TestSearchForm:
             ]
         }
 
-    def test_everything_filled(self):
+    def test_filled(self):
         form = SearchForm(
             {
                 "q": "Claudius",
@@ -138,8 +147,10 @@ class TestSearchForm:
                 "tags_to_include": ["some-tag"],
                 "exclude_tag_operator": constants.ReadingListTagOperator.ANY.value,
                 "tags_to_exclude": ["other-tag"],
+                "linked_with_feeds": [],
             },
             tag_choices=[("some-tag", "Some tag"), ("other-tag", "Other tag")],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert form.is_valid()
@@ -158,6 +169,7 @@ class TestSearchForm:
             "tags_to_include": ["some-tag"],
             "exclude_tag_operator": constants.ReadingListTagOperator.ANY,
             "tags_to_exclude": ["other-tag"],
+            "linked_with_feeds": AnyOfType(Feed.objects.none()),
         }
 
 
@@ -229,6 +241,19 @@ class TestSearchView:
         assert response.template_name == "reading/search.html"
         assert response.context_data["search_form"].is_valid()
         assert response.context_data["articles"] == [article_with_tag_to_include]
+        assert response.context_data["total_results"] == 1
+
+    def test_search_with_feeds(self, user, logged_in_sync_client):
+        feed = FeedFactory(user=user)
+        feed_article = ArticleFactory(user=user)
+        feed.articles.add(feed_article)
+
+        response = logged_in_sync_client.get(self.url, data={"linked_with_feeds": [feed.id]})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [feed_article]
         assert response.context_data["total_results"] == 1
 
     def test_update_search(self, user, logged_in_sync_client):

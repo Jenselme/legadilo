@@ -21,6 +21,7 @@ from http import HTTPStatus
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
@@ -42,6 +43,11 @@ from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import User
 from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
+
+
+class FeedMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return obj.title
 
 
 class SearchForm(forms.Form):
@@ -113,11 +119,18 @@ class SearchForm(forms.Form):
         help_text=_("Articles with these tags will be excluded from the search."),
         widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
+    # Feeds
+    linked_with_feeds = FeedMultipleChoiceField(
+        required=False,
+        queryset=None,
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose feeds")),
+    )
 
-    def __init__(self, data=None, *, tag_choices: FormChoices):
+    def __init__(self, data=None, *, tag_choices: FormChoices, feeds_qs: models.QuerySet):
         super().__init__(data.copy())
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["linked_with_feeds"].queryset = feeds_qs  # type: ignore[attr-defined]
 
         # Make sure we set the proper search type is correct when we do a URL search. By default,
         # it's a word search.
@@ -243,7 +256,9 @@ class SearchForm(forms.Form):
 def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     status = HTTPStatus.OK
     tag_choices = Tag.objects.get_all_choices(request.user)
-    search_form = SearchForm(request.GET, tag_choices=tag_choices)
+    search_form = SearchForm(
+        request.GET, tag_choices=tag_choices, feeds_qs=request.user.feeds.all()
+    )
     update_articles_form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
     # We don't do anything unless we have a valid search.
     if not search_form.is_valid():
@@ -302,6 +317,7 @@ def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
         for key, value in search_form.cleaned_data.items()
         if key not in {"tags_to_include", "tags_to_exclude"}
     }
+    form_data["linked_with_feeds"] = frozenset(feed.id for feed in form_data["linked_with_feeds"])
     query = ArticleFullTextSearchQuery(
         **form_data,
         tags=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),

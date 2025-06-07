@@ -25,6 +25,20 @@ from pydantic import BaseModel as BaseSchema
 from legadilo.utils.collections_utils import CustomJsonEncoder
 
 
+class AnyOfType:
+    def __init__(self, expected_type: Any):
+        if not isinstance(expected_type, type):
+            expected_type = type(expected_type)
+
+        self.expected_type = expected_type
+
+    def __eq__(self, other):
+        return isinstance(other, self.expected_type)
+
+    def __hash__(self):
+        return hash(self.expected_type)
+
+
 def serialize_for_snapshot(value: Any) -> str:
     if isinstance(value, BaseSchema):
         value = value.model_dump(mode="json")

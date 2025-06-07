@@ -1482,14 +1482,17 @@ class TestArticleManager:
 
     def test_search_with_advanced_filters(self, user, other_user):
         ArticleFactory(user=user, title="Claudius read", read_at=utcnow())
-        search_in_title = ArticleFactory(user=user, title="Claudius", read_at=None)
+        ArticleFactory(user=user, title="Claudius", read_at=None)
+        search_in_title_and_feed = ArticleFactory(user=user, title="Claudius", read_at=None)
+        feed = FeedFactory(user=user, title="Claudius feed")
+        feed.articles.add(search_in_title_and_feed)
         search_query = ArticleFullTextSearchQuery(
-            q="Claudius", read_status=constants.ReadStatus.ONLY_UNREAD
+            q="Claudius", read_status=constants.ReadStatus.ONLY_UNREAD, linked_with_feeds=[feed.id]
         )
 
         found_articles = list(Article.objects.search(user, search_query))
 
-        assert found_articles == [search_in_title]
+        assert found_articles == [search_in_title_and_feed]
 
     def test_search_order_by(self, user):
         article_1 = ArticleFactory(title="Read at", user=user, read_at=utcdt(2024, 6, 1))

@@ -6,6 +6,7 @@
 - Hide the "Make default" button when creating a reading list.
 - Search improvements:
   - Can search without a search text. This enables the usage of other fields without the need to find a text to search for.
+  - Can search for articles linked to specific feeds.
 
 ## 25.05.2
 
