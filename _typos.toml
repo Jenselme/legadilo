@@ -1,0 +1,7 @@
+[files]
+extend-exclude = ["*.po"]
+
+[default]
+extend-ignore-identifiers-re = [
+    "plain_serializer_function_ser_schema",
+]
