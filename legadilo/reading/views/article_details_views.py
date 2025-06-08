@@ -98,6 +98,7 @@ def article_details_view(
     )
 
 
+@transaction.atomic()
 def _handle_update(
     request: AuthenticatedHttpRequest, article: Article, tag_choices: FormChoices
 ) -> tuple[HTTPStatus, EditArticleForm, Article]:
@@ -105,17 +106,16 @@ def _handle_update(
     status = HTTPStatus.BAD_REQUEST
     if form.is_valid():
         status = HTTPStatus.OK
-        with transaction.atomic():
-            tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data.pop("tags"))
-            ArticleTag.objects.associate_articles_with_tags(
-                [article], tags, constants.TaggingReason.ADDED_MANUALLY, readd_deleted=True
-            )
-            ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
-            article.update_from_details(**form.cleaned_data)
-            article.save()
-            # Update the list of tag choices. We may have created some new one.
-            tag_choices = Tag.objects.get_all_choices(request.user)
-            form = _build_edit_article_form_from_instance(tag_choices, article)
+        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data.pop("tags"))
+        ArticleTag.objects.associate_articles_with_tags(
+            [article], tags, constants.TaggingReason.ADDED_MANUALLY, readd_deleted=True
+        )
+        ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
+        article.update_from_details(**form.cleaned_data)
+        article.save()
+        # Update the list of tag choices. We may have created some new one.
+        tag_choices = Tag.objects.get_all_choices(request.user)
+        form = _build_edit_article_form_from_instance(tag_choices, article)
 
     # Refresh the many-to-many relationship of tags to display the latest value.
     return status, form, Article.objects.get_queryset().for_details().get(id=article.id)
