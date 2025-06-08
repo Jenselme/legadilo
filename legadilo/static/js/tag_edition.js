@@ -56,3 +56,4 @@ const setupTagsInstance = () => {
 document.addEventListener("DOMContentLoaded", setupTagsInstance);
 
 document.addEventListener("htmx:afterSwap", setupTagsInstance);
+document.addEventListener("htmx:oobAfterSwap", setupTagsInstance);
