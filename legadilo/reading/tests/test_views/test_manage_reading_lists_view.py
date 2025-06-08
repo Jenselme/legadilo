@@ -103,7 +103,7 @@ class TestCreateReadingListView:
             "order": ["This field is required."],
             "order_direction": ["This field is required."],
             "read_status": ["This field is required."],
-            "title": ["This field is required."],
+            "title": ["Cannot contain only spaces or special characters."],
         }
 
     def test_create_reading_list(self, logged_in_sync_client, user, django_assert_num_queries):

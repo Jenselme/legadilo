@@ -30,7 +30,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
-from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.fields import MultipleTagsField, SlugifiableCharField
 from legadilo.reading import constants
 from legadilo.reading.models import ReadingList, ReadingListTag, Tag
 from legadilo.types import FormChoices
@@ -49,6 +49,7 @@ def reading_list_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespon
 
 
 class ReadingListForm(forms.ModelForm):
+    title = SlugifiableCharField(required=True)
     tags_to_include = MultipleTagsField(
         required=False,
         choices=[],

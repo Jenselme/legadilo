@@ -177,3 +177,19 @@ class TestUpdateArticleDetailsView:
         assert self.article.title == "Updated title"
         assert self.article.slug == initial_slug
         assert self.article.reading_time == 666
+
+    def test_empty_tags(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "tags": [""]})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["edit_article_form"].errors == {
+            "tags": ["Tag cannot be empty"],
+        }
+
+    def test_tags_only_special_char(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "tags": ["&"]})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["edit_article_form"].errors == {
+            "tags": ["Tag cannot contain only spaces or special characters."]
+        }
