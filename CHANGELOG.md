@@ -13,6 +13,8 @@
 - Change the URL of the external tag with the articles view.
   - It’s required to simplify the code.
   - Switch from a pseudo-slug in the path to a query parameter.
+- Hide the raw select element when updating the page with HTMX boost.
+  - The issue was visible on the article details page when updating tags. You could view the tag selector and the raw HTML select.
 
 ## 25.05.2
 
