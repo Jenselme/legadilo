@@ -120,7 +120,7 @@ class TagManager(models.Manager["Tag"]):
                     ArrayAgg(
                         "sub_tags__title",
                         filter=models.Q(sub_tags__title__isnull=False),
-                        ordering=("sub_tags__title",),
+                        order_by=("sub_tags__title",),
                     ),
                     [],
                 ),
@@ -128,7 +128,7 @@ class TagManager(models.Manager["Tag"]):
                     ArrayAgg(
                         "sub_tags__slug",
                         filter=models.Q(sub_tags__slug__isnull=False),
-                        ordering=("sub_tags__title",),
+                        order_by=("sub_tags__title",),
                     ),
                     [],
                 ),
