@@ -284,7 +284,7 @@ class TestExternalTagWithArticleView:
     def _setup_data(self, user):
         tag = TagFactory(user=user)
         self.url = reverse(
-            "reading:external_tag_with_articles", kwargs={"tag": urlencode("External tag")}
+            "reading:external_tag_with_articles", query={"tag": urlencode("External tag")}
         )
         self.article_in_list = ArticleFactory(user=user, external_tags=["external tag"])
         ArticleTag.objects.create(tag=tag, article=self.article_in_list)
@@ -315,3 +315,15 @@ class TestExternalTagWithArticleView:
             self.article_in_list,
         ]
         assert response.context_data["update_articles_form"] is not None
+
+    def test_without_tag(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(reverse("reading:external_tag_with_articles"))
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/list_of_articles.html"
+        assert response.context_data["page_title"] == "Articles with external tag ''"
+        assert response.context_data["displayed_reading_list"] is None
+        assert response.context_data["reading_lists"] == []
+        assert response.context_data["js_cfg"] == {}
+        assert isinstance(response.context_data["articles_paginator"], Paginator)
+        assert list(response.context_data["articles_page"].object_list) == []

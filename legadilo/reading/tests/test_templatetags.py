@@ -21,8 +21,6 @@ from django.urls import reverse
 
 from legadilo.reading import constants
 from legadilo.reading.templatetags import (
-    decode_external_tag,
-    encode_external_tag,
     favorite_action_url,
     for_later_action_url,
     markdown,
@@ -96,36 +94,6 @@ def test_for_later_action_url(is_for_later, update_action):
     assert url == reverse(
         "reading:update_article", kwargs={"article_id": 1, "update_action": update_action}
     )
-
-
-@pytest.mark.parametrize(
-    ("tag", "expected_encoded_tag"),
-    [
-        ("Tag", "Tag"),
-        ("Tag with spaces", "Tag%20with%20spaces"),
-        ("Cat/Tag", "Cat------Tag"),
-        ("Cat/SubCat/Tag", "Cat------SubCat------Tag"),
-    ],
-)
-def test_encode_external_tag(tag: str, expected_encoded_tag: str):
-    encoded_tag = encode_external_tag(tag)
-
-    assert encoded_tag == expected_encoded_tag
-
-
-@pytest.mark.parametrize(
-    ("encoded_tag", "expected_decoded_tag"),
-    [
-        ("Tag", "Tag"),
-        ("Tag%20with%20spaces", "Tag with spaces"),
-        ("Cat------Tag", "Cat/Tag"),
-        ("Cat------SubCat------Tag", "Cat/SubCat/Tag"),
-    ],
-)
-def test_decode_external_tag(encoded_tag: str, expected_decoded_tag: str):
-    decoded_tag = decode_external_tag(encoded_tag)
-
-    assert decoded_tag == expected_decoded_tag
 
 
 def test_markdown():

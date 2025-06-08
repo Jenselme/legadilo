@@ -16,9 +16,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from urllib.parse import unquote
 
-from django.template.defaultfilters import stringfilter, urlencode
+from django.template.defaultfilters import stringfilter
 from django.template.defaulttags import register
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -109,16 +108,6 @@ def delete_article_form_id(article: Article) -> str:
 @register.filter
 def update_article_form_id(article: Article) -> str:
     return f"update-article-actions-form-{article.id}"
-
-
-@register.filter
-def encode_external_tag(tag: str) -> str:
-    return urlencode(tag.replace("/", "------"))
-
-
-@register.filter
-def decode_external_tag(tag: str) -> str:
-    return unquote(tag).replace("------", "/")
 
 
 @register.filter

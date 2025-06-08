@@ -39,7 +39,7 @@ urlpatterns = [
     path("tags/edit/<int:pk>/", views.edit_tag_view, name="edit_tag"),
     path("tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
-        "tags/externals/<str:tag>/",
+        "tags/externals/list/",
         views.external_tag_with_articles_view,
         name="external_tag_with_articles",
     ),

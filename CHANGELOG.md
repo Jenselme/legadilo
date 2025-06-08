@@ -10,6 +10,9 @@
   - Can search articles with some external tags.
   - Can go to the advanced search page from all lists of articles pages. This allows users to start a search from a reading list, a feed page…
 - Correct access to automatically generated API documentation.
+- Change the URL of the external tag with the articles view.
+  - It’s required to simplify the code.
+  - Switch from a pseudo-slug in the path to a query parameter.
 
 ## 25.05.2
 
