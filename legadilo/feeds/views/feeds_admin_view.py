@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
+from http import HTTPStatus
 
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -138,6 +139,7 @@ def edit_feed_view(
     tag_choices = Tag.objects.get_all_choices(request.user)
     category_choices = FeedCategory.objects.get_all_choices(request.user)
     form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
+    status = HTTPStatus.OK
 
     if request.method == "POST" and "delete" in request.POST:
         feed.delete()
@@ -155,7 +157,9 @@ def edit_feed_view(
         form = _build_form_from_feed_instance(
             feed, tag_choices, category_choices, data=request.POST
         )
+        status = HTTPStatus.BAD_REQUEST
         if form.is_valid():
+            status = HTTPStatus.OK
             form.save()
             # Update the list of tag choices. We may have created some new one.
             tag_choices = Tag.objects.get_all_choices(request.user)
@@ -168,6 +172,7 @@ def edit_feed_view(
             "feed": feed,
             "form": form,
         },
+        status=status,
     )
 
 

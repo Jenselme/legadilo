@@ -28,6 +28,7 @@ from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from config import settings
 from legadilo.feeds import constants
@@ -42,7 +43,7 @@ from legadilo.reading.api import OutTagSchema
 from legadilo.reading.models import Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import FIELD_UNSET, ApiError, update_model_from_schema
+from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.utils.http_utils import get_rss_sync_client
 from legadilo.utils.validators import (
     CleanedString,
@@ -172,19 +173,25 @@ def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
 
 
 class FeedUpdate(Schema):
-    disabled_reason: Annotated[str, FullSanitizeValidator] | None = FIELD_UNSET
-    disabled_at: datetime | None = FIELD_UNSET
-    category_id: int | None = FIELD_UNSET
-    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
-    refresh_delay: constants.FeedRefreshDelays = FIELD_UNSET
-    article_retention_time: int = FIELD_UNSET
-    open_original_url_by_default: bool = FIELD_UNSET
+    disabled_reason: Annotated[str, FullSanitizeValidator] | SkipJsonSchema[NotSet] | None = NotSet(
+        str
+    )
+    disabled_at: datetime | SkipJsonSchema[NotSet] | None = NotSet(datetime.now)
+    category_id: int | SkipJsonSchema[NotSet] | None = NotSet(int)
+    tags: (
+        Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] | SkipJsonSchema[NotSet]
+    ) = NotSet(tuple)
+    refresh_delay: constants.FeedRefreshDelays | SkipJsonSchema[NotSet] = NotSet(
+        lambda: constants.FeedRefreshDelays.DAILY_AT_NOON
+    )
+    article_retention_time: int | SkipJsonSchema[NotSet] = NotSet(int)
+    open_original_url_by_default: bool | SkipJsonSchema[NotSet] = NotSet(bool)
 
     @model_validator(mode="after")
     def check_disabled(self) -> Self:
-        if xor(self.disabled_reason is FIELD_UNSET, self.disabled_at is FIELD_UNSET) or xor(
-            self.disabled_reason is None, self.disabled_at is None
-        ):
+        if xor(
+            isinstance(self.disabled_reason, NotSet), isinstance(self.disabled_at, NotSet)
+        ) or xor(self.disabled_reason is None, self.disabled_at is None):
             raise ValueError(
                 "You must supply none of disabled_reason and disabled_at or both of them"
             )
@@ -206,7 +213,7 @@ def update_feed_view(
     qs = Feed.objects.get_queryset().select_related("category")
     feed = get_object_or_404(qs, id=feed_id, user=request.auth)
 
-    if payload.tags is not FIELD_UNSET:
+    if not isinstance(payload.tags, NotSet):
         _update_feed_tags(request.auth, feed, payload.tags)
 
     # We must refresh to update generated fields & tags.

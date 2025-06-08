@@ -34,7 +34,7 @@ from .list_of_articles_views import (
     reading_list_with_articles_view,
     tag_with_articles_view,
 )
-from .manage_reading_lists_views import (
+from .reading_lists_admin_views import (
     reading_list_admin_view,
     reading_list_create_view,
     reading_list_edit_view,

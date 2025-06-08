@@ -81,6 +81,14 @@ class TestCreateTagView:
         assert created_tag.user == user
         assert response["Location"] == reverse("reading:edit_tag", kwargs={"pk": created_tag.id})
 
+    def test_create_tag_cannot_be_slugified(self, logged_in_sync_client, user):
+        response = logged_in_sync_client.post(self.url, {"title": "&"})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["form"].errors == {
+            "title": ["Cannot contain only spaces or special characters."],
+        }
+
     def test_create_tag_already_exists(
         self, logged_in_sync_client, django_assert_num_queries, user
     ):

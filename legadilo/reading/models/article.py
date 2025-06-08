@@ -263,10 +263,10 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_feed_links(self) -> Self:
         return self.alias(
-            feed_ids=ArrayAgg("feeds__id", order="feeds__id"),
-            feed_slugs=ArrayAgg("feeds__slug", ordering="feeds__id"),
+            feed_ids=ArrayAgg("feeds__id", order_by="feeds__id"),
+            feed_slugs=ArrayAgg("feeds__slug", order_by="feeds__id"),
             feed_open_original_url_by_default=ArrayAgg(
-                "feeds__open_original_url_by_default", ordering="feeds__id"
+                "feeds__open_original_url_by_default", order_by="feeds__id"
             ),
         ).annotate(
             annot_feed_id=models.F("feed_ids__0"),

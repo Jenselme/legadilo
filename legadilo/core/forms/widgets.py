@@ -38,6 +38,13 @@ class SelectMultipleAutocompleteWidget(widgets.SelectMultiple):
         ctx["widget"]["empty_label"] = self._empty_label
         return ctx
 
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        attrs = super().build_attrs(base_attrs, extra_attrs)
+        classes = attrs.get("class", "")
+        classes = f"{classes} visually-hidden"
+        attrs["class"] = classes
+        return attrs
+
 
 class SelectAutocompleteWidget(widgets.Select):
     template_name = "core/widgets/select_autocomplete.html"

@@ -103,7 +103,7 @@ class TestCreateReadingListView:
             "order": ["This field is required."],
             "order_direction": ["This field is required."],
             "read_status": ["This field is required."],
-            "title": ["This field is required."],
+            "title": ["Cannot contain only spaces or special characters."],
         }
 
     def test_create_reading_list(self, logged_in_sync_client, user, django_assert_num_queries):
@@ -206,8 +206,9 @@ class TestReadingListEditView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
-    def test_update(self, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, data=self.sample_data)
+    def test_update(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(80):
+            response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         assert response.status_code == HTTPStatus.OK
         assert list(

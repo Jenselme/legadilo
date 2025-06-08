@@ -147,7 +147,7 @@ class TestUpdateArticleDetailsView:
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(26):
+        with django_assert_num_queries(28):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
@@ -167,7 +167,7 @@ class TestUpdateArticleDetailsView:
     ):
         initial_slug = self.article.slug
 
-        with django_assert_num_queries(26):
+        with django_assert_num_queries(28):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
             )
@@ -177,3 +177,19 @@ class TestUpdateArticleDetailsView:
         assert self.article.title == "Updated title"
         assert self.article.slug == initial_slug
         assert self.article.reading_time == 666
+
+    def test_empty_tags(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "tags": [""]})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["edit_article_form"].errors == {
+            "tags": ["Tag cannot be empty"],
+        }
+
+    def test_tags_only_special_char(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "tags": ["&"]})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["edit_article_form"].errors == {
+            "tags": ["Tag cannot contain only spaces or special characters."]
+        }

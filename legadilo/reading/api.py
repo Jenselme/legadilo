@@ -26,6 +26,7 @@ from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
@@ -36,7 +37,7 @@ from legadilo.reading.services.article_fetching import (
 from legadilo.reading.services.delete_article import delete_article
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import FIELD_UNSET, update_model_from_schema
+from legadilo.utils.api import NotSet, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
     FullSanitizeValidator,
@@ -154,12 +155,14 @@ def get_article_view(request: AuthenticatedApiRequest, article_id: int) -> Artic
 
 
 class ArticleUpdate(Schema):
-    title: Annotated[str, FullSanitizeValidator] = FIELD_UNSET
-    tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = FIELD_UNSET
-    read_at: datetime | None = FIELD_UNSET
-    is_favorite: bool = FIELD_UNSET
-    is_for_later: bool = FIELD_UNSET
-    reading_time: int = FIELD_UNSET
+    title: Annotated[str, FullSanitizeValidator] | SkipJsonSchema[NotSet] = NotSet(str)
+    tags: (
+        Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] | SkipJsonSchema[NotSet]
+    ) = NotSet(tuple)
+    read_at: datetime | SkipJsonSchema[NotSet] | None = NotSet(datetime.now)
+    is_favorite: bool | SkipJsonSchema[NotSet] = NotSet(bool)
+    is_for_later: bool | SkipJsonSchema[NotSet] = NotSet(bool)
+    reading_time: int | SkipJsonSchema[NotSet] = NotSet(int)
 
 
 @reading_api_router.patch(
@@ -175,7 +178,7 @@ def update_article_view(
 ) -> Article:
     article = get_object_or_404(Article, id=article_id, user=request.auth)
 
-    if payload.tags is not FIELD_UNSET:
+    if not isinstance(payload.tags, NotSet):
         _update_article_tags(request.auth, article, payload.tags)
 
     update_model_from_schema(article, payload, excluded_fields={"tags"})

@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from http import HTTPStatus
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import unquote_plus, urlencode
 
 from csp.decorators import csp_update
 from django import forms
@@ -41,10 +41,10 @@ from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
 from legadilo.reading.services.views import get_js_cfg_from_reading_list
-from legadilo.reading.templatetags import decode_external_tag
 from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
+from legadilo.utils.security import full_sanitize
 from legadilo.utils.validators import get_page_number_from_request
 
 
@@ -179,15 +179,23 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
 @require_http_methods(["GET", "POST"])
 @login_required
 @csp_update({"img-src": "https:"})  # type: ignore[arg-type]
-def external_tag_with_articles_view(
-    request: AuthenticatedHttpRequest, tag: str
-) -> TemplateResponse:
-    tag_title = decode_external_tag(tag)
+def external_tag_with_articles_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+    external_tag = request.GET.get("tag", "")
+    external_tag = unquote_plus(external_tag)
+    external_tag = full_sanitize(external_tag)
+
+    articles_qs = (
+        Article.objects.get_articles_with_external_tag(request.user, external_tag)
+        if external_tag
+        else Article.objects.get_queryset().none()
+    )
+    search_dict = {"external_tags_to_include": [external_tag]} if external_tag else {}
+
     return list_or_update_articles(
         request,
-        Article.objects.get_articles_with_external_tag(request.user, tag_title),
-        _("Articles with external tag '%(tag_title)s'") % {"tag_title": tag_title},
-        {"external_tags_to_include": [tag_title]},
+        articles_qs,
+        _("Articles with external tag '%(tag_title)s'") % {"tag_title": external_tag},
+        search_dict,
     )
 
 

@@ -9,6 +9,17 @@
   - Can search for articles linked to specific feeds.
   - Can search articles with some external tags.
   - Can go to the advanced search page from all lists of articles pages. This allows users to start a search from a reading list, a feed page…
+- Correct access to automatically generated API documentation.
+- Change the URL of the external tag with the articles view.
+  - It’s required to simplify the code.
+  - Switch from a pseudo-slug in the path to a query parameter.
+- Hide the raw select element when updating the page with HTMX boost.
+  - The issue was visible on the article details page when updating tags. You could view the tag selector and the raw HTML select.
+- Update the tag selector when creating new tags.
+  - This was visible when creating new tags on one of these pages:
+    - article details,
+    - reading list edition page,
+  - The feed edition page already behaved as expected.
 
 ## 25.05.2
 

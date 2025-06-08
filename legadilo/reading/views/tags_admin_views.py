@@ -29,7 +29,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 
-from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.fields import MultipleTagsField, SlugifiableCharField
 from legadilo.reading.models import Tag
 from legadilo.reading.models.tag import SubTagMapping
 from legadilo.types import FormChoices
@@ -54,7 +54,9 @@ def tags_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
 
 class TagForm(forms.ModelForm):
-    title = forms.CharField(help_text=_("Editing the title will change the slug of the tag too!"))
+    title = SlugifiableCharField(
+        help_text=_("Editing the title will change the slug of the tag too!")
+    )
     sub_tags = MultipleTagsField(
         required=False,
         choices=[],

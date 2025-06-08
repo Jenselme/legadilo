@@ -1,8 +1,7 @@
 {% load i18n %}
 
 <select name="{{ widget.name }}"
-        {% include "bootstrap5/layout/attrs.html" %}
-        class="visually-hidden">
+        {% include "bootstrap5/layout/attrs.html" %}>
     {% if widget.empty_label %}
         <option disabled hidden value="">{{ widget.empty_label }}</option>
     {% endif %}

@@ -194,6 +194,7 @@ known-first-party = [
 
 [tool.ruff.lint.pylint]
 max-args = 6
+allow-dunder-method-names = ["__get_pydantic_core_schema__"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

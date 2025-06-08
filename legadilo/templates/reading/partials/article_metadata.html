@@ -51,7 +51,7 @@
         {% endfor %}
         {% for tag in article.external_tags %}
             <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1 text-wrap"
-               href="{% url 'reading:external_tag_with_articles' tag=tag|encode_external_tag %}">{{ tag|safe }}</a>
+               href="{% url 'reading:external_tag_with_articles' %}{% querystring tag=tag %}">{{ tag|safe }}</a>
         {% endfor %}
     </p>
 {% endif %}
