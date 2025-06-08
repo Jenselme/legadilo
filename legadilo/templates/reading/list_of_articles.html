@@ -104,8 +104,15 @@
                             <span class="align-middle d-flex align-items-center"><a href="{% url 'feeds:edit_feed' feed_id=feed.id %}">{% translate "Edit this feed" %}</a></span>
                         </div>
                     {% endif %}
+                    {% if search_query %}
+                        <div class="d-flex mb-2 col-md-2 px-0 mx-0">
+                            <span class="align-middle d-flex align-items-center">
+                                <a href="{% url 'reading:search' %}?{{ search_query }}">{% translate "Go to advanced search" %}</a>
+                            </span>
+                        </div>
+                    {% endif %}
                     {% if update_articles_form %}
-                        {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-md-8" %}
+                        {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-md-6" %}
                     {% endif %}
                 </div>
                 {% partialdef articles-page inline=True %}

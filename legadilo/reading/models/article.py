@@ -134,6 +134,8 @@ class ArticleFullTextSearchQuery(ArticleSearchQuery):
     q: str = ""
     search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
     order: constants.ArticleSearchOrderBy = constants.ArticleSearchOrderBy.RANK_DESC
+    linked_with_feeds: frozenset[int] = frozenset()
+    external_tags_to_include: frozenset[str] = frozenset()
 
     @property
     def order_by(self) -> str:  # noqa: PLR0911 Too many return statements
@@ -293,14 +295,20 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .default_order_by()
         )
 
-    def for_external_tag(self, user: User, tag: str) -> Self:
+    def for_external_tag(self, tag: str) -> Self:
         return (
-            self.for_user(user)
-            .for_feed_links()
+            self.for_feed_links()
             .filter(external_tags__icontains=tag)
             .prefetch_related(_build_prefetch_article_tags())
             .default_order_by()
         )
+
+    def for_external_tags(self, tags: list[str]) -> Self:
+        filters = models.Q()
+        for tag in tags:
+            filters |= models.Q(external_tags__icontains=tag)
+
+        return self.filter(filters)
 
     def for_feed(self) -> Self:
         return (
@@ -650,7 +658,7 @@ class ArticleManager(models.Manager["Article"]):
         return self.get_queryset().for_tag(tag)
 
     def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
-        return self.get_queryset().for_external_tag(user, tag)
+        return self.get_queryset().for_user(user).for_external_tag(tag)
 
     def export(self, user: User):
         articles_qs = self.get_queryset().for_export(user)
@@ -700,6 +708,13 @@ class ArticleManager(models.Manager["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
             .filter(_build_filters_from_reading_list(search_query))
         )
+
+        if search_query.linked_with_feeds:
+            articles_qs = articles_qs.filter(feeds__id__in=search_query.linked_with_feeds)
+
+        if search_query.external_tags_to_include:
+            articles_qs = articles_qs.for_external_tags(search_query.external_tags_to_include)
+
         if search_query.search_type == constants.ArticleSearchType.URL:
             articles_qs = articles_qs.for_url_search([search_query.q])
         elif search_query.q:

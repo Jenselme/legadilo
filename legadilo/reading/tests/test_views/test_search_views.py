@@ -20,24 +20,30 @@ from http import HTTPStatus
 from urllib.parse import urlencode
 
 import pytest
+from django.http import QueryDict
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.feeds.models import Feed
+from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.views.search_views import SearchForm
+from legadilo.utils.http_utils import dict_to_query_dict
+from legadilo.utils.testing import AnyOfType
 
 
 class TestSearchForm:
     def test_without_data(self):
-        form = SearchForm({}, tag_choices=[])
+        form = SearchForm(QueryDict(), tag_choices=[], feeds_qs=Feed.objects.none())
 
-        assert not form.is_valid()
-        assert form.errors == {"q": ["This field is required."]}
+        assert form.is_valid()
 
     def test_with_only_q(self):
-        form = SearchForm({"q": "Claudius"}, tag_choices=[])
+        form = SearchForm(
+            dict_to_query_dict({"q": "Claudius"}), tag_choices=[], feeds_qs=Feed.objects.none()
+        )
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -55,10 +61,16 @@ class TestSearchForm:
             "tags_to_include": [],
             "exclude_tag_operator": constants.ReadingListTagOperator.ALL,
             "tags_to_exclude": [],
+            "external_tags_to_include": [],
+            "linked_with_feeds": AnyOfType(Feed.objects.none()),
         }
 
     def test_q_cleaning(self):
-        form = SearchForm({"q": "<span>Claudius</span>"}, tag_choices=[])
+        form = SearchForm(
+            dict_to_query_dict({"q": "<span>Claudius</span>"}),
+            tag_choices=[],
+            feeds_qs=Feed.objects.none(),
+        )
 
         assert form.is_valid()
         assert form.cleaned_data == {
@@ -76,10 +88,16 @@ class TestSearchForm:
             "tags_to_include": [],
             "exclude_tag_operator": constants.ReadingListTagOperator.ALL,
             "tags_to_exclude": [],
+            "external_tags_to_include": [],
+            "linked_with_feeds": AnyOfType(Feed.objects.none()),
         }
 
     def test_q_cleaning_result_too_small_after_cleaning(self):
-        form = SearchForm({"q": "<span>C</span>"}, tag_choices=[])
+        form = SearchForm(
+            dict_to_query_dict({"q": "<span>C</span>"}),
+            tag_choices=[],
+            feeds_qs=Feed.objects.none(),
+        )
 
         assert not form.is_valid()
         assert form.errors == {
@@ -88,12 +106,13 @@ class TestSearchForm:
 
     def test_advanced_values_set_unit_and_operator_unset(self):
         form = SearchForm(
-            {
+            dict_to_query_dict({
                 "q": "Claudius",
                 "articles_max_age_value": 12,
                 "articles_reading_time": 12,
-            },
+            }),
             tag_choices=[],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert not form.is_valid()
@@ -106,12 +125,13 @@ class TestSearchForm:
 
     def test_advanced_values_unset_unit_and_operator_set(self):
         form = SearchForm(
-            {
+            dict_to_query_dict({
                 "q": "Claudius",
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
                 "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
-            },
+            }),
             tag_choices=[],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert not form.is_valid()
@@ -122,9 +142,9 @@ class TestSearchForm:
             ]
         }
 
-    def test_everything_filled(self):
+    def test_filled(self):
         form = SearchForm(
-            {
+            dict_to_query_dict({
                 "q": "Claudius",
                 "search_type": constants.ArticleSearchType.PHRASE,
                 "order": constants.ArticleSearchOrderBy.READ_AT_ASC,
@@ -139,8 +159,11 @@ class TestSearchForm:
                 "tags_to_include": ["some-tag"],
                 "exclude_tag_operator": constants.ReadingListTagOperator.ANY.value,
                 "tags_to_exclude": ["other-tag"],
-            },
+                "external_tags_to_include": ["Some word"],
+                "linked_with_feeds": [],
+            }),
             tag_choices=[("some-tag", "Some tag"), ("other-tag", "Other tag")],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert form.is_valid()
@@ -159,6 +182,8 @@ class TestSearchForm:
             "tags_to_include": ["some-tag"],
             "exclude_tag_operator": constants.ReadingListTagOperator.ANY,
             "tags_to_exclude": ["other-tag"],
+            "external_tags_to_include": ["Some word"],
+            "linked_with_feeds": AnyOfType(Feed.objects.none()),
         }
 
 
@@ -172,16 +197,6 @@ class TestSearchView:
         response = client.get(self.url)
 
         assert_redirected_to_login_page(response)
-
-    def test_invalid_form(self, logged_in_sync_client):
-        response = logged_in_sync_client.get(self.url)
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.template_name == "reading/search.html"
-        assert not response.context_data["search_form"].is_valid()
-        assert response.context_data["search_form"].errors == {"q": ["This field is required."]}
-        assert response.context_data["articles"] == []
-        assert response.context_data["total_results"] == 0
 
     def test_search(self, user, logged_in_sync_client):
         article = ArticleFactory(title="Claudius", user=user)
@@ -240,6 +255,32 @@ class TestSearchView:
         assert response.template_name == "reading/search.html"
         assert response.context_data["search_form"].is_valid()
         assert response.context_data["articles"] == [article_with_tag_to_include]
+        assert response.context_data["total_results"] == 1
+
+    def test_search_with_external_tags(self, user, logged_in_sync_client):
+        article = ArticleFactory(user=user, external_tags=["Poésie"])
+
+        response = logged_in_sync_client.get(
+            self.url, data={"external_tags_to_include": ["Poésie"]}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [article]
+        assert response.context_data["total_results"] == 1
+
+    def test_search_with_feeds(self, user, logged_in_sync_client):
+        feed = FeedFactory(user=user)
+        feed_article = ArticleFactory(user=user)
+        feed.articles.add(feed_article)
+
+        response = logged_in_sync_client.get(self.url, data={"linked_with_feeds": [feed.id]})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [feed_article]
         assert response.context_data["total_results"] == 1
 
     def test_update_search(self, user, logged_in_sync_client):

@@ -29,7 +29,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods, require_POST
 
-from legadilo.core.forms.widgets import AutocompleteSelectWidget, DateTimeWidget
+from legadilo.core.forms.widgets import DateTimeWidget, SelectAutocompleteWidget
 from legadilo.core.models import Timezone
 from legadilo.users.models import ApplicationToken
 from legadilo.users.user_types import AuthenticatedHttpRequest
@@ -39,7 +39,7 @@ class CreateTokenForm(forms.ModelForm):
     timezone = forms.ModelChoiceField(
         Timezone.objects.all(),
         required=False,
-        widget=AutocompleteSelectWidget(),
+        widget=SelectAutocompleteWidget(),
         help_text=_("The timezone in which the validity end date should be understood."),
     )
 
