@@ -70,26 +70,7 @@
                                           hx-boost="true"
                                           hx-push-url="false">
                                         {% csrf_token %}
-                                        {% for field in edit_article_form %}
-                                            {% if field.name == "tags" %}
-                                                <div class="col-12 p-0">
-                                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                                    {{ field }}
-                                                    {% if field.errors %}{{ field.errors }}{% endif %}
-                                                </div>
-                                            {% else %}
-                                                <div class="p-0">
-                                                    <label class="form-label mb-0 mt-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                                    <input class="form-control {% if field.errors %}is-invalid{% endif %}"
-                                                           id="{{ field.id_for_label }}"
-                                                           name="{{ field.name }}"
-                                                           type="{{ field.widget_type }}"
-                                                           value="{{ field.value }}"
-                                                           {% if field.required %}required{% endif %} />
-                                                    {% if field.errors %}<div class="invalid-feedback">{{ field.errors }}</div>{% endif %}
-                                                </div>
-                                            {% endif %}
-                                        {% endfor %}
+                                        {{ edit_article_form|crispy }}
                                         <button class="btn btn-outline-primary w-100 mt-1" type="submit">
                                             <span class="icon-indicator {{ article|article_action_indicator }}">
                                                 {% include "core/partials/button_loading_indicator.html" %}
