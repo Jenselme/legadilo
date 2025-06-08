@@ -15,6 +15,11 @@
   - Switch from a pseudo-slug in the path to a query parameter.
 - Hide the raw select element when updating the page with HTMX boost.
   - The issue was visible on the article details page when updating tags. You could view the tag selector and the raw HTML select.
+- Update the tag selector when creating new tags.
+  - This was visible when creating new tags on one of these pages:
+    - article details,
+    - reading list edition page,
+  - The feed edition page already behaved as expected.
 
 ## 25.05.2
 

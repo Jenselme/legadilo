@@ -191,10 +191,17 @@ def reading_list_edit_view(
         form = _build_form_from_reading_list_instance(
             tag_choices, data=request.POST, reading_list=reading_list
         )
+        status = HTTPStatus.BAD_REQUEST
         if form.is_valid():
+            status = HTTPStatus.OK
             form.save()
-        else:
-            status = HTTPStatus.BAD_REQUEST
+            # Update the list of tag choices. We may have created some new one.
+            tag_choices = Tag.objects.get_all_choices(request.user)
+            form = _build_form_from_reading_list_instance(
+                tag_choices,
+                data=request.POST,
+                reading_list=reading_list,
+            )
 
     return TemplateResponse(
         request,

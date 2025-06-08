@@ -78,14 +78,7 @@ def article_details_view(
         status, edit_article_form, article = _handle_update(request, article, tag_choices)
     else:
         status = HTTPStatus.OK
-        edit_article_form = EditArticleForm(
-            initial={
-                "tags": article.article_tags.get_selected_values(),
-                "title": article.title,
-                "reading_time": article.reading_time,
-            },
-            tag_choices=tag_choices,
-        )
+        edit_article_form = _build_edit_article_form_from_instance(tag_choices, article)
 
     return TemplateResponse(
         request,
@@ -108,15 +101,7 @@ def article_details_view(
 def _handle_update(
     request: AuthenticatedHttpRequest, article: Article, tag_choices: FormChoices
 ) -> tuple[HTTPStatus, EditArticleForm, Article]:
-    form = EditArticleForm(
-        request.POST,
-        initial={
-            "tags": article.article_tags.get_selected_values(),
-            "title": article.title,
-            "reading_time": article.reading_time,
-        },
-        tag_choices=tag_choices,
-    )
+    form = _build_edit_article_form_from_instance(tag_choices, article, request.POST)
     status = HTTPStatus.BAD_REQUEST
     if form.is_valid():
         status = HTTPStatus.OK
@@ -128,6 +113,21 @@ def _handle_update(
             ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
             article.update_from_details(**form.cleaned_data)
             article.save()
+            # Update the list of tag choices. We may have created some new one.
+            tag_choices = Tag.objects.get_all_choices(request.user)
+            form = _build_edit_article_form_from_instance(tag_choices, article)
 
     # Refresh the many-to-many relationship of tags to display the latest value.
     return status, form, Article.objects.get_queryset().for_details().get(id=article.id)
+
+
+def _build_edit_article_form_from_instance(tag_choices: FormChoices, article: Article, data=None):
+    return EditArticleForm(
+        data=data,
+        initial={
+            "tags": article.article_tags.get_selected_values(),
+            "title": article.title,
+            "reading_time": article.reading_time,
+        },
+        tag_choices=tag_choices,
+    )

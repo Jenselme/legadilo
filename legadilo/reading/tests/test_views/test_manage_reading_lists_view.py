@@ -206,8 +206,9 @@ class TestReadingListEditView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
-    def test_update(self, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, data=self.sample_data)
+    def test_update(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(80):
+            response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         assert response.status_code == HTTPStatus.OK
         assert list(
