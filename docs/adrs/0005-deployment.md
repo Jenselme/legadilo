@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # 5 - Deployment
 
 * **Date:** 2024-07-06

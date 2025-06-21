@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # Legadilo
 
 Read your RSS feeds & save other articles
@@ -5,6 +11,7 @@ Read your RSS feeds & save other articles
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Ruff code style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![REUSE status](https://api.reuse.software/badge/github.com/Jenselme/legadilo)](https://api.reuse.software/info/github.com/Jenselme/legadilo)
 
 [Legadilo](https://www.legadilo.eu/) is a project to help you subscribe to RSS feeds, save articles and organize them easily with tags and full customizable reading lists! It’s written with the [Django web framework](https://www.djangoproject.com/), [the bootstrap 5 frontend toolkit](https://getbootstrap.com/) and with enhancements given by [htmx](https://htmx.org/).
 
@@ -138,16 +145,22 @@ Don’t forget to add it to `INSTALLED_APPS`!
 
 See [this page](./docs/deploy.md).
 
-## License
+## Licensing, copyright
 
-This software is opensource and published under [the GNU AGPLv3 or any later version](https://www.gnu.org/licenses/agpl-3.0.html#license-text).
-All of our source files include a license header to make it clear under which license they are distributed.
+<!--REUSE-IgnoreStart-->
+Copyright (c) 2023-2025, Legadilo contributors
 
-### Exceptions
+See the [`AUTHORS.rst`](AUTHORS.rst) file for the full list of contributors.
 
-Some files are copied from other projects and vendored here for convenience.
-Their license allows use within this project.
-These files are:
+This project is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License version 3 or later (SPDX-License-Identifier: `AGPL-3.0-or-later`) as published by the Free Software Foundation.
 
-- `legadilo/static/js/theme_chooser.js`: it’s published under [the Creative Commons Attribution 3.0 Unported License](https://creativecommons.org/licenses/by/3.0/deed.en). It’s copyrighted to the Bootstrap Authors.
-- `legadilo/static/images/bs/*.svg`: those SVG are [icons from the Bootstrap project](https://icons.getbootstrap.com). They are published under [the MIT license](https://github.com/twbs/icons/blob/main/LICENSE) and are copyrighted to the Bootstrap Authors.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+See [`LICENSES/AGPL-3.0-or-later.txt`](LICENSES/AGPL-3.0-or-later.txt) for the full license text.
+
+The [`REUSE.toml`](REUSE.toml) file provides detailed licensing and copyright information in a human and machine-readable format.
+This includes parts that may be subject to different licensing or usage terms, such as third-party components.
+The repository conforms to the [REUSE specification](https://reuse.software/spec/).
+You can use [`reuse spdx`](https://reuse.readthedocs.io/en/latest/readme.html#cli) to create a [SPDX software bill of materials (SBOM)](https://en.wikipedia.org/wiki/Software_Package_Data_Exchange).
+<!--REUSE-IgnoreEnd-->

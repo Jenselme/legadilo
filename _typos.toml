@@ -1,5 +1,8 @@
 [files]
-extend-exclude = ["*.po"]
+extend-exclude = [
+    "*.po",
+    "LICENSES/*",
+]
 
 [default]
 extend-ignore-identifiers-re = [

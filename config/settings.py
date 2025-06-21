@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Base settings to build other settings files upon."""
 
 import concurrent

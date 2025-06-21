@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import os
 import sys
 from pathlib import Path

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 FROM postgres:16
 
 COPY ./devops/compose/production/postgres/maintenance /usr/local/bin/maintenance

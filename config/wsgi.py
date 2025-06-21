@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """WSGI config for Legadilo project.
 
 This module contains the WSGI application used by Django's development server

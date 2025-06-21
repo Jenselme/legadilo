@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 FROM python:3.13-slim-bookworm
 
 ENV PYTHONUNBUFFERED 1
@@ -28,4 +32,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 COPY ./devops/compose/local/docs/start.sh /start-docs.sh
 RUN chmod +x /start-docs.sh
 
-WORKDIR /docs
+WORKDIR /app/docs

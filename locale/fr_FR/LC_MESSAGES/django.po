@@ -1,8 +1,7 @@
-# Translations for the Legadilo project
-# Copyright (C) 2023 Julien Enselme
-# Julien Enselme <jujens@jujens.eu>, 2023.
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
-#, fuzzy
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
