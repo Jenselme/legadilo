@@ -62,14 +62,20 @@ repos:
       - id: pyupgrade
         args: [--py313-plus]
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.11.13
+  - repo: local
     hooks:
-      - id: ruff
-        args: [--fix, --preview]
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix --preview --force-exclude
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+        language: system
       - id: ruff-format
-        args: [--preview]
+        name: ruff format
+        entry: uv run ruff format --preview --force-exclude
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+        language: system
 
   - repo: https://github.com/seddonym/import-linter
     rev: v2.3
