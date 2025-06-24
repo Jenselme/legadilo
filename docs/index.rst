@@ -1,3 +1,7 @@
+.. SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+..
+.. SPDX-License-Identifier: CC-BY-SA-4.0
+
 .. Legadilo documentation master file, created by
    sphinx-quickstart.
    You can adapt this file completely to your liking, but it should at least
@@ -11,7 +15,6 @@ Welcome to Legadilo's documentation!
    :caption: Contents:
 
    introduction
-   changelog
    deploy
    import_export
    pycharm/configuration
@@ -19,9 +22,18 @@ Welcome to Legadilo's documentation!
    tech_howto
 
 
+Project
+-------
+
+.. toctree::
+   :maxdepth: 1
+
+   changelog
+   authors
+
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

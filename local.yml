@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 volumes:
   legadilo_local_postgres_data: {}
   legadilo_local_postgres_data_backups: {}
@@ -50,9 +54,12 @@ services:
     env_file:
       - ./devops/envs/local/django
     volumes:
-      - ./docs:/docs:z
+      - ./docs:/app/docs:z
       - ./config:/app/config:z
       - ./legadilo:/app/legadilo:z
+      - ./README.md:/app/README.md:z
+      - ./AUTHORS.md:/app/AUTHORS.md:z
+      - ./CHANGELOG.md:/app/CHANGELOG.md:z
     ports:
       - "9000:9000"
     command: /start-docs.sh

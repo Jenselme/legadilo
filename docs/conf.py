@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -28,7 +32,7 @@ django.setup()
 # -- Project information -----------------------------------------------------
 
 project = "Legadilo"
-copyright = """2023, Julien Enselme"""
+copyright = """2023-2025, Legadilo contributors"""
 author = "Julien Enselme"
 
 

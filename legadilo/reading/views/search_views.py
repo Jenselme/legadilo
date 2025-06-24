@@ -1,20 +1,7 @@
-# Legadilo
-# Copyright (C) 2023-2025 by Legadilo contributors.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
+
 import logging
 from http import HTTPStatus
 
@@ -60,47 +47,47 @@ class SearchForm(forms.Form):
     )
     search_type = forms.ChoiceField(
         required=False,
-        choices=constants.ArticleSearchType.choices,  # type: ignore[misc]
+        choices=constants.ArticleSearchType.choices,
         initial=constants.ArticleSearchType.PLAIN,
     )
     # Dates
     order = forms.ChoiceField(
         required=False,
-        choices=constants.ArticleSearchOrderBy.choices,  # type: ignore[misc]
+        choices=constants.ArticleSearchOrderBy.choices,
         initial=constants.ArticleSearchOrderBy.RANK_DESC,
     )
     # Search refinement fields
     read_status = forms.ChoiceField(
         required=False,
-        choices=constants.ReadStatus.choices,  # type: ignore[misc]
+        choices=constants.ReadStatus.choices,
         initial=constants.ReadStatus.ALL,
     )
     favorite_status = forms.ChoiceField(
         required=False,
-        choices=constants.FavoriteStatus.choices,  # type: ignore[misc]
+        choices=constants.FavoriteStatus.choices,
         initial=constants.FavoriteStatus.ALL,
     )
     for_later_status = forms.ChoiceField(
         required=False,
-        choices=constants.ForLaterStatus.choices,  # type: ignore[misc]
+        choices=constants.ForLaterStatus.choices,
         initial=constants.ForLaterStatus.ALL,
     )
     articles_max_age_value = forms.IntegerField(required=False, min_value=0)
     articles_max_age_unit = forms.ChoiceField(
         required=False,
-        choices=constants.ArticlesMaxAgeUnit.choices,  # type: ignore[misc]
+        choices=constants.ArticlesMaxAgeUnit.choices,
         initial=constants.ArticlesMaxAgeUnit.UNSET,
     )
     articles_reading_time = forms.IntegerField(required=False, min_value=0)
     articles_reading_time_operator = forms.ChoiceField(
         required=False,
-        choices=constants.ArticlesReadingTimeOperator.choices,  # type: ignore[misc]
+        choices=constants.ArticlesReadingTimeOperator.choices,
         initial=constants.ArticlesReadingTimeOperator.UNSET,
     )
     # Tags
     include_tag_operator = forms.ChoiceField(
         required=False,
-        choices=constants.ReadingListTagOperator.choices,  # type: ignore[misc]
+        choices=constants.ReadingListTagOperator.choices,
         initial=constants.ReadingListTagOperator.ALL,
         help_text=_("Articles to include must have all or any of the supplied tags."),
     )
@@ -112,7 +99,7 @@ class SearchForm(forms.Form):
     )
     exclude_tag_operator = forms.ChoiceField(
         required=False,
-        choices=constants.ReadingListTagOperator.choices,  # type: ignore[misc]
+        choices=constants.ReadingListTagOperator.choices,
         initial=constants.ReadingListTagOperator.ALL,
         help_text=_("Articles to exclude must have all or any of the supplied tags."),
     )

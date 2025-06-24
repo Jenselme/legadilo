@@ -1,18 +1,4 @@
-# Legadilo
-# Copyright (C) 2023-2025 by Legadilo contributors.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -115,7 +101,7 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
 
 
 class FeedUpdate(models.Model):
-    status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)  # type: ignore[misc]
+    status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)
     ignored_article_urls = models.JSONField(
         validators=[list_of_strings_validator], blank=True, default=list
     )

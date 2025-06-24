@@ -1,0 +1,75 @@
+version = 1
+
+# HTML templates
+[[annotations]]
+path = [
+    "legadilo/templates/**/*.html",
+]
+SPDX-FileCopyrightText = "Legadilo contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Snapshot files
+[[annotations]]
+path = [
+    "legadilo/*/tests/**/snapshots/**/*.json",
+    "legadilo/*/tests/**/snapshots/**/*.html",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Test fixtures
+[[annotations]]
+path = [
+    "legadilo/*/tests/**/*.xml",
+    "legadilo/*/tests/**/*.csv",
+    "legadilo/*/tests/**/*.json",
+    "legadilo/*/tests/**/*.opml",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Computer-generated files.
+[[annotations]]
+path = [
+    "uv.lock",
+    "package-lock.json",
+    "browser-extension/package-lock.json",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+
+# IDE settings
+[[annotations]]
+path = [
+    ".idea/**/*",
+    ".vscode/*",
+    ".devcontainer/*",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Various technical files.
+[[annotations]]
+path = [
+    ".envrc",
+    ".vscode/*",
+    ".dockerignore",
+    ".editorconfig",
+    ".envrc",
+    ".gitattributes",
+    ".github/dependabot.yml",
+    ".github/workflows/ci.yml",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    ".prettierrc.json",
+    ".stylelintrc.json",
+    "_typos.toml",
+    "eslint.config.cjs",
+    "package.json",
+    "pyproject.toml",
+    "browser-extension/package.json",
+    "browser-extension/src/manifest.json",
+    "browser-extension/src/vendor/.gitignore",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"

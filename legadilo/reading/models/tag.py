@@ -1,18 +1,4 @@
-# Legadilo
-# Copyright (C) 2023-2025 by Legadilo contributors.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -313,7 +299,7 @@ class ArticleTag(models.Model):
     tag = models.ForeignKey("reading.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
     tagging_reason = models.CharField(
-        choices=constants.TaggingReason.choices,  # type: ignore[misc]
+        choices=constants.TaggingReason.choices,
         default=constants.TaggingReason.ADDED_MANUALLY,
         max_length=100,
     )
@@ -390,7 +376,7 @@ class ReadingListTag(models.Model):
     )
 
     filter_type = models.CharField(
-        choices=constants.ReadingListTagFilterType.choices,  # type: ignore[misc]
+        choices=constants.ReadingListTagFilterType.choices,
         default=constants.ReadingListTagFilterType.INCLUDE,
         max_length=100,
     )

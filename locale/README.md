@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 # Translations
 
 Start by configuring the `LANGUAGES` settings in `base.py`, by uncommenting languages you are willing to support. Then, translations strings will be placed in this folder when running:

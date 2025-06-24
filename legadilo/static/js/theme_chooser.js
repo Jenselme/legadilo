@@ -1,9 +1,8 @@
-/*!
- * Color mode toggler for Bootstrap's docs (https://getbootstrap.com/)
- * Copyright 2011-2024 The Bootstrap Authors
- * Licensed under the Creative Commons Attribution 3.0 Unported License.
- */
+// SPDX-FileCopyrightText: 2011-2024 The Bootstrap Authors
+//
+// SPDX-License-Identifier: CC-BY-3.0
 
+// Color mode toggler for Bootstrap's docs (https://getbootstrap.com/)
 // https://getbootstrap.com/docs/5.3/customize/color-modes/#javascript
 
 (() => {

@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+
 async def websocket_application(scope, receive, send):
     while True:
         event = await receive()
