@@ -299,7 +299,7 @@ class ArticleTag(models.Model):
     tag = models.ForeignKey("reading.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
     tagging_reason = models.CharField(
-        choices=constants.TaggingReason.choices,  # type: ignore[misc]
+        choices=constants.TaggingReason.choices,
         default=constants.TaggingReason.ADDED_MANUALLY,
         max_length=100,
     )
@@ -376,7 +376,7 @@ class ReadingListTag(models.Model):
     )
 
     filter_type = models.CharField(
-        choices=constants.ReadingListTagFilterType.choices,  # type: ignore[misc]
+        choices=constants.ReadingListTagFilterType.choices,
         default=constants.ReadingListTagFilterType.INCLUDE,
         max_length=100,
     )

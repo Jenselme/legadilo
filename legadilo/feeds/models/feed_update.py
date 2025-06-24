@@ -101,7 +101,7 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
 
 
 class FeedUpdate(models.Model):
-    status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)  # type: ignore[misc]
+    status = models.CharField(choices=constants.FeedUpdateStatus.choices, max_length=100)
     ignored_article_urls = models.JSONField(
         validators=[list_of_strings_validator], blank=True, default=list
     )

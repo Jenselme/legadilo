@@ -48,13 +48,13 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: uv run ruff check --fix --preview --force-exclude
+        entry: uv run ruff check --fix --force-exclude
         types_or: [python, pyi, jupyter]
         require_serial: true
         language: system
       - id: ruff-format
         name: ruff format
-        entry: uv run ruff format --preview --force-exclude
+        entry: uv run ruff format --force-exclude
         types_or: [python, pyi, jupyter]
         require_serial: true
         language: system

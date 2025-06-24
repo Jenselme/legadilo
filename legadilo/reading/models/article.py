@@ -436,7 +436,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
         full_text_search_query = SearchQuery(
             search_query.q,
-            search_type=search_query.search_type.value,  # type: ignore[misc]
+            search_type=search_query.search_type.value,
             config="english",
         )
         return (
@@ -793,7 +793,7 @@ class Article(models.Model):
 
     main_source_type = models.CharField(
         default=constants.ArticleSourceType.FEED,
-        choices=constants.ArticleSourceType.choices,  # type: ignore[misc]
+        choices=constants.ArticleSourceType.choices,
         max_length=100,
     )
     main_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)

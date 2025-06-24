@@ -47,47 +47,47 @@ class SearchForm(forms.Form):
     )
     search_type = forms.ChoiceField(
         required=False,
-        choices=constants.ArticleSearchType.choices,  # type: ignore[misc]
+        choices=constants.ArticleSearchType.choices,
         initial=constants.ArticleSearchType.PLAIN,
     )
     # Dates
     order = forms.ChoiceField(
         required=False,
-        choices=constants.ArticleSearchOrderBy.choices,  # type: ignore[misc]
+        choices=constants.ArticleSearchOrderBy.choices,
         initial=constants.ArticleSearchOrderBy.RANK_DESC,
     )
     # Search refinement fields
     read_status = forms.ChoiceField(
         required=False,
-        choices=constants.ReadStatus.choices,  # type: ignore[misc]
+        choices=constants.ReadStatus.choices,
         initial=constants.ReadStatus.ALL,
     )
     favorite_status = forms.ChoiceField(
         required=False,
-        choices=constants.FavoriteStatus.choices,  # type: ignore[misc]
+        choices=constants.FavoriteStatus.choices,
         initial=constants.FavoriteStatus.ALL,
     )
     for_later_status = forms.ChoiceField(
         required=False,
-        choices=constants.ForLaterStatus.choices,  # type: ignore[misc]
+        choices=constants.ForLaterStatus.choices,
         initial=constants.ForLaterStatus.ALL,
     )
     articles_max_age_value = forms.IntegerField(required=False, min_value=0)
     articles_max_age_unit = forms.ChoiceField(
         required=False,
-        choices=constants.ArticlesMaxAgeUnit.choices,  # type: ignore[misc]
+        choices=constants.ArticlesMaxAgeUnit.choices,
         initial=constants.ArticlesMaxAgeUnit.UNSET,
     )
     articles_reading_time = forms.IntegerField(required=False, min_value=0)
     articles_reading_time_operator = forms.ChoiceField(
         required=False,
-        choices=constants.ArticlesReadingTimeOperator.choices,  # type: ignore[misc]
+        choices=constants.ArticlesReadingTimeOperator.choices,
         initial=constants.ArticlesReadingTimeOperator.UNSET,
     )
     # Tags
     include_tag_operator = forms.ChoiceField(
         required=False,
-        choices=constants.ReadingListTagOperator.choices,  # type: ignore[misc]
+        choices=constants.ReadingListTagOperator.choices,
         initial=constants.ReadingListTagOperator.ALL,
         help_text=_("Articles to include must have all or any of the supplied tags."),
     )
@@ -99,7 +99,7 @@ class SearchForm(forms.Form):
     )
     exclude_tag_operator = forms.ChoiceField(
         required=False,
-        choices=constants.ReadingListTagOperator.choices,  # type: ignore[misc]
+        choices=constants.ReadingListTagOperator.choices,
         initial=constants.ReadingListTagOperator.ALL,
         help_text=_("Articles to exclude must have all or any of the supplied tags."),
     )
