@@ -348,6 +348,14 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                     models.Value(""),
                     output_field=models.TextField(),
                 ),
+                annot_comments=Coalesce(
+                    ArrayAgg(
+                        "comments__text",
+                        order="comments__created_at",
+                        filter=models.Q(comments__isnull=False),
+                    ),
+                    models.Value([]),
+                ),
             )
             .prefetch_related(_build_prefetch_article_tags())
             .order_by("id")
@@ -681,6 +689,7 @@ class ArticleManager(models.Manager["Article"]):
                     "article_read_at": article.read_at.isoformat() if article.read_at else "",
                     "article_is_favorite": article.is_favorite,
                     "article_lang": article.language,
+                    "article_comments": json.dumps(article.annot_comments),  # type: ignore[attr-defined]
                 })
 
             yield articles

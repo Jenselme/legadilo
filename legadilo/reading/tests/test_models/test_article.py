@@ -22,6 +22,7 @@ from legadilo.reading.models.article import (
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
     ArticleFactory,
+    CommentFactory,
     ReadingListFactory,
     TagFactory,
 )
@@ -1411,6 +1412,7 @@ class TestArticleManager:
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
+        CommentFactory(article=article_from_feed, text="A comment")
 
         with django_assert_num_queries(5):
             articles = self._export_all_articles(user)

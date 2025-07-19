@@ -22,4 +22,5 @@ CSV_HEADER_FIELDS = (
     "article_read_at",
     "article_is_favorite",
     "article_lang",
+    "article_comments",
 )
