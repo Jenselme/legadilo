@@ -5,6 +5,9 @@
 docker-cmd := "docker"
 docker-compose-cmd := "docker compose"
 
+default:
+    just --list
+
 update-python-deps:
     uv sync --upgrade --all-groups
 
