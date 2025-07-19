@@ -8,6 +8,16 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.07.1
+
+API Changes:
+- Can export feeds and articles. This was already possible through a view in the user profile.
+- Include article comments in API endpoints.
+- Can search articles with all options, just like in the search view.
+
+Other changes:
+- Include article comments in exports. This includes the new API exports.
+
 ## 25.06.1
 
 - Refresh the reading list near HH:00 The goal is to refresh the reading list closer to when the feeds where updated.
