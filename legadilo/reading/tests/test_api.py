@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
+from legadilo.reading.services.article_fetching import ArticleTooBigError
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
@@ -74,15 +75,39 @@ class TestCreateArticleView:
         assert response.json() == {
             "detail": [
                 {
-                    "ctx": {
-                        "error": "You must supply either both title and content or none of them"
-                    },
+                    "ctx": {"error": "Title is mandatory when content is provided."},
                     "loc": ["body", "payload"],
-                    "msg": "Value error, You must supply either both title and content or none of them",  # noqa: E501
+                    "msg": "Value error, Title is mandatory when content is provided.",
                     "type": "value_error",
                 }
             ]
         }
+
+    def test_create_article_with_title_and_no_content(self, user, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {"url": self.article_url, "title": "Some title"},
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == self.article_url
+
+    def test_create_article_from_url_only_http_failure(self, logged_in_sync_client, mocker):
+        mocked_get_article_from_url = mocker.patch(
+            "legadilo.reading.api.get_article_from_url", side_effect=ArticleTooBigError
+        )
+
+        response = logged_in_sync_client.post(
+            self.url, {"url": self.article_url}, content_type="application/json"
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.json() == {"detail": "Failed to fetch article data: ArticleTooBigError"}
+        assert Article.objects.count() == 0
+        mocked_get_article_from_url.assert_called_once_with(self.article_url)
 
     def test_create_article_from_url_only(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
@@ -92,7 +117,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
@@ -115,7 +140,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.post(
                 self.url,
                 {"url": self.article_url, "tags": ["Some tag"]},
@@ -141,7 +166,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -178,7 +203,7 @@ class TestCreateArticleView:
             ),
         )
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
