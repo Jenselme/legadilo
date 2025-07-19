@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Self
 
 from django.db import models
@@ -24,8 +25,12 @@ class FeedCategoryQuerySet(models.QuerySet["FeedCategory"]):
     def for_user(self, user: User) -> Self:
         return self.filter(user=user)
 
-    def for_export(self, user: User):
-        return self.for_user(user).order_by("id")
+    def for_export(self, user: User, updated_since: datetime | None = None) -> Self:
+        qs = self.for_user(user).order_by("id")
+        if updated_since:
+            qs = qs.filter(updated_at__gt=updated_since)
+
+        return qs
 
 
 class FeedCategoryManager(models.Manager["FeedCategory"]):
@@ -46,9 +51,9 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
     def get_first_for_user(self, user: User, slug: str) -> FeedCategory | None:
         return self.get_queryset().filter(user=user, slug=slug).first()
 
-    def export(self, user: User) -> list[dict[str, Any]]:
+    def export(self, user: User, *, updated_since: datetime | None = None) -> list[dict[str, Any]]:
         feed_categories = []
-        for feed_category in self.get_queryset().for_export(user):
+        for feed_category in self.get_queryset().for_export(user, updated_since=updated_since):
             feed_categories.append({
                 "category_id": feed_category.id,
                 "category_title": feed_category.title,

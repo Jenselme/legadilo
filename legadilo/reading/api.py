@@ -4,26 +4,31 @@
 
 from datetime import datetime
 from http import HTTPStatus
-from operator import xor
 from typing import Annotated, Self
 
+import httpx
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
+from pydantic import ValidationError as PydanticValidationError
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag, Tag
+from legadilo.reading.models import Article, ArticleTag, Comment, Tag
+from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
+    ArticleData,
+    ArticleTooBigError,
     build_article_data_from_content,
     get_article_from_url,
 )
 from legadilo.reading.services.delete_article import delete_article
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import NotSet, update_model_from_schema
+from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
     FullSanitizeValidator,
@@ -40,8 +45,15 @@ class OutTagSchema(ModelSchema):
         fields = ("title", "slug")
 
 
+class OutCommentSchema(ModelSchema):
+    class Meta:
+        model = Comment
+        fields = ("text", "created_at", "updated_at")
+
+
 class OutArticleSchema(ModelSchema):
     tags: list[OutTagSchema] = Field(alias="tags_to_display")
+    comments: list[OutCommentSchema]
     details_url: str
 
     @staticmethod
@@ -67,30 +79,36 @@ class ArticleCreation(Schema):
 
     @model_validator(mode="after")
     def check_title_and_content(self) -> Self:
-        if xor(len(self.title) > 0, len(self.content) > 0):
-            raise ValueError("You must supply either both title and content or none of them")
+        if len(self.title) == 0 and len(self.content) > 0:
+            raise ValueError("Title is mandatory when content is provided.")
 
         return self
 
     @property
     def has_data(self) -> bool:
-        return bool(self.title) and bool(self.content)
+        return bool(self.title)
 
 
 @reading_api_router.post(
     "/articles/",
-    response={HTTPStatus.CREATED: OutArticleSchema, HTTPStatus.OK: OutArticleSchema},
+    response={
+        HTTPStatus.CREATED: OutArticleSchema,
+        HTTPStatus.OK: OutArticleSchema,
+        HTTPStatus.BAD_REQUEST: ApiError,
+    },
     url_name="create_article",
     summary="Create a new article",
 )
+@transaction.atomic()
 def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreation):
     """Create an article either just with a link or with a link, a title and some content."""
-    if payload.has_data:
-        article_data = build_article_data_from_content(
-            url=payload.url, title=payload.title, content=payload.content
-        )
-    else:
-        article_data = get_article_from_url(payload.url)
+    try:
+        article_data = _get_article_data(payload)
+    except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
+        exception_detail = str(e) or e.__class__.__name__
+        return HTTPStatus.BAD_REQUEST, {
+            "detail": f"Failed to fetch article data: {exception_detail}"
+        }
 
     # Tags specified in article data are the raw tags used in feeds, they are not used to link an
     # article to tag objects.
@@ -109,8 +127,12 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     return HTTPStatus.OK, article
 
 
-class ArticlesSearchQuery(Schema):
-    urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
+def _get_article_data(payload: ArticleCreation) -> ArticleData:
+    if payload.has_data:
+        return build_article_data_from_content(
+            url=payload.url, title=payload.title, content=payload.content
+        )
+    return get_article_from_url(payload.url)
 
 
 @reading_api_router.get(
@@ -120,12 +142,8 @@ class ArticlesSearchQuery(Schema):
     summary="List articles",
 )
 @paginate
-def list_articles_view(request: AuthenticatedApiRequest, query: Query[ArticlesSearchQuery]):
-    qs = Article.objects.get_queryset().for_user(request.auth).for_api()
-    if query.urls:
-        qs = qs.for_url_search(query.urls)
-
-    return qs
+def list_articles_view(request: AuthenticatedApiRequest, query: Query[ArticleFullTextSearchQuery]):
+    return Article.objects.search(request.auth, query)
 
 
 @reading_api_router.get(

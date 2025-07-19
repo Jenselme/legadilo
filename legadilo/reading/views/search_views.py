@@ -338,6 +338,8 @@ def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
         if key not in {"tags_to_include", "tags_to_exclude"}
     }
     form_data["linked_with_feeds"] = frozenset(feed.id for feed in form_data["linked_with_feeds"])
+    form_data["articles_max_age_value"] = form_data["articles_max_age_value"] or 0
+    form_data["articles_reading_time"] = form_data["articles_reading_time"] or 0
     query = ArticleFullTextSearchQuery(
         **form_data,
         tags=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),

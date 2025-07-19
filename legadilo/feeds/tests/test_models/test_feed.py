@@ -673,6 +673,20 @@ class TestFeedManager:
         assert feeds[1]["feed_id"] == feed_with_category.id
         snapshot.assert_match(serialize_for_snapshot(feeds), "exports.json")
 
+    def test_export_updated_since(self, user, other_user):
+        with time_machine.travel("2024-05-01 12:00:00"):
+            FeedFactory(
+                user=user,
+                id=2,
+                title="Old feed",
+                feed_url="https://example.com/feeds/with_category.xml",
+            )
+
+        feeds = Feed.objects.export(user, updated_since=utcdt(2025, 6, 1))
+
+        assert len(feeds) == 1
+        assert feeds[0]["feed_id"] == self.feed.id
+
 
 class TestFeedModel:
     def test_disable(self):

@@ -1,9 +1,16 @@
 {
   "annotations": [],
   "authors": [],
+  "comments": [
+    {
+      "created_at": "2025-07-01T00:00:00Z",
+      "text": "Some comment",
+      "updated_at": "2025-07-01T00:00:00.000Z"
+    }
+  ],
   "content": "",
   "contributors": [],
-  "details_url": "http://testserver/reading/articles/1-article-slug/",
+  "details_url": "http://testserver/reading/articles/1-article-title/",
   "external_article_id": "external-article-id",
   "external_tags": [],
   "id": 1,
@@ -19,7 +26,7 @@
   "published_at": "2024-11-24T17:57:00Z",
   "read_at": null,
   "reading_time": 0,
-  "slug": "article-slug",
+  "slug": "article-title",
   "summary": "",
   "table_of_content": [],
   "tags": [

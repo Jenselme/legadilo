@@ -10,6 +10,7 @@ import math
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import datetime
 from itertools import chain
 from typing import TYPE_CHECKING, Literal, Self, assert_never
 from urllib.parse import urlparse
@@ -21,6 +22,8 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models, transaction
 from django.db.models.functions import Cast, Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
+from ninja.schema import Schema
+from pydantic import ConfigDict
 from slugify import slugify
 
 from legadilo.reading import constants
@@ -72,8 +75,9 @@ class ArticleTagSearch:
     tag_id: int
 
 
-@dataclass(frozen=True)
-class ArticleSearchQuery:
+class ArticleSearchQuery(Schema):
+    model_config = ConfigDict(frozen=True)
+
     read_status: constants.ReadStatus = constants.ReadStatus.ALL
     favorite_status: constants.FavoriteStatus = constants.FavoriteStatus.ALL
     for_later_status: constants.ForLaterStatus = constants.ForLaterStatus.ALL
@@ -115,7 +119,6 @@ class ArticleSearchQuery:
         )
 
 
-@dataclass(frozen=True)
 class ArticleFullTextSearchQuery(ArticleSearchQuery):
     q: str = ""
     search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
@@ -306,8 +309,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags(), "comments").for_feed_links()
 
-    def for_export(self, user: User) -> Self:
-        return (
+    def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
+        qs = (
             self.for_user(user)
             .alias(
                 feed_category_ids=ArrayAgg("feeds__category__id", order="feeds__id"),
@@ -348,10 +351,25 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                     models.Value(""),
                     output_field=models.TextField(),
                 ),
+                annot_comments=Coalesce(
+                    ArrayAgg(
+                        "comments__text",
+                        order="comments__created_at",
+                        filter=models.Q(comments__isnull=False),
+                    ),
+                    models.Value([]),
+                ),
             )
             .prefetch_related(_build_prefetch_article_tags())
             .order_by("id")
         )
+        if updated_since:
+            qs = qs.filter(
+                models.Q(updated_at__gte=updated_since)
+                | models.Q(comments__updated_at__gte=updated_since)
+            )
+
+        return qs
 
     def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
         # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
@@ -646,8 +664,8 @@ class ArticleManager(models.Manager["Article"]):
     def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
         return self.get_queryset().for_user(user).for_external_tag(tag)
 
-    def export(self, user: User):
-        articles_qs = self.get_queryset().for_export(user)
+    def export(self, user: User, *, updated_since: datetime | None = None):
+        articles_qs = self.get_queryset().for_export(user, updated_since=updated_since)
         nb_pages = math.ceil(articles_qs.count() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
         for page in range(nb_pages):
             articles = []
@@ -681,6 +699,7 @@ class ArticleManager(models.Manager["Article"]):
                     "article_read_at": article.read_at.isoformat() if article.read_at else "",
                     "article_is_favorite": article.is_favorite,
                     "article_lang": article.language,
+                    "article_comments": json.dumps(article.annot_comments),  # type: ignore[attr-defined]
                 })
 
             yield articles

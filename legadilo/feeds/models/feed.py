@@ -194,8 +194,12 @@ class FeedQuerySet(models.QuerySet["Feed"]):
     def for_user(self, user: User):
         return self.filter(user=user)
 
-    def for_export(self, user: User):
-        return self.for_user(user).select_related("category").order_by("id")
+    def for_export(self, user: User, *, updated_since: datetime | None = None):
+        qs = self.for_user(user).select_related("category").order_by("id")
+        if updated_since:
+            qs = qs.filter(updated_at__gte=updated_since)
+
+        return qs
 
     def for_api(self):
         return self.select_related("category").prefetch_related("tags")
@@ -340,9 +344,9 @@ class FeedManager(models.Manager["Feed"]):
             feed=feed,
         )
 
-    def export(self, user: User) -> list[dict[str, Any]]:
+    def export(self, user: User, *, updated_since: datetime | None = None) -> list[dict[str, Any]]:
         feeds = []
-        for feed in self.get_queryset().for_export(user):
+        for feed in self.get_queryset().for_export(user, updated_since=updated_since):
             feed_category = feed.category
             feeds.append({
                 "category_id": feed_category.id if feed_category else "",

@@ -1,1 +1,3 @@
 category_id,category_title,feed_id,feed_title,feed_url,feed_site_url,article_id,article_title,article_url,article_content,article_date_published,article_date_updated,article_authors,article_tags,article_read_at,article_is_favorite,article_lang,article_comments
+,,2,Recently updated feed,https://example.com/feeds/2.xml,https://example.com,,,,,,,,,,,,
+,,,,,,2,Recently updated article,https://example.com/article/2,,2024-06-23T12:00:00+00:00,2025-06-23T12:00:00+00:00,,,,False,,[]

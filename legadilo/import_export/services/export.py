@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import csv
+from datetime import datetime
 
 from legadilo.feeds.models import Feed, FeedCategory
 from legadilo.import_export import constants
@@ -12,19 +13,23 @@ from legadilo.utils.text import ClearableStringIO
 from legadilo.utils.time_utils import utcnow
 
 
-def export_articles(user: User):
+def export_articles(
+    user: User, *, include_feeds: bool = True, updated_since: datetime | None = None
+):
     buffer = ClearableStringIO()
     writer = csv.DictWriter(buffer, constants.CSV_HEADER_FIELDS)
     writer.writeheader()
     yield buffer.getvalue()
 
-    feed_categories = FeedCategory.objects.export(user)
-    writer.writerows(feed_categories)
-    yield buffer.getvalue()
-    feeds = Feed.objects.export(user)
-    writer.writerows(feeds)
-    yield buffer.getvalue()
-    for articles_batch in Article.objects.export(user):
+    if include_feeds:
+        feed_categories = FeedCategory.objects.export(user, updated_since=updated_since)
+        writer.writerows(feed_categories)
+        yield buffer.getvalue()
+        feeds = Feed.objects.export(user, updated_since=updated_since)
+        writer.writerows(feeds)
+        yield buffer.getvalue()
+
+    for articles_batch in Article.objects.export(user, updated_since=updated_since):
         writer.writerows(articles_batch)
         yield buffer.getvalue()
 

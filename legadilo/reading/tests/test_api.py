@@ -6,11 +6,18 @@ from http import HTTPStatus
 from typing import Any
 
 import pytest
+import time_machine
 from django.urls import reverse
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
-from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
+from legadilo.reading.services.article_fetching import ArticleTooBigError
+from legadilo.reading.tests.factories import (
+    ArticleDataFactory,
+    ArticleFactory,
+    CommentFactory,
+    TagFactory,
+)
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt, utcnow
@@ -68,15 +75,39 @@ class TestCreateArticleView:
         assert response.json() == {
             "detail": [
                 {
-                    "ctx": {
-                        "error": "You must supply either both title and content or none of them"
-                    },
+                    "ctx": {"error": "Title is mandatory when content is provided."},
                     "loc": ["body", "payload"],
-                    "msg": "Value error, You must supply either both title and content or none of them",  # noqa: E501
+                    "msg": "Value error, Title is mandatory when content is provided.",
                     "type": "value_error",
                 }
             ]
         }
+
+    def test_create_article_with_title_and_no_content(self, user, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {"url": self.article_url, "title": "Some title"},
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == self.article_url
+
+    def test_create_article_from_url_only_http_failure(self, logged_in_sync_client, mocker):
+        mocked_get_article_from_url = mocker.patch(
+            "legadilo.reading.api.get_article_from_url", side_effect=ArticleTooBigError
+        )
+
+        response = logged_in_sync_client.post(
+            self.url, {"url": self.article_url}, content_type="application/json"
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.json() == {"detail": "Failed to fetch article data: ArticleTooBigError"}
+        assert Article.objects.count() == 0
+        mocked_get_article_from_url.assert_called_once_with(self.article_url)
 
     def test_create_article_from_url_only(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
@@ -86,7 +117,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
@@ -109,7 +140,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.post(
                 self.url,
                 {"url": self.article_url, "tags": ["Some tag"]},
@@ -135,7 +166,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -172,7 +203,7 @@ class TestCreateArticleView:
             ),
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
@@ -219,8 +250,10 @@ class TestListArticleView:
         assert response.status_code == HTTPStatus.OK
         assert response.json()["count"] == 2
 
-    def test_filter_by_urls(self, logged_in_sync_client, snapshot):
-        response = logged_in_sync_client.get(self.url, {"urls": [self.article.url]})
+    def test_search(self, logged_in_sync_client, snapshot):
+        response = logged_in_sync_client.get(
+            self.url, {"q": self.article.url, "search_type": constants.ArticleSearchType.URL.value}
+        )
 
         assert response.status_code == HTTPStatus.OK
         assert response.json()["count"] == 1
@@ -232,6 +265,10 @@ class TestGetArticleView:
     def _setup_data(self, user):
         self.article = ArticleFactory(
             user=user,
+            id=1,
+            title="Article title",
+            url="https://example.com/articles/article.html",
+            external_article_id="external-article-id",
             published_at=utcdt(2024, 11, 24, 17, 57, 0),
             updated_at=utcdt(2024, 11, 24, 17, 57, 0),
         )
@@ -261,17 +298,14 @@ class TestGetArticleView:
             tag=tag_to_exclude,
             tagging_reason=constants.TaggingReason.DELETED,
         )
+        with time_machine.travel("2025-07-01"):
+            CommentFactory(article=self.article, text="Some comment")
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
 
 @pytest.mark.django_db
@@ -280,6 +314,10 @@ class TestUpdateArticleView:
     def _setup_data(self, user):
         self.article = ArticleFactory(
             user=user,
+            id=1,
+            title="Article title",
+            url="https://example.com/articles/article.html",
+            external_article_id="external-article-id",
             published_at=utcdt(2024, 11, 24, 17, 57, 0),
             updated_at=utcdt(2024, 11, 24, 17, 57, 0),
         )
@@ -298,19 +336,14 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_no_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.patch(self.url, {}, content_type="application/json")
 
         assert response.status_code == HTTPStatus.OK
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -325,19 +358,14 @@ class TestUpdateArticleView:
         assert self.article.title == "New title"
         assert self.article.read_at == utcdt(2024, 11, 24, 18)
         assert self.article.reading_time == 10
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
     def test_update_tags(self, logged_in_sync_client, user, django_assert_num_queries, snapshot):
         existing_tag = TagFactory(user=user, title="Tag to keep")
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.article.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -354,12 +382,7 @@ class TestUpdateArticleView:
             ("Tag to delete", constants.TaggingReason.DELETED),
             ("Tag to keep", constants.TaggingReason.ADDED_MANUALLY),
         ]
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
 
 @pytest.mark.django_db

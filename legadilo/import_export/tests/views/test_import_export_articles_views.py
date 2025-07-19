@@ -19,8 +19,12 @@ from legadilo.feeds.models import Feed
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
 from legadilo.reading.models import Article
-from legadilo.reading.tests.factories import ArticleFactory
-from legadilo.utils.testing import all_model_fields_except, serialize_for_snapshot
+from legadilo.reading.tests.factories import ArticleFactory, CommentFactory
+from legadilo.utils.testing import (
+    all_model_fields_except,
+    read_streamable_response,
+    serialize_for_snapshot,
+)
 from legadilo.utils.time_utils import utcdt
 
 
@@ -39,12 +43,12 @@ class TestExportArticlesView:
 
         assert response.status_code == HTTPStatus.OK
         assert response.headers["Content-Type"] == "text/csv"
-        snapshot.assert_match(self._get_content(response), "no_content.csv")
+        snapshot.assert_match(read_streamable_response(response), "no_content.csv")
 
     def test_export_some_content(self, logged_in_sync_client, user, snapshot):
         FeedCategoryFactory(user=user, id=1, title="Some category")
         FeedFactory(user=user, id=1, title="Some feed", feed_url="https://example.com/feeds/0.xml")
-        ArticleFactory(
+        article = ArticleFactory(
             user=user,
             id=1,
             title="Some article",
@@ -52,20 +56,13 @@ class TestExportArticlesView:
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
+        CommentFactory(article=article, text="Some comment")
 
         response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.headers["Content-Type"] == "text/csv"
-        snapshot.assert_match(self._get_content(response), "export_all.csv")
-
-    def _get_content(self, response):
-        content = b""
-        for partial_content in response.streaming_content:
-            # Correct line ending because we will loose the initial one with git.
-            content += partial_content.replace(b"\r\n", b"\n")
-
-        return content
+        snapshot.assert_match(read_streamable_response(response), "export_all.csv")
 
 
 class TestImportExportArticlesView:

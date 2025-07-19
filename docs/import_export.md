@@ -51,7 +51,7 @@ You can load a set of articles, feed categories and feeds using a CSV file and t
 The CSV must be structured like this:
 
 ```csv
-"category_id","category_title","feed_id","feed_title","feed_url","feed_site_url","article_id","article_title","article_url","article_content","article_date_published","article_date_updated","article_authors","article_tags","article_read_at","article_is_favorite","article_lang"
+"category_id","category_title","feed_id","feed_title","feed_url","feed_site_url","article_id","article_title","article_url","article_content","article_date_published","article_date_updated","article_authors","article_tags","article_read_at","article_is_favorite","article_lang","comments"
 ```
 
 If you don’t have an info, leave it empty.
