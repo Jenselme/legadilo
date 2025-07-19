@@ -16,6 +16,7 @@ from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
+from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
     get_article_from_url,
@@ -109,10 +110,6 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     return HTTPStatus.OK, article
 
 
-class ArticlesSearchQuery(Schema):
-    urls: list[Annotated[str, ValidUrlValidator]] = Field(default_factory=list)
-
-
 @reading_api_router.get(
     "/articles/",
     response={HTTPStatus.OK: list[OutArticleSchema]},
@@ -120,12 +117,8 @@ class ArticlesSearchQuery(Schema):
     summary="List articles",
 )
 @paginate
-def list_articles_view(request: AuthenticatedApiRequest, query: Query[ArticlesSearchQuery]):
-    qs = Article.objects.get_queryset().for_user(request.auth).for_api()
-    if query.urls:
-        qs = qs.for_url_search(query.urls)
-
-    return qs
+def list_articles_view(request: AuthenticatedApiRequest, query: Query[ArticleFullTextSearchQuery]):
+    return Article.objects.search(request.auth, query)
 
 
 @reading_api_router.get(

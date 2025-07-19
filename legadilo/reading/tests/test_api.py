@@ -219,8 +219,10 @@ class TestListArticleView:
         assert response.status_code == HTTPStatus.OK
         assert response.json()["count"] == 2
 
-    def test_filter_by_urls(self, logged_in_sync_client, snapshot):
-        response = logged_in_sync_client.get(self.url, {"urls": [self.article.url]})
+    def test_search(self, logged_in_sync_client, snapshot):
+        response = logged_in_sync_client.get(
+            self.url, {"q": self.article.url, "search_type": constants.ArticleSearchType.URL.value}
+        )
 
         assert response.status_code == HTTPStatus.OK
         assert response.json()["count"] == 1

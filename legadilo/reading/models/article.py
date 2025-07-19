@@ -22,6 +22,8 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models, transaction
 from django.db.models.functions import Cast, Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
+from ninja.schema import Schema
+from pydantic import ConfigDict
 from slugify import slugify
 
 from legadilo.reading import constants
@@ -73,8 +75,9 @@ class ArticleTagSearch:
     tag_id: int
 
 
-@dataclass(frozen=True)
-class ArticleSearchQuery:
+class ArticleSearchQuery(Schema):
+    model_config = ConfigDict(frozen=True)
+
     read_status: constants.ReadStatus = constants.ReadStatus.ALL
     favorite_status: constants.FavoriteStatus = constants.FavoriteStatus.ALL
     for_later_status: constants.ForLaterStatus = constants.ForLaterStatus.ALL
@@ -116,7 +119,6 @@ class ArticleSearchQuery:
         )
 
 
-@dataclass(frozen=True)
 class ArticleFullTextSearchQuery(ArticleSearchQuery):
     q: str = ""
     search_type: constants.ArticleSearchType = constants.ArticleSearchType.PLAIN
