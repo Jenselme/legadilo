@@ -17,7 +17,7 @@ from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt
 
 
-def _prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, Any]:
+def prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, Any]:
     data = data.copy()
     assert data["id"] == feed.id
     assert data["slug"] == feed.slug
@@ -239,8 +239,8 @@ class TestListFeedsView:
         assert response.status_code == HTTPStatus.OK
         data = response.json()
         assert len(data["items"]) == 2
-        data["items"][0] = _prepare_feed_for_snapshot(data["items"][0], self.feed)
-        data["items"][1] = _prepare_feed_for_snapshot(data["items"][1], self.other_feed)
+        data["items"][0] = prepare_feed_for_snapshot(data["items"][0], self.feed)
+        data["items"][1] = prepare_feed_for_snapshot(data["items"][1], self.other_feed)
         snapshot.assert_match(serialize_for_snapshot(data), "feeds.json")
 
     def test_filter_by_urls(self, logged_in_sync_client):
@@ -304,7 +304,7 @@ class TestSubscribeToFeedView:
         assert feed.category is None
         assert feed.user == user
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
         )
 
     def test_subscribe_to_feed(
@@ -337,7 +337,7 @@ class TestSubscribeToFeedView:
         assert list(feed.tags.values_list("title", flat=True)) == ["Some tag", existing_tag.title]
         assert feed.user == user
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
         )
 
     def test_subscribe_to_feed_invalid_category(self, logged_in_sync_client):
@@ -369,7 +369,7 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.ALREADY_REPORTED
         feed = Feed.objects.get()
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)),
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), feed)),
             "feed.json",
         )
 
@@ -411,7 +411,7 @@ class TestGetFeedView:
         assert response.status_code == HTTPStatus.OK
 
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), self.feed)),
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
             "feed.json",
         )
 
@@ -449,7 +449,7 @@ class TestUpdateFeedView:
         self.feed.refresh_from_db()
         assert self.feed.category_id == self.other_feed_category.id
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), self.feed)),
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
             "feed.json",
         )
 
@@ -465,7 +465,7 @@ class TestUpdateFeedView:
         self.feed.refresh_from_db()
         assert self.feed.category_id is None
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), self.feed)),
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
             "feed.json",
         )
 
@@ -510,7 +510,7 @@ class TestUpdateFeedView:
         assert self.feed.refresh_delay == constants.FeedRefreshDelays.TWICE_A_WEEK
         assert self.feed.article_retention_time == 600
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), self.feed)),
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
             "feed.json",
         )
 
@@ -561,7 +561,7 @@ class TestUpdateFeedView:
             "Tag to keep",
         ]
         snapshot.assert_match(
-            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), self.feed)),
+            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
             "feed.json",
         )
 

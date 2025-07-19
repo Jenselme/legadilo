@@ -1,0 +1,49 @@
+{
+  "export_date": "2024-06-20T22:00:00Z",
+  "feeds_by_categories": {
+    "My Category": [
+      {
+        "article_retention_time": 0,
+        "category": {
+          "id": 10,
+          "slug": "category-slug",
+          "title": "Category title"
+        },
+        "description": "",
+        "details_url": "https://example.com/feeds/articles/1-feed-slug/",
+        "disabled_at": null,
+        "disabled_reason": "",
+        "enabled": true,
+        "feed_type": "rss",
+        "feed_url": "https://example.com/feed.rss",
+        "id": 1,
+        "open_original_url_by_default": false,
+        "refresh_delay": "DAILY_AT_NOON",
+        "site_url": "https://example.com",
+        "slug": "feed-slug",
+        "tags": [],
+        "title": "Feed title"
+      }
+    ]
+  },
+  "feeds_without_category": [
+    {
+      "article_retention_time": 0,
+      "category": null,
+      "description": "",
+      "details_url": "https://example.com/feeds/articles/1-feed-slug/",
+      "disabled_at": null,
+      "disabled_reason": "",
+      "enabled": true,
+      "feed_type": "rss",
+      "feed_url": "https://example.com/feed.rss",
+      "id": 1,
+      "open_original_url_by_default": false,
+      "refresh_delay": "DAILY_AT_NOON",
+      "site_url": "https://example.com",
+      "slug": "feed-slug",
+      "tags": [],
+      "title": "Feed title"
+    }
+  ]
+}
