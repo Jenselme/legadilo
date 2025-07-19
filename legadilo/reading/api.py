@@ -15,7 +15,7 @@ from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag, Tag
+from legadilo.reading.models import Article, ArticleTag, Comment, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
@@ -41,8 +41,15 @@ class OutTagSchema(ModelSchema):
         fields = ("title", "slug")
 
 
+class OutCommentSchema(ModelSchema):
+    class Meta:
+        model = Comment
+        fields = ("text", "created_at", "updated_at")
+
+
 class OutArticleSchema(ModelSchema):
     tags: list[OutTagSchema] = Field(alias="tags_to_display")
+    comments: list[OutCommentSchema]
     details_url: str
 
     @staticmethod

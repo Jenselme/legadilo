@@ -6,11 +6,17 @@ from http import HTTPStatus
 from typing import Any
 
 import pytest
+import time_machine
 from django.urls import reverse
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
-from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
+from legadilo.reading.tests.factories import (
+    ArticleDataFactory,
+    ArticleFactory,
+    CommentFactory,
+    TagFactory,
+)
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt, utcnow
@@ -86,7 +92,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
@@ -109,7 +115,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url,
                 {"url": self.article_url, "tags": ["Some tag"]},
@@ -135,7 +141,7 @@ class TestCreateArticleView:
             return_value=ArticleDataFactory(url=self.article_url),
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -172,7 +178,7 @@ class TestCreateArticleView:
             ),
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
@@ -263,8 +269,10 @@ class TestGetArticleView:
             tag=tag_to_exclude,
             tagging_reason=constants.TaggingReason.DELETED,
         )
+        with time_machine.travel("2025-07-01"):
+            CommentFactory(article=self.article, text="Some comment")
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -300,7 +308,7 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_no_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(8):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.patch(self.url, {}, content_type="application/json")
 
         assert response.status_code == HTTPStatus.OK
@@ -312,7 +320,7 @@ class TestUpdateArticleView:
         )
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -339,7 +347,7 @@ class TestUpdateArticleView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.article.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
