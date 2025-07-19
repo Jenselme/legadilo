@@ -240,6 +240,10 @@ class TestGetArticleView:
     def _setup_data(self, user):
         self.article = ArticleFactory(
             user=user,
+            id=1,
+            title="Article title",
+            url="https://example.com/articles/article.html",
+            external_article_id="external-article-id",
             published_at=utcdt(2024, 11, 24, 17, 57, 0),
             updated_at=utcdt(2024, 11, 24, 17, 57, 0),
         )
@@ -276,12 +280,7 @@ class TestGetArticleView:
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
 
 @pytest.mark.django_db
@@ -290,6 +289,10 @@ class TestUpdateArticleView:
     def _setup_data(self, user):
         self.article = ArticleFactory(
             user=user,
+            id=1,
+            title="Article title",
+            url="https://example.com/articles/article.html",
+            external_article_id="external-article-id",
             published_at=utcdt(2024, 11, 24, 17, 57, 0),
             updated_at=utcdt(2024, 11, 24, 17, 57, 0),
         )
@@ -312,12 +315,7 @@ class TestUpdateArticleView:
             response = logged_in_sync_client.patch(self.url, {}, content_type="application/json")
 
         assert response.status_code == HTTPStatus.OK
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
         with django_assert_num_queries(10):
@@ -335,12 +333,7 @@ class TestUpdateArticleView:
         assert self.article.title == "New title"
         assert self.article.read_at == utcdt(2024, 11, 24, 18)
         assert self.article.reading_time == 10
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
     def test_update_tags(self, logged_in_sync_client, user, django_assert_num_queries, snapshot):
         existing_tag = TagFactory(user=user, title="Tag to keep")
@@ -364,12 +357,7 @@ class TestUpdateArticleView:
             ("Tag to delete", constants.TaggingReason.DELETED),
             ("Tag to keep", constants.TaggingReason.ADDED_MANUALLY),
         ]
-        snapshot.assert_match(
-            serialize_for_snapshot(
-                _prepare_article_for_serialization(response.json(), self.article)
-            ),
-            "article.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
 
 @pytest.mark.django_db

@@ -5,24 +5,24 @@
       {
         "article_retention_time": 0,
         "category": {
-          "id": 10,
-          "slug": "category-slug",
-          "title": "Category title"
+          "id": 1,
+          "slug": "my-category",
+          "title": "My Category"
         },
         "description": "",
-        "details_url": "https://example.com/feeds/articles/1-feed-slug/",
+        "details_url": "http://testserver/feeds/articles/3-feed-with-category/",
         "disabled_at": null,
         "disabled_reason": "",
         "enabled": true,
         "feed_type": "rss",
-        "feed_url": "https://example.com/feed.rss",
-        "id": 1,
+        "feed_url": "https://example.com/feeds/2.xml",
+        "id": 3,
         "open_original_url_by_default": false,
         "refresh_delay": "DAILY_AT_NOON",
         "site_url": "https://example.com",
-        "slug": "feed-slug",
+        "slug": "feed-with-category",
         "tags": [],
-        "title": "Feed title"
+        "title": "Feed with category"
       }
     ]
   },
@@ -31,19 +31,19 @@
       "article_retention_time": 0,
       "category": null,
       "description": "",
-      "details_url": "https://example.com/feeds/articles/1-feed-slug/",
+      "details_url": "http://testserver/feeds/articles/2-feed-without-a-category/",
       "disabled_at": null,
       "disabled_reason": "",
       "enabled": true,
       "feed_type": "rss",
-      "feed_url": "https://example.com/feed.rss",
-      "id": 1,
+      "feed_url": "https://example.com/feeds/no_cat.xml",
+      "id": 2,
       "open_original_url_by_default": false,
       "refresh_delay": "DAILY_AT_NOON",
       "site_url": "https://example.com",
-      "slug": "feed-slug",
+      "slug": "feed-without-a-category",
       "tags": [],
-      "title": "Feed title"
+      "title": "Feed without a category"
     }
   ]
 }

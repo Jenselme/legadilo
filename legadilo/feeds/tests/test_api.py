@@ -17,7 +17,7 @@ from legadilo.utils.testing import serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt
 
 
-def prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, Any]:
+def _prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, Any]:
     data = data.copy()
     assert data["id"] == feed.id
     assert data["slug"] == feed.slug
@@ -215,9 +215,16 @@ class TestDeleteCategoryView:
 class TestListFeedsView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
-        self.feed = FeedFactory(user=user)
+        self.feed = FeedFactory(
+            id=1, user=user, title="Some feed", feed_url="https://example.com/feed.xml"
+        )
         self.other_feed = FeedFactory(
-            user=user, disabled_at=utcdt(2025, 4, 1), disabled_reason="Disabled"
+            id=2,
+            user=user,
+            title="Other feed",
+            feed_url="https://example.com/other-feed.xml",
+            disabled_at=utcdt(2025, 4, 1),
+            disabled_reason="Disabled",
         )
         self.url = reverse("api-1.0.0:list_feeds")
 
@@ -237,11 +244,7 @@ class TestListFeedsView:
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
-        data = response.json()
-        assert len(data["items"]) == 2
-        data["items"][0] = prepare_feed_for_snapshot(data["items"][0], self.feed)
-        data["items"][1] = prepare_feed_for_snapshot(data["items"][1], self.other_feed)
-        snapshot.assert_match(serialize_for_snapshot(data), "feeds.json")
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feeds.json")
 
     def test_filter_by_urls(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url, {"feed_urls": [self.feed.feed_url]})
@@ -304,7 +307,7 @@ class TestSubscribeToFeedView:
         assert feed.category is None
         assert feed.user == user
         snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
+            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
         )
 
     def test_subscribe_to_feed(
@@ -337,7 +340,7 @@ class TestSubscribeToFeedView:
         assert list(feed.tags.values_list("title", flat=True)) == ["Some tag", existing_tag.title]
         assert feed.user == user
         snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
+            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
         )
 
     def test_subscribe_to_feed_invalid_category(self, logged_in_sync_client):
@@ -369,7 +372,7 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.ALREADY_REPORTED
         feed = Feed.objects.get()
         snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), feed)),
+            serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)),
             "feed.json",
         )
 
@@ -391,7 +394,9 @@ class TestSubscribeToFeedView:
 class TestGetFeedView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
-        self.feed = FeedFactory(user=user)
+        self.feed = FeedFactory(
+            id=1, user=user, title="Some feed", feed_url="https://example.com/feed"
+        )
         self.url = reverse("api-1.0.0:get_feed", kwargs={"feed_id": self.feed.id})
 
     def test_not_logged_in(self, client):
@@ -410,19 +415,22 @@ class TestGetFeedView:
 
         assert response.status_code == HTTPStatus.OK
 
-        snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
-            "feed.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feed.json")
 
 
 @pytest.mark.django_db
 class TestUpdateFeedView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
-        self.feed_category = FeedCategoryFactory(user=user, title="Some category")
-        self.other_feed_category = FeedCategoryFactory(user=user, title="Other category")
-        self.feed = FeedFactory(user=user, category=self.feed_category)
+        self.feed_category = FeedCategoryFactory(id=1, user=user, title="Some category")
+        self.other_feed_category = FeedCategoryFactory(id=2, user=user, title="Other category")
+        self.feed = FeedFactory(
+            id=1,
+            user=user,
+            category=self.feed_category,
+            title="Some feed",
+            feed_url="https://example.com/feed.xml",
+        )
         self.url = reverse("api-1.0.0:update_feed", kwargs={"feed_id": self.feed.id})
 
     def test_not_logged_in(self, client):
@@ -448,10 +456,7 @@ class TestUpdateFeedView:
         assert response.status_code == HTTPStatus.OK
         self.feed.refresh_from_db()
         assert self.feed.category_id == self.other_feed_category.id
-        snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
-            "feed.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feed.json")
 
     def test_unset_category(self, logged_in_sync_client, django_assert_num_queries, snapshot):
         with django_assert_num_queries(9):
@@ -464,10 +469,7 @@ class TestUpdateFeedView:
         assert response.status_code == HTTPStatus.OK
         self.feed.refresh_from_db()
         assert self.feed.category_id is None
-        snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
-            "feed.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feed.json")
 
     def test_disable_feed_invalid_payload(self, logged_in_sync_client):
         response = logged_in_sync_client.patch(
@@ -509,10 +511,7 @@ class TestUpdateFeedView:
         assert self.feed.enabled
         assert self.feed.refresh_delay == constants.FeedRefreshDelays.TWICE_A_WEEK
         assert self.feed.article_retention_time == 600
-        snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
-            "feed.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feed.json")
 
     def test_disable_feed(self, logged_in_sync_client):
         response = logged_in_sync_client.patch(
@@ -560,10 +559,7 @@ class TestUpdateFeedView:
             "New tag",
             "Tag to keep",
         ]
-        snapshot.assert_match(
-            serialize_for_snapshot(prepare_feed_for_snapshot(response.json(), self.feed)),
-            "feed.json",
-        )
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feed.json")
 
 
 @pytest.mark.django_db

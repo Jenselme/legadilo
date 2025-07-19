@@ -9,7 +9,6 @@ from django.urls import reverse
 
 from legadilo.feeds.models import FeedArticle
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
-from legadilo.feeds.tests.test_api import prepare_feed_for_snapshot
 from legadilo.reading.tests.factories import ArticleFactory
 from legadilo.utils.testing import read_streamable_response, serialize_for_snapshot
 from legadilo.utils.time_utils import utcdt
@@ -20,14 +19,16 @@ class TestExportFeedsApi:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.url = reverse("api-1.0.0:export_feeds")
-        self.category = FeedCategoryFactory(user=user, title="My Category")
-        FeedFactory(title="Feed other user", feed_url="https://example.com/feeds/1.xml")
+        self.category = FeedCategoryFactory(id=1, user=user, title="My Category")
+        FeedFactory(id=1, title="Feed other user", feed_url="https://example.com/feeds/1.xml")
         self.feed_without_category = FeedFactory(
+            id=2,
             user=user,
             title="Feed without a category",
             feed_url="https://example.com/feeds/no_cat.xml",
         )
         self.feed_with_category = FeedFactory(
+            id=3,
             user=user,
             category=self.category,
             title="Feed with category",
@@ -53,14 +54,7 @@ class TestExportFeedsApi:
 
         assert response.status_code == HTTPStatus.OK
         assert response.headers.get("Content-Type") == "application/json; charset=utf-8"
-        data = response.json()
-        data["feeds_without_category"][0] = prepare_feed_for_snapshot(
-            data["feeds_without_category"][0], self.feed_without_category
-        )
-        data["feeds_by_categories"][self.category.title][0] = prepare_feed_for_snapshot(
-            data["feeds_by_categories"][self.category.title][0], self.feed_with_category
-        )
-        snapshot.assert_match(serialize_for_snapshot(data), "feeds.json")
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "feeds.json")
 
 
 @pytest.mark.django_db
