@@ -1,18 +1,31 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+from contextlib import contextmanager
 from http import HTTPStatus
+from unittest.mock import patch
 
 import pytest
-from allauth.conftest import reauthentication_bypass as allauth_reauthentication_bypass
 from django.urls import reverse
 
 from legadilo.core.models import Timezone
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory, UserSettingsFactory
 
-reauthentication_bypass = allauth_reauthentication_bypass
+
+@pytest.fixture
+def reauthentication_bypass():
+    """Copied from https://codeberg.org/allauth/django-allauth/src/commit/9bbcca14665b787d20284125c610986f55d86eec/tests/conftest.py#L134"""
+
+    @contextmanager
+    def f():
+        with patch(
+            "allauth.account.internal.flows.reauthentication.did_recently_authenticate"
+        ) as m:
+            m.return_value = True
+            yield
+
+    return f
 
 
 @pytest.fixture(autouse=True)
