@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import pytest
+import time_machine
 
 from legadilo.feeds.models import FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory
 from legadilo.utils.testing import serialize_for_snapshot
+from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db
@@ -53,3 +55,16 @@ class TestFeedCategoryManager:
         assert len(exports) == 1
         assert exports[0]["category_id"] == feed_category_user.id
         snapshot.assert_match(serialize_for_snapshot(exports), "categories.json")
+
+    def test_export_recently_updated(self, user):
+        with time_machine.travel("2024-01-01"):
+            FeedCategoryFactory(user=user, id=1)
+        with time_machine.travel("2025-06-02"):
+            recently_updated_category = FeedCategoryFactory(
+                user=user, id=2, title="Recently updated feed category"
+            )
+
+        exports = FeedCategory.objects.export(user, updated_since=utcdt(2025, 6, 1))
+
+        assert len(exports) == 1
+        assert exports[0]["category_id"] == recently_updated_category.id

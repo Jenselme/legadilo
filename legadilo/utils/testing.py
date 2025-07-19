@@ -38,3 +38,12 @@ def serialize_for_snapshot(value: Any) -> str:
 
 def all_model_fields_except(model: type[models.Model], excluded_fields: set[str]):
     return [field.name for field in model._meta.fields if field.name not in excluded_fields]
+
+
+def read_streamable_response(response) -> bytes:
+    content = b""
+    for partial_content in response.streaming_content:
+        # Correct line ending because we will loose the initial one with git.
+        content += partial_content.replace(b"\r\n", b"\n")
+
+    return content

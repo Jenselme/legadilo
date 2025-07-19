@@ -1,14 +1,17 @@
 #  SPDX-FileCopyrightText: 2025 Legadilo contributors
 #
 #  SPDX-License-Identifier: AGPL-3.0-or-later
+from datetime import datetime
 from typing import Literal, assert_never
 
+from django.http.response import StreamingHttpResponse
 from django.template.response import TemplateResponse
 from ninja import Query, Router
 from ninja.schema import Schema
+from pydantic import Field
 
 from legadilo.feeds.api import OutFeedSchema
-from legadilo.import_export.services.export import build_feeds_export_context
+from legadilo.import_export.services.export import build_feeds_export_context, export_articles
 from legadilo.users.user_types import AuthenticatedApiRequest
 
 export_api_router = Router(tags=["export"])
@@ -48,3 +51,29 @@ def export_feeds_view(
             }
         case _:
             assert_never(query.format)
+
+
+class ExportArticlesQuery(Schema):
+    include_feeds: bool = True
+    updated_since: datetime | None = Field(
+        default=None,
+        description="Only include articles and feeds updated since the given date. "
+        "Articles updated through a feed or manually or with a recent enough comment "
+        "will be included. Feeds that has been fetched but not edited recently won't "
+        "be included. Deleted articles are never returned by this endpoint, deleted "
+        "articles are never included in any export.",
+    )
+
+
+@export_api_router.get(
+    "/articles/", url_name="export_articles", summary="Export articles in CSV format"
+)
+def export_articles_view(
+    request: AuthenticatedApiRequest, query: Query[ExportArticlesQuery]
+) -> StreamingHttpResponse:
+    return StreamingHttpResponse(
+        export_articles(
+            request.auth, include_feeds=query.include_feeds, updated_since=query.updated_since
+        ),
+        content_type="text/csv",
+    )

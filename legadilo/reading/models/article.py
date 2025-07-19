@@ -10,6 +10,7 @@ import math
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import datetime
 from itertools import chain
 from typing import TYPE_CHECKING, Literal, Self, assert_never
 from urllib.parse import urlparse
@@ -306,8 +307,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_details(self) -> Self:
         return self.prefetch_related(_build_prefetch_article_tags(), "comments").for_feed_links()
 
-    def for_export(self, user: User) -> Self:
-        return (
+    def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
+        qs = (
             self.for_user(user)
             .alias(
                 feed_category_ids=ArrayAgg("feeds__category__id", order="feeds__id"),
@@ -360,6 +361,13 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .prefetch_related(_build_prefetch_article_tags())
             .order_by("id")
         )
+        if updated_since:
+            qs = qs.filter(
+                models.Q(updated_at__gte=updated_since)
+                | models.Q(comments__updated_at__gte=updated_since)
+            )
+
+        return qs
 
     def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
         # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
@@ -654,8 +662,8 @@ class ArticleManager(models.Manager["Article"]):
     def get_articles_with_external_tag(self, user: User, tag: str) -> ArticleQuerySet:
         return self.get_queryset().for_user(user).for_external_tag(tag)
 
-    def export(self, user: User):
-        articles_qs = self.get_queryset().for_export(user)
+    def export(self, user: User, *, updated_since: datetime | None = None):
+        articles_qs = self.get_queryset().for_export(user, updated_since=updated_since)
         nb_pages = math.ceil(articles_qs.count() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
         for page in range(nb_pages):
             articles = []

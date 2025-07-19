@@ -1428,9 +1428,52 @@ class TestArticleManager:
         assert articles[1][0]["article_id"] == article_no_feed.id
         snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
 
-    def _export_all_articles(self, user):
+    @patch.object(constants, "MAX_EXPORT_ARTICLES_PER_PAGE", 2)
+    def test_export_updated_since(self, user, other_user):
+        ArticleFactory(
+            id=1,
+            user=user,
+            title="Old article",
+            url="https://example.com/article/1/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+            authors=["Author 1", "Author 2"],
+            contributors=["Contributor 1", "Contributor 2"],
+            external_tags=["Tag 1", "Tag 2"],
+            read_at=utcdt(2024, 6, 25, 12, 0, 0),
+            opened_at=utcdt(2024, 6, 25, 12, 0, 0),
+            is_favorite=True,
+            is_for_later=True,
+        )
+        recent_article = ArticleFactory(
+            id=2,
+            user=user,
+            title="Recently updated article",
+            url="https://example.com/article/2/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2025, 6, 23, 12, 0, 0),
+        )
+        article_with_recent_comment = ArticleFactory(
+            id=3,
+            user=user,
+            title="Article with recent comment",
+            url="https://example.com/article/3/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
+        with time_machine.travel("2025-06-04"):
+            CommentFactory(article=article_with_recent_comment, text="A comment")
+
+        articles = self._export_all_articles(user, utcdt(2025, 6, 1))
+
+        assert len(articles) == 1
+        assert len(articles[0]) == 2
+        assert articles[0][0]["article_id"] == recent_article.id
+        assert articles[0][1]["article_id"] == article_with_recent_comment.id
+
+    def _export_all_articles(self, user, updated_since=None):
         all_articles = []
-        for articles in Article.objects.export(user):
+        for articles in Article.objects.export(user, updated_since=updated_since):
             all_articles.append(articles)
 
         return all_articles
