@@ -70,14 +70,27 @@ export const deleteArticle = async (articleId) =>
   await httpDelete(`/api/reading/articles/${articleId}/`);
 
 export const listArticles = async ({ articleUrls }) => {
-  let qs = "";
   const isFilteringByUrls = articleUrls && articleUrls.length > 0;
-  if (isFilteringByUrls) {
-    qs = articleUrls.map((articleUrl) => `urls=${encodeURIComponent(articleUrl)}`).join("&");
-    qs = `?${qs}`;
+  if (!isFilteringByUrls) {
+    return await get("/api/reading/articles/");
   }
 
-  return await get(`/api/reading/articles/${qs}`);
+  const queries = articleUrls
+    .map(
+      (articleUrl) => `/api/reading/articles/?q=${encodeURIComponent(articleUrl)}&search_type=url`,
+    )
+    .map((query) => get(query));
+  const results = await Promise.all(queries);
+  return results.reduce(
+    (acc, result) => ({
+      count: acc.count + result.items.length,
+      items: [...acc.items, ...result.items],
+    }),
+    {
+      count: 0,
+      items: [],
+    },
+  );
 };
 
 export const subscribeToFeed = async (link) => await post("/api/feeds/", { feed_url: link });

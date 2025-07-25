@@ -8,6 +8,11 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.07.2
+
+Browser extension:
+- Correct already saved links detection.
+
 ## 25.07.1
 
 API Changes:
