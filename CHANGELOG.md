@@ -309,7 +309,7 @@ Skipped because of release script bug due to local testing.
 ## 24.07.2
 
 - Scroll to the top of reading lists when going back to them.
-- Refresh session at every request to prevent to reconnect to often while loosing session rapidly on used devices.
+- Refresh session at every request to prevent to reconnect to often while losing session rapidly on used devices.
 - Don’t try to update the feed if we failed to fetch its file.
 
 

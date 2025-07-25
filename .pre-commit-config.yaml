@@ -83,7 +83,7 @@ repos:
         args: [-e, SC1091]
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v16.19.1
+    rev: v16.22.0
     hooks:
       - id: stylelint
         args: [--fix]
@@ -92,7 +92,7 @@ repos:
           - "stylelint-config-standard@36.0.0"
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: "v9.27.0"
+    rev: "v9.31.0"
     hooks:
       - id: eslint
         args: [--fix]
@@ -109,7 +109,7 @@ repos:
         exclude: (\.vscode)
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.32.0
+    rev: v1.34.0
     hooks:
       - id: typos
 
