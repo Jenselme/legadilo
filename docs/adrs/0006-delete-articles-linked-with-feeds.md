@@ -7,11 +7,11 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 # 6 - Delete articles linked with feeds
 
 * **Date:** 2024-10-12
-* **Status:** Accepted
+* **Status:** Superseeded by <project:./0012-simplify-article-deletion.md>
 
 ## Context
 
-We can delete articles that were never linked to a feed easily: we just have to delete the row from the database and the article is gone until the user adds it again manually.
+We can delete articles never linked to a feed easily: we just have to delete the row from the database, and the article is gone until the user adds it again manually.
 For feeds, it’s different: if we delete the row from the database, it will come back the next time we fetch the feed as a new article (that is until the article is removed from the feed).
 That’s not the behavior we want.
 
