@@ -18,7 +18,7 @@ from legadilo.feeds.tests.factories import (
 )
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
-from legadilo.reading.tests.factories import ArticleFactory, TagFactory
+from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
 from legadilo.users.models import Notification
 from legadilo.users.tests.factories import UserFactory
 from legadilo.utils.testing import serialize_for_snapshot
@@ -329,7 +329,7 @@ class TestFeedManager:
             feed_url=ONE_ARTICLE_FEED_DATA.feed_url, user=user, disabled_at=utcnow()
         )
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(18):
             feed, created = Feed.objects.create_from_metadata(
                 ONE_ARTICLE_FEED_DATA,
                 user,
@@ -345,7 +345,7 @@ class TestFeedManager:
         assert feed.feed_updates.count() == 1
 
     def test_create_from_feed_data(self, user, django_assert_num_queries):
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(18):
             feed, created = Feed.objects.create_from_metadata(
                 FeedData(
                     feed_url="https://example.com/feeds/atom.xml",
@@ -407,7 +407,7 @@ class TestFeedManager:
     def test_create_from_metadata_with_tags(self, user, django_assert_num_queries):
         tag = TagFactory()
 
-        with django_assert_num_queries(20):
+        with django_assert_num_queries(21):
             feed, _ = Feed.objects.create_from_metadata(
                 ONE_ARTICLE_FEED_DATA,
                 user,
@@ -489,7 +489,7 @@ class TestFeedManager:
         with time_machine.travel("2025-01-01"):
             FeedArticle.objects.create(feed=self.feed, article=existing_article)
 
-        with django_assert_num_queries(12), time_machine.travel("2025-07-01", tick=False):
+        with django_assert_num_queries(13), time_machine.travel("2025-07-01", tick=False):
             Feed.objects.update_feed(
                 self.feed,
                 FeedData(
@@ -571,7 +571,7 @@ class TestFeedManager:
                 feed=self.feed, article=existing_article, feed_article_id="some-article-existing"
             )
 
-        with django_assert_num_queries(13), time_machine.travel("2025-07-01", tick=False):
+        with django_assert_num_queries(14), time_machine.travel("2025-07-01", tick=False):
             Feed.objects.update_feed(
                 self.feed,
                 FeedData(
@@ -614,11 +614,86 @@ class TestFeedManager:
         assert existing_article_feed_article.feed_article_id == "some-article-existing"
         assert existing_article_feed_article.last_seen_at == utcdt(2025, 7, 1)
 
+    def test_update_feed_with_republication(self, django_assert_num_queries):
+        existing_article_seen_recently = ArticleFactory(
+            url="https://example.com/article/seen-recently",
+            main_source_type=reading_constants.ArticleSourceType.FEED,
+            main_source_title="Some feed",
+            user=self.feed.user,
+            read_at=utcdt(2024, 6, 1),
+        )
+        FeedArticle.objects.create(
+            feed=self.feed,
+            article=existing_article_seen_recently,
+            feed_article_id="some-article-existing-seen-recently",
+            last_seen_at=utcdt(2025, 6, 1),
+        )
+        existing_article_read_recently = ArticleFactory(
+            url="https://example.com/article/read-recently",
+            main_source_type=reading_constants.ArticleSourceType.FEED,
+            main_source_title="Some feed",
+            user=self.feed.user,
+            read_at=utcdt(2025, 6, 1),
+        )
+        FeedArticle.objects.create(
+            feed=self.feed,
+            article=existing_article_read_recently,
+            feed_article_id="some-article-existing-read-recently",
+            last_seen_at=utcdt(2024, 6, 1),
+        )
+        existing_article_to_republish = ArticleFactory(
+            url="https://example.com/article/to-republish",
+            main_source_type=reading_constants.ArticleSourceType.FEED,
+            main_source_title="Some feed",
+            user=self.feed.user,
+            read_at=utcdt(2024, 6, 1),
+        )
+        FeedArticle.objects.create(
+            feed=self.feed,
+            article=existing_article_to_republish,
+            feed_article_id="some-article-existing-to-republish",
+            last_seen_at=utcdt(2024, 6, 1),
+        )
+
+        with django_assert_num_queries(14), time_machine.travel("2025-07-01", tick=False):
+            Feed.objects.update_feed(
+                self.feed,
+                FeedData(
+                    feed_url="https://example.com/feeds/atom.xml",
+                    site_url="https://example.com",
+                    title="Awesome website",
+                    description="A description",
+                    feed_type=feeds_constants.SupportedFeedType.atom,
+                    etag="W/etag",
+                    last_modified=None,
+                    articles=[
+                        ArticleDataFactory(
+                            external_article_id="some-article-existing-seen-recently"
+                        ),
+                        ArticleDataFactory(
+                            external_article_id="some-article-existing-read-recently"
+                        ),
+                        ArticleDataFactory(
+                            external_article_id="some-article-existing-to-republish"
+                        ),
+                    ],
+                ),
+            )
+
+        assert self.feed.articles.count() == 3
+        assert self.feed.feed_updates.count() == 1
+        existing_article_seen_recently.refresh_from_db()
+        assert existing_article_seen_recently.is_read
+        existing_article_read_recently.refresh_from_db()
+        assert existing_article_read_recently.is_read
+        existing_article_to_republish.refresh_from_db()
+        assert not existing_article_to_republish.is_read
+
     def test_update_feed_with_deleted_articles(self, django_assert_num_queries):
         deleted_url = "https://example.com/deleted/"
         FeedDeletedArticle.objects.create(article_url=deleted_url, feed=self.feed)
 
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(12):
             Feed.objects.update_feed(
                 self.feed,
                 FeedData(

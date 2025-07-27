@@ -313,6 +313,7 @@ class FeedManager(models.Manager["Feed"]):
             feed_last_modified=feed_data.last_modified,
             feed=feed,
         )
+        self._mark_republished_articles_as_unread(feed, feed_data)
         FeedArticle.objects.bulk_create(
             [
                 FeedArticle(
@@ -360,6 +361,17 @@ class FeedManager(models.Manager["Feed"]):
             articles_to_update.append(feed_article.article)
 
         Article.objects.bulk_update(articles_to_update, fields=["url"])
+
+    def _mark_republished_articles_as_unread(self, feed: Feed, feed_data: FeedData):
+        Article.objects.filter(
+            feed_articles__feed=feed,
+            feed_articles__feed_article_id__in=[
+                article.external_article_id for article in feed_data.articles
+            ],
+            feed_articles__last_seen_at__lt=utcnow()
+            - timedelta(days=feeds_constants.DELAY_BEFORE_REPUBLICATION),
+            read_at__lt=utcnow() - timedelta(days=feeds_constants.DELAY_BEFORE_REPUBLICATION),
+        ).update(read_at=None)
 
     @transaction.atomic()
     def log_error(self, feed: Feed, error_message: str, technical_debug_data: dict | None = None):

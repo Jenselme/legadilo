@@ -114,7 +114,7 @@ class TestCreateArticleView:
     ):
         mocked_get_article_from_url = mocker.patch(
             "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(url=self.article_url),
+            return_value=ArticleDataFactory(url=self.article_url, source_title="Source 0"),
         )
 
         with django_assert_num_queries(16):
@@ -137,7 +137,7 @@ class TestCreateArticleView:
     ):
         mocked_get_article_from_url = mocker.patch(
             "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(url=self.article_url),
+            return_value=ArticleDataFactory(url=self.article_url, source_title="Source 0"),
         )
 
         with django_assert_num_queries(20):
