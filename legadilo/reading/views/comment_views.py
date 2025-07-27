@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
+from http import HTTPStatus
 
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -50,13 +51,25 @@ def create_comment_view(
 ) -> TemplateResponse | HttpResponseBadRequest:
     form = CommentArticleForm(request.POST)
     if not form.is_valid():
-        return HttpResponseBadRequest()
+        return TemplateResponse(
+            request,
+            "reading/partials/comment.html#add-comment-form",
+            {
+                "comment_article_form": form,
+                "article_id": form.data.get("article_id"),
+            },
+            headers={"HX-Retarget": "#add-comment-form", "HX-Reswap": "innerHTML"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
 
     article = get_object_or_404(Article, id=form.cleaned_data["article_id"], user=request.user)
     comment = Comment.objects.create(article=article, text=form.cleaned_data["text"])
 
     return TemplateResponse(
-        request, "reading/partials/comment.html#comment-card", {"comment": comment}
+        request,
+        "reading/partials/comment.html#comment-card",
+        {"comment": comment},
+        headers={"HX-Retarget": "#all-comments", "HX-Reswap": "beforeend"},
     )
 
 

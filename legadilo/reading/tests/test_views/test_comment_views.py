@@ -10,6 +10,7 @@ from django.urls import reverse
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading.models import Article, Comment
 from legadilo.reading.tests.factories import CommentFactory
+from legadilo.utils.testing import extract_htmx_headers
 
 
 @pytest.mark.django_db
@@ -66,10 +67,12 @@ and line breaks and *Markdown*
 with <em>nasty HTML</em>
 and line breaks and *Markdown*"""
         )
+        assert extract_htmx_headers(response) == {
+            "HX-Reswap": "beforeend",
+            "HX-Retarget": "#all-comments",
+        }
 
-    def test_create_empty_because_of_html_tags(
-        self, logged_in_sync_client, user, django_assert_num_queries
-    ):
+    def test_create_empty_because_of_html_tags(self, logged_in_sync_client, user):
         article = Article.objects.create(user=user)
 
         response = logged_in_sync_client.post(
@@ -82,6 +85,14 @@ and line breaks and *Markdown*"""
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert article.comments.count() == 0
+        assert response.context_data["comment_article_form"].errors["text"] == [
+            "Your comment renders to an empty string. Please use correct markdown synthax."
+        ]
+        assert response.context_data["article_id"] == str(article.id)
+        assert extract_htmx_headers(response) == {
+            "HX-Reswap": "innerHTML",
+            "HX-Retarget": "#add-comment-form",
+        }
 
 
 @pytest.mark.django_db

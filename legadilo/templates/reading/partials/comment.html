@@ -1,5 +1,17 @@
 {% load crispy_forms_tags i18n partials %}
 
+{% partialdef add-comment-form %}
+    <form id="add-comment-form"
+          method="post"
+          action="{% url 'reading:create_comment' %}"
+          hx-boost="true"
+          hx-push-url="false">
+        {% csrf_token %}
+        <input type="hidden" name="article_id" value="{{ article_id }}" />
+        {{ comment_article_form.text|as_crispy_field }}
+        <button class="btn btn-primary" type="submit" name="comment">{% translate "Comment" %}</button>
+    </form>
+{% endpartialdef %}
 {% partialdef comment-card %}
     <div class="card mt-2" hx-target="this" hx-swap="outerHTML">
         <div class="card-header">

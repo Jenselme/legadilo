@@ -112,17 +112,7 @@
                              class="accordion-collapse collapse"
                              data-bs-parent="#article-edit-accordion">
                             <div class="accordion-body p-2 px-3">
-                                <form method="post"
-                                      action="{% url 'reading:create_comment' %}"
-                                      hx-boost="true"
-                                      hx-push-url="false"
-                                      hx-target="#all-comments"
-                                      hx-swap="beforeend">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="article_id" value="{{ article.id }}" />
-                                    {{ comment_article_form.text|as_crispy_field }}
-                                    <button class="btn btn-primary" type="submit" name="comment">{% translate "Comment" %}</button>
-                                </form>
+                                {% include "reading/partials/comment.html#add-comment-form" with article_id=article.id %}
                                 <div id="all-comments" class="mt-3">
                                     {% for comment in article.comments.all %}
                                         {% include "reading/partials/comment.html#comment-card" with comment=comment %}
