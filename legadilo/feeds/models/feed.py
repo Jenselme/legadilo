@@ -313,8 +313,20 @@ class FeedManager(models.Manager["Feed"]):
             feed=feed,
         )
         FeedArticle.objects.bulk_create(
-            [FeedArticle(article=result.article, feed=feed) for result in save_result],
-            ignore_conflicts=True,
+            [
+                FeedArticle(
+                    article=result.article,
+                    feed=feed,
+                    feed_article_id=result.article_id_in_data,
+                    last_seen_at=utcnow(),
+                )
+                for result in save_result
+            ],
+            update_conflicts=True,
+            # feed_article_id should be stable for a given feed. But if it changes and we can find
+            # the article with its URL, update it here in case it changed.
+            update_fields=["feed_article_id", "last_seen_at"],
+            unique_fields=["article", "feed"],
         )
 
     @transaction.atomic()

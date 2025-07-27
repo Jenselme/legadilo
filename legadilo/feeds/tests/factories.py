@@ -6,7 +6,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from legadilo.feeds.constants import SupportedFeedType
-from legadilo.feeds.models import FeedUpdate
+from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.users.tests.factories import UserFactory
 
 from .. import constants
@@ -34,6 +34,13 @@ class FeedFactory(DjangoModelFactory):
 
     class Meta:
         model = Feed
+
+
+class FeedArticleFactory(DjangoModelFactory):
+    feed_article_id = factory.Sequence(lambda n: f"article-{n}")
+
+    class Meta:
+        model = FeedArticle
 
 
 class FeedUpdateFactory(DjangoModelFactory):

@@ -484,10 +484,12 @@ class TestFeedManager:
             main_source_type=reading_constants.ArticleSourceType.MANUAL,
             main_source_title="Not a feed",
             user=self.feed.user,
+            external_article_id="",
         )
-        FeedArticle.objects.create(feed=self.feed, article=existing_article)
+        with time_machine.travel("2025-01-01"):
+            FeedArticle.objects.create(feed=self.feed, article=existing_article)
 
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(11), time_machine.travel("2025-07-01", tick=False):
             Feed.objects.update_feed(
                 self.feed,
                 FeedData(
@@ -543,9 +545,19 @@ class TestFeedManager:
         assert new_article.title == "Article 1"
         assert new_article.main_source_type == reading_constants.ArticleSourceType.FEED
         assert new_article.main_source_title == self.feed.title
+        assert new_article.external_article_id == "some-article-1"
+        new_article_feed_article = FeedArticle.objects.get(feed=self.feed, article=new_article)
+        assert new_article_feed_article.feed_article_id == "some-article-1"
+        assert new_article_feed_article.last_seen_at == utcdt(2025, 7, 1)
         existing_article.refresh_from_db()
         assert existing_article.main_source_type == reading_constants.ArticleSourceType.MANUAL
         assert existing_article.main_source_title != self.feed.title
+        assert not existing_article.external_article_id
+        existing_article_feed_article = FeedArticle.objects.get(
+            feed=self.feed, article=existing_article
+        )
+        assert existing_article_feed_article.feed_article_id == "some-article-existing"
+        assert existing_article_feed_article.last_seen_at == utcdt(2025, 7, 1)
 
     def test_update_feed_with_deleted_articles(self, django_assert_num_queries):
         deleted_url = "https://example.com/deleted/"
