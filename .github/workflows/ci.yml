@@ -68,6 +68,12 @@ jobs:
       - name: Install the project
         run: uv sync --dev --locked
 
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-4-${{ env.pythonLocation }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: Run pre-commit
         run: uv run pre-commit run -a
 
