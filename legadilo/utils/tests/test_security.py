@@ -14,6 +14,7 @@ from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
         pytest.param("<p>Test</p>", "Test", id="basic-html"),
         pytest.param("<div>Test <p>complete</p></div>", "Test complete", id="nested-html"),
         pytest.param("<div>Hello", "Hello", id="invalid-html"),
+        pytest.param("With & < > &amp; characters", "With & < > & characters", id="special-chars"),
     ],
 )
 def test_full_sanitize(data, clean_data):

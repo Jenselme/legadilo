@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+import html
 from collections.abc import Set
 
 import nh3
@@ -13,8 +13,15 @@ DEFAULT_ALLOWED_ATTRIBUTES = {
 
 
 def full_sanitize(data: str) -> str:
-    """Remove all HTML tags from the input string."""
-    return nh3.clean(data, tags=set(), strip_comments=True)
+    """Remove all HTML tags from the input string.
+
+    HTML entities are unescaped in the output string, so it can be displayed without |safe. The
+    templating engine will take care of escaping them again. If it contains already escaped
+    entities, these entities will be unescaped too.
+    """
+    # nh3.clean will escape entities, must unescape manually.
+    cleaned_string = nh3.clean(data, tags=set(), strip_comments=True)
+    return html.unescape(cleaned_string)
 
 
 def sanitize_keep_safe_tags(data: str, extra_tags_to_cleanup: Set[str] = frozenset()) -> str:

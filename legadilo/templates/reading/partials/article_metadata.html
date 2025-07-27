@@ -4,7 +4,7 @@
     {% if article.authors %}
         <span class="me-2">
             {% include "core/partials/bs-icons/author.html" %}
-            {{ article.authors|join:", "|safe }}
+            {{ article.authors|join:", " }}
         </span>
     {% endif %}
     {% if article.updated_at %}
@@ -21,15 +21,15 @@
             {% if article.annot_feed_slug %}
                 <a href="{% url 'feeds:feed_articles' feed_id=article.annot_feed_id feed_slug=article.annot_feed_slug %}">
                     {% include "core/partials/bs-icons/feed_source.html" %}
-                {{ article.main_source_title|safe }}</a>
+                {{ article.main_source_title }}</a>
             {% else %}
                 <a href="{% url 'feeds:feed_articles' feed_id=article.annot_feed_id %}">
                     {% include "core/partials/bs-icons/feed_source.html" %}
-                {{ article.main_source_title|safe }}</a>
+                {{ article.main_source_title }}</a>
             {% endif %}
         {% else %}
             {% include "core/partials/bs-icons/article_source.html" %}
-            {{ article.main_source_title|safe }}
+            {{ article.main_source_title }}
         {% endif %}
     </span>
     {% if article.reading_time > 0 %}
@@ -47,11 +47,11 @@
     <p>
         {% for tag in article.tags_to_display %}
             <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1 text-wrap"
-               href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{{ tag.title|safe }}</a>
+               href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{{ tag.title }}</a>
         {% endfor %}
         {% for tag in article.external_tags %}
             <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1 text-wrap"
-               href="{% url 'reading:external_tag_with_articles' %}{% querystring tag=tag %}">{{ tag|safe }}</a>
+               href="{% url 'reading:external_tag_with_articles' %}{% querystring tag=tag %}">{{ tag }}</a>
         {% endfor %}
     </p>
 {% endif %}
