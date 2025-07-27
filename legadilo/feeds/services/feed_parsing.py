@@ -25,7 +25,7 @@ from legadilo.reading.services.article_fetching import (
 
 from ...utils.time_utils import dt_to_http_date
 from ...utils.validators import (
-    FullSanitizeValidator,
+    CleanedString,
     ValidUrlValidator,
     default_frozen_model_config,
     is_url_valid,
@@ -42,8 +42,8 @@ class FeedData(BaseSchema):
 
     feed_url: Annotated[str, ValidUrlValidator]
     site_url: Annotated[str, ValidUrlValidator]
-    title: Annotated[str, FullSanitizeValidator, truncate(constants.FEED_TITLE_MAX_LENGTH)]
-    description: Annotated[str, FullSanitizeValidator]
+    title: Annotated[CleanedString, truncate(constants.FEED_TITLE_MAX_LENGTH)]
+    description: CleanedString
     feed_type: constants.SupportedFeedType
     etag: str
     last_modified: datetime | None
