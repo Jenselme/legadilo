@@ -8,7 +8,7 @@
                 {% endblocktranslate %}
         </div>
         <div class="card-body">
-            <div class="card-text">{{ comment.text|markdown }}</div>
+            <div class="card-text">{{ comment.text|markdown|safe }}</div>
         </div>
         <div class="card-footer">
             <button class="btn btn-sm btn-primary"

@@ -13,7 +13,6 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 from pydantic import ValidationError as PydanticValidationError
@@ -83,7 +82,6 @@ def _handle_add_article_save_result(
         return
 
     details_url = str(article_details_url(save_result.article))
-    sanitized_title = mark_safe(save_result.article.title)  # noqa: S308 valid use of markup safe.
 
     if not save_result.article.content:
         messages.warning(
@@ -96,7 +94,7 @@ def _handle_add_article_save_result(
                     )
                 ),
                 details_url,
-                sanitized_title,
+                save_result.article.title,
             ),
         )
     elif save_result.was_created:
@@ -105,7 +103,7 @@ def _handle_add_article_save_result(
             format_html(
                 str(_("Article '<a href=\"{}\">{}</a>' successfully added!")),
                 details_url,
-                sanitized_title,
+                save_result.article.title,
             ),
         )
     else:
@@ -114,7 +112,7 @@ def _handle_add_article_save_result(
             format_html(
                 str(_("Article '<a href=\"{}\">{}</a>' already existed.")),
                 details_url,
-                sanitized_title,
+                save_result.article.title,
             ),
         )
 
