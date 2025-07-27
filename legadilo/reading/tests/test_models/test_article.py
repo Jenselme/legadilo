@@ -12,7 +12,7 @@ import time_machine
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
-from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
+from legadilo.feeds.tests.factories import FeedArticleFactory, FeedCategoryFactory, FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, ReadingListTag
 from legadilo.reading.models.article import (
@@ -172,15 +172,16 @@ class TestArticleQuerySet:
         ArticleFactory(user=user, title="Not linked to a feed")
         feed = FeedFactory(user=user)
         article_one_feed = ArticleFactory(user=user, title="One feed")
-        article_one_feed.feeds.add(feed)
+        FeedArticleFactory(feed=feed, article=article_one_feed)
         other_feed = FeedFactory(user=user)
         article_two_feeds = ArticleFactory(user=user, title="Two feed")
-        article_two_feeds.feeds.add(feed, other_feed)
+        FeedArticleFactory(feed=feed, article=article_two_feeds)
+        FeedArticleFactory(feed=other_feed, article=article_two_feeds)
         feed_no_slug = FeedFactory(
             user=user, title="No slug", slug="", open_original_url_by_default=True
         )
         article_feed_no_slug = ArticleFactory(user=user, title="Article feed no slug")
-        article_feed_no_slug.feeds.add(feed_no_slug)
+        FeedArticleFactory(feed=feed_no_slug, article=article_feed_no_slug)
 
         articles = (
             Article.objects.get_queryset()  # type: ignore[misc]
@@ -828,7 +829,7 @@ class TestArticleQuerySet:
             user=user,
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_one_day_retention.articles.add(unread_1_day_retention_to_keep)
+        FeedArticleFactory(feed=feed_one_day_retention, article=unread_1_day_retention_to_keep)
 
         read_1_day_retention_to_cleanup = ArticleFactory(
             title="Read, 1 day retention (to cleanup)",
@@ -836,7 +837,7 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 1),
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_one_day_retention.articles.add(read_1_day_retention_to_cleanup)
+        FeedArticleFactory(feed=feed_one_day_retention, article=read_1_day_retention_to_cleanup)
 
         read_1_day_retention_to_cleanup_but_was_manually_added_too = ArticleFactory(
             title="Read, 1 day retention but was manually added too (to keep)!",
@@ -844,8 +845,9 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 1),
             main_source_type=constants.ArticleSourceType.MANUAL,
         )
-        feed_one_day_retention.articles.add(
-            read_1_day_retention_to_cleanup_but_was_manually_added_too
+        FeedArticleFactory(
+            feed=feed_one_day_retention,
+            article=read_1_day_retention_to_cleanup_but_was_manually_added_too,
         )
 
         read_1_day_retention_to_keep = ArticleFactory(
@@ -854,7 +856,7 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 6, hour=12),
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_one_day_retention.articles.add(read_1_day_retention_to_keep)
+        FeedArticleFactory(feed=feed_one_day_retention, article=read_1_day_retention_to_keep)
 
         read_seven_day_retention_to_keep = ArticleFactory(
             title="Read, 7 days retention (to keep)",
@@ -862,7 +864,7 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 1),
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_seven_day_retention.articles.add(read_seven_day_retention_to_keep)
+        FeedArticleFactory(feed=feed_seven_day_retention, article=read_seven_day_retention_to_keep)
 
         read_keep_forever_retention_to_keep = ArticleFactory(
             title="Read keep forever (to keep)",
@@ -870,7 +872,7 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 1),
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_forever_retention.articles.add(read_keep_forever_retention_to_keep)
+        FeedArticleFactory(feed=feed_forever_retention, article=read_keep_forever_retention_to_keep)
 
         read_keep_forever_and_one_day_retention_to_keep = ArticleFactory(
             title="Read keep forever and 1 day (to keep)",
@@ -878,8 +880,12 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 1),
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_forever_retention.articles.add(read_keep_forever_and_one_day_retention_to_keep)
-        feed_one_day_retention.articles.add(read_keep_forever_and_one_day_retention_to_keep)
+        FeedArticleFactory(
+            feed=feed_forever_retention, article=read_keep_forever_and_one_day_retention_to_keep
+        )
+        FeedArticleFactory(
+            feed=feed_one_day_retention, article=read_keep_forever_and_one_day_retention_to_keep
+        )
 
         read_keep_one_and_seven_days_retention_to_keep = ArticleFactory(
             title="Read keep 1 and 7 days (to keep)",
@@ -887,8 +893,12 @@ class TestArticleQuerySet:
             read_at=utcdt(2024, 6, 1),
             main_source_type=constants.ArticleSourceType.FEED,
         )
-        feed_forever_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
-        feed_one_day_retention.articles.add(read_keep_one_and_seven_days_retention_to_keep)
+        FeedArticleFactory(
+            feed=feed_forever_retention, article=read_keep_one_and_seven_days_retention_to_keep
+        )
+        FeedArticleFactory(
+            feed=feed_one_day_retention, article=read_keep_one_and_seven_days_retention_to_keep
+        )
 
         with time_machine.travel("2024-06-07 00:00:00"):
             articles_to_cleanup = Article.objects.get_queryset().for_cleanup()
@@ -1393,7 +1403,7 @@ class TestArticleManager:
             is_favorite=True,
             is_for_later=True,
         )
-        article_from_feed.feeds.add(feed_without_category)
+        FeedArticleFactory(feed=feed_without_category, article=article_from_feed)
         article_two_feeds = ArticleFactory(
             id=2,
             user=user,
@@ -1402,7 +1412,8 @@ class TestArticleManager:
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
-        article_two_feeds.feeds.add(feed_with_category, feed_without_category)
+        FeedArticleFactory(feed=feed_with_category, article=article_two_feeds)
+        FeedArticleFactory(feed=feed_without_category, article=article_two_feeds)
         article_no_feed = ArticleFactory(
             id=3,
             user=user,
@@ -1412,7 +1423,7 @@ class TestArticleManager:
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
-        CommentFactory(article=article_from_feed, text="A comment")
+        CommentFactory(id=1, article=article_from_feed, text="A comment")
 
         with django_assert_num_queries(5):
             articles = self._export_all_articles(user)

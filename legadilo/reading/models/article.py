@@ -65,6 +65,7 @@ SEARCH_VECTOR = (
 @dataclass(frozen=True)
 class SaveArticleResult:
     article: Article
+    article_id_in_data: str
     was_updated: bool = False
     was_created: bool = False
 
@@ -313,12 +314,12 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         qs = (
             self.for_user(user)
             .alias(
-                feed_category_ids=ArrayAgg("feeds__category__id", order="feeds__id"),
-                feed_category_titles=ArrayAgg("feeds__category__title", order="feeds__id"),
-                feed_ids=ArrayAgg("feeds__id", order="feeds__id"),
-                feed_titles=ArrayAgg("feeds__title", order="feeds__id"),
-                feed_urls=ArrayAgg("feeds__feed_url", order="feeds__id"),
-                feed_site_urls=ArrayAgg("feeds__site_url", order="feeds__id"),
+                feed_category_ids=ArrayAgg("feeds__category__id", order_by="feeds__id"),
+                feed_category_titles=ArrayAgg("feeds__category__title", order_by="feeds__id"),
+                feed_ids=ArrayAgg("feeds__id", order_by="feeds__id"),
+                feed_titles=ArrayAgg("feeds__title", order_by="feeds__id"),
+                feed_urls=ArrayAgg("feeds__feed_url", order_by="feeds__id"),
+                feed_site_urls=ArrayAgg("feeds__site_url", order_by="feeds__id"),
             )
             .annotate(
                 annot_feed_category_id=Coalesce(
@@ -527,7 +528,15 @@ class ArticleManager(models.Manager["Article"]):
                     was_updated = True
                     article_to_update.obj_updated_at = utcnow()
                 articles_to_update.append(
-                    SaveArticleResult(article=article_to_update, was_updated=was_updated)
+                    SaveArticleResult(
+                        article=article_to_update,
+                        # Current article.external_article_id can be different from the one saved
+                        # in db. If the article was manually added, it may even be empty.
+                        # Don't update the article just for that: too complex for very little
+                        # gain. Use this mapping to preserve the id in further processing.
+                        article_id_in_data=article_data.external_article_id,
+                        was_updated=was_updated,
+                    )
                 )
             else:
                 article_to_create = self.model(
@@ -556,7 +565,11 @@ class ArticleManager(models.Manager["Article"]):
                     is_favorite=article_data.is_favorite,
                 )
                 articles_to_create.append(
-                    SaveArticleResult(article=article_to_create, was_created=True)
+                    SaveArticleResult(
+                        article=article_to_create,
+                        article_id_in_data=article_data.external_article_id,
+                        was_created=True,
+                    )
                 )
 
         self.bulk_create(

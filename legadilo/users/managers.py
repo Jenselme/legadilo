@@ -13,8 +13,8 @@ from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.core.validators import validate_email
 from django.db import models
 
-from legadilo.types import DeletionResult
 from legadilo.utils.time_utils import utcnow
+from legadilo.utils.types import DeletionResult
 
 from . import constants as users_constants
 

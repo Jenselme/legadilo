@@ -7,7 +7,7 @@ import time_machine
 from django.core.management import call_command
 
 from legadilo.feeds.models import FeedDeletedArticle, FeedUpdate
-from legadilo.feeds.tests.factories import FeedFactory, FeedUpdateFactory
+from legadilo.feeds.tests.factories import FeedArticleFactory, FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article, ArticleFetchError
 from legadilo.reading.tests.factories import ArticleFactory, ArticleFetchErrorFactory
 from legadilo.utils.time_utils import utcdt
@@ -48,12 +48,12 @@ class TestCleanDataCommand:
         article_linked_to_forever_feed = ArticleFactory(
             title="Manually added", user=user, read_at=utcdt(2024, 6, 1)
         )
-        feed_keep_article_forever.articles.add(article_linked_to_forever_feed)
+        FeedArticleFactory(feed=feed_keep_article_forever, article=article_linked_to_forever_feed)
         feed_to_cleanup = FeedFactory(user=user, article_retention_time=1)
         article_linked_to_feed_to_cleanup = ArticleFactory(user=user, read_at=utcdt(2024, 6, 1))
-        feed_to_cleanup.articles.add(article_linked_to_feed_to_cleanup)
+        FeedArticleFactory(feed=feed_to_cleanup, article=article_linked_to_feed_to_cleanup)
         unread_article_linked_to_feed_to_cleanup = ArticleFactory(user=user)
-        feed_to_cleanup.articles.add(unread_article_linked_to_feed_to_cleanup)
+        FeedArticleFactory(feed=feed_to_cleanup, article=unread_article_linked_to_feed_to_cleanup)
 
         with time_machine.travel("2024-07-01 00:00:00"):
             call_command("clean_data")

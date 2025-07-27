@@ -82,7 +82,7 @@ class Command(BaseCommand):
                     futures.append((
                         feed,
                         executor.submit(
-                            self._fetch_feed_metadata,
+                            self._fetch_feed_data,
                             client,
                             feed.id,
                             feed.feed_url,
@@ -114,7 +114,7 @@ class Command(BaseCommand):
 
         return feeds_qs
 
-    def _fetch_feed_metadata(
+    def _fetch_feed_data(
         self,
         client: httpx.Client,
         feed_id: int,
@@ -132,7 +132,7 @@ class Command(BaseCommand):
 
     def _update_feed_from_future(self, feed: Feed, future: Future):
         try:
-            feed_metadata = future.result()
+            feed_data = future.result()
         except HTTPStatusError as e:
             if e.response.status_code == HTTPStatus.NOT_MODIFIED:
                 Feed.objects.log_not_modified(feed)
@@ -146,5 +146,5 @@ class Command(BaseCommand):
             logger.exception("Failed to update feed %s", feed)
             Feed.objects.log_error(feed, format_exception(e))
         else:
-            Feed.objects.update_feed(feed, feed_metadata)
+            Feed.objects.update_feed(feed, feed_data)
             logger.info("Updated feed %s", feed)

@@ -8,9 +8,16 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.07.3
+
 - Improve article title edition.
 - Improve behavior when adding new comments.
 - Improve data sanitization.
+- Improve tracking of article id used in feeds.
+  - This should prevent article duplication when an article is republished in a feed under a different URL.
+- Use the article URL as feed article id when the feed doesn’t specify an article id.
+- Mark articles that are republished as unread.
+  - Articles not seen for one year in the feed are considered as republished articles.
 
 ## 25.07.2
 
