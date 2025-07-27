@@ -313,12 +313,12 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         qs = (
             self.for_user(user)
             .alias(
-                feed_category_ids=ArrayAgg("feeds__category__id", order="feeds__id"),
-                feed_category_titles=ArrayAgg("feeds__category__title", order="feeds__id"),
-                feed_ids=ArrayAgg("feeds__id", order="feeds__id"),
-                feed_titles=ArrayAgg("feeds__title", order="feeds__id"),
-                feed_urls=ArrayAgg("feeds__feed_url", order="feeds__id"),
-                feed_site_urls=ArrayAgg("feeds__site_url", order="feeds__id"),
+                feed_category_ids=ArrayAgg("feeds__category__id", order_by="feeds__id"),
+                feed_category_titles=ArrayAgg("feeds__category__title", order_by="feeds__id"),
+                feed_ids=ArrayAgg("feeds__id", order_by="feeds__id"),
+                feed_titles=ArrayAgg("feeds__title", order_by="feeds__id"),
+                feed_urls=ArrayAgg("feeds__feed_url", order_by="feeds__id"),
+                feed_site_urls=ArrayAgg("feeds__site_url", order_by="feeds__id"),
             )
             .annotate(
                 annot_feed_category_id=Coalesce(
