@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="feedarticle",
             name="feed_article_id",
-            field=models.TextField(),
+            field=models.TextField(default=""),
         ),
         migrations.AddField(
             model_name="feedarticle",
@@ -76,5 +76,10 @@ class Migration(migrations.Migration):
                 models.F("feed_article_id"),
                 name="feeds_feedarticle_article_linked_once_per_feed_id",
             ),
+        ),
+        migrations.AlterField(
+            model_name="feedarticle",
+            name="feed_article_id",
+            field=models.TextField(),
         ),
     ]

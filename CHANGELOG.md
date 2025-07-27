@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.07.4
+
+- Correct a migration.
+
 ## 25.07.3
 
 - Improve article title edition.
