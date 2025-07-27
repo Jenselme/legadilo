@@ -155,7 +155,7 @@ class TestFindFeedUrl:
         assert excinfo.value.feed_urls == expected_urls
 
 
-class TestGetFeedMetadata:
+class TestGetFeedData:
     @pytest.mark.parametrize(
         ("feed_url", "feed_content", "feed_type"),
         [
@@ -173,7 +173,7 @@ class TestGetFeedMetadata:
             ),
         ],
     )
-    def test_get_feed_metadata_from_feed_url(
+    def test_get_feed_data_from_feed_url(
         self, feed_url: str, feed_content: str, feed_type: SupportedFeedType, httpx_mock, snapshot
     ):
         httpx_mock.add_response(text=feed_content, url=feed_url)
@@ -220,7 +220,7 @@ class TestGetFeedMetadata:
 
         assert youtube_feed_url == expected_url
 
-    def test_get_feed_metadata_from_page_url(self, httpx_mock, snapshot):
+    def test_get_feed_data_from_page_url(self, httpx_mock, snapshot):
         page_content = get_page_for_feed_subscription_content({
             "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
         })

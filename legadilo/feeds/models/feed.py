@@ -259,7 +259,7 @@ class FeedManager(models.Manager["Feed"]):
     @transaction.atomic()
     def create_from_metadata(  # noqa: PLR0913 too many arguments
         self,
-        feed_metadata: FeedData,
+        feed_data: FeedData,
         user: User,
         refresh_delay: feeds_constants.FeedRefreshDelays,
         article_retention_time: int,
@@ -270,34 +270,34 @@ class FeedManager(models.Manager["Feed"]):
     ) -> tuple[Feed, bool]:
         feed, created = self.get_or_create(
             user=user,
-            feed_url=feed_metadata.feed_url,
+            feed_url=feed_data.feed_url,
             defaults={
-                "site_url": feed_metadata.site_url,
-                "title": feed_metadata.title,
+                "site_url": feed_data.site_url,
+                "title": feed_data.title,
                 "refresh_delay": refresh_delay,
                 "article_retention_time": article_retention_time,
                 "open_original_url_by_default": open_original_url_by_default,
-                "description": feed_metadata.description,
-                "feed_type": feed_metadata.feed_type,
+                "description": feed_data.description,
+                "feed_type": feed_data.feed_type,
                 "category": category,
             },
         )
 
         if created:
             FeedTag.objects.associate_feed_with_tags(feed, tags)
-            self.update_feed(feed, feed_metadata)
+            self.update_feed(feed, feed_data)
         elif not feed.enabled:
             feed.enable()
             feed.save()
-            self.update_feed(feed, feed_metadata)
+            self.update_feed(feed, feed_data)
 
         return feed, created
 
     @transaction.atomic()
-    def update_feed(self, feed: Feed, feed_metadata: FeedData):
+    def update_feed(self, feed: Feed, feed_data: FeedData):
         deleted_feed_urls = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
         articles = [
-            article for article in feed_metadata.articles if article.url not in deleted_feed_urls
+            article for article in feed_data.articles if article.url not in deleted_feed_urls
         ]
         save_result = Article.objects.save_from_list_of_data(
             feed.user,
@@ -308,8 +308,8 @@ class FeedManager(models.Manager["Feed"]):
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,
             ignored_article_urls=list(deleted_feed_urls),
-            feed_etag=feed_metadata.etag,
-            feed_last_modified=feed_metadata.last_modified,
+            feed_etag=feed_data.etag,
+            feed_last_modified=feed_data.last_modified,
             feed=feed,
         )
         FeedArticle.objects.bulk_create(
