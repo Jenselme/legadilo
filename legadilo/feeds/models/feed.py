@@ -295,6 +295,7 @@ class FeedManager(models.Manager["Feed"]):
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_data: FeedData):
+        self._update_article_urls_from_feed(feed, feed_data)
         deleted_feed_urls = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
         articles = [
             article for article in feed_data.articles if article.url not in deleted_feed_urls
@@ -328,6 +329,37 @@ class FeedManager(models.Manager["Feed"]):
             update_fields=["feed_article_id", "last_seen_at"],
             unique_fields=["article", "feed"],
         )
+
+    def _update_article_urls_from_feed(self, feed: Feed, feed_data: FeedData):
+        """Update the URLs of the articles in the feed if they changed.
+
+        We assume the previous URL is now a redirection to the new one. This assumes the article id
+        in the feed is stable. If not, the existing article will be found by its URLs.
+        If both have changed, a new article will be created (this shouldn't happen and duplication
+        is accepted in this case).
+        """
+        feed_article_id_to_article_url = {
+            article.external_article_id: article.url for article in feed_data.articles
+        }
+        articles_to_update = []
+        for feed_article in (
+            FeedArticle.objects.all()
+            .filter(
+                feed=feed,
+                feed_article_id__in=[article.external_article_id for article in feed_data.articles],
+            )
+            .prefetch_related("article")
+        ):
+            if (
+                feed_article.article.url
+                == feed_article_id_to_article_url[feed_article.feed_article_id]
+            ):
+                continue
+
+            feed_article.article.url = feed_article_id_to_article_url[feed_article.feed_article_id]
+            articles_to_update.append(feed_article.article)
+
+        Article.objects.bulk_update(articles_to_update, fields=["url"])
 
     @transaction.atomic()
     def log_error(self, feed: Feed, error_message: str, technical_debug_data: dict | None = None):
