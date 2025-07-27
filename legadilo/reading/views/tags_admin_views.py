@@ -21,13 +21,12 @@ from legadilo.reading.models.tag import SubTagMapping
 from legadilo.types import FormChoices
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.security import full_sanitize
 
 
 @require_GET
 @login_required
 def tags_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    searched_text = full_sanitize(request.GET.get("q", ""))
+    searched_text = request.GET.get("q", "")
 
     return TemplateResponse(
         request,

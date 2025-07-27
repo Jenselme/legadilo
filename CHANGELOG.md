@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Improve article title edition.
+- Improve behavior when adding new comments.
+- Improve data sanitization.
+
 ## 25.07.2
 
 Browser extension:

@@ -82,7 +82,27 @@ def test_for_later_action_url(is_for_later, update_action):
     )
 
 
-def test_markdown():
-    rendered_value = markdown("*Hello* **world**!")
+@pytest.mark.parametrize(
+    ("markdown_input", "expected_output"),
+    [
+        pytest.param(
+            "*Hello* **world**!",
+            "<p><em>Hello</em> <strong>world</strong>!</p>",
+            id="markdown-to-html",
+        ),
+        pytest.param(
+            "<strong>Hello</strong>",
+            "<p><strong>Hello</strong></p>",
+            id="with-basic-html",
+        ),
+        pytest.param(
+            "<script>Hello</script> World",
+            "<p>World</p>",
+            id="with-dangerous-html",
+        ),
+    ],
+)
+def test_markdown(markdown_input, expected_output):
+    rendered_value = markdown(markdown_input)
 
-    assert rendered_value == "<p><em>Hello</em> <strong>world</strong>!</p>"
+    assert rendered_value == expected_output

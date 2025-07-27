@@ -29,7 +29,6 @@ from legadilo.reading.models import Article
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.users.models import User
 from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.security import full_sanitize
 from legadilo.utils.time_utils import safe_datetime_parse
 from legadilo.utils.validators import is_url_valid
 
@@ -95,7 +94,7 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str,
 
 
 def _import_category(user, row):
-    return FeedCategory.objects.get_or_create(user=user, title=full_sanitize(row["category_title"]))
+    return FeedCategory.objects.get_or_create(user=user, title=row["category_title"])
 
 
 def _import_feed(user, category, row, feed_url_in_file_to_true_feed):

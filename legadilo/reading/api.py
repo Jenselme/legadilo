@@ -31,7 +31,6 @@ from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
-    FullSanitizeValidator,
     ValidUrlValidator,
     remove_falsy_items,
 )
@@ -70,7 +69,7 @@ class OutArticleSchema(ModelSchema):
 
 class ArticleCreation(Schema):
     url: Annotated[str, ValidUrlValidator]
-    title: Annotated[str, FullSanitizeValidator] = ""
+    title: CleanedString = ""
     # We must not sanitize this yet: we need the raw content when building the article to fetch some
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
     # content of the article.
@@ -159,7 +158,7 @@ def get_article_view(request: AuthenticatedApiRequest, article_id: int) -> Artic
 
 
 class ArticleUpdate(Schema):
-    title: Annotated[str, FullSanitizeValidator] | SkipJsonSchema[NotSet] = NotSet(str)
+    title: CleanedString | SkipJsonSchema[NotSet] = NotSet(str)
     tags: (
         Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] | SkipJsonSchema[NotSet]
     ) = NotSet(tuple)

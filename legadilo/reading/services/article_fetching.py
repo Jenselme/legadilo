@@ -56,12 +56,10 @@ class ArticleData(BaseSchema):
     model_config = default_frozen_model_config
 
     external_article_id: Annotated[
-        str, FullSanitizeValidator, truncate(constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH)
+        CleanedString, truncate(constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH)
     ]
-    source_title: Annotated[
-        str, FullSanitizeValidator, truncate(constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
-    ]
-    title: Annotated[str, FullSanitizeValidator]
+    source_title: Annotated[CleanedString, truncate(constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)]
+    title: CleanedString
     summary: Annotated[
         str,
         sanitize_keep_safe_tags_validator(constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY),
@@ -73,7 +71,7 @@ class ArticleData(BaseSchema):
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     url: Annotated[str, ValidUrlValidator]
     preview_picture_url: OptionalUrl = ""
-    preview_picture_alt: Annotated[str, FullSanitizeValidator, none_to_value("")] = ""
+    preview_picture_alt: Annotated[CleanedString, none_to_value("")] = ""
     published_at: datetime | None = None
     updated_at: datetime | None = None
     language: Language

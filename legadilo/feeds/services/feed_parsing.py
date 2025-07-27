@@ -22,11 +22,10 @@ from legadilo.reading.services.article_fetching import (
     ArticleData,
     parse_tags_list,
 )
-from legadilo.utils.security import full_sanitize
 
 from ...utils.time_utils import dt_to_http_date
 from ...utils.validators import (
-    FullSanitizeValidator,
+    CleanedString,
     ValidUrlValidator,
     default_frozen_model_config,
     is_url_valid,
@@ -43,8 +42,8 @@ class FeedData(BaseSchema):
 
     feed_url: Annotated[str, ValidUrlValidator]
     site_url: Annotated[str, ValidUrlValidator]
-    title: Annotated[str, FullSanitizeValidator, truncate(constants.FEED_TITLE_MAX_LENGTH)]
-    description: Annotated[str, FullSanitizeValidator]
+    title: Annotated[CleanedString, truncate(constants.FEED_TITLE_MAX_LENGTH)]
+    description: CleanedString
     feed_type: constants.SupportedFeedType
     etag: str
     last_modified: datetime | None
@@ -130,7 +129,7 @@ def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: 
         feed_url=resolved_url,
         site_url=_get_feed_site_url(parsed_feed.feed.get("link"), resolved_url),
         title=feed_title,
-        description=full_sanitize(parsed_feed.feed.get("description", "")),
+        description=parsed_feed.feed.get("description", ""),
         feed_type=constants.SupportedFeedType(parsed_feed.version),
         articles=_parse_articles_in_feed(resolved_url, feed_title, parsed_feed),
         etag=parsed_feed.get("etag", ""),

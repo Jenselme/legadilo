@@ -112,7 +112,7 @@ It’s standard, safe and simple to implement.
 
 Actions to solve the problem:
 1. Unescape HTML entities at the end of `full_sanitize` to store them as is and prevent double escaping in the templates.
-2. Rerun the proper sanitization on all articles titles dans tags like this to make sure existing data will never be a problem:
+2. Rerun the proper sanitization on all articles titles and tags like this to make sure existing data will never be a problem:
    1. Unescape what is saved to avoid double escaping.
    2. Run the new `full_sanitize`.
 3. Remove the `|safe` template tag when displaying titles and tags.
@@ -128,3 +128,4 @@ Actions to solve the problem:
 - No data loss and users can enter HTML code that won’t be interpreted in titles, tags and comments.
 - The solution is straightforward and standard.
 - Reduces the reliance of escape hatches like `|safe` to render data, making places where it’s necessary easier to find and audit.
+- At worst if we forget to sanitize something, the display will be weird.

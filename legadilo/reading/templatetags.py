@@ -5,11 +5,11 @@
 from django.template.defaultfilters import stringfilter
 from django.template.defaulttags import register
 from django.urls import reverse
-from django.utils.safestring import mark_safe
 from markdown import Markdown
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
+from legadilo.utils.security import sanitize_keep_safe_tags
 
 
 @register.filter
@@ -99,4 +99,6 @@ def update_article_form_id(article: Article) -> str:
 @stringfilter
 def markdown(value: str) -> str:
     md = Markdown(extensions=["fenced_code"])
-    return mark_safe(md.convert(value))  # noqa: S308 valid use of markup safe.
+    rendered_value = md.convert(value)
+    cleaned_value = sanitize_keep_safe_tags(rendered_value)
+    return cleaned_value.strip()

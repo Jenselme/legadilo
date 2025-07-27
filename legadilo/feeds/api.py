@@ -33,7 +33,6 @@ from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.utils.http_utils import get_rss_sync_client
 from legadilo.utils.validators import (
     CleanedString,
-    FullSanitizeValidator,
     ValidUrlValidator,
     remove_falsy_items,
 )
@@ -159,9 +158,7 @@ def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
 
 
 class FeedUpdate(Schema):
-    disabled_reason: Annotated[str, FullSanitizeValidator] | SkipJsonSchema[NotSet] | None = NotSet(
-        str
-    )
+    disabled_reason: CleanedString | SkipJsonSchema[NotSet] | None = NotSet(str)
     disabled_at: datetime | SkipJsonSchema[NotSet] | None = NotSet(datetime.now)
     category_id: int | SkipJsonSchema[NotSet] | None = NotSet(int)
     tags: (

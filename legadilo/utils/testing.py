@@ -47,3 +47,9 @@ def read_streamable_response(response) -> bytes:
         content += partial_content.replace(b"\r\n", b"\n")
 
     return content
+
+
+def extract_htmx_headers(response):
+    return {
+        name: value for name, value in response.headers.items() if name.lower().startswith("hx-")
+    }

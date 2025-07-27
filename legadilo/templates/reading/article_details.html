@@ -19,7 +19,7 @@
 {% endblock page_css %}
 
 {% block title %}
-    {{ article.title|safe }}
+    {{ article.title }}
 {% endblock title %}
 
 {% block content %}
@@ -46,7 +46,7 @@
             </aside>
             <article class="col col-12 col-md-7 article-content">
                 <header>
-                    <h1 id="legadilo-article-title">{{ article.title|safe }}</h1>
+                    <h1 id="legadilo-article-title">{{ article.title }}</h1>
                     <div class="text-secondary">{% include 'reading/partials/article_metadata.html' %}</div>
                 </header>
                 <div id="article-edit-accordion" class="accordion">
@@ -112,17 +112,7 @@
                              class="accordion-collapse collapse"
                              data-bs-parent="#article-edit-accordion">
                             <div class="accordion-body p-2 px-3">
-                                <form method="post"
-                                      action="{% url 'reading:create_comment' %}"
-                                      hx-boost="true"
-                                      hx-push-url="false"
-                                      hx-target="#all-comments"
-                                      hx-swap="beforeend">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="article_id" value="{{ article.id }}" />
-                                    {{ comment_article_form.text|as_crispy_field }}
-                                    <button class="btn btn-primary" type="submit" name="comment">{% translate "Comment" %}</button>
-                                </form>
+                                {% include "reading/partials/comment.html#add-comment-form" with article_id=article.id %}
                                 <div id="all-comments" class="mt-3">
                                     {% for comment in article.comments.all %}
                                         {% include "reading/partials/comment.html#comment-card" with comment=comment %}
@@ -154,12 +144,12 @@
                 <div id="article-side-toc">
                     {% partialdef article-side-toc inline=True %}
                         <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
-                            <p class="lead">{{ article.title|safe }}</p>
+                            <p class="lead">{{ article.title }}</p>
                             {% for toc_entry in article.table_of_content %}
-                                <a href="#{{ toc_entry.id }}">{{ toc_entry.text|safe }}</a>
+                                <a href="#{{ toc_entry.id }}">{{ toc_entry.text }}</a>
                                 {% if toc_entry.children %}
                                     <nav class="article-toc article-nested-toc">
-                                        {% for child in toc_entry.children %}<a href="#{{ child.id }}">{{ child.text|safe }}</a>{% endfor %}
+                                        {% for child in toc_entry.children %}<a href="#{{ child.id }}">{{ child.text }}</a>{% endfor %}
                                     </nav>
                                 {% endif %}
                             {% endfor %}

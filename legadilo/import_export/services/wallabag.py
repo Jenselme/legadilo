@@ -18,7 +18,6 @@ from legadilo.reading.services.article_fetching import ArticleData, Language, Op
 from legadilo.users.models import User
 from legadilo.utils.validators import (
     CleanedString,
-    FullSanitizeValidator,
     ValidUrlValidator,
     remove_falsy_items,
     sanitize_keep_safe_tags_validator,
@@ -36,14 +35,14 @@ class WallabagArticle(BaseSchema):
     is_archived: bool
     is_starred: bool
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    title: Annotated[str, FullSanitizeValidator]
+    title: CleanedString
     url: Annotated[str, ValidUrlValidator]
     content: Annotated[str, sanitize_keep_safe_tags_validator()] = ""
     created_at: datetime | None = None
     updated_at: datetime | None = None
     published_by: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     reading_time: int = 0
-    domain_name: Annotated[str, FullSanitizeValidator]
+    domain_name: CleanedString
     preview_picture: OptionalUrl = ""
     annotations: tuple[str, ...] = ()
     language: Language = ""
