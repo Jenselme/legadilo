@@ -221,7 +221,7 @@ def _parse_articles_in_feed(
             content = _get_article_content(entry)
             articles_data.append(
                 ArticleData(
-                    external_article_id=entry.get("id", ""),
+                    external_article_id=entry.get("id", article_url),
                     title=entry.title,
                     summary=_get_summary(article_url, entry),
                     content=content,
