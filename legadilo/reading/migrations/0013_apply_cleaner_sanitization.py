@@ -13,7 +13,7 @@ from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 def apply_cleaner_sanitization(apps, schema_editor):
     Article = apps.get_model("reading", "Article")
-    for article in paginate_qs(Article.objects.all()):
+    for article in paginate_qs(Article.objects.all().order_by("id")):
         article.title = _clean_field(article.title)
         article.save(update_fields=["title"])
 
