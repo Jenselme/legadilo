@@ -67,8 +67,12 @@ def create_comment_view(
 
     return TemplateResponse(
         request,
-        "reading/partials/comment.html#comment-card",
-        {"comment": comment},
+        "reading/partials/comment.html#add-comment-success",
+        {
+            "comment": comment,
+            "comment_article_form": CommentArticleForm(),
+            "article_id": article.id,
+        },
         headers={"HX-Retarget": "#all-comments", "HX-Reswap": "beforeend"},
     )
 

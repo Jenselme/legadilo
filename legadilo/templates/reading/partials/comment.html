@@ -50,3 +50,9 @@
                 hx-get="{% url 'reading:display_comment' pk=comment.id %}">{% translate "Cancel" %}</button>
     </form>
 {% endpartialdef %}
+{% partialdef add-comment-success %}
+    {% partial comment-card %}
+    <div hx-swap-oob="outerHTML:#add-comment-form">
+        {% partial add-comment-form %}
+    </div>
+{% endpartialdef %}

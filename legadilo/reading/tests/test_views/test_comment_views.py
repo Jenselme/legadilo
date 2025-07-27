@@ -71,6 +71,9 @@ and line breaks and *Markdown*"""
             "HX-Reswap": "beforeend",
             "HX-Retarget": "#all-comments",
         }
+        assert response.template_name == "reading/partials/comment.html#add-comment-success"
+        assert response.context_data["article_id"] == article.id
+        assert response.context_data["comment_article_form"].errors == {}
 
     def test_create_empty_because_of_html_tags(self, logged_in_sync_client, user):
         article = Article.objects.create(user=user)
