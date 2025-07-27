@@ -25,7 +25,6 @@ from legadilo.reading.models.article import (
 )
 from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.security import full_sanitize
 
 from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import User
@@ -150,7 +149,6 @@ class SearchForm(forms.Form):
 
     def clean_q(self):
         q = self.cleaned_data["q"]
-        q = full_sanitize(q)
         q = q.strip()
         if q and len(q) < self.fields["q"].min_length:  # type: ignore[attr-defined]
             raise ValidationError(
@@ -213,15 +211,6 @@ class SearchForm(forms.Form):
             return constants.ReadingListTagOperator.ALL
 
         return constants.ReadingListTagOperator(self.cleaned_data["exclude_tag_operator"])
-
-    def clean_external_tags_to_include(self):
-        cleaned_tags = []
-        for tag in self.cleaned_data.get("external_tags_to_include", []):
-            cleaned_tag = full_sanitize(tag)
-            if cleaned_tag:
-                cleaned_tags.append(cleaned_tag)
-
-        return cleaned_tags
 
     def clean(self):
         super().clean()

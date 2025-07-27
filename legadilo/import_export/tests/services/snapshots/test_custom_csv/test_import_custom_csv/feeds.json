@@ -31,7 +31,7 @@
   },
   {
     "article_retention_time": 0,
-    "category__title": "Category 4",
+    "category__title": "<p>Category 4</p>",
     "description": "For documentation only",
     "disabled_at": null,
     "disabled_reason": "",

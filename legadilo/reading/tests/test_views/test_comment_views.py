@@ -11,14 +11,6 @@ from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading.models import Article, Comment
 from legadilo.reading.tests.factories import CommentFactory
 
-COMMENT = """My comment
-with <em>nasty HTML</em>
-and line breaks
-"""
-CLEANED_COMMENT = """My comment
-with nasty HTML
-and line breaks"""
-
 
 @pytest.mark.django_db
 class TestCreateCommentView:
@@ -58,14 +50,38 @@ class TestCreateCommentView:
                 self.url,
                 data={
                     "article_id": article.id,
-                    "text": COMMENT,
+                    "text": """My comment
+with <em>nasty HTML</em>
+and line breaks and *Markdown*
+""",
                 },
             )
 
         assert response.status_code == HTTPStatus.OK
         assert article.comments.count() == 1
         comment = article.comments.get()
-        assert comment.text == CLEANED_COMMENT
+        assert (
+            comment.text
+            == """My comment
+with <em>nasty HTML</em>
+and line breaks and *Markdown*"""
+        )
+
+    def test_create_empty_because_of_html_tags(
+        self, logged_in_sync_client, user, django_assert_num_queries
+    ):
+        article = Article.objects.create(user=user)
+
+        response = logged_in_sync_client.post(
+            self.url,
+            data={
+                "article_id": article.id,
+                "text": """<script>alert('My comment')</script>""",
+            },
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert article.comments.count() == 0
 
 
 @pytest.mark.django_db

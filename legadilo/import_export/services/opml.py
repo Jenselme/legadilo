@@ -19,7 +19,6 @@ from legadilo.feeds.services.feed_parsing import (
 )
 from legadilo.users.models import User
 from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.security import full_sanitize
 from legadilo.utils.time_utils import utcnow
 from legadilo.utils.validators import is_url_valid
 
@@ -107,9 +106,7 @@ def _process_outline(user, client, outline):
 
 
 def _process_category(user, client, outline):
-    category, created = FeedCategory.objects.get_or_create(
-        user=user, title=full_sanitize(outline.text)
-    )
+    category, created = FeedCategory.objects.get_or_create(user=user, title=outline.text)
     nb_imported_categories = 0
     if created:
         logger.info(f"Imported category {category}")

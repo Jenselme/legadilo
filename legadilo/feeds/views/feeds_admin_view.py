@@ -19,14 +19,13 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 
 from ...core.forms.fields import MultipleTagsField
 from ...reading.models import Tag
-from ...utils.security import full_sanitize
 from .. import constants
 
 
 @require_GET
 @login_required
 def feeds_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    searched_text = full_sanitize(request.GET.get("q", ""))
+    searched_text = request.GET.get("q", "")
 
     return TemplateResponse(
         request,

@@ -12,8 +12,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from legadilo.reading.models import Article, Comment
+from legadilo.reading.templatetags import markdown
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.security import full_sanitize
 
 
 class CommentArticleForm(forms.ModelForm):
@@ -34,9 +34,11 @@ class CommentArticleForm(forms.ModelForm):
 
     def clean_text(self):
         text = self.cleaned_data.get("text", "")
-        text = full_sanitize(text)
-        if not text:
-            raise ValidationError("Your text is empty!")
+        rendered_markdown = markdown(text)
+        if not rendered_markdown:
+            raise ValidationError(
+                "Your comment renders to an empty string. Please use correct markdown synthax."
+            )
 
         return text
 

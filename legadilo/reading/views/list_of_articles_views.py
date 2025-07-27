@@ -30,7 +30,6 @@ from legadilo.reading.services.views import get_js_cfg_from_reading_list
 from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.pagination import get_requested_page
-from legadilo.utils.security import full_sanitize
 from legadilo.utils.validators import get_page_number_from_request
 
 
@@ -168,7 +167,6 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
 def external_tag_with_articles_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     external_tag = request.GET.get("tag", "")
     external_tag = unquote_plus(external_tag)
-    external_tag = full_sanitize(external_tag)
 
     articles_qs = (
         Article.objects.get_articles_with_external_tag(request.user, external_tag)
