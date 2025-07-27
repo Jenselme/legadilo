@@ -11,7 +11,7 @@ from django.db import models
 from django.db.models.functions import Coalesce
 
 from legadilo.reading.models import Article
-from legadilo.types import DeletionResult
+from legadilo.utils.types import DeletionResult
 
 from ...utils.collections_utils import merge_deletion_results
 

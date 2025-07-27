@@ -20,7 +20,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading.models import Tag
-from legadilo.types import FormChoices
+from legadilo.utils.types import FormChoices
 
 from ...users.models import User
 from ...users.user_types import AuthenticatedHttpRequest

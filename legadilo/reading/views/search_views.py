@@ -23,8 +23,8 @@ from legadilo.reading.models.article import (
     ArticleQuerySet,
     ArticleTagSearch,
 )
-from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
+from legadilo.utils.types import FormChoices
 
 from ...users.models import User
 from ...utils.validators import is_url_valid

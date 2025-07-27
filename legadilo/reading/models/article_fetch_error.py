@@ -8,8 +8,8 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from legadilo.reading import constants
-from legadilo.types import DeletionResult
 from legadilo.utils.time_utils import utcnow
+from legadilo.utils.types import DeletionResult
 
 
 class ArticleFetchErrorQuerySet(models.QuerySet["ArticleFetchError"]):

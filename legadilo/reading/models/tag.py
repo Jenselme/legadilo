@@ -15,8 +15,8 @@ from slugify import slugify
 
 from legadilo.core import constants as core_constants
 from legadilo.reading import constants
-from legadilo.types import FormChoices
 from legadilo.users.models import User
+from legadilo.utils.types import FormChoices
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta

@@ -19,8 +19,8 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.models.article import Article, ArticleQuerySet
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
+from legadilo.utils.types import DeletionResult
 
-from ...types import DeletionResult
 from ...users.models import Notification
 from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
