@@ -26,7 +26,6 @@ from legadilo.reading.models.article import (
 from legadilo.types import FormChoices
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
-from ...constants import SEARCHED_TEXT_MIN_LENGTH
 from ...users.models import User
 from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
@@ -41,9 +40,7 @@ class FeedMultipleChoiceField(forms.ModelMultipleChoiceField):
 
 class SearchForm(forms.Form):
     # Main fields.
-    q = forms.CharField(
-        required=False, min_length=SEARCHED_TEXT_MIN_LENGTH, label=_("Search query")
-    )
+    q = forms.CharField(required=False, min_length=0, label=_("Search query"))
     search_type = forms.ChoiceField(
         required=False,
         choices=constants.ArticleSearchType.choices,
@@ -149,14 +146,7 @@ class SearchForm(forms.Form):
 
     def clean_q(self):
         q = self.cleaned_data["q"]
-        q = q.strip()
-        if q and len(q) < self.fields["q"].min_length:  # type: ignore[attr-defined]
-            raise ValidationError(
-                f"You must at least enter {SEARCHED_TEXT_MIN_LENGTH} characters",
-                code="q-too-short-after-cleaning",
-            )
-
-        return q
+        return q.strip()
 
     def clean_search_type(self):
         if not self.cleaned_data.get("search_type"):
