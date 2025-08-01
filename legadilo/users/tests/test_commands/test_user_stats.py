@@ -21,8 +21,9 @@ class TestUserStats:
             from_email="Legadilo <noreply@legadilo.eu>",
             message="total_nb_users: 2\n"
             "total_nb_active_users: 2\n"
+            "total_nb_active_users_with_validated_emails: 0\n"
             "total_nb_active_users_connected_last_week: 0\n"
             "total_account_created_last_week: 2\n",
             recipient_list=[admin_user.email],
-            subject="[Legadilo] Users stats",
+            subject="[Legadilo] User stats",
         )

@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.08.2
+
+- Improve `user_stats` command to list users with verified emails.
+
 ## 25.08.1
 
 - Can send stats about users with the `user_stats` command.

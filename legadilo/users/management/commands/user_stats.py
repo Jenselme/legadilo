@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         admin_emails = User.objects.list_admin_emails()
         send_mail(
-            subject="[Legadilo] Users stats",
+            subject="[Legadilo] User stats",
             message=stats,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=admin_emails,

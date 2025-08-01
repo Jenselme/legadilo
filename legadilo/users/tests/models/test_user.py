@@ -157,16 +157,33 @@ class TestUserManager:
             UserFactory(is_active=True)
 
         UserFactory(is_active=False)
-        UserFactory(is_active=True)
-        UserFactory(is_active=True, last_login=utcnow())
+        active_user_with_unverified_email = UserFactory(is_active=True)
+        EmailAddress.objects.create(
+            user=active_user_with_unverified_email,
+            email=active_user_with_unverified_email.email,
+            verified=False,
+        )
+        active_user_with_validated_email = UserFactory(is_active=True)
+        EmailAddress.objects.create(
+            user=active_user_with_validated_email,
+            email=active_user_with_validated_email.email,
+            verified=True,
+        )
+        active_user_who_logged_in = UserFactory(is_active=True, last_login=utcnow())
+        EmailAddress.objects.create(
+            user=active_user_who_logged_in,
+            email=active_user_who_logged_in.email,
+            verified=True,
+        )
 
         stats = User.objects.compute_stats()
 
         assert stats == {
-            "total_account_created_last_week": 3,
-            "total_nb_active_users": 3,
+            "total_account_created_last_week": 4,
+            "total_nb_active_users": 4,
             "total_nb_active_users_connected_last_week": 1,
-            "total_nb_users": 4,
+            "total_nb_active_users_with_validated_emails": 2,
+            "total_nb_users": 5,
         }
 
     def test_list_admin_emails(self):

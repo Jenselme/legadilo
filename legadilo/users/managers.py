@@ -91,6 +91,9 @@ class UserManager(DjangoUserManager[User]):
             total_nb_active_users=models.Count(
                 "id", filter=models.Q(is_active=True), distinct=True
             ),
+            total_nb_active_users_with_validated_emails=models.Count(
+                "id", filter=models.Q(is_active=True, emailaddress__verified=True), distinct=True
+            ),
             total_nb_active_users_connected_last_week=models.Count(
                 "id", filter=models.Q(last_login__gt=utcnow() - timedelta(days=7)), distinct=True
             ),
