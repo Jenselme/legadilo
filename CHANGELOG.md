@@ -11,6 +11,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## 25.08.1
 
 - Can send stats about users with the `user_stats` command.
+- Add honeypot field to help reduce spam accounts.
 
 ## 25.07.4
 

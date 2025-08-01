@@ -147,3 +147,9 @@ svg.bi {
 .bd-navbar .dropdown-menu .active .bi {
   display: block !important;
 }
+
+/* For the honeypot field */
+input[name="email_address_confirmation"] {
+  position: absolute;
+  right: -9999px;
+}
