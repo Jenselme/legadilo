@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.08.1
+
+- Can send stats about users with the `user_stats` command.
+
 ## 25.07.4
 
 - Correct a migration.

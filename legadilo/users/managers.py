@@ -84,3 +84,24 @@ class UserManager(DjangoUserManager[User]):
 
     def cleanup_invalid_accounts(self) -> DeletionResult:
         return self.get_queryset().invalid_accounts().delete()
+
+    def compute_stats(self) -> dict[str, int]:
+        return self.get_queryset().aggregate(
+            total_nb_users=models.Count("id", distinct=True),
+            total_nb_active_users=models.Count(
+                "id", filter=models.Q(is_active=True), distinct=True
+            ),
+            total_nb_active_users_connected_last_week=models.Count(
+                "id", filter=models.Q(last_login__gt=utcnow() - timedelta(days=7)), distinct=True
+            ),
+            total_account_created_last_week=models.Count(
+                "id", filter=models.Q(date_joined__gt=utcnow() - timedelta(days=7)), distinct=True
+            ),
+        )
+
+    def list_admin_emails(self) -> list[str]:
+        return list(
+            self.get_queryset()
+            .filter(is_superuser=True, is_staff=True, is_active=True)
+            .values_list("email", flat=True)
+        )

@@ -14,6 +14,7 @@ from django.db import IntegrityError
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory
+from legadilo.utils.time_utils import utcnow
 
 
 @pytest.mark.django_db
@@ -150,6 +151,32 @@ class TestUserManager:
             {"users.UserSettings": 1, "account.EmailAddress": 1, "users.User": 1},
         )
         assert list(User.objects.all()) == [user_to_keep]
+
+    def test_compute_stats(self):
+        with time_machine.travel("2023-01-01"):
+            UserFactory(is_active=True)
+
+        UserFactory(is_active=False)
+        UserFactory(is_active=True)
+        UserFactory(is_active=True, last_login=utcnow())
+
+        stats = User.objects.compute_stats()
+
+        assert stats == {
+            "total_account_created_last_week": 3,
+            "total_nb_active_users": 3,
+            "total_nb_active_users_connected_last_week": 1,
+            "total_nb_users": 4,
+        }
+
+    def test_list_admin_emails(self):
+        admin_user = UserFactory(is_superuser=True, is_staff=True, is_active=True)
+        UserFactory(is_superuser=True, is_staff=True, is_active=False)
+        UserFactory(is_superuser=False, is_staff=False, is_active=True)
+
+        admin_emails = User.objects.list_admin_emails()
+
+        assert admin_emails == [admin_user.email]
 
 
 @pytest.mark.django_db
