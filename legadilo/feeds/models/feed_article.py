@@ -15,13 +15,18 @@ else:
 
 
 class FeedArticleManager(models.Manager):
-    pass
+    def list_deleted_feed_article_ids(self, feed_id: int) -> set[str]:
+        return set(
+            self.get_queryset()
+            .filter(feed_id=feed_id, article__isnull=True)
+            .values_list("feed_article_id", flat=True)
+        )
 
 
 class FeedArticle(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_articles", on_delete=models.CASCADE)
     article = models.ForeignKey(
-        "reading.Article", related_name="feed_articles", on_delete=models.PROTECT
+        "reading.Article", related_name="feed_articles", on_delete=models.SET_NULL, null=True
     )
 
     feed_article_id = models.TextField()

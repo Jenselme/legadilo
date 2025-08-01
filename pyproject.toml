@@ -303,5 +303,4 @@ ignore_imports = [
     "legadilo.reading.tests.test_views.test_delete_article_view -> legadilo.feeds.models",
     "legadilo.reading.tests.test_views.test_search_views -> legadilo.feeds.models",
     "legadilo.reading.tests.test_views.test_search_views -> legadilo.feeds.tests.factories",
-    "legadilo.reading.services.delete_article -> legadilo.feeds.models",
 ]

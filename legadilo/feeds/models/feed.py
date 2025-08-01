@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
 from legadilo.reading import constants as reading_constants
-from legadilo.reading.models.article import Article, ArticleQuerySet
+from legadilo.reading.models.article import Article, ArticleQuerySet, SaveArticleResult
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
 from legadilo.utils.types import DeletionResult
@@ -26,7 +26,6 @@ from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
-from .feed_deleted_article import FeedDeletedArticle
 from .feed_tag import FeedTag
 from .feed_update import FeedUpdate
 
@@ -296,11 +295,13 @@ class FeedManager(models.Manager["Feed"]):
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_data: FeedData):
         self._update_article_urls_from_feed(feed, feed_data)
-        deleted_feed_urls = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
+        deleted_feed_article_ids = FeedArticle.objects.list_deleted_feed_article_ids(feed.id)
         articles = [
-            article for article in feed_data.articles if article.url not in deleted_feed_urls
+            article
+            for article in feed_data.articles
+            if article.external_article_id not in deleted_feed_article_ids
         ]
-        save_result = Article.objects.save_from_list_of_data(
+        save_results = Article.objects.save_from_list_of_data(
             feed.user,
             articles,
             feed.tags.all(),
@@ -308,12 +309,13 @@ class FeedManager(models.Manager["Feed"]):
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,
-            ignored_article_urls=list(deleted_feed_urls),
+            ignored_article_ids=list(deleted_feed_article_ids),
             feed_etag=feed_data.etag,
             feed_last_modified=feed_data.last_modified,
             feed=feed,
         )
         self._mark_republished_articles_as_unread(feed, feed_data)
+        self._delete_feed_article_linked_wrong_article(feed, save_results)
         FeedArticle.objects.bulk_create(
             [
                 FeedArticle(
@@ -322,11 +324,12 @@ class FeedManager(models.Manager["Feed"]):
                     feed_article_id=result.article_id_in_data,
                     last_seen_at=utcnow(),
                 )
-                for result in save_result
+                for result in save_results
             ],
             update_conflicts=True,
             # feed_article_id should be stable for a given feed. But if it changes and we can find
             # the article with its URL, update it here in case it changed.
+            # last_seen_at must be updated no matter what.
             update_fields=["feed_article_id", "last_seen_at"],
             unique_fields=["article", "feed"],
         )
@@ -338,26 +341,37 @@ class FeedManager(models.Manager["Feed"]):
         in the feed is stable. If not, the existing article will be found by its URLs.
         If both have changed, a new article will be created (this shouldn't happen and duplication
         is accepted in this case).
+        Note: the new URL can already correspond to an existing article. In this case, the old URL
+        is kept for the article if it exists. The link between the feed and the proper article will
+        be created by another function.
         """
         feed_article_id_to_article_url = {
             article.external_article_id: article.url for article in feed_data.articles
         }
         articles_to_update = []
+        article_urls_already_exist = set(
+            Article.objects.filter(
+                user=feed.user, url__in=feed_article_id_to_article_url.values()
+            ).values_list("url", flat=True)
+        )
         for feed_article in (
             FeedArticle.objects.all()
             .filter(
                 feed=feed,
                 feed_article_id__in=[article.external_article_id for article in feed_data.articles],
+                article__isnull=False,
             )
             .prefetch_related("article")
         ):
+            new_article_url = feed_article_id_to_article_url[feed_article.feed_article_id]
             if (
-                feed_article.article.url
-                == feed_article_id_to_article_url[feed_article.feed_article_id]
+                feed_article.article is None
+                or feed_article.article.url in article_urls_already_exist
+                or new_article_url in article_urls_already_exist
             ):
                 continue
 
-            feed_article.article.url = feed_article_id_to_article_url[feed_article.feed_article_id]
+            feed_article.article.url = new_article_url
             articles_to_update.append(feed_article.article)
 
         Article.objects.bulk_update(articles_to_update, fields=["url"])
@@ -372,6 +386,26 @@ class FeedManager(models.Manager["Feed"]):
             - timedelta(days=feeds_constants.DELAY_BEFORE_REPUBLICATION),
             read_at__lt=utcnow() - timedelta(days=feeds_constants.DELAY_BEFORE_REPUBLICATION),
         ).update(read_at=None)
+
+    def _delete_feed_article_linked_wrong_article(
+        self, feed: Feed, save_results: list[SaveArticleResult]
+    ):
+        """Delete the feed article if the article is linked to the wrong article.
+
+        This can happen if the feed is already linked with an article with a URL, but this update
+        would require the URL to be updated. If an article with this URL already exists, the linked
+        article cannot be updated. Hence, the need to delete the old link to be able to recreate it
+        with the proper article. It is preferable than to have multiple links with the same ids.
+
+        Note: This shouldn't happen very often.
+        """
+        filters = models.Q()
+        for result in save_results:
+            filters |= models.Q(feed_article_id=result.article_id_in_data) & ~models.Q(
+                article=result.article
+            )
+
+        FeedArticle.objects.filter(filters, feed=feed).delete()
 
     @transaction.atomic()
     def log_error(self, feed: Feed, error_message: str, technical_debug_data: dict | None = None):

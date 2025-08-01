@@ -8,8 +8,8 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
-from legadilo.feeds.models import FeedArticle, FeedDeletedArticle
-from legadilo.feeds.tests.factories import FeedFactory
+from legadilo.feeds.models import FeedArticle
+from legadilo.feeds.tests.factories import FeedArticleFactory, FeedFactory
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory
 
@@ -41,7 +41,7 @@ class TestDeleteArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_delete(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -49,7 +49,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(self.url, {"from_url": self.reading_list_url})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -57,7 +57,7 @@ class TestDeleteArticleView:
         assert Article.objects.count() == 0
 
     def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -85,7 +85,7 @@ class TestDeleteArticleView:
     def test_delete_article_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )
@@ -98,9 +98,9 @@ class TestDeleteArticleView:
         self, logged_in_sync_client, django_assert_num_queries, user
     ):
         feed = FeedFactory(user=user)
-        FeedArticle.objects.create(feed=feed, article=self.article)
+        feed_article = FeedArticleFactory(feed=feed, article=self.article)
 
-        with django_assert_num_queries(15):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.post(
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )
@@ -108,8 +108,7 @@ class TestDeleteArticleView:
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == self.reading_list_url
         assert Article.objects.count() == 0
-        assert FeedArticle.objects.count() == 0
-        assert FeedDeletedArticle.objects.count() == 1
-        feed_deleted_article = FeedDeletedArticle.objects.get()
-        assert feed_deleted_article.feed == feed
-        assert feed_deleted_article.article_url == self.article.url
+        assert FeedArticle.objects.count() == 1
+        feed_article.refresh_from_db()
+        assert feed_article.feed == feed
+        assert feed_article.article is None

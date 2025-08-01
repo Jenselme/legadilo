@@ -10,7 +10,6 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
-from legadilo.reading.services.delete_article import delete_article
 from legadilo.reading.services.views import get_from_url_for_article_details
 from legadilo.reading.templatetags import article_card_id
 from legadilo.reading.views.article_actions_views import (
@@ -23,17 +22,12 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 @require_POST
 @login_required
 def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> HttpResponse:
-    """Delete article either a manual one or if it's linked with a feed.
-
-    If it's linked with a feed, we also update the FeedDeletedArticle to prevent re-adding this
-    article again.
-    """
     article = get_object_or_404(
         Article.objects.get_queryset().for_deletion(), id=article_id, user=request.user
     )
     hx_target = f"#{article_card_id(article)}"
 
-    delete_article(article)
+    article.delete()
 
     for_article_details = request.POST.get("for_article_details", "")
     if for_article_details:
