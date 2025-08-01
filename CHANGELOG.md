@@ -14,6 +14,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Add honeypot field to help reduce spam accounts.
 - Make sure a db error occurring while updating a feed won’t prevent other feeds from being updated.
 - Prevent import error on a weird edge case in which a feed would require a link article to change its URL but this cannot be done since an article already exists with this URL.
+- Improve article deletion to allow republication of the article from a feed after a certain amount of time.
 
 ## 25.07.4
 

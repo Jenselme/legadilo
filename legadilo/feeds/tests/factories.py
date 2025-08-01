@@ -10,7 +10,7 @@ from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.users.tests.factories import UserFactory
 
 from .. import constants
-from ..models import Feed, FeedCategory, FeedDeletedArticle
+from ..models import Feed, FeedCategory
 from ..services.feed_parsing import FeedData
 
 
@@ -52,14 +52,6 @@ class FeedUpdateFactory(DjangoModelFactory):
 
     class Meta:
         model = FeedUpdate
-
-
-class FeedDeletedArticleFactory(DjangoModelFactory):
-    article_url = factory.Sequence(lambda n: f"https://example.com/articles/{n}.html")
-    feed = factory.SubFactory(FeedFactory)
-
-    class Meta:
-        model = FeedDeletedArticle
 
 
 class FeedDataFactory(factory.DictFactory):

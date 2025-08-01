@@ -9,9 +9,10 @@ import pytest
 import time_machine
 
 from legadilo.core.models import Timezone
-from legadilo.feeds.models import FeedArticle, FeedDeletedArticle, FeedUpdate
+from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
 from legadilo.feeds.tests.factories import (
+    FeedArticleFactory,
     FeedCategoryFactory,
     FeedFactory,
     FeedUpdateFactory,
@@ -755,7 +756,8 @@ class TestFeedManager:
 
     def test_update_feed_with_deleted_articles(self, django_assert_num_queries):
         deleted_url = "https://example.com/deleted/"
-        FeedDeletedArticle.objects.create(article_url=deleted_url, feed=self.feed)
+        deleted_feed_article_id = "some-article-deleted"
+        FeedArticleFactory(feed=self.feed, feed_article_id=deleted_feed_article_id, article=None)
 
         with django_assert_num_queries(14):
             Feed.objects.update_feed(
@@ -787,7 +789,7 @@ class TestFeedManager:
                             language="fr",
                         ),
                         ArticleData(
-                            external_article_id="deleted-article",
+                            external_article_id=deleted_feed_article_id,
                             title="Article 2",
                             summary="Summary 2",
                             content="Description",
@@ -813,7 +815,7 @@ class TestFeedManager:
         assert self.feed.feed_updates.count() == 1
         feed_update = self.feed.feed_updates.get()
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
-        assert feed_update.ignored_article_urls == [deleted_url]
+        assert feed_update.ignored_article_ids == [deleted_feed_article_id]
 
     def test_cleanup_feed_updates(self):
         feed = FeedFactory()

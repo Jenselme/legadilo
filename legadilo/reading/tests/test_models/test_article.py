@@ -1552,6 +1552,44 @@ class TestArticleManager:
 
         assert articles == [article_1, article_2]
 
+    def test_cleanup_articles(self, user):
+        ArticleFactory(
+            title="Read not linked to a feed (to keep)",
+            user=user,
+            read_at=utcdt(2024, 6, 1),
+            main_source_type=constants.ArticleSourceType.MANUAL,
+        )
+        read_keep_one_and_seven_days_retention_to_keep = ArticleFactory(
+            title="Read keep 1 and 7 days (to keep)",
+            user=user,
+            read_at=utcdt(2024, 6, 1),
+            main_source_type=constants.ArticleSourceType.FEED,
+        )
+        feed_forever_retention = FeedFactory(user=user, article_retention_time=0)
+        feed_article_to_keep = FeedArticleFactory(
+            feed=feed_forever_retention, article=read_keep_one_and_seven_days_retention_to_keep
+        )
+        read_1_day_retention_to_cleanup = ArticleFactory(
+            title="Read, 1 day retention (to cleanup)",
+            user=user,
+            read_at=utcdt(2024, 6, 1),
+            main_source_type=constants.ArticleSourceType.FEED,
+        )
+        feed_one_day_retention = FeedFactory(user=user, article_retention_time=1)
+        feed_article_to_deleted = FeedArticleFactory(
+            feed=feed_one_day_retention, article=read_1_day_retention_to_cleanup
+        )
+
+        with time_machine.travel("2024-06-07 00:00:00"):
+            deletion_result = Article.objects.cleanup_articles()
+
+        assert deletion_result == (1, {"reading.Article": 1})
+        feed_article_to_keep.refresh_from_db()
+        assert feed_article_to_keep.article == read_keep_one_and_seven_days_retention_to_keep
+        feed_article_to_deleted.refresh_from_db()
+        assert feed_article_to_deleted.article is None
+        assert Article.objects.count() == 2
+
 
 class TestArticleModel:
     @pytest.mark.django_db

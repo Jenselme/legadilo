@@ -26,7 +26,6 @@ from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle
-from .feed_deleted_article import FeedDeletedArticle
 from .feed_tag import FeedTag
 from .feed_update import FeedUpdate
 
@@ -296,9 +295,11 @@ class FeedManager(models.Manager["Feed"]):
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_data: FeedData):
         self._update_article_urls_from_feed(feed, feed_data)
-        deleted_feed_urls = FeedDeletedArticle.objects.list_deleted_for_feed(feed)
+        deleted_feed_article_ids = FeedArticle.objects.list_deleted_feed_article_ids(feed.id)
         articles = [
-            article for article in feed_data.articles if article.url not in deleted_feed_urls
+            article
+            for article in feed_data.articles
+            if article.external_article_id not in deleted_feed_article_ids
         ]
         save_results = Article.objects.save_from_list_of_data(
             feed.user,
@@ -308,7 +309,7 @@ class FeedManager(models.Manager["Feed"]):
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,
-            ignored_article_urls=list(deleted_feed_urls),
+            ignored_article_ids=list(deleted_feed_article_ids),
             feed_etag=feed_data.etag,
             feed_last_modified=feed_data.last_modified,
             feed=feed,
@@ -358,12 +359,14 @@ class FeedManager(models.Manager["Feed"]):
             .filter(
                 feed=feed,
                 feed_article_id__in=[article.external_article_id for article in feed_data.articles],
+                article__isnull=False,
             )
             .prefetch_related("article")
         ):
             new_article_url = feed_article_id_to_article_url[feed_article.feed_article_id]
             if (
-                feed_article.article.url in article_urls_already_exist
+                feed_article.article is None
+                or feed_article.article.url in article_urls_already_exist
                 or new_article_url in article_urls_already_exist
             ):
                 continue

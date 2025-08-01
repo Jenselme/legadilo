@@ -68,12 +68,10 @@ See:
 ## Decisions
 
 Let’s:
-- Add a `deleted_at` field to `feeds.FeedArticle` and make `article_id` nullable.
 - Delete articles the usual way.
-- Delete the dangling `feeds.FeedArticle` after a year to allow for republication.
-  - Test that articles cannot be readded with a feed before that.
-  - Still allow for articles to be added manually.
-    The link with the feed doesn’t need to be restored (it cannot be anyway).
+- `FeedArticle.last_seen_at` must still be updated for deleted articles.
+  This will allow for article republication the "normal" way.
+- Assume the id of the article in the feed is stable and detect deletion based on this id.
 
 ## Consequences
 

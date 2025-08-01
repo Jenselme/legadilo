@@ -580,7 +580,7 @@ class TestDeleteFeedView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_delete(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.delete(self.url)
 
         assert response.status_code == HTTPStatus.NO_CONTENT

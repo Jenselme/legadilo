@@ -6,8 +6,8 @@ import logging
 
 from django.core.management import BaseCommand
 
-from legadilo.feeds.models import Feed, FeedDeletedArticle
-from legadilo.reading.models import ArticleFetchError
+from legadilo.feeds.models import Feed
+from legadilo.reading.models import Article, ArticleFetchError
 
 logger = logging.getLogger(__name__)
 
@@ -23,5 +23,5 @@ class Command(BaseCommand):
         logger.info("Deleted %s feed updates.", deletion_result)
         deletion_result = ArticleFetchError.objects.cleanup_article_fetch_errors()
         logger.info("Deleted %s article fetch errors.", deletion_result)
-        deletion_result = FeedDeletedArticle.objects.cleanup_articles()
+        deletion_result = Article.objects.cleanup_articles()
         logger.info("Deleted %s articles.", deletion_result)

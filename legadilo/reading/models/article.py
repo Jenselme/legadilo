@@ -744,6 +744,9 @@ class ArticleManager(models.Manager["Article"]):
 
         return articles_qs
 
+    def cleanup_articles(self):
+        return self.get_queryset().for_cleanup().delete()
+
 
 class Article(models.Model):
     title = models.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
