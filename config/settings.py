@@ -510,6 +510,8 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "legadilo.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 ACCOUNT_FORMS = {"signup": "legadilo.users.forms.UserSignupForm"}
+# https://docs.allauth.org/en/latest/account/configuration.html#signup
+ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = "email_address_confirmation"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "legadilo.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
