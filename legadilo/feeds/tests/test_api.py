@@ -295,7 +295,7 @@ class TestSubscribeToFeedView:
             "legadilo.feeds.api.get_feed_data", return_value=FeedDataFactory(feed_url=feed_url)
         )
 
-        with django_assert_num_queries(21):
+        with django_assert_num_queries(22):
             response = logged_in_sync_client.post(
                 self.url, {"feed_url": feed_url}, content_type="application/json"
             )
@@ -320,7 +320,7 @@ class TestSubscribeToFeedView:
         category = FeedCategoryFactory(user=user)
         existing_tag = TagFactory(user=user)
 
-        with django_assert_num_queries(25):
+        with django_assert_num_queries(26):
             response = logged_in_sync_client.post(
                 self.url,
                 {
