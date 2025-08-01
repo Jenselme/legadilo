@@ -12,6 +12,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 - Can send stats about users with the `user_stats` command.
 - Add honeypot field to help reduce spam accounts.
+- Make sure a db error occurring while updating a feed won’t prevent other feeds from being updated.
 
 ## 25.07.4
 

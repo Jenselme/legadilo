@@ -133,6 +133,7 @@ class Command(BaseCommand):
     def _update_feed_from_future(self, feed: Feed, future: Future):
         try:
             feed_data = future.result()
+            Feed.objects.update_feed(feed, feed_data)
         except HTTPStatusError as e:
             if e.response.status_code == HTTPStatus.NOT_MODIFIED:
                 Feed.objects.log_not_modified(feed)
@@ -146,5 +147,4 @@ class Command(BaseCommand):
             logger.exception("Failed to update feed %s", feed)
             Feed.objects.log_error(feed, format_exception(e))
         else:
-            Feed.objects.update_feed(feed, feed_data)
             logger.info("Updated feed %s", feed)
