@@ -1,4 +1,96 @@
-{% load feeds i18n static %}
+{% load feeds i18n partials static %}
+
+{% partialdef back-btn %}
+    <a class="btn btn-outline-secondary text-start"
+           role="button"
+           href="{{ from_url }}">
+            {% include "core/partials/bs-icons/back.html" %}
+            <span class="d-none d-md-inline">{% translate 'Back' %}</span>
+        </a>
+{% endpartialdef back-btn %}
+
+{% partialdef favorite-btn %}
+    <button class="btn btn-outline-secondary text-start"
+            type="submit"
+            form="{{ article|update_article_form_id }}"
+            formaction="{{ article|favorite_action_url }}">
+        {% if article.is_favorite %}
+            <span class="icon-indicator {{ article|article_action_indicator }}">
+                {% include "core/partials/button_loading_indicator.html" %}
+                {% include "core/partials/bs-icons/unmark_as_favorite.html" %}
+            </span>
+            <span class="d-none d-md-inline">{% translate 'Unmark as favorite' %}</span>
+        {% else %}
+            <span class="icon-indicator {{ article|article_action_indicator }} text-start">
+                {% include "core/partials/button_loading_indicator.html" %}
+                {% include "core/partials/bs-icons/mark_as_favorite.html" %}
+            </span>
+            <span class="d-none d-md-inline">{% translate 'Mark as favorite' %}</span>
+        {% endif %}
+    </button>
+{% endpartialdef favorite-btn %}
+
+{% partialdef later-btn %}
+    <button class="btn btn-outline-secondary text-start"
+            type="submit"
+            form="{{ article|update_article_form_id }}"
+            formaction="{{ article|for_later_action_url }}">
+        {% if article.is_for_later %}
+            <span class="icon-indicator {{ article|article_action_indicator }}">
+                {% include "core/partials/button_loading_indicator.html" %}
+                {% include "core/partials/bs-icons/mark_as_not_for_later.html" %}
+            </span>
+            <span class="d-none d-md-inline">{% translate 'Not for later' %}</span>
+        {% else %}
+            <span class="icon-indicator {{ article|article_action_indicator }}">
+                {% include "core/partials/button_loading_indicator.html" %}
+                {% include "core/partials/bs-icons/mark_as_for_later.html" %}
+            </span>
+            <span class="d-none d-md-inline">{% translate 'For later' %}</span>
+        {% endif %}
+    </button>
+{% endpartialdef later-btn %}
+
+{% partialdef open-original-btn %}
+    <a class="btn btn-outline-secondary text-start open-original"
+       role="button"
+       data-article-id="{{ article.id }}"
+       target="_blank"
+       href="{{ article.url }}">
+        {% include "core/partials/bs-icons/open_original.html" %}
+        <span class="d-none d-md-inline">{% translate 'Open original' %}</span>
+    </a>
+{% endpartialdef open-original-btn %}
+
+{% partialdef open-details-btn %}
+<a class="btn btn-outline-secondary text-start"
+           role="button"
+           href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">
+            {% include "core/partials/bs-icons/open_details.html" %}
+            <span class="d-none d-md-inline">{% translate 'Open details' %}</span>
+        </a>
+{% endpartialdef open-details-btn %}
+
+{% partialdef read-btn %}
+    <button class="btn btn-primary text-start"
+            type="submit"
+            form="{{ article|update_article_form_id }}"
+            formaction="{{ article|read_action_url }}">
+        {% if article.is_read %}
+            <span class="icon-indicator {{ article|article_action_indicator }}">
+                {% include "core/partials/button_loading_indicator.html" %}
+                {% include "core/partials/bs-icons/mark_as_unread.html" %}
+            </span>
+            <span class="d-none d-md-inline">{% translate 'Mark as unread' %}</span>
+        {% else %}
+            <span class="icon-indicator {{ article|article_action_indicator }}">
+                {% include "core/partials/button_loading_indicator.html" %}
+                {% include "core/partials/bs-icons/mark_as_read.html" %}
+            </span>
+            <span class="d-none d-md-inline">{% translate 'Mark as read' %}</span>
+        {% endif %}
+    </button>
+{% endpartialdef read-btn %}
 
 <form id="{{ article|update_article_form_id }}"
       class="d-none"
@@ -37,82 +129,22 @@
 {% endif %}
 <div class="{% if vertical_group %}btn-group-vertical w-100{% else %}btn-group{% endif %}"
      role="group">
-    {% if for_article_details and from_url %}
-        <a class="btn btn-outline-secondary text-start"
-           role="button"
-           href="{{ from_url }}">
-            {% include "core/partials/bs-icons/back.html" %}
-            <span class="d-none d-md-inline">{% translate 'Back' %}</span>
-        </a>
+    {% if for_article_details and vertical_group %}
+        {% partial read-btn %}
+        {% partial open-original-btn %}
+        {% partial later-btn %}
+        {% partial favorite-btn %}
+        {% partial back-btn %}
+    {% else %}
+        {% if for_article_details %}
+            {% partial back-btn %}
+        {% endif %}
+        {% partial favorite-btn %}
+        {% partial later-btn %}
+        {% partial open-original-btn %}
+        {% if not for_article_details %}
+            {% partial open-details-btn %}
+        {% endif %}
+        {% partial read-btn %}
     {% endif %}
-    <button class="btn btn-outline-secondary text-start"
-            type="submit"
-            form="{{ article|update_article_form_id }}"
-            formaction="{{ article|favorite_action_url }}">
-        {% if article.is_favorite %}
-            <span class="icon-indicator {{ article|article_action_indicator }}">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/unmark_as_favorite.html" %}
-            </span>
-            <span class="d-none d-md-inline">{% translate 'Unmark as favorite' %}</span>
-        {% else %}
-            <span class="icon-indicator {{ article|article_action_indicator }} text-start">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/mark_as_favorite.html" %}
-            </span>
-            <span class="d-none d-md-inline">{% translate 'Mark as favorite' %}</span>
-        {% endif %}
-    </button>
-    <button class="btn btn-outline-secondary text-start"
-            type="submit"
-            form="{{ article|update_article_form_id }}"
-            formaction="{{ article|for_later_action_url }}">
-        {% if article.is_for_later %}
-            <span class="icon-indicator {{ article|article_action_indicator }}">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/mark_as_not_for_later.html" %}
-            </span>
-            <span class="d-none d-md-inline">{% translate 'Not for later' %}</span>
-        {% else %}
-            <span class="icon-indicator {{ article|article_action_indicator }}">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/mark_as_for_later.html" %}
-            </span>
-            <span class="d-none d-md-inline">{% translate 'For later' %}</span>
-        {% endif %}
-    </button>
-    <a class="btn btn-outline-secondary text-start open-original"
-       role="button"
-       data-article-id="{{ article.id }}"
-       target="_blank"
-       href="{{ article.url }}">
-        {% include "core/partials/bs-icons/open_original.html" %}
-        <span class="d-none d-md-inline">{% translate 'Open original' %}</span>
-    </a>
-    {% if not for_article_details %}
-        <a class="btn btn-outline-secondary text-start"
-           role="button"
-           href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">
-            {% include "core/partials/bs-icons/open_details.html" %}
-            <span class="d-none d-md-inline">{% translate 'Open details' %}</span>
-        </a>
-    {% endif %}
-    <button class="btn btn-primary text-start"
-            type="submit"
-            form="{{ article|update_article_form_id }}"
-            formaction="{{ article|read_action_url }}">
-        {% if article.is_read %}
-            <span class="icon-indicator {{ article|article_action_indicator }}">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/mark_as_unread.html" %}
-            </span>
-            <span class="d-none d-md-inline">{% translate 'Mark as unread' %}</span>
-        {% else %}
-            <span class="icon-indicator {{ article|article_action_indicator }}">
-                {% include "core/partials/button_loading_indicator.html" %}
-                {% include "core/partials/bs-icons/mark_as_read.html" %}
-            </span>
-            <span class="d-none d-md-inline">{% translate 'Mark as read' %}</span>
-        {% endif %}
-    </button>
 </div>
