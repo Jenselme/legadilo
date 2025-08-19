@@ -11,6 +11,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## 25.08.3
 
 - Improve the order of actions depending on the situation.
+- Prevent horizontal scrolling on mobile because of overflowing `code` element.
 
 ## 25.08.2
 
