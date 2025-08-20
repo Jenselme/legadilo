@@ -416,7 +416,7 @@ class FeedManager(models.Manager["Feed"]):
             technical_debug_data=technical_debug_data,
         )
         if FeedUpdate.objects.must_disable_feed(feed):
-            message = _("We failed too many times to fetch the feed")
+            message = _("The server failed too many times to fetch the feed.")
             feed.disable(message)
             feed.save()
             Notification.objects.create(

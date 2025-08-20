@@ -1,11 +1,1440 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-20 17:20+0000\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid "English"
+msgstr ""
+
+msgid "French"
+msgstr ""
+
+msgid "Choose tags"
+msgstr ""
+
+msgid "Tag cannot be empty."
+msgstr ""
+
+msgid "Tag cannot contain only spaces or special characters."
+msgstr ""
+
+msgid "Cannot contain only spaces or special characters."
+msgstr ""
+
+msgid "Hourly"
+msgstr ""
+
+msgid "Bihourly"
+msgstr ""
+
+msgid "Every Morning"
+msgstr ""
+
+msgid "Daily at Noon"
+msgstr ""
+
+msgid "Every Evening"
+msgstr ""
+
+msgid "On Mondays"
+msgstr ""
+
+msgid "On Thursdays"
+msgstr ""
+
+msgid "On Saturdays"
+msgstr ""
+
+msgid "On Sundays"
+msgstr ""
+
+msgid "Twice a week"
+msgstr ""
+
+msgid "First Day of the Month"
+msgstr ""
+
+msgid "Middle Day of the Month"
+msgstr ""
+
+msgid "End of the Month"
+msgstr ""
+
+msgid "Thrice a month"
+msgstr ""
+
+msgid "Success"
+msgstr ""
+
+msgid "Failure"
+msgstr ""
+
+msgid "Not Modified"
+msgstr ""
+
+msgid "The server failed too many times to fetch the feed."
+msgstr ""
+
+#, python-format
+msgid "Feed '%s' was disabled"
+msgstr ""
+
+msgid "Edit feed"
+msgstr ""
+
+msgid ""
+"Define for how long in days to keep read articles associated with this feed. "
+"Use 0 to always keep the articles."
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+#, python-format
+msgid "Articles of feed '%(feed_title)s'"
+msgstr ""
+
+#, python-format
+msgid "A category with title '%s' already exists."
+msgstr ""
+
+msgid "The category of the feed to help you keep them organized."
+msgstr ""
+
+msgid ""
+"Tags to associate to articles of this feed. To create a new tag, type and "
+"press enter. Editing this tag list will update the tags of all articles of "
+"this feed."
+msgstr ""
+
+msgid "Manually disabled"
+msgstr ""
+
+msgid ""
+"Enter the URL to the feed you want to subscribe to. If you don't know it, "
+"enter the URL of the site and the server will try to find the feed for you."
+msgstr ""
+
+msgid ""
+"Tags to associate to articles of this feed. To create a new tag, type and "
+"press enter."
+msgstr ""
+
+msgid "Failed to create the feed"
+msgstr ""
+
+msgid ""
+"Failed to fetch the feed. Please check that the URL you entered is correct, "
+"that the feed exists and is accessible."
+msgstr ""
+
+msgid "Failed to find a feed URL on the supplied page."
+msgstr ""
+
+msgid ""
+"Multiple feeds were found at this location, please select the proper one."
+msgstr ""
+
+msgid ""
+"The feed file is too big, it won't be parsed. Try to find a more lightweight "
+"feed."
+msgstr ""
+
+msgid "Failed to parse the feed you supplied. Please check it's valid."
+msgstr ""
+
+msgid "You are already subscribed to this feed."
+msgstr ""
+
+msgid "Feed '<a href=\"{}\">{}</a>' added"
+msgstr ""
+
+msgid "The supplied file is too big to be imported."
+msgstr ""
+
+msgid "This file type is not supported for imports."
+msgstr ""
+
+msgid "The file you supplied is not valid."
+msgstr ""
+
+#, python-format
+msgid ""
+"Successfully imported %(nb_imported_feeds)s feeds, "
+"%(nb_imported_categories)s feed categories and %(nb_imported_articles)s "
+"articles."
+msgstr ""
+
+#, python-format
+msgid "Successfully imported %s articles"
+msgstr ""
+
+#, python-format
+msgid ""
+"Successfully imported %(nb_imported_feeds)s feeds into "
+"%(nb_imported_categories)s categories."
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Only unread"
+msgstr ""
+
+msgid "Only read"
+msgstr ""
+
+msgid "Only favorite"
+msgstr ""
+
+msgid "Only non favorite"
+msgstr ""
+
+msgid "Only for later"
+msgstr ""
+
+msgid "Only for not later"
+msgstr ""
+
+msgid "Unset"
+msgstr ""
+
+msgid "Hour(s)"
+msgstr ""
+
+msgid "Day(s)"
+msgstr ""
+
+msgid "Week(s)"
+msgstr ""
+
+msgid "Month(s)"
+msgstr ""
+
+msgid "More than than"
+msgstr ""
+
+msgid "Less than than"
+msgstr ""
+
+msgid "Added manually"
+msgstr ""
+
+msgid "From feed"
+msgstr ""
+
+msgid "Deleted"
+msgstr ""
+
+msgid "Include"
+msgstr ""
+
+msgid "Exclude"
+msgstr ""
+
+msgid "Any"
+msgstr ""
+
+msgid "Ascendant"
+msgstr ""
+
+msgid "Descendant"
+msgstr ""
+
+msgid "Do nothing"
+msgstr ""
+
+msgid "Mark as favorite"
+msgstr ""
+
+msgid "Unmark as favorite"
+msgstr ""
+
+msgid "Mark as read"
+msgstr ""
+
+msgid "Mark as unread"
+msgstr ""
+
+msgid "Mark as opened"
+msgstr ""
+
+msgid "Mark as for later"
+msgstr ""
+
+msgid "Unmark as for later"
+msgstr ""
+
+msgid "Feed"
+msgstr ""
+
+msgid "Manual"
+msgstr ""
+
+msgid "Words"
+msgstr ""
+
+msgid "Phrase"
+msgstr ""
+
+msgid "URL"
+msgstr ""
+
+msgid "Rank desc"
+msgstr ""
+
+msgid "Rank asc"
+msgstr ""
+
+msgid "Article save date desc"
+msgstr ""
+
+msgid "Article save date asc"
+msgstr ""
+
+msgid "Article date desc"
+msgstr ""
+
+msgid "Article date asc"
+msgstr ""
+
+msgid "Read at desc"
+msgstr ""
+
+msgid "Read at asc"
+msgstr ""
+
+msgid ""
+"How much time in minutes is needed to read this article. If not specified, "
+"it will be calculated automatically from content length. If we don't have "
+"content, we will use 0."
+msgstr ""
+
+msgid "Tags of the article from its source"
+msgstr ""
+
+msgid "The id of the article in its source."
+msgstr ""
+
+msgid ""
+"Annotations made to the article. Currently only used for data imports to "
+"prevent data loss."
+msgstr ""
+
+msgid "The language code for this article"
+msgstr ""
+
+msgid "The table of content of the article."
+msgstr ""
+
+msgid "The date of publication of the article."
+msgstr ""
+
+msgid "The last time the article was updated."
+msgstr ""
+
+msgid "Technical date for the creation of the article in the database."
+msgstr ""
+
+msgid "Technical date for the last update of the article in the database."
+msgstr ""
+
+msgid "no-slug"
+msgstr ""
+
+msgid "All articles"
+msgstr ""
+
+msgid "Unread"
+msgstr ""
+
+msgid "Recent"
+msgstr ""
+
+msgid "Favorite"
+msgstr ""
+
+msgid "For later"
+msgstr ""
+
+msgid ""
+"Number of hours after which to refresh reading lists automatically. 0 will "
+"disable the feature."
+msgstr ""
+
+msgid ""
+"Articles published before today minus this number will be excluded from the "
+"reading list."
+msgstr ""
+
+msgid ""
+"Define the unit for the previous number. Leave to unset to not use this "
+"feature."
+msgstr ""
+
+msgid "Include only articles that take more or less than this time to read."
+msgstr ""
+
+msgid "Whether the reading time must be more or less that the supplied value."
+msgstr ""
+
+msgid ""
+"Defines whether the articles must have all or any of the tags to be included "
+"in the reading list."
+msgstr ""
+
+msgid ""
+"Defines whether the articles must have all or any of the tags to be excluded "
+"from the reading list."
+msgstr ""
+
+msgid ""
+"How to sort the article. ASC will put the most recent articles first. DECS "
+"will put the least recent articles first."
+msgstr ""
+
+msgid ""
+"Tags to associate to this article. To create a new tag, type and press enter."
+msgstr ""
+
+msgid "Type your comment here. Markdown syntax is supported."
+msgstr ""
+
+msgid "URL of the article to add."
+msgstr ""
+
+msgid ""
+"The article '<a href=\"{}\">{}</a>' was added but its content couldn't be "
+"fetched. Please check that it really points to an article."
+msgstr ""
+
+msgid "Article '<a href=\"{}\">{}</a>' successfully added!"
+msgstr ""
+
+msgid "Article '<a href=\"{}\">{}</a>' already existed."
+msgstr ""
+
+msgid ""
+"The article was re-fetched but its content couldn't be fetched. Please check "
+"that it really points to an article."
+msgstr ""
+
+msgid "The article was successfully re-fetched!"
+msgstr ""
+
+msgid ""
+"Failed to fetch the article. Please check that the URL you entered is "
+"correct, that the article exists and is accessible. Its URL was added "
+"directly. Go <a href=\"{}\">there</a> to access it."
+msgstr ""
+
+msgid ""
+"The article you are trying to fetch is too big and cannot be processed. Its "
+"URL was added directly. Go <a href=\"{}\">there</a> to access it."
+msgstr ""
+
+msgid ""
+"Failed to fetch the article. Please check that the URL you entered is "
+"correct, that the article exists and is accessible. It was added before, "
+"please check its link."
+msgstr ""
+
+#, python-format
+msgid "Articles with tag '%(tag_title)s'"
+msgstr ""
+
+#, python-format
+msgid "Articles with external tag '%(tag_title)s'"
+msgstr ""
+
+msgid ""
+"Tags to associate to all articles of this search (not only the visible "
+"ones). To create a new tag, type and press enter."
+msgstr ""
+
+msgid ""
+"Tags to dissociate with all articles of this search (not only the visible "
+"ones)."
+msgstr ""
+
+#, python-format
+msgid "'%s' is not a known tag."
+msgstr ""
+
+msgid "Articles with these tags will be included in the reading list."
+msgstr ""
+
+msgid "Articles with these tags will be excluded from the reading list."
+msgstr ""
+
+#, python-format
+msgid "A reading list with title '%s' already exists."
+msgstr ""
+
+msgid "Search query"
+msgstr ""
+
+msgid "Articles to include must have all or any of the supplied tags."
+msgstr ""
+
+msgid "Articles with these tags will be included in the search."
+msgstr ""
+
+msgid "Articles to exclude must have all or any of the supplied tags."
+msgstr ""
+
+msgid "Articles with these tags will be excluded from the search."
+msgstr ""
+
+msgid ""
+"Articles with these external tags will be included in the search. Any tag "
+"you type will be searched as typed."
+msgstr ""
+
+msgid "Choose external tags"
+msgstr ""
+
+msgid "Choose feeds"
+msgstr ""
+
+msgid "You must supply a max age value when searching by max age."
+msgstr ""
+
+msgid "You must set the max age unit when searching by max age."
+msgstr ""
+
+msgid "You must supply a reading time when searching by reading time."
+msgstr ""
+
+msgid "You must supply a reading time operator when searching by reading time."
+msgstr ""
+
+msgid "Editing the title will change the slug of the tag too!"
+msgstr ""
+
+msgid ""
+"These tags will be automatically added to the article when this tag is "
+"selected."
+msgstr ""
+
+#, python-format
+msgid "A tag with title '%s' already exists."
+msgstr ""
+
+msgid "Forbidden (403)"
+msgstr ""
+
+msgid "You're not allowed to access this page."
+msgstr ""
+
+msgid "Page not found"
+msgstr ""
+
+msgid "This is not the page you were looking for."
+msgstr ""
+
+msgid "Server Error"
+msgstr ""
+
+msgid "Looks like something went wrong!"
+msgstr ""
+
+msgid ""
+"We track these errors automatically, but if the problem persists feel free "
+"to contact us. In the meantime, try refreshing."
+msgstr ""
+
+msgid "Account Inactive"
+msgstr ""
+
+msgid "This account is inactive."
+msgstr ""
+
+msgid "Confirm Access"
+msgstr ""
+
+msgid "Please reauthenticate to safeguard your account."
+msgstr ""
+
+msgid "Account"
+msgstr ""
+
+msgid "E-mail Addresses"
+msgstr ""
+
+msgid "The following e-mail addresses are associated with your account:"
+msgstr ""
+
+msgid "Verified"
+msgstr ""
+
+msgid "Unverified"
+msgstr ""
+
+msgid "Primary"
+msgstr ""
+
+msgid "Make Primary"
+msgstr ""
+
+msgid "Re-send Verification"
+msgstr ""
+
+msgid "Confirm deletion"
+msgstr ""
+
+msgid "Do you really want to remove the selected e-mail address?"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Warning:"
+msgstr ""
+
+msgid ""
+"You currently do not have any e-mail address set up. You should really add "
+"an e-mail address so you can receive notifications, reset your password, etc."
+msgstr ""
+
+msgid "Add E-mail Address"
+msgstr ""
+
+msgid "Add E-mail"
+msgstr ""
+
+msgid "Confirm E-mail Address"
+msgstr ""
+
+#, python-format
+msgid ""
+"Please confirm that <a href=\"mailto:%(email)s\">%(email)s</a> is an e-mail "
+"address for user %(user_display)s."
+msgstr ""
+
+msgid "Confirm"
+msgstr ""
+
+#, python-format
+msgid ""
+"This e-mail confirmation link expired or is invalid. Please <a "
+"href=\"%(email_url)s\">issue a new e-mail confirmation request</a>."
+msgstr ""
+
+msgid "Sign In"
+msgstr ""
+
+msgid "Please sign in with one of your existing third party accounts:"
+msgstr ""
+
+#, python-format
+msgid ""
+"Or, <a href=\"%(signup_url)s\">sign up</a> for a %(site_name)s account and "
+"sign in below:"
+msgstr ""
+
+msgid "or"
+msgstr ""
+
+#, python-format
+msgid ""
+"If you have not created an account yet, then please <a "
+"href=\"%(signup_url)s\">sign up</a> first."
+msgstr ""
+
+msgid "Forgot Password?"
+msgstr ""
+
+msgid "Sign Out"
+msgstr ""
+
+msgid "Are you sure you want to sign out?"
+msgstr ""
+
+msgid "Change Password"
+msgstr ""
+
+msgid "Password Reset"
+msgstr ""
+
+msgid ""
+"Forgotten your password? Enter your e-mail address below, and we'll send you "
+"an e-mail allowing you to reset it."
+msgstr ""
+
+msgid "Reset My Password"
+msgstr ""
+
+msgid "Please contact us if you have any trouble resetting your password."
+msgstr ""
+
+msgid ""
+"We have sent you an e-mail. Please contact us if you do not receive it "
+"within a few minutes."
+msgstr ""
+
+msgid "Bad Token"
+msgstr ""
+
+#, python-format
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used.  Please request a <a href=\"%(passwd_reset_url)s\">new password reset</"
+"a>."
+msgstr ""
+
+msgid "change password"
+msgstr ""
+
+msgid "Your password is now changed."
+msgstr ""
+
+msgid "Set Password"
+msgstr ""
+
+msgid "Enter your password:"
+msgstr ""
+
+msgid "Signup"
+msgstr ""
+
+msgid "Sign Up"
+msgstr ""
+
+#, python-format
+msgid ""
+"Already have an account? Then please <a href=\"%(login_url)s\">sign in</a>."
+msgstr ""
+
+msgid "Sign Up Closed"
+msgstr ""
+
+msgid "We are sorry, but the sign up is currently closed."
+msgstr ""
+
+msgid "Verify Your E-mail Address"
+msgstr ""
+
+msgid ""
+"We have sent an e-mail to you for verification. Follow the link provided to "
+"finalize the signup process. Please check your spam folder if you do not "
+"receive it within a few minutes in your inbox."
+msgstr ""
+
+msgid ""
+"This part of the site requires us to verify that you are who you claim to "
+"be. For this purpose, we require that you verify ownership of your e-mail "
+"address."
+msgstr ""
+
+msgid ""
+"We have sent an e-mail to you for verification. Please click on the link "
+"inside this e-mail. Please contact us if you do not receive it within a few "
+"minutes."
+msgstr ""
+
+#, python-format
+msgid ""
+"<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-"
+"mail address</a>."
+msgstr ""
+
+msgid "Read your RSS feeds & other saved articles!"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "Default reading list"
+msgstr ""
+
+msgid "Search articles here..."
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Add an article"
+msgstr ""
+
+#, python-format
+msgid "%(nb_unread_notifications)s unread notification"
+msgid_plural "%(nb_unread_notifications)s unread notifications"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Profile menu"
+msgstr ""
+
+msgid "Tags admin"
+msgstr ""
+
+msgid "Feeds admin"
+msgstr ""
+
+msgid "Feed categories admin"
+msgstr ""
+
+msgid "Reading lists admin"
+msgstr ""
+
+msgid "My Profile"
+msgstr ""
+
+msgid "Admin"
+msgstr ""
+
+#, python-format
+msgid ""
+"Legadilo <a class=\"text-reset\" href=\"https://github.com/Jenselme/legadilo/"
+"blob/main/CHANGELOG.md\">version %(version)s</a>"
+msgstr ""
+
+msgid "About"
+msgstr ""
+
+msgid "Privacy"
+msgstr ""
+
+msgid "Report a bug."
+msgstr ""
+
+#, python-format
+msgid ""
+"Contact us at <a class=\"text-reset\" href=\"mailto:%(email)s\">%(email)s</a>"
+msgstr ""
+
+msgid "Add article"
+msgstr ""
+
+msgid "Article source title"
+msgstr ""
+
+msgid "Authors"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Back to top"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Feed title"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+msgid "Not for later"
+msgstr ""
+
+msgid "Open in new tab"
+msgstr ""
+
+msgid "Unread notifications"
+msgstr ""
+
+msgid "No unread notification"
+msgstr ""
+
+msgid "Open article details"
+msgstr ""
+
+msgid "Open original"
+msgstr ""
+
+msgid "Parameters"
+msgstr ""
+
+msgid "Published at"
+msgstr ""
+
+msgid "Reading time"
+msgstr ""
+
+msgid "Refetch"
+msgstr ""
+
+msgid "Updated at"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Light"
+msgstr ""
+
+msgid "Dark"
+msgstr ""
+
+msgid "Auto"
+msgstr ""
+
+#, python-format
+msgid "Editing feed '%(feed_title)s'"
+msgstr ""
+
+msgid "Confirm feed deletion"
+msgstr ""
+
+#, python-format
+msgid "Are you sure you want to delete the feed '%(feed_title)s'?"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Disable feed"
+msgstr ""
+
+msgid "Reenable feed"
+msgstr ""
+
+msgid "Feed update debug information"
+msgstr ""
+
+msgid "Date:"
+msgstr ""
+
+msgid "Status:"
+msgstr ""
+
+msgid "Error Message:"
+msgstr ""
+
+#, python-format
+msgid "Editing feed category '%(category_title)s'"
+msgstr ""
+
+msgid "Create a feed category"
+msgstr ""
+
+msgid "Confirm category deletion"
+msgstr ""
+
+#, python-format
+msgid "Are you sure you want to delete the category '%(category_title)s'?"
+msgstr ""
+
+msgid "Update"
+msgstr ""
+
+msgid "Create"
+msgstr ""
+
+msgid "Create a new category"
+msgstr ""
+
+msgid "Edit/Delete category"
+msgstr ""
+
+msgid "Subscribe to a feed"
+msgstr ""
+
+msgid "feeds.opml"
+msgstr ""
+
+msgid "Export all feeds"
+msgstr ""
+
+msgid "Import feeds"
+msgstr ""
+
+msgid "Search for feeds here..."
+msgstr ""
+
+msgid "Feeds without a category"
+msgstr ""
+
+msgid "Link to feed"
+msgstr ""
+
+msgid "Edit/Delete feed"
+msgstr ""
+
+msgid "View articles"
+msgstr ""
+
+msgid "Subscribe to a new feed"
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "Import/Export articles"
+msgstr ""
+
+msgid "Export articles into a CSV"
+msgstr ""
+
+msgid "articles.csv"
+msgstr ""
+
+msgid "Export all articles, feeds, categories and tags"
+msgstr ""
+
+msgid "Import custom CSV"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Import Wallabag JSON"
+msgstr ""
+
+msgid "Two-Factor Authentication"
+msgstr ""
+
+msgid ""
+"Your account is protected by two-factor authentication. Please enter an "
+"authenticator code:"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Authenticator App"
+msgstr ""
+
+msgid "Authentication using an authenticator app is active."
+msgstr ""
+
+msgid "An authenticator app is not active."
+msgstr ""
+
+msgid "Deactivate"
+msgstr ""
+
+msgid "Activate"
+msgstr ""
+
+msgid "Recovery Codes"
+msgstr ""
+
+#, python-format
+msgid ""
+"There is %(unused_count)s out of %(total_count)s recovery codes available."
+msgid_plural ""
+"There are %(unused_count)s out of %(total_count)s recovery codes available."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "No recovery codes set up."
+msgstr ""
+
+msgid "View"
+msgstr ""
+
+msgid "Download"
+msgstr ""
+
+msgid "Generate"
+msgstr ""
+
+msgid "You are about to generate a new set of recovery codes for your account."
+msgstr ""
+
+msgid "This action will invalidate your existing codes."
+msgstr ""
+
+msgid "Are you sure?"
+msgstr ""
+
+msgid "Activate Authenticator App"
+msgstr ""
+
+msgid ""
+"To protect your account with two-factor authentication, scan the QR code "
+"below with your authenticator app. Then, input the verification code "
+"generated by the app below."
+msgstr ""
+
+msgid "Authenticator secret"
+msgstr ""
+
+msgid ""
+"You can store this secret and use it to reinstall your authenticator app at "
+"a later time."
+msgstr ""
+
+msgid "Deactivate Authenticator App"
+msgstr ""
+
+msgid ""
+"You are about to deactivate authenticator app based authentication. Are you "
+"sure?"
+msgstr ""
+
+msgid "Update article"
+msgstr ""
+
+msgid "Re-fetch content"
+msgstr ""
+
+msgid "Comments"
+msgstr ""
+
+#, python-format
+msgid "Editing reading list '%(reading_list_title)s'"
+msgstr ""
+
+msgid "Create a new reading list"
+msgstr ""
+
+msgid "Confirm reading list deletion"
+msgstr ""
+
+#, python-format
+msgid ""
+"Are you sure you want to delete the reading list '%(reading_list_title)s'?"
+msgstr ""
+
+msgid "Make default"
+msgstr ""
+
+#, python-format
+msgid "Editing tag '%(tag_title)s'"
+msgstr ""
+
+msgid "Create a tag manually"
+msgstr ""
+
+msgid "Confirm tag deletion"
+msgstr ""
+
+#, python-format
+msgid "Are you sure you want to delete the tag '%(tag_title)s'?"
+msgstr ""
+
+msgid "Reading lists"
+msgstr ""
+
+#, python-format
+msgid "%(formatted_nb_articles)s article in total"
+msgid_plural "%(formatted_nb_articles)s articles in total"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Read on scroll"
+msgstr ""
+
+msgid "Edit this feed"
+msgstr ""
+
+msgid "Go to advanced search"
+msgstr ""
+
+msgid ""
+"You have too many articles to read on scroll. Please refresh the page to "
+"view the others."
+msgstr ""
+
+msgid "No articles to display."
+msgstr ""
+
+msgid "Navigation between articles"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Refresh current reading list"
+msgstr ""
+
+msgid "Open details"
+msgstr ""
+
+msgid "Confirm article deletion"
+msgstr ""
+
+#, python-format
+msgid "Are you sure you want to delete the article '%(article_title)s'?"
+msgstr ""
+
+#, python-format
+msgid "%(reading_time)s minute"
+msgid_plural "%(reading_time)s minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Comment"
+msgstr ""
+
+#, python-format
+msgid "You commented on %(comment_date)s"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Do you really want to delete this comment?"
+msgstr ""
+
+msgid "View search actions"
+msgstr ""
+
+msgid "Update articles"
+msgstr ""
+
+msgid "Reading list admin"
+msgstr ""
+
+msgid "Edit/Delete reading list"
+msgstr ""
+
+msgid "Searching articles..."
+msgstr ""
+
+msgid "View advanced search fields"
+msgstr ""
+
+msgid "No results were found 😞 Try another search 🔍"
+msgstr ""
+
+msgid "Manually create a tag"
+msgstr ""
+
+msgid "Search for tags here..."
+msgstr ""
+
+#, python-format
+msgid "%(nb_articles)s&nbsp;article"
+msgid_plural "%(nb_articles)s&nbsp;articles"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Manage application tokens"
+msgstr ""
+
+msgid "Manage API tokens"
+msgstr ""
+
+#, python-format
+msgid ""
+"Successfully created token <em>%(token_title)s</em>. Copy the token below, "
+"you won’t be able to get it back."
+msgstr ""
+
+msgid "List of tokens"
+msgstr ""
+
+msgid "Expired"
+msgstr ""
+
+msgid "Token id"
+msgstr ""
+
+#, python-format
+msgid "Created on %(created_at)s"
+msgstr ""
+
+#, python-format
+msgid "Last used %(last_used_at)s"
+msgstr ""
+
+msgid "Valid forever"
+msgstr ""
+
+#, python-format
+msgid "Valid until %(validity_end)s"
+msgstr ""
+
+msgid "Confirm token deletion"
+msgstr ""
+
+#, python-format
+msgid "Are you sure you want to delete the token '%(token_title)s'?"
+msgstr ""
+
+msgid "No token found"
+msgstr ""
+
+msgid "Create new token"
+msgstr ""
+
+msgid "Notifications"
+msgstr ""
+
+msgid "Mark all as read"
+msgstr ""
+
+#, python-format
+msgid "User: %(email)s"
+msgstr ""
+
+msgid "My Info"
+msgstr ""
+
+msgid "E-Mail"
+msgstr ""
+
+msgid "My settings"
+msgstr ""
+
+msgid "Change password"
+msgstr ""
+
+msgid "Edit your settings"
+msgstr ""
+
+msgid "Go to the default reading list"
+msgstr ""
+
+msgid "About legadilo"
+msgstr ""
+
+msgid ""
+"Legadilo is a project to help you subscribe to RSS feeds, save articles and "
+"organize them easily with tags and full customizable reading lists!"
+msgstr ""
+
+msgid "Feeds"
+msgstr ""
+
+msgid ""
+"You can subscribe to feeds, organize them in categories and tag all articles "
+"from these feeds to organize them."
+msgstr ""
+
+msgid ""
+"If you are currently using a feed reader, you can import your feeds in OPML. "
+"You can also export your legadilo feeds in the same format."
+msgstr ""
+
+msgid "Reading"
+msgstr ""
+
+msgid ""
+"Save any article and organize them in different reading list with tags. You "
+"can mark articles as favorite or for later (to remove them from the current "
+"reading list). Some reading list are created by default (all articles, "
+"unread, recent, favorite and for later). You can also edit and delete them "
+"and create your own. They will allow you to auto-refresh a list, read "
+"articles on scroll and filter articles by tag, status or reading time!"
+msgstr ""
+
+msgid "About the software"
+msgstr ""
+
+msgid ""
+"It’s written with the <a href=\"https://www.djangoproject.com/\">Django web "
+"framework</a>, <a href=\"https://getbootstrap.com/\">the bootstrap 5 "
+"frontend toolkit</a> and with enhancements given by <a href=\"https://"
+"htmx.org/\">htmx</a>."
+msgstr ""
+
+msgid ""
+"It’s opensource under the <a href=\"https://www.gnu.org/licenses/"
+"agpl-3.0.html#license-text\">GNU AGPLv3</a> license and is designed to be "
+"self-hostable, so you can run your own instance. The code source is "
+"available <a href=\"https://github.com/Jenselme/legadilo\">on GitHub</a>. "
+"Your <a href=\"https://github.com/Jenselme/legadilo/issues/new\">ideas</a>, "
+"<a href=\"https://github.com/Jenselme/legadilo/pulls\">contributions</a> and "
+"<a href=\"https://github.com/Jenselme/legadilo/discussions\">feedback</a> "
+"are welcomed! You can also check the <a href=\"https://www.legadilo.eu/"
+"\">official instance</a> to start using it more easily (you will be able to "
+"export and import your data in any instance)!"
+msgstr ""
+
+msgid ""
+"Legadilo is an open source project released under the <a href=\"https://"
+"www.gnu.org/licenses/agpl-3.0.html#license-text\">GNU AGPLv3</a> license. "
+"You don’t have to take our word for what we say here, you can check <a "
+"href=\"https://github.com/Jenselme/legadilo\">the source code</a>. You can "
+"also host it yourself to have even more power over your data!"
+msgstr ""
+
+msgid ""
+"Our servers are provided by <a href=\"https://www.scaleway.com/en/"
+"\">Scaleway</a> a French hosting provider. They are located near/in the city "
+"of Paris, France (European Union)."
+msgstr ""
+
+msgid ""
+"We don’t read nor sell your data and <em>never</em> will. We track visits "
+"with <a href=\"https://plausible.io\">Plausible.io</a>. It is <em>GDPR "
+"compatible</em>, and collects so little we won’t even need to bother you "
+"with a cookie banner."
+msgstr ""
+
+msgid ""
+"Your data is yours and can be exported at any time from your account. If you "
+"want your account closed and your data deleted, please send us an email."
+msgstr ""
+
+#, python-format
+msgid "Contact us at <a href=\"mailto:%(email)s\">%(email)s</a>"
+msgstr ""
+
+msgid "Personal info"
+msgstr ""
+
+msgid "Permissions"
+msgstr ""
+
+msgid "Important dates"
+msgstr ""
+
+msgid "Users"
+msgstr ""
+
+msgid "This email has already been taken."
+msgstr ""
+
+msgid "Used to display times and updated feeds at a convenient time."
+msgstr ""
+
+msgid "Give the token a nice name to identify its usage more easily."
+msgstr ""
+
+msgid "Validity end"
+msgstr ""
+
+msgid "Leave empty to have a token that will last until deletion."
+msgstr ""
+
+msgid "When this token was last used to create an access token."
+msgstr ""
+
+msgid "Name of User"
+msgstr ""
+
+msgid "email address"
+msgstr ""
+
+msgid ""
+"Number of words you read in minutes. Used to calculate the reading time of "
+"articles."
+msgstr ""
+
+msgid "Information successfully updated"
+msgstr ""
+
+msgid "The timezone in which the validity end date should be understood."
+msgstr ""
+
+msgid "A token already exists with this name."
+msgstr ""
+
+msgid "Settings correctly updated"
+msgstr ""
+
+msgid "Failed to update settings"
+msgstr ""

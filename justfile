@@ -17,6 +17,12 @@ dev:
 clean-dev-container:
     {{docker-compose-cmd}} -f local.yml down
 
+update-po:
+    python manage.py makemessages --all --no-location
+
+compile-po:
+    python manage.py compilemessages
+
 [working-directory: 'browser-extension']
 build-browser-extension:
     npm run build

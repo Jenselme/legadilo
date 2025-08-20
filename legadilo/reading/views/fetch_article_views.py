@@ -89,7 +89,7 @@ def _handle_add_article_save_result(
             format_html(
                 str(
                     _(
-                        "The article '<a href=\"{}\">{}</a>' was added but we failed to fetch its content. "  # noqa: E501
+                        "The article '<a href=\"{}\">{}</a>' was added but its content couldn't be fetched. "  # noqa: E501
                         "Please check that it really points to an article."
                     )
                 ),
@@ -154,7 +154,7 @@ def _handle_refetch_article_save_result(
         messages.warning(
             request,
             _(
-                "The article was re-fetched but we failed to fetch its content. "
+                "The article was re-fetched but its content couldn't be fetched. "
                 "Please check that it really points to an article."
             ),
         )
@@ -201,7 +201,7 @@ def _handle_save(
                         _(
                             "Failed to fetch the article. Please check that the URL you entered is "
                             "correct, that the article exists and is accessible. "
-                            "We added its URL directly. "
+                            "Its URL was added directly. "
                             'Go <a href="{}">there</a> to access it.'
                         )
                     ),
@@ -216,7 +216,7 @@ def _handle_save(
                     str(
                         _(
                             "The article you are trying to fetch is too big and cannot be processed. "  # noqa: E501
-                            "We added its URL directly. "
+                            "Its URL was added directly. "
                             'Go <a href="{}">there</a> to access it.'
                         )
                     ),

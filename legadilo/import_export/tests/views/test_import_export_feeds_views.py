@@ -117,7 +117,7 @@ class TestImportFeeds:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_feeds.html"
         assert response.context_data["form"].errors == {
-            "opml_file": ["The supplied file is too big to be imported"]
+            "opml_file": ["The supplied file is too big to be imported."]
         }
         assert Feed.objects.count() == 0
 

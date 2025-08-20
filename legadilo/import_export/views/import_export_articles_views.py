@@ -39,7 +39,7 @@ class ImportWallabagForm(forms.Form):
     def clean_wallabag_file(self):
         if self.cleaned_data["wallabag_file"].size > constants.MAX_ARTICLES_FILE:
             raise ValidationError(
-                _("The supplied file is too big to be imported"), code="file-too-big"
+                _("The supplied file is too big to be imported."), code="file-too-big"
             )
 
         return self.cleaned_data["wallabag_file"]
@@ -93,8 +93,15 @@ def _import_custom_csv(request: AuthenticatedHttpRequest):
         import_custom_csv_form = ImportCustomCsvForm()
         messages.success(
             request,
-            _("Successfully imported %s feeds, %s feed categories and %s articles.")
-            % (nb_imported_feeds, nb_imported_categories, nb_imported_articles),
+            _(
+                "Successfully imported %(nb_imported_feeds)s feeds, %(nb_imported_categories)s "
+                "feed categories and %(nb_imported_articles)s articles."
+            )
+            % {
+                "nb_imported_feeds": nb_imported_feeds,
+                "nb_imported_categories": nb_imported_categories,
+                "nb_imported_articles": nb_imported_articles,
+            },
         )
 
     return status, import_custom_csv_form

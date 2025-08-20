@@ -169,7 +169,7 @@ class TestUpdateArticleDetailsView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.context_data["edit_article_form"].errors == {
-            "tags": ["Tag cannot be empty"],
+            "tags": ["Tag cannot be empty."],
         }
 
     def test_tags_only_special_char(self, logged_in_sync_client):

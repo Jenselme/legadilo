@@ -205,7 +205,7 @@ class TestUpdateArticlesFromTagWithArticlesView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.context_data["update_articles_form"].errors == {
-            "remove_tags": ["toto is not a known tag"],
+            "remove_tags": ["'toto' is not a known tag."],
             "update_action": ["Select a valid choice. Test is not one of the available choices."],
         }
 

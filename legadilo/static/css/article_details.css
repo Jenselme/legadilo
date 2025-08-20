@@ -67,6 +67,10 @@ pre {
   max-width: calc(100vw - 24px);
 }
 
+code {
+  overflow-wrap: anywhere;
+}
+
 table {
   margin: auto;
 }

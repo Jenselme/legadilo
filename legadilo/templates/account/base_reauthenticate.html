@@ -8,7 +8,7 @@
 
 {% block content %}
     <h1>{% translate "Confirm Access" %}</h1>
-    <p>{% blocktranslate %}Please reauthenticate to safeguard your account.{% endblocktranslate %}</p>
+    <p>{% blocktranslate trimmed %}Please reauthenticate to safeguard your account.{% endblocktranslate %}</p>
     {% block reauthenticate_content %}
     {% endblock reauthenticate_content %}
 {% endblock content %}

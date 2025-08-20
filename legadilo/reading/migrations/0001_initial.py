@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=list,
-                        help_text="Tags of the article from the its source",
+                        help_text="Tags of the article from its source",
                         validators=[legadilo.utils.validators.list_of_strings_validator],
                     ),
                 ),
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                     models.CharField(
                         blank=True,
                         default="",
-                        help_text="The id of the article in the its source.",
+                        help_text="The id of the article in its source.",
                         max_length=512,
                     ),
                 ),
@@ -146,14 +146,14 @@ class Migration(migrations.Migration):
                     "obj_created_at",
                     models.DateTimeField(
                         auto_now_add=True,
-                        help_text="Technical date for the creation of the article in our database.",
+                        help_text="Technical date for the creation of the article in the database.",
                     ),
                 ),
                 (
                     "obj_updated_at",
                     models.DateTimeField(
                         auto_now=True,
-                        help_text="Technical date for the last update of the article in our database.",
+                        help_text="Technical date for the last update of the article in the database.",
                     ),
                 ),
                 (
@@ -298,7 +298,7 @@ class Migration(migrations.Migration):
                             ("LESS_THAN", "Less than than"),
                         ],
                         default="UNSET",
-                        help_text="Whether the reading must be more or less that the supplied value.",
+                        help_text="Whether the reading time must be more or less that the supplied value.",
                         max_length=100,
                     ),
                 ),

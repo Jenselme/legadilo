@@ -467,7 +467,7 @@ class TestFeedManager:
 
         self.feed.refresh_from_db()
         assert not self.feed.enabled
-        assert self.feed.disabled_reason == "We failed too many times to fetch the feed"
+        assert self.feed.disabled_reason == "The server failed too many times to fetch the feed."
         assert self.feed.disabled_at == utcdt(2024, 5, 28, 21)
         feed_update = self.feed.feed_updates.last()
         assert feed_update.status == feeds_constants.FeedUpdateStatus.FAILURE
@@ -475,7 +475,7 @@ class TestFeedManager:
         notification = Notification.objects.get()
         assert not notification.is_read
         assert notification.title == f"Feed '{self.feed.title}' was disabled"
-        assert notification.content == "We failed too many times to fetch the feed"
+        assert notification.content == "The server failed too many times to fetch the feed."
         assert re.match(r"/feeds/\d+/", notification.info_link)
         assert notification.info_link_text == "Edit feed"
 

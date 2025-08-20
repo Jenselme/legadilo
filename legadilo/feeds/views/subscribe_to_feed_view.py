@@ -43,8 +43,8 @@ class SubscribeToFeedForm(forms.Form):
         max_length=2048,
         assume_scheme="https",
         help_text=_(
-            "Enter the URL to the feed you want to subscribe to or of a site in which case we will "
-            "try to find the URL of the feed."
+            "Enter the URL to the feed you want to subscribe to. If you don't know it, enter the "
+            "URL of the site and the server will try to find the feed for you."
         ),
     )
     feed_choices = forms.ChoiceField(
@@ -192,17 +192,14 @@ def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too ma
     except FeedFileTooBigError:
         messages.error(
             request,
-            _("The feed file is too big, we won't parse it. Try to find a more lightweight feed."),
+            _("The feed file is too big, it won't be parsed. Try to find a more lightweight feed."),
         )
         return HTTPStatus.BAD_REQUEST, form
     except (InvalidFeedFileError, PydanticValidationError, ValueError, TypeError) as e:
         logger.debug("Failed to parse feed: %s", e)
         messages.error(
             request,
-            _(
-                "We failed to parse the feed you supplied. Please check it is supported and "
-                "matches the sync of a feed file."
-            ),
+            _("Failed to parse the feed you supplied. Please check it's valid."),
         )
         return HTTPStatus.BAD_REQUEST, form
 

@@ -213,14 +213,14 @@ class SearchForm(forms.Form):
         if is_articles_max_age_unit_set and not is_articles_max_age_value_set:
             errors.append(
                 ValidationError(
-                    _("You must supply a max age value when searching by max age"),
+                    _("You must supply a max age value when searching by max age."),
                     code="max-age-value-unset-but-unit-is",
                 )
             )
         elif not is_articles_max_age_unit_set and is_articles_max_age_value_set:
             errors.append(
                 ValidationError(
-                    _("You must set the max age unit when searching by max age"),
+                    _("You must set the max age unit when searching by max age."),
                     code="max-age-unit-unset-but-value-is",
                 ),
             )
@@ -234,14 +234,14 @@ class SearchForm(forms.Form):
         if is_articles_reading_time_operator_set and not is_articles_reading_time_set:
             errors.append(
                 ValidationError(
-                    _("You must supply a reading time when searching by reading time"),
+                    _("You must supply a reading time when searching by reading time."),
                     code="reading-time-unset-but-operator-is",
                 )
             )
         elif not is_articles_reading_time_operator_set and is_articles_reading_time_set:
             errors.append(
                 ValidationError(
-                    _("You must supply a reading time operator when searching by reading time"),
+                    _("You must supply a reading time operator when searching by reading time."),
                     code="reading-operator-unset-but-value-is",
                 )
             )

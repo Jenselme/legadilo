@@ -4,7 +4,7 @@
 
 {% block title %}
     {% if category %}
-        {% blocktranslate with category_title=category.title %}
+        {% blocktranslate trimmed with category_title=category.title %}
             Editing feed category '{{ category_title }}'
         {% endblocktranslate %}
     {% else %}
@@ -22,7 +22,7 @@
           hx-confirm="Delete?"
           data-modal-id="danger-modal"
           data-modal-title="{% translate 'Confirm category deletion' %}"
-          data-modal-body="{% blocktranslate with category_title=category.title %}Are you sure you want to delete the category '{{ category_title }}'?{% endblocktranslate %}">
+          data-modal-body="{% blocktranslate trimmed with category_title=category.title %}Are you sure you want to delete the category '{{ category_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
         <input type="hidden" name="delete" value="true" />
     </form>

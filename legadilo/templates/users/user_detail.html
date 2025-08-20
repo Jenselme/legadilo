@@ -3,7 +3,7 @@
 {% load i18n static %}
 
 {% block title %}
-    {% blocktranslate with email=object.email %}
+    {% blocktranslate trimmed with email=object.email %}
         User: {{ email }}
     {% endblocktranslate %}
 {% endblock title %}

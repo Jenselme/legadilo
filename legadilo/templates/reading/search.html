@@ -81,7 +81,7 @@
     </form>
     {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-12" %}
     <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center px-0 mx-0">
-        {% blocktranslate with formatted_nb_articles=total_results|intcomma count total_results=total_results %}
+        {% blocktranslate trimmed with formatted_nb_articles=total_results|intcomma count total_results=total_results %}
             {{ formatted_nb_articles }} article in total
         {% plural %}
             {{ formatted_nb_articles }} articles in total

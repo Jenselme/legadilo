@@ -10,7 +10,7 @@
 
 {% block title %}
     {% if reading_list %}
-        {% blocktranslate with reading_list_title=reading_list.title %}
+        {% blocktranslate trimmed with reading_list_title=reading_list.title %}
             Editing reading list '{{ reading_list_title }}'
         {% endblocktranslate %}
     {% else %}
@@ -21,7 +21,7 @@
 {% block content %}
     <h1>
         {% if reading_list %}
-            {% blocktranslate with reading_list_title=reading_list.title %}
+            {% blocktranslate trimmed with reading_list_title=reading_list.title %}
                 Editing reading list '{{ reading_list_title }}'
             {% endblocktranslate %}
         {% else %}
@@ -37,7 +37,7 @@
           hx-confirm="Delete?"
           data-modal-id="danger-modal"
           data-modal-title="{% translate 'Confirm reading list deletion' %}"
-          data-modal-body="{% blocktranslate with reading_list_title=reading_list.title %}Are you sure you want to delete the reading list '{{ reading_list_title }}'?{% endblocktranslate %}">
+          data-modal-body="{% blocktranslate trimmed with reading_list_title=reading_list.title %}Are you sure you want to delete the reading list '{{ reading_list_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
         <input type="hidden" name="delete" value="true" />
     </form>

@@ -34,11 +34,11 @@
         {% with total_count=authenticators.recovery_codes.generate_codes|length unused_count=authenticators.recovery_codes.get_unused_codes|length %}
             {% if authenticators.recovery_codes %}
                 <p>
-                    {% blocktranslate count unused_count=unused_count %}
-                    There is {{ unused_count }} out of {{ total_count }} recovery codes available.
-                {% plural %}
-                    There are {{ unused_count }} out of {{ total_count }} recovery codes available.
-                {% endblocktranslate %}
+                    {% blocktranslate trimmed count unused_count=unused_count %}
+                        There is {{ unused_count }} out of {{ total_count }} recovery codes available.
+                    {% plural %}
+                        There are {{ unused_count }} out of {{ total_count }} recovery codes available.
+                    {% endblocktranslate %}
                 </p>
             {% else %}
                 <p>{% translate "No recovery codes set up." %}</p>

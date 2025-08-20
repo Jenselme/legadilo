@@ -41,7 +41,7 @@ class ImportFeedsForm(forms.Form):
     def clean_opml_file(self):
         if self.cleaned_data["opml_file"].size > constants.MAX_SIZE_OPML_FILE:
             raise ValidationError(
-                _("The supplied file is too big to be imported"), code="file-too-big"
+                _("The supplied file is too big to be imported."), code="file-too-big"
             )
 
         return self.cleaned_data["opml_file"]
@@ -68,8 +68,14 @@ def import_feeds_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
                 form = ImportFeedsForm()
                 messages.success(
                     request,
-                    _("Successfully imported %s feeds into %s categories.")
-                    % (nb_imported_feeds, nb_imported_categories),
+                    _(
+                        "Successfully imported %(nb_imported_feeds)s feeds into "
+                        "%(nb_imported_categories)s categories."
+                    )
+                    % {
+                        "nb_imported_feeds": nb_imported_feeds,
+                        "nb_imported_categories": nb_imported_categories,
+                    },
                 )
 
     return TemplateResponse(

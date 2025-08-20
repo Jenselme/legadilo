@@ -15,7 +15,7 @@
 {% partialdef comment-card %}
     <div class="card mt-2" hx-target="this" hx-swap="outerHTML">
         <div class="card-header">
-            {% blocktranslate with comment_date=comment.created_at|date:"SHORT_DATETIME_FORMAT" %}
+            {% blocktranslate trimmed with comment_date=comment.created_at|date:"SHORT_DATETIME_FORMAT" %}
                     You commented on {{ comment_date }}
                 {% endblocktranslate %}
         </div>

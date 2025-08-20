@@ -3,7 +3,7 @@
 {% load crispy_forms_tags i18n %}
 
 {% block reauthenticate_content %}
-    <p>{% blocktranslate %}Enter your password:{% endblocktranslate %}</p>
+    <p>{% blocktranslate trimmed %}Enter your password:{% endblocktranslate %}</p>
     <form method="post" action="{% url 'account_reauthenticate' %}">
         {% csrf_token %}
         {{ form|crispy }}

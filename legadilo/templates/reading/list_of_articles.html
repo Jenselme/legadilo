@@ -78,7 +78,7 @@
                         <h2 class="fs-6 col-6 col-md-2 align-middle d-flex align-items-center px-0 mx-0">
                             <span id="articles-in-total">
                                 {% partialdef articles-in-total inline=True %}
-                                    {% blocktranslate with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
+                                    {% blocktranslate trimmed with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
                                         {{ formatted_nb_articles }} article in total
                                     {% plural %}
                                         {{ formatted_nb_articles }} articles in total
