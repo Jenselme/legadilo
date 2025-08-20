@@ -65,8 +65,8 @@ class TestSearchForm:
         assert not form.is_valid()
         assert form.errors == {
             "__all__": [
-                "You must set the max age unit when searching by max age",
-                "You must supply a reading time operator when searching by reading time",
+                "You must set the max age unit when searching by max age.",
+                "You must supply a reading time operator when searching by reading time.",
             ]
         }
 
@@ -84,8 +84,8 @@ class TestSearchForm:
         assert not form.is_valid()
         assert form.errors == {
             "__all__": [
-                "You must supply a max age value when searching by max age",
-                "You must supply a reading time when searching by reading time",
+                "You must supply a max age value when searching by max age.",
+                "You must supply a reading time when searching by reading time.",
             ]
         }
 

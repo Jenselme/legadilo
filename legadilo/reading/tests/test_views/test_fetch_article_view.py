@@ -119,7 +119,7 @@ class TestAddArticle:
             Message(
                 level=DEFAULT_LEVELS["WARNING"],
                 message=f'The article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'  # noqa: E501
-                f"On the 3 musketeers</a>' was added but we failed to fetch its content. "
+                f"On the 3 musketeers</a>' was added but its content couldn't be fetched. "
                 "Please check that it really points to an article.",
             )
         ]
@@ -144,7 +144,7 @@ class TestAddArticle:
                 level=DEFAULT_LEVELS["WARNING"],
                 message="Failed to fetch the article. Please check that the URL you entered is "
                 "correct, that the article exists and is accessible. "
-                "We added its URL directly. "
+                "Its URL was added directly. "
                 f'Go <a href="/reading/articles/{article.id}-www-example-com-posts-en-1-super-article/'  # noqa: E501
                 '">there</a> to access it.',
             )
@@ -218,7 +218,7 @@ class TestAddArticle:
             Message(
                 level=DEFAULT_LEVELS["WARNING"],
                 message="The article you are trying to fetch is too big and cannot be processed. "
-                "We added its URL directly. "
+                "Its URL was added directly. "
                 f'Go <a href="/reading/articles/{article.id}-www-example-com-posts-en-1-super-article/"'  # noqa: E501
                 ">there</a> to access it.",
             )

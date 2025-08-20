@@ -166,8 +166,14 @@
                                                     {% if user.count_unread_notifications > 0 %}
                                                         {% include "core/partials/bs-icons/new_notifications.html" %}
                                                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                            {{ user.count_unread_notifications }}
-                                                            <span class="visually-hidden">{% translate "unread notifications" %}</span>
+                                                            <span aria-hidden="true">{{ user.count_unread_notifications }}</span>
+                                                            <span class="visually-hidden">
+                                                                {% blocktranslate trimmed count nb_unread_notifications=user.count_unread_notifications %}
+                                                                    {{ nb_unread_notifications }} unread notification
+                                                                {% plural %}
+                                                                    {{ nb_unread_notifications }} unread notifications
+                                                                {% endblocktranslate %}
+                                                            </span>
                                                         </span>
                                                     {% else %}
                                                         {% include "core/partials/bs-icons/no_notifications.html" %}
@@ -239,7 +245,7 @@
         <footer class="content-footer d-flex flex-column justify-content-center py-4 text-white">
             <p class="ps-4 pe-4 text-center">
                 {% if VERSION %}
-                    {% blocktranslate with version=VERSION %}
+                    {% blocktranslate trimmed with version=VERSION %}
                         Legadilo <a class="text-reset" href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">version {{ version }}</a>
                     {% endblocktranslate %}
                 {% else %}
@@ -259,7 +265,7 @@
                 <p class="ps-4 pe-4">
                     {% if CONTACT_EMAIL and user.is_authenticated %}
                         <span>
-                            {% blocktranslate with email=CONTACT_EMAIL %}
+                            {% blocktranslate trimmed with email=CONTACT_EMAIL %}
                                 Contact us at <a class="text-reset" href="mailto:{{ email }}">{{ email }}</a>
                             {% endblocktranslate %}
                         </span>

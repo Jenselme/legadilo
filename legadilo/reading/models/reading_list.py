@@ -152,7 +152,7 @@ class ReadingList(models.Model):
         choices=constants.ArticlesReadingTimeOperator.choices,
         default=constants.ArticlesReadingTimeOperator.UNSET,
         max_length=100,
-        help_text=_("Whether the reading must be more or less that the supplied value."),
+        help_text=_("Whether the reading time must be more or less that the supplied value."),
     )
     include_tag_operator = models.CharField(
         choices=constants.ReadingListTagOperator.choices,

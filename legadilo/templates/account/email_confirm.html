@@ -11,7 +11,7 @@
     {% if confirmation %}
         {% user_display confirmation.email_address.user as user_display %}
         <p>
-            {% blocktranslate with email=confirmation.email_address.email %}Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktranslate %}
+            {% blocktranslate trimmed with email=confirmation.email_address.email %}Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktranslate %}
         </p>
         <form method="post"
               action="{% url 'account_confirm_email' confirmation.key %}">
@@ -21,7 +21,7 @@
     {% else %}
         {% url 'account_email' as email_url %}
         <p>
-            {% blocktranslate %}This e-mail confirmation link expired or is invalid. Please <a href="{{ email_url }}">issue a new e-mail confirmation request</a>.{% endblocktranslate %}
+            {% blocktranslate trimmed %}This e-mail confirmation link expired or is invalid. Please <a href="{{ email_url }}">issue a new e-mail confirmation request</a>.{% endblocktranslate %}
         </p>
     {% endif %}
 {% endblock inner %}

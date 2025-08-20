@@ -12,6 +12,9 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 - Improve the order of actions depending on the situation.
 - Prevent horizontal scrolling on mobile because of overflowing `code` element.
+- Add French translations.
+  - It’s still a work in progress. All strings should be translated, but they may contain errors or evolve to be more precise or concise.
+  - This led to the corrections of many English strings.
 
 ## 25.08.2
 

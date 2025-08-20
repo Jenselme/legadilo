@@ -7,7 +7,7 @@
       action="{% url 'reading:delete_article' article.id %}"
       data-modal-id="danger-modal"
       data-modal-title="{% translate 'Confirm article deletion' %}"
-      data-modal-body="{% blocktranslate with article_title=article.title %}Are you sure you want to delete the article '{{ article_title }}'?{% endblocktranslate %}"
+      data-modal-body="{% blocktranslate trimmed with article_title=article.title %}Are you sure you want to delete the article '{{ article_title }}'?{% endblocktranslate %}"
       hx-indicator=".{{ article|article_action_indicator }}"
       hx-boost="true"
       hx-push-url="false"

@@ -16,7 +16,7 @@
     <h1>{% translate "Manage API tokens" %}</h1>
     {% if new_application_token %}
         <p class="alert-success">
-            {% blocktranslate with token_title=new_application_token.title %}
+            {% blocktranslate trimmed with token_title=new_application_token.title %}
                 Successfully created token <em>{{ token_title }}</em>. Copy the token below, you
                 won’t be able to get it back.
             {% endblocktranslate %}
@@ -46,20 +46,20 @@
                         <pre>{{ token.uuid }}</pre>
                     </p>
                     <p class="mb-1">
-                        {% blocktranslate with created_at=token.created_at|date:"SHORT_DATETIME_FORMAT" %}
-                                Created on {{ created_at }}
-                            {% endblocktranslate %}
+                        {% blocktranslate trimmed with created_at=token.created_at|date:"SHORT_DATETIME_FORMAT" %}
+                            Created on {{ created_at }}
+                        {% endblocktranslate %}
                     </p>
                     <p class="mb-1">
-                        {% blocktranslate with last_used_at=token.last_used_at|date:"SHORT_DATETIME_FORMAT" %}
-                                Last used {{ last_used_at }}
-                            {% endblocktranslate %}
+                        {% blocktranslate trimmed with last_used_at=token.last_used_at|date:"SHORT_DATETIME_FORMAT" %}
+                            Last used {{ last_used_at }}
+                        {% endblocktranslate %}
                     </p>
                     <p class="mb-1">
                         {% if token.validity_end is None %}
                             {% translate "Valid forever" %}
                         {% else %}
-                            {% blocktranslate with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
+                            {% blocktranslate trimmed with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
                                 Valid until {{ validity_end }}
                             {% endblocktranslate %}
                         {% endif %}
@@ -70,7 +70,7 @@
                 <form hx-post="{% url 'users:delete_token' token_id=token.id %}"
                       data-modal-id="danger-modal"
                       data-modal-title="{% translate 'Confirm token deletion' %}"
-                      data-modal-body="{% blocktranslate with token_title=token.title %}Are you sure you want to delete the token '{{ token_title }}'{% endblocktranslate %}"
+                      data-modal-body="{% blocktranslate trimmed with token_title=token.title %}Are you sure you want to delete the token '{{ token_title }}'?{% endblocktranslate %}"
                       hx-confirm="Delete?">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">{% translate "Delete" %}</button>

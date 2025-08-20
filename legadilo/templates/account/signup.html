@@ -15,7 +15,7 @@
 {% block inner %}
     <h1>{% translate "Sign Up" %}</h1>
     <p>
-        {% blocktranslate %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktranslate %}
+        {% blocktranslate trimmed %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktranslate %}
     </p>
     <form class="signup"
           id="signup_form"

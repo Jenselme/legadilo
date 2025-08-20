@@ -120,6 +120,9 @@ class TestUpdateFeedsCommand:
         assert not feed_update.feed_etag
         assert feed_update.feed_last_modified is None
         assert not feed_update.feed.enabled
-        assert feed_update.feed.disabled_reason == "We failed too many times to fetch the feed"
+        assert (
+            feed_update.feed.disabled_reason
+            == "The server failed too many times to fetch the feed."
+        )
         assert feed_update.feed.disabled_at == utcdt(2023, 12, 31, 12)
         assert Notification.objects.count() == 1

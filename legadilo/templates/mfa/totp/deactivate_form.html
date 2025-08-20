@@ -9,7 +9,7 @@
 {% block content %}
     <h1>{% translate "Deactivate Authenticator App" %}</h1>
     <p>
-        {% blocktranslate %}You are about to deactivate authenticator app based authentication. Are you sure?{% endblocktranslate %}
+        {% blocktranslate trimmed %}You are about to deactivate authenticator app based authentication. Are you sure?{% endblocktranslate %}
     </p>
     <form method="post" action="{% url 'mfa_deactivate_totp' %}">
         {% csrf_token %}

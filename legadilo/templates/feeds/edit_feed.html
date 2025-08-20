@@ -9,7 +9,7 @@
 {% endblock page_js %}
 
 {% block title %}
-    {% blocktranslate with feed_title=feed.title %}
+    {% blocktranslate trimmed with feed_title=feed.title %}
         Editing feed '{{ feed_title }}'
     {% endblocktranslate %}
 {% endblock title %}
@@ -25,7 +25,7 @@
           hx-confirm="Delete?"
           data-modal-id="danger-modal"
           data-modal-title="{% translate 'Confirm feed deletion' %}"
-          data-modal-body="{% blocktranslate with feed_title=feed.title %}Are you sure you want to delete the feed '{{ feed_title }}'?{% endblocktranslate %}">
+          data-modal-body="{% blocktranslate trimmed with feed_title=feed.title %}Are you sure you want to delete the feed '{{ feed_title }}'?{% endblocktranslate %}">
         {% csrf_token %}
         <input type="hidden" name="delete" value="true" />
     </form>

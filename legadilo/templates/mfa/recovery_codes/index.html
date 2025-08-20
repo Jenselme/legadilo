@@ -9,7 +9,7 @@
 {% block content %}
     <h1>{% translate "Recovery Codes" %}</h1>
     <p>
-        {% blocktranslate count unused_count=unused_codes|length %}
+        {% blocktranslate trimmed count unused_count=unused_codes|length %}
             There is {{ unused_count }} out of {{ total_count }} recovery codes available.
         {% plural %}
             There are {{ unused_count }} out of {{ total_count }} recovery codes available.

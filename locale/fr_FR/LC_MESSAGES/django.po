@@ -1,125 +1,729 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
-"Language: fr-FR\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-20 17:20+0000\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-#: legadilo/templates/account/account_inactive.html:5
-#: legadilo/templates/account/account_inactive.html:8
+"X-Generator: Poedit 3.6\n"
+
+msgid "English"
+msgstr "Anglais"
+
+msgid "French"
+msgstr "Français"
+
+msgid "Choose tags"
+msgstr "Sélectionner les étiquettes"
+
+msgid "Tag cannot be empty."
+msgstr "L’étiquette ne peut pas être vide."
+
+msgid "Tag cannot contain only spaces or special characters."
+msgstr ""
+"L’étiquette ne peut pas contenir que des espaces ou des caractères spéciaux."
+
+msgid "Cannot contain only spaces or special characters."
+msgstr "Ne peux pas contenir que des espaces ou des caractères spéciaux."
+
+msgid "Hourly"
+msgstr "Toutes les heures"
+
+msgid "Bihourly"
+msgstr "Toutes les deux heures"
+
+msgid "Every Morning"
+msgstr "Tous les matins"
+
+msgid "Daily at Noon"
+msgstr "Tous les midis"
+
+msgid "Every Evening"
+msgstr "Tous les soirs"
+
+msgid "On Mondays"
+msgstr "Le lundi"
+
+msgid "On Thursdays"
+msgstr "Le jeudi"
+
+msgid "On Saturdays"
+msgstr "Le samedi"
+
+msgid "On Sundays"
+msgstr "Le dimanche"
+
+msgid "Twice a week"
+msgstr "Deux fois par semaine"
+
+msgid "First Day of the Month"
+msgstr "1er jour du mois"
+
+msgid "Middle Day of the Month"
+msgstr "Milieu du mois"
+
+msgid "End of the Month"
+msgstr "Fin du mois"
+
+msgid "Thrice a month"
+msgstr "3 fois par mois"
+
+msgid "Success"
+msgstr "Succès"
+
+msgid "Failure"
+msgstr "Échec"
+
+msgid "Not Modified"
+msgstr "Inchangé"
+
+msgid "The server failed too many times to fetch the feed."
+msgstr "Le serveur a échoué trop de fois à récupérer le flux."
+
+#, python-format
+msgid "Feed '%s' was disabled"
+msgstr "Le flux '%s' est désactivé"
+
+msgid "Edit feed"
+msgstr "Éditer de flux"
+
+msgid ""
+"Define for how long in days to keep read articles associated with this feed. "
+"Use 0 to always keep the articles."
+msgstr ""
+"Défini combien de temps les articles lus associés à ce flux sont conservés. "
+"0 permet de garder les articles indéfiniment."
+
+msgid "None"
+msgstr "Aucun"
+
+#, python-format
+msgid "Articles of feed '%(feed_title)s'"
+msgstr "Articles du flux '%(feed_title)s'"
+
+#, python-format
+msgid "A category with title '%s' already exists."
+msgstr "Une catégorie avec le titre '%s' existe déjà."
+
+msgid "The category of the feed to help you keep them organized."
+msgstr "La catégorie du flux vous permez de les garder organiser."
+
+msgid ""
+"Tags to associate to articles of this feed. To create a new tag, type and "
+"press enter. Editing this tag list will update the tags of all articles of "
+"this feed."
+msgstr ""
+"Étiquettes à associer à ce flux. Pour en créer une nouvelle, tapez son titre "
+"et appuyez sur entrée. Éditer cette liste d’étiquettes metter à jour les "
+"étiquettes de tous les articles associés à ce flux."
+
+msgid "Manually disabled"
+msgstr "Désactivé manuellement"
+
+msgid ""
+"Enter the URL to the feed you want to subscribe to. If you don't know it, "
+"enter the URL of the site and the server will try to find the feed for you."
+msgstr ""
+"Entrez l’URL du flux auquel vous voulez vous abonner. Si vous ne la "
+"connaissez pas, entrez l’URL du site et le serveur essaiera de trouver le "
+"flux pour vous."
+
+msgid ""
+"Tags to associate to articles of this feed. To create a new tag, type and "
+"press enter."
+msgstr ""
+"Étiquettes à associer à ce flux. Pour créer une nouvelle étiquette, tapez "
+"son titre et appuyez sur entrée."
+
+msgid "Failed to create the feed"
+msgstr "Échec de la création du flux"
+
+msgid ""
+"Failed to fetch the feed. Please check that the URL you entered is correct, "
+"that the feed exists and is accessible."
+msgstr ""
+"Impossible de récupérer le flux. Merci de vérifier que l’URL est correcte, "
+"que le flux existe et qu’il est publiquement accessible."
+
+msgid "Failed to find a feed URL on the supplied page."
+msgstr "Impossible de trouver une URL de flux sur la page fournie."
+
+msgid ""
+"Multiple feeds were found at this location, please select the proper one."
+msgstr "Plusieurs flux ont été trouvés, merci de sélectionner le bon."
+
+msgid ""
+"The feed file is too big, it won't be parsed. Try to find a more lightweight "
+"feed."
+msgstr ""
+"Ce flux est trop gros, il ne sera pas analysé. Essayer de trouver un flux "
+"plus léger."
+
+msgid "Failed to parse the feed you supplied. Please check it's valid."
+msgstr ""
+"Impossible d’analyser le flux fourni. Merci de vérifier qu’il est valide."
+
+msgid "You are already subscribed to this feed."
+msgstr "Vous êtes déjà abonné à ce flux."
+
+msgid "Feed '<a href=\"{}\">{}</a>' added"
+msgstr "Flux '<a href=\"{}\">{}</a>' ajouté"
+
+msgid "The supplied file is too big to be imported."
+msgstr "Le fichier fourni est trop gros pour être importé."
+
+msgid "This file type is not supported for imports."
+msgstr "Ce type de fichier n’est pas supporté pour les imports."
+
+msgid "The file you supplied is not valid."
+msgstr "Le fichier fourni n’est pas valide."
+
+#, python-format
+msgid ""
+"Successfully imported %(nb_imported_feeds)s feeds, "
+"%(nb_imported_categories)s feed categories and %(nb_imported_articles)s "
+"articles."
+msgstr ""
+"%(nb_imported_feeds)s flux, %(nb_imported_categories)s catégories de flux et "
+"%(nb_imported_articles)s articles importés avec succès."
+
+#, python-format
+msgid "Successfully imported %s articles"
+msgstr "%s articles importés avec succès"
+
+#, python-format
+msgid ""
+"Successfully imported %(nb_imported_feeds)s feeds into "
+"%(nb_imported_categories)s categories."
+msgstr ""
+"%(nb_imported_feeds)s flux et %(nb_imported_categories)s catégories importés "
+"avec succès."
+
+msgid "All"
+msgstr "Tous"
+
+msgid "Only unread"
+msgstr "Non lus uniquement"
+
+msgid "Only read"
+msgstr "Lus uniquement"
+
+msgid "Only favorite"
+msgstr "Favoris uniquement"
+
+msgid "Only non favorite"
+msgstr "Non favoris uniquement"
+
+msgid "Only for later"
+msgstr "Pour plus tard uniquement"
+
+msgid "Only for not later"
+msgstr "Pas pour plus tard uniquement"
+
+msgid "Unset"
+msgstr "Non défini"
+
+msgid "Hour(s)"
+msgstr "Heure(s)"
+
+msgid "Day(s)"
+msgstr "Jour(s)"
+
+msgid "Week(s)"
+msgstr "Semaine(s)"
+
+msgid "Month(s)"
+msgstr "Mois"
+
+msgid "More than than"
+msgstr "Plus que"
+
+msgid "Less than than"
+msgstr "Moins que"
+
+msgid "Added manually"
+msgstr "Ajouté manuellement"
+
+msgid "From feed"
+msgstr "Depuis un flux"
+
+msgid "Deleted"
+msgstr "Supprimé"
+
+msgid "Include"
+msgstr "Inclus"
+
+msgid "Exclude"
+msgstr "Exclus"
+
+msgid "Any"
+msgstr "N’importe"
+
+msgid "Ascendant"
+msgstr "Ascendant"
+
+msgid "Descendant"
+msgstr "Descendant"
+
+msgid "Do nothing"
+msgstr "Ne rien faire"
+
+msgid "Mark as favorite"
+msgstr "Marquer comme favori"
+
+msgid "Unmark as favorite"
+msgstr "Ne plus marquer comme favori"
+
+msgid "Mark as read"
+msgstr "Marquer comme lu"
+
+msgid "Mark as unread"
+msgstr "Marquer comme non lu"
+
+msgid "Mark as opened"
+msgstr "Marquer comme ouvert"
+
+msgid "Mark as for later"
+msgstr "Marquer comme pour plus tard"
+
+msgid "Unmark as for later"
+msgstr "Ne plus marquer comme pour plus tard"
+
+msgid "Feed"
+msgstr "Flux"
+
+msgid "Manual"
+msgstr "Manuel"
+
+msgid "Words"
+msgstr "Mots"
+
+msgid "Phrase"
+msgstr "Phrase"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Rank desc"
+msgstr "Moins bon rang d’abord"
+
+msgid "Rank asc"
+msgstr "Meilleur rang d’abord"
+
+msgid "Article save date desc"
+msgstr "Articles sauvegardés le moins récemment d’abord"
+
+msgid "Article save date asc"
+msgstr "Articles sauvegardés récemment d’abord"
+
+msgid "Article date desc"
+msgstr "Articles anciens d’abord"
+
+msgid "Article date asc"
+msgstr "Articles récents d’abord"
+
+msgid "Read at desc"
+msgstr "Non lu d’abord"
+
+msgid "Read at asc"
+msgstr "Lu d’abord"
+
+msgid ""
+"How much time in minutes is needed to read this article. If not specified, "
+"it will be calculated automatically from content length. If we don't have "
+"content, we will use 0."
+msgstr ""
+"Temps requis en minutes pour lire cet article. Si vide, il sera "
+"calculé automatiquement à partir de la longueur de l’article. 0 sera utilisé "
+"pour les articles sans contenu."
+
+msgid "Tags of the article from its source"
+msgstr "Étiquettes de l’article dans sa source"
+
+msgid "The id of the article in its source."
+msgstr "L’identifiant de l’article dans sa source."
+
+msgid ""
+"Annotations made to the article. Currently only used for data imports to "
+"prevent data loss."
+msgstr ""
+"Annotations faites sur l’article. Actuellement, seulement utilisé lors de "
+"l’import de données."
+
+msgid "The language code for this article"
+msgstr "Code de la langue de l’article"
+
+msgid "The table of content of the article."
+msgstr "Table des matières de l’article."
+
+msgid "The date of publication of the article."
+msgstr "Date de publication de l’article."
+
+msgid "The last time the article was updated."
+msgstr "Date de dernière mise à jour de l’article."
+
+msgid "Technical date for the creation of the article in the database."
+msgstr "Date technique de création de l’article en base de données."
+
+msgid "Technical date for the last update of the article in the database."
+msgstr ""
+"Date technique de dernière mise à jour de l’article en base de données."
+
+msgid "no-slug"
+msgstr "sans-slug"
+
+msgid "All articles"
+msgstr "Tous les articles"
+
+msgid "Unread"
+msgstr "Non lus"
+
+msgid "Recent"
+msgstr "Récents"
+
+msgid "Favorite"
+msgstr "Favori"
+
+msgid "For later"
+msgstr "Pour plus tard"
+
+msgid ""
+"Number of hours after which to refresh reading lists automatically. 0 will "
+"disable the feature."
+msgstr ""
+"Temps en heure après lequel les listes de lecture sont rafraichies "
+"automatiquement. 0 désactive la fonctionnalité."
+
+msgid ""
+"Articles published before today minus this number will be excluded from the "
+"reading list."
+msgstr ""
+"Les articles publiés avant cette date seront exclus de la liste de lecture."
+
+msgid ""
+"Define the unit for the previous number. Leave to unset to not use this "
+"feature."
+msgstr ""
+"Défini l’unité du nombre précédent. Laissez vide pour ne pas utiliser cette "
+"fonctionnalité."
+
+msgid "Include only articles that take more or less than this time to read."
+msgstr ""
+"Inclure seulement les articles qui nécessitent plus ou moins que ce temps "
+"pour être lus."
+
+msgid "Whether the reading time must be more or less that the supplied value."
+msgstr ""
+"Est-ce que le temps de lecture doit être supérieur ou inférieur à la valeur "
+"donnée."
+
+msgid ""
+"Defines whether the articles must have all or any of the tags to be included "
+"in the reading list."
+msgstr ""
+"Défini si les articles doivent avoir toutes ou aucune des étiquettes à "
+"inclure de la liste de lecture."
+
+msgid ""
+"Defines whether the articles must have all or any of the tags to be excluded "
+"from the reading list."
+msgstr ""
+"Défini si les articles doivent avoir toutes ou aucune des étiquettes à "
+"exclure de la liste de lecture."
+
+msgid ""
+"How to sort the article. ASC will put the most recent articles first. DECS "
+"will put the least recent articles first."
+msgstr ""
+"Comment trier les articles. ASC mettra les articles les plus récents en "
+"premier. DESC mettra les moins récents en premier."
+
+msgid ""
+"Tags to associate to this article. To create a new tag, type and press enter."
+msgstr ""
+"Étiquettes à associer à cet article. Pour créer une nouvelle étiquette, "
+"taper et appuyer sur entrée."
+
+msgid "Type your comment here. Markdown syntax is supported."
+msgstr "Entrer votre commentaire ici. La syntaxe Markdown est supportée."
+
+msgid "URL of the article to add."
+msgstr "URL de l’article à ajouter."
+
+msgid ""
+"The article '<a href=\"{}\">{}</a>' was added but its content couldn't be "
+"fetched. Please check that it really points to an article."
+msgstr ""
+"L’article  '<a href=\"{}\">{}</a>' a été ajouté, mais son contenu n’a pas pu "
+"être récupéré. Merci de vérifier que l’URL est valide."
+
+msgid "Article '<a href=\"{}\">{}</a>' successfully added!"
+msgstr "L’article '<a href=\"{}\">{}</a>' a été ajouté avec succès !"
+
+msgid "Article '<a href=\"{}\">{}</a>' already existed."
+msgstr "L’article '<a href=\"{}\">{}</a>' existait déjà."
+
+msgid ""
+"The article was re-fetched but its content couldn't be fetched. Please check "
+"that it really points to an article."
+msgstr ""
+"L’article a été rafraichi, mais son contenu n’a pas pu être récupéré. Merci "
+"de vérifier que l’URL est correcte."
+
+msgid "The article was successfully re-fetched!"
+msgstr "L’article a été correctement rafraichi !"
+
+msgid ""
+"Failed to fetch the article. Please check that the URL you entered is "
+"correct, that the article exists and is accessible. Its URL was added "
+"directly. Go <a href=\"{}\">there</a> to access it."
+msgstr ""
+"Erreur lors de la récupération de l’article. Merci de vérifier que l’URL est "
+"correcte, que l’article existe et qu’il est accessible. Son URL a été ajoutée "
+"directement. Allez  <a href=\"{}\">ici</a> pour y accéder."
+
+msgid ""
+"The article you are trying to fetch is too big and cannot be processed. Its "
+"URL was added directly. Go <a href=\"{}\">there</a> to access it."
+msgstr ""
+"L’article que vous essayez de récupérer est trop gros et ne peut pas être "
+"traité. Son URL a été ajoutée directement. Allez  <a href=\"{}\">ici</a> "
+"pour y accéder."
+
+msgid ""
+"Failed to fetch the article. Please check that the URL you entered is "
+"correct, that the article exists and is accessible. It was added before, "
+"please check its link."
+msgstr ""
+"Erreur lors de la récupération de l’article. Merci de vérifier que l’URL est "
+"correcte, que l’article existe et est accessible. Il a déjà été ajouté "
+"précédemment, merci de vérifier le lien."
+
+#, python-format
+msgid "Articles with tag '%(tag_title)s'"
+msgstr "Articles avec l’étiquette '%(tag_title)s'"
+
+#, python-format
+msgid "Articles with external tag '%(tag_title)s'"
+msgstr "Articles avec l’étiquette externe '%(tag_title)s'"
+
+msgid ""
+"Tags to associate to all articles of this search (not only the visible "
+"ones). To create a new tag, type and press enter."
+msgstr ""
+"Étiquettes à associer à tous les articles de cette recherche (y compris les "
+"articles non visibles sur cette page). Pour créer une étiquette, taper et "
+"appuyer sur entrée."
+
+msgid ""
+"Tags to dissociate with all articles of this search (not only the visible "
+"ones)."
+msgstr ""
+"Étiquettes à dissocier de tous les articles de cette recherche (y compris "
+"les articles non visibles sur cette page)."
+
+#, python-format
+msgid "'%s' is not a known tag."
+msgstr "'%s' n’est pas une étiquette connue."
+
+msgid "Articles with these tags will be included in the reading list."
+msgstr ""
+"Les articles avec ces étiquettes seront inclus dans la liste de lecture."
+
+msgid "Articles with these tags will be excluded from the reading list."
+msgstr "Les articles avec ces étiquettes seront exclus de la liste de lecture."
+
+#, python-format
+msgid "A reading list with title '%s' already exists."
+msgstr "Une liste de lecture avec le titre '%s' existe déjà."
+
+msgid "Search query"
+msgstr "Requête de recherche"
+
+msgid "Articles to include must have all or any of the supplied tags."
+msgstr ""
+"L’article à inclure doit avoir toutes ou aucune des étiquettes fournies."
+
+msgid "Articles with these tags will be included in the search."
+msgstr "Les articles avec ces étiquettes seront inclus dans la recherche."
+
+msgid "Articles to exclude must have all or any of the supplied tags."
+msgstr ""
+"Les articles à exclure doivent avoir toutes ou aucune des étiquettes "
+"sélectionnées."
+
+msgid "Articles with these tags will be excluded from the search."
+msgstr "Les articles avec ces étiquettes seront exclus de la recherche."
+
+msgid ""
+"Articles with these external tags will be included in the search. Any tag "
+"you type will be searched as typed."
+msgstr ""
+"Les articles avec ces étiquettes externes seront inclus dans la recherche. "
+"Toutes les étiquettes que vous entrez seront recherchées telles que tapées."
+
+msgid "Choose external tags"
+msgstr "Choisir les étiquettes externes"
+
+msgid "Choose feeds"
+msgstr "Choisir les flux"
+
+msgid "You must supply a max age value when searching by max age."
+msgstr "Vous devez fournir un âge maximum en cherchant par âge maximum."
+
+msgid "You must set the max age unit when searching by max age."
+msgstr ""
+"Vous devez spécifier l’unité de l’âge maximum en cherchant par âge maximum."
+
+msgid "You must supply a reading time when searching by reading time."
+msgstr ""
+"Vous devez spécifier un temps de lecture en cherchant par temps de lecture."
+
+msgid "You must supply a reading time operator when searching by reading time."
+msgstr ""
+"Vous devez sélectionner un opérateur pour le temps de lecture en cherchant "
+"par temps de lecture."
+
+msgid "Editing the title will change the slug of the tag too!"
+msgstr "Modifier le titre va également changer le slug de l’étiquette !"
+
+msgid ""
+"These tags will be automatically added to the article when this tag is "
+"selected."
+msgstr ""
+"Ces étiquettes seront ajoutées automatiquement à l’article quand cette "
+"étiquette est sélectionnée."
+
+#, python-format
+msgid "A tag with title '%s' already exists."
+msgstr "Une étiquette avec le titre '%s' existe déjà."
+
+msgid "Forbidden (403)"
+msgstr "Accès interdit (403)"
+
+msgid "You're not allowed to access this page."
+msgstr "Vous n’êtes pas autorisé à accéder à cette page."
+
+msgid "Page not found"
+msgstr "Page non trouvée"
+
+msgid "This is not the page you were looking for."
+msgstr "Ce n’est pas la page que vous cherchiez."
+
+msgid "Server Error"
+msgstr "Erreur serveur"
+
+msgid "Looks like something went wrong!"
+msgstr "Quelque chose s’est mal passé !"
+
+msgid ""
+"We track these errors automatically, but if the problem persists feel free "
+"to contact us. In the meantime, try refreshing."
+msgstr ""
+"Nous suivons ces erreurs automatiquement. Cependant, si le problème "
+"persiste, vous pouvez nous contacter. Pour l’instant, essayer de rafraichir "
+"la page."
+
 msgid "Account Inactive"
 msgstr "Compte inactif"
 
-#: legadilo/templates/account/account_inactive.html:10
 msgid "This account is inactive."
 msgstr "Ce compte est inactif."
 
-#: legadilo/templates/account/email.html:7
+msgid "Confirm Access"
+msgstr "Confirmez votre adresse email"
+
+msgid "Please reauthenticate to safeguard your account."
+msgstr "Merci de vous ré-authentifier pour protéger votre compte."
+
 msgid "Account"
 msgstr "Compte"
 
-#: legadilo/templates/account/email.html:10
 msgid "E-mail Addresses"
 msgstr "Adresses e-mail"
 
-#: legadilo/templates/account/email.html:13
 msgid "The following e-mail addresses are associated with your account:"
-msgstr "Les adresses e-mail suivantes sont associées à votre compte :"
+msgstr "Les adresses e-mail suivantes sont associées à votre compte :"
 
-#: legadilo/templates/account/email.html:27
 msgid "Verified"
 msgstr "Vérifié"
 
-#: legadilo/templates/account/email.html:29
 msgid "Unverified"
 msgstr "Non vérifié"
 
-#: legadilo/templates/account/email.html:31
 msgid "Primary"
 msgstr "Primaire"
 
-#: legadilo/templates/account/email.html:37
 msgid "Make Primary"
 msgstr "Changer Primaire"
 
-#: legadilo/templates/account/email.html:38
 msgid "Re-send Verification"
 msgstr "Renvoyer vérification"
 
-#: legadilo/templates/account/email.html:39
+msgid "Confirm deletion"
+msgstr "Confirmez la suppression"
+
+msgid "Do you really want to remove the selected e-mail address?"
+msgstr "Voulez-vous vraiment supprimer l'adresse e-mail sélectionnée ?"
+
 msgid "Remove"
 msgstr "Supprimer"
 
-#: legadilo/templates/account/email.html:46
 msgid "Warning:"
 msgstr "Avertissement:"
 
-#: legadilo/templates/account/email.html:46
 msgid ""
 "You currently do not have any e-mail address set up. You should really add "
 "an e-mail address so you can receive notifications, reset your password, etc."
 msgstr ""
-"Vous n'avez actuellement aucune adresse e-mail configurée. Vous devriez ajouter "
-"une adresse e-mail pour reçevoir des notifications, réinitialiser votre mot "
-"de passe, etc."
+"Vous n'avez actuellement aucune adresse e-mail configurée. Vous devriez "
+"ajouter une adresse e-mail pour reçevoir des notifications, réinitialiser "
+"votre mot de passe, etc."
 
-#: legadilo/templates/account/email.html:51
 msgid "Add E-mail Address"
 msgstr "Ajouter une adresse e-mail"
 
-#: legadilo/templates/account/email.html:56
 msgid "Add E-mail"
 msgstr "Ajouter e-mail"
 
-#: legadilo/templates/account/email.html:66
-msgid "Do you really want to remove the selected e-mail address?"
-msgstr "Voulez-vous vraiment supprimer l'adresse e-mail sélectionnée ?"
-
-#: legadilo/templates/account/email_confirm.html:6
-#: legadilo/templates/account/email_confirm.html:10
 msgid "Confirm E-mail Address"
 msgstr "Confirmez votre adresse email"
 
-#: legadilo/templates/account/email_confirm.html:16
 #, python-format
 msgid ""
 "Please confirm that <a href=\"mailto:%(email)s\">%(email)s</a> is an e-mail "
 "address for user %(user_display)s."
 msgstr ""
-"Veuillez confirmer que <a href=\"mailto:%(email)s\">%(email)s</a> est un e-mail "
-"adresse de l'utilisateur %(user_display)s."
+"Veuillez confirmer que <a href=\"mailto:%(email)s\">%(email)s</a> est un e-"
+"mail adresse de l'utilisateur %(user_display)s."
 
-#: legadilo/templates/account/email_confirm.html:20
 msgid "Confirm"
 msgstr "Confirm"
 
-#: legadilo/templates/account/email_confirm.html:27
 #, python-format
 msgid ""
-"This e-mail confirmation link expired or is invalid. Please <a href="
-"\"%(email_url)s\">issue a new e-mail confirmation request</a>."
+"This e-mail confirmation link expired or is invalid. Please <a "
+"href=\"%(email_url)s\">issue a new e-mail confirmation request</a>."
 msgstr ""
-"Ce lien de confirmation par e-mail a expiré ou n'est pas valide. Veuillez"
- "<a href=\"%(email_url)s\">émettre une nouvelle demande de confirmation "
-"par e-mail</a>."
+"Ce lien de confirmation par e-mail a expiré ou n'est pas valide. Veuillez<a "
+"href=\"%(email_url)s\">émettre une nouvelle demande de confirmation par e-"
+"mail</a>."
 
-#: legadilo/templates/account/login.html:7
-#: legadilo/templates/account/login.html:11
-#: legadilo/templates/account/login.html:56
-#: legadilo/templates/base.html:72
 msgid "Sign In"
 msgstr "S'identifier"
 
-#: legadilo/templates/account/login.html:17
 msgid "Please sign in with one of your existing third party accounts:"
 msgstr "Veuillez vous connecter avec l'un de vos comptes tiers existants :"
 
-#: legadilo/templates/account/login.html:19
 #, python-format
 msgid ""
 "Or, <a href=\"%(signup_url)s\">sign up</a> for a %(site_name)s account and "
@@ -128,70 +732,47 @@ msgstr ""
 "Ou, <a href=\"%(signup_url)s\">créez</a> un compte %(site_name)s et "
 "connectez-vous ci-dessous :"
 
-#: legadilo/templates/account/login.html:32
 msgid "or"
 msgstr "ou"
 
-#: legadilo/templates/account/login.html:41
 #, python-format
 msgid ""
-"If you have not created an account yet, then please <a href=\"%(signup_url)s"
-"\">sign up</a> first."
+"If you have not created an account yet, then please <a "
+"href=\"%(signup_url)s\">sign up</a> first."
 msgstr ""
-"Si vous n'avez pas encore créé de compte, veuillez d'abord <a href=\"%(signup_url)s"
-"\">vous inscrire</a>."
+"Si vous n'avez pas encore créé de compte, veuillez d'abord <a "
+"href=\"%(signup_url)s\">vous inscrire</a>."
 
-#: legadilo/templates/account/login.html:55
 msgid "Forgot Password?"
-msgstr "Mot de passe oublié?"
+msgstr "Mot de passe oublié ?"
 
-#: legadilo/templates/account/logout.html:5
-#: legadilo/templates/account/logout.html:8
-#: legadilo/templates/account/logout.html:17
-#: legadilo/templates/base.html:61
 msgid "Sign Out"
 msgstr "Se déconnecter"
 
-#: legadilo/templates/account/logout.html:10
 msgid "Are you sure you want to sign out?"
-msgstr "Êtes-vous certain de vouloir vous déconnecter?"
+msgstr "Êtes-vous certain de vouloir vous déconnecter ?"
 
-#: legadilo/templates/account/password_change.html:6
-#: legadilo/templates/account/password_change.html:9
-#: legadilo/templates/account/password_change.html:14
-#: legadilo/templates/account/password_reset_from_key.html:5
-#: legadilo/templates/account/password_reset_from_key.html:8
-#: legadilo/templates/account/password_reset_from_key_done.html:4
-#: legadilo/templates/account/password_reset_from_key_done.html:7
 msgid "Change Password"
 msgstr "Changer le mot de passe"
 
-#: legadilo/templates/account/password_reset.html:7
-#: legadilo/templates/account/password_reset.html:11
-#: legadilo/templates/account/password_reset_done.html:6
-#: legadilo/templates/account/password_reset_done.html:9
 msgid "Password Reset"
 msgstr "Réinitialisation du mot de passe"
 
-#: legadilo/templates/account/password_reset.html:16
 msgid ""
 "Forgotten your password? Enter your e-mail address below, and we'll send you "
 "an e-mail allowing you to reset it."
 msgstr ""
-"Mot de passe oublié? Entrez votre adresse e-mail ci-dessous, et nous vous "
+"Mot de passe oublié ? Entrez votre adresse e-mail ci-dessous, et nous vous "
 "enverrons un e-mail vous permettant de le réinitialiser."
 
-#: legadilo/templates/account/password_reset.html:21
 msgid "Reset My Password"
 msgstr "Réinitialiser mon mot de passe"
 
-#: legadilo/templates/account/password_reset.html:24
 msgid "Please contact us if you have any trouble resetting your password."
 msgstr ""
-"Veuillez nous contacter si vous rencontrez des difficultés pour réinitialiser"
-"votre mot de passe."
+"Veuillez nous contacter si vous rencontrez des difficultés pour "
+"réinitialiservotre mot de passe."
 
-#: legadilo/templates/account/password_reset_done.html:15
 msgid ""
 "We have sent you an e-mail. Please contact us if you do not receive it "
 "within a few minutes."
@@ -199,136 +780,855 @@ msgstr ""
 "Nous vous avons envoyé un e-mail. Veuillez nous contacter si vous ne le "
 "recevez pas d'ici quelques minutes."
 
-#: legadilo/templates/account/password_reset_from_key.html:8
 msgid "Bad Token"
 msgstr "Token Invalide"
 
-#: legadilo/templates/account/password_reset_from_key.html:12
 #, python-format
 msgid ""
 "The password reset link was invalid, possibly because it has already been "
 "used.  Please request a <a href=\"%(passwd_reset_url)s\">new password reset</"
 "a>."
 msgstr ""
-"Le lien de réinitialisation du mot de passe n'était pas valide, peut-être parce "
-"qu'il a déjà été utilisé. Veuillez faire une <a href=\"%(passwd_reset_url)s\"> "
-"nouvelle demande de réinitialisation de mot de passe</a>."
+"Le lien de réinitialisation du mot de passe n'était pas valide, peut-être "
+"parce qu'il a déjà été utilisé. Veuillez faire une <a "
+"href=\"%(passwd_reset_url)s\"> nouvelle demande de réinitialisation de mot "
+"de passe</a>."
 
-#: legadilo/templates/account/password_reset_from_key.html:18
 msgid "change password"
 msgstr "changer le mot de passe"
 
-#: legadilo/templates/account/password_reset_from_key.html:21
-#: legadilo/templates/account/password_reset_from_key_done.html:8
 msgid "Your password is now changed."
 msgstr "Votre mot de passe est maintenant modifié."
 
-#: legadilo/templates/account/password_set.html:6
-#: legadilo/templates/account/password_set.html:9
-#: legadilo/templates/account/password_set.html:14
 msgid "Set Password"
 msgstr "Définir le mot de passe"
 
-#: legadilo/templates/account/signup.html:6
+msgid "Enter your password:"
+msgstr "Entrer le mot de passe :"
+
 msgid "Signup"
 msgstr "S'inscrire"
 
-#: legadilo/templates/account/signup.html:9
-#: legadilo/templates/account/signup.html:19
-#: legadilo/templates/base.html:67
 msgid "Sign Up"
 msgstr "S'inscrire"
 
-#: legadilo/templates/account/signup.html:11
 #, python-format
 msgid ""
 "Already have an account? Then please <a href=\"%(login_url)s\">sign in</a>."
 msgstr ""
-"Vous avez déjà un compte? Alors veuillez <a href=\"%(login_url)s\">vous connecter</a>."
+"Vous avez déjà un compte ? Alors veuillez <a href=\"%(login_url)s\">vous "
+"connecter</a>."
 
-#: legadilo/templates/account/signup_closed.html:5
-#: legadilo/templates/account/signup_closed.html:8
 msgid "Sign Up Closed"
 msgstr "Inscriptions closes"
 
-#: legadilo/templates/account/signup_closed.html:10
 msgid "We are sorry, but the sign up is currently closed."
 msgstr "Désolé, mais l'inscription est actuellement fermée."
 
-#: legadilo/templates/account/verification_sent.html:5
-#: legadilo/templates/account/verification_sent.html:8
-#: legadilo/templates/account/verified_email_required.html:5
-#: legadilo/templates/account/verified_email_required.html:8
 msgid "Verify Your E-mail Address"
 msgstr "Vérifiez votre adresse e-mail"
 
-#: legadilo/templates/account/verification_sent.html:10
 msgid ""
 "We have sent an e-mail to you for verification. Follow the link provided to "
-"finalize the signup process. Please contact us if you do not receive it "
-"within a few minutes."
-msgstr "Nous vous avons envoyé un e-mail pour vérification. Suivez le lien fourni "
-"pour finalisez le processus d'inscription. Veuillez nous contacter si vous ne le "
-"recevez pas d'ici quelques minutes."
-
-#: legadilo/templates/account/verified_email_required.html:12
-msgid ""
-"This part of the site requires us to verify that\n"
-"you are who you claim to be. For this purpose, we require that you\n"
-"verify ownership of your e-mail address. "
+"finalize the signup process. Please check your spam folder if you do not "
+"receive it within a few minutes in your inbox."
 msgstr ""
-"Cette partie du site nous oblige à vérifier que\n"
-"vous êtes qui vous prétendez être. Nous vous demandons donc de\n"
-"vérifier la propriété de votre adresse e-mail."
+"Nous vous avons envoyé un e-mail pour vérification. Suivez le lien fourni "
+"pour finalisez le processus d'inscription. Vérifier votre dossier spam si "
+"vous ne le recevez pas d'ici quelques minutes."
 
-#: legadilo/templates/account/verified_email_required.html:16
 msgid ""
-"We have sent an e-mail to you for\n"
-"verification. Please click on the link inside this e-mail. Please\n"
-"contact us if you do not receive it within a few minutes."
+"This part of the site requires us to verify that you are who you claim to "
+"be. For this purpose, we require that you verify ownership of your e-mail "
+"address."
 msgstr ""
-"Nous vous avons envoyé un e-mail pour\n"
-"vérification. Veuillez cliquer sur le lien contenu dans cet e-mail. Veuillez nous\n"
-"contacter si vous ne le recevez pas d'ici quelques minutes."
+"Cette partie du site nous oblige à vérifier que vous êtes qui vous prétendez "
+"être. Nous vous demandons donc de vérifier la propriété de votre adresse e-"
+"mail."
 
-#: legadilo/templates/account/verified_email_required.html:20
+msgid ""
+"We have sent an e-mail to you for verification. Please click on the link "
+"inside this e-mail. Please contact us if you do not receive it within a few "
+"minutes."
+msgstr ""
+"Nous vous avons envoyé un e-mail pour vérification. Veuillez cliquer sur le "
+"lien contenu dans cet e-mail. Veuillez nous contacter si vous ne le recevez "
+"pas d'ici quelques minutes."
+
 #, python-format
 msgid ""
 "<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-"
 "mail address</a>."
 msgstr ""
-"<strong>Remarque :</strong> vous pouvez toujours <a href=\"%(email_url)s\">changer votre e-"
-"adresse e-mail</a>."
+"<strong>Remarque :</strong> vous pouvez toujours <a "
+"href=\"%(email_url)s\">changer votre e-adresse e-mail</a>."
 
-#: legadilo/templates/base.html:57
+msgid "Read your RSS feeds & other saved articles!"
+msgstr "Lisez vos flux RSS et vos articles sauvegardés!"
+
+msgid "No"
+msgstr "Non"
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "Default reading list"
+msgstr "Liste de lecture par défaut"
+
+msgid "Search articles here..."
+msgstr "Chercher des articles…"
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Add an article"
+msgstr "Ajouter un article"
+
+#, python-format
+msgid "%(nb_unread_notifications)s unread notification"
+msgid_plural "%(nb_unread_notifications)s unread notifications"
+msgstr[0] "%(nb_unread_notifications)s notification non lue"
+msgstr[1] "%(nb_unread_notifications)s notifications non lues"
+
+msgid "Profile menu"
+msgstr "Mon Profil"
+
+msgid "Tags admin"
+msgstr "Administration des étiquettes"
+
+msgid "Feeds admin"
+msgstr "Administration des flux"
+
+msgid "Feed categories admin"
+msgstr "Administration des catégories des flux"
+
+msgid "Reading lists admin"
+msgstr "Administration des listes de lecture"
+
 msgid "My Profile"
 msgstr "Mon Profil"
 
-#: legadilo/users/admin.py:17
+msgid "Admin"
+msgstr "Admin"
+
+#, python-format
+msgid ""
+"Legadilo <a class=\"text-reset\" href=\"https://github.com/Jenselme/legadilo/"
+"blob/main/CHANGELOG.md\">version %(version)s</a>"
+msgstr ""
+"Legadilo <a class=\"text-reset\" href=\"https://github.com/Jenselme/legadilo/"
+"blob/main/CHANGELOG.md\">version %(version)s</a>"
+
+msgid "About"
+msgstr "À propos"
+
+msgid "Privacy"
+msgstr "Vie privée"
+
+msgid "Report a bug."
+msgstr "Remonter un bug."
+
+#, python-format
+msgid ""
+"Contact us at <a class=\"text-reset\" href=\"mailto:%(email)s\">%(email)s</a>"
+msgstr ""
+"Contacter nous à <a class=\"text-reset\" href=\"mailto:"
+"%(email)s\">%(email)s</a>"
+
+msgid "Add article"
+msgstr "Ajouter un article"
+
+msgid "Article source title"
+msgstr "Titre de la source de l’article"
+
+msgid "Authors"
+msgstr "Auteurs"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Back to top"
+msgstr "Retour en haut"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Feed title"
+msgstr "Titre du flux"
+
+msgid "Info"
+msgstr "Information"
+
+msgid "Not for later"
+msgstr "Pas pour plus tard"
+
+msgid "Open in new tab"
+msgstr "Ouvrir dans un nouvel onglet"
+
+msgid "Unread notifications"
+msgstr "Notifications non lues"
+
+msgid "No unread notification"
+msgstr "Aucune notification non lue"
+
+msgid "Open article details"
+msgstr "Ouvrir le détail de l’article"
+
+msgid "Open original"
+msgstr "Ouvrir l’original"
+
+msgid "Parameters"
+msgstr "Paramètres"
+
+msgid "Published at"
+msgstr "Publié le"
+
+msgid "Reading time"
+msgstr "Temps de lecture"
+
+msgid "Refetch"
+msgstr "Rafraichir"
+
+msgid "Updated at"
+msgstr "Mis à jour le"
+
+msgid "Loading..."
+msgstr "Changement en cours…"
+
+msgid "Light"
+msgstr "Lumineux"
+
+msgid "Dark"
+msgstr "Sombre"
+
+msgid "Auto"
+msgstr "Auto"
+
+#, python-format
+msgid "Editing feed '%(feed_title)s'"
+msgstr "Modification du flux '%(feed_title)s'"
+
+msgid "Confirm feed deletion"
+msgstr "Confirmez la suppression du flux"
+
+#, python-format
+msgid "Are you sure you want to delete the feed '%(feed_title)s'?"
+msgstr "Voulez-vous vraiment supprimer le flux '%(feed_title)s' ?"
+
+msgid "Save"
+msgstr "Sauvegarder"
+
+msgid "Disable feed"
+msgstr "Désactiver le flux"
+
+msgid "Reenable feed"
+msgstr "Réactiver le flux"
+
+msgid "Feed update debug information"
+msgstr "Information de debuggage sur la mise à jour du flux"
+
+msgid "Date:"
+msgstr "Date :"
+
+msgid "Status:"
+msgstr "Statut :"
+
+msgid "Error Message:"
+msgstr "Message d’erreur :"
+
+#, python-format
+msgid "Editing feed category '%(category_title)s'"
+msgstr "Modification de la catégorie de flux '%(category_title)s'"
+
+msgid "Create a feed category"
+msgstr "Créer une catégorie de flux"
+
+msgid "Confirm category deletion"
+msgstr "Confirmez la suppression de la catégorie"
+
+#, python-format
+msgid "Are you sure you want to delete the category '%(category_title)s'?"
+msgstr "Voulez-vous vraiment supprimer la catégorie '%(category_title)s' ?"
+
+msgid "Update"
+msgstr "Mettre à jour"
+
+msgid "Create"
+msgstr "Créer"
+
+msgid "Create a new category"
+msgstr "Créer une nouvelle catégorie"
+
+msgid "Edit/Delete category"
+msgstr "Modifier/Supprimer une catégorie"
+
+msgid "Subscribe to a feed"
+msgstr "S’abonner à un flux"
+
+msgid "feeds.opml"
+msgstr "feeds.opml"
+
+msgid "Export all feeds"
+msgstr "Exporter tous les flux"
+
+msgid "Import feeds"
+msgstr "Importer des flux"
+
+msgid "Search for feeds here..."
+msgstr "Recherche des flux…"
+
+msgid "Feeds without a category"
+msgstr "Flux sans catégorie"
+
+msgid "Link to feed"
+msgstr "Lien du flux"
+
+msgid "Edit/Delete feed"
+msgstr "Modifier/Supprimer un flux"
+
+msgid "View articles"
+msgstr "Voir les articles"
+
+msgid "Subscribe to a new feed"
+msgstr "S’abonner à un flux"
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Import/Export articles"
+msgstr "Importer/exporter des articles"
+
+msgid "Export articles into a CSV"
+msgstr "Exporter tous les articles dans un CSV"
+
+msgid "articles.csv"
+msgstr "articles.csv"
+
+msgid "Export all articles, feeds, categories and tags"
+msgstr "Exporter tous les articles, flux, catégorie et étiquettes"
+
+msgid "Import custom CSV"
+msgstr "Importer un CSV personnalisé"
+
+msgid "Import"
+msgstr "Importer"
+
+msgid "Import Wallabag JSON"
+msgstr "Importer un JSON depuis Wallabag"
+
+msgid "Two-Factor Authentication"
+msgstr "Authentification à deux facteurs"
+
+msgid ""
+"Your account is protected by two-factor authentication. Please enter an "
+"authenticator code:"
+msgstr ""
+"Votre compte est protégé par l’authentification à deux facteurs. Merci "
+"d’entrer un code d’authentification :"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Authenticator App"
+msgstr "Application d’authentification"
+
+msgid "Authentication using an authenticator app is active."
+msgstr "La connexion avec une application d’authentification est active."
+
+msgid "An authenticator app is not active."
+msgstr "Aucune application d’authentification active."
+
+msgid "Deactivate"
+msgstr "Désactiver"
+
+msgid "Activate"
+msgstr "Activer"
+
+msgid "Recovery Codes"
+msgstr "Code de secours"
+
+#, python-format
+msgid ""
+"There is %(unused_count)s out of %(total_count)s recovery codes available."
+msgid_plural ""
+"There are %(unused_count)s out of %(total_count)s recovery codes available."
+msgstr[0] ""
+"Il y a %(unused_count)s code de récupération utilisable sur "
+"%(total_count)s."
+msgstr[1] ""
+"Il y a %(unused_count)s codes de récupération utilisables sur "
+"%(total_count)s."
+
+msgid "No recovery codes set up."
+msgstr "Aucun code de secours mis en place."
+
+msgid "View"
+msgstr "Voir"
+
+msgid "Download"
+msgstr "Télécharger"
+
+msgid "Generate"
+msgstr "Générer"
+
+msgid "You are about to generate a new set of recovery codes for your account."
+msgstr ""
+"Vous êtes sur le point de générer un nouveau jeu de codes de secours pour "
+"votre compte."
+
+msgid "This action will invalidate your existing codes."
+msgstr "Cette action va invalider vos codes existants."
+
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr ?"
+
+msgid "Activate Authenticator App"
+msgstr "Activer l’application d’authentification"
+
+msgid ""
+"To protect your account with two-factor authentication, scan the QR code "
+"below with your authenticator app. Then, input the verification code "
+"generated by the app below."
+msgstr ""
+"Pour protéger votre compte avec de la double authentification, scannez le QR "
+"code ci-dessous avec votre application d’authentification. Ensuite, entrez "
+"le code généré par l’app ci-dessous."
+
+msgid "Authenticator secret"
+msgstr "Secret de l’application d’authentification"
+
+msgid ""
+"You can store this secret and use it to reinstall your authenticator app at "
+"a later time."
+msgstr ""
+"Vous pouvez conserver ce secret et l’utiliser pour réinstaller votre "
+"application d’authentification plus tard."
+
+msgid "Deactivate Authenticator App"
+msgstr "Désactiver l’application d’authentification"
+
+msgid ""
+"You are about to deactivate authenticator app based authentication. Are you "
+"sure?"
+msgstr ""
+"Vous êtes sur le point de désactiver la double authentification. Êtes-vous "
+"sûr ?"
+
+msgid "Update article"
+msgstr "Mettre l’article à jour"
+
+msgid "Re-fetch content"
+msgstr "Rafraichir le contenu"
+
+msgid "Comments"
+msgstr "Commentaires"
+
+#, python-format
+msgid "Editing reading list '%(reading_list_title)s'"
+msgstr "Modification de la liste de lecture '%(reading_list_title)s'"
+
+msgid "Create a new reading list"
+msgstr "Créer une nouvelle liste de lecture"
+
+msgid "Confirm reading list deletion"
+msgstr "Confirmez la suppression de la liste de lecture"
+
+#, python-format
+msgid ""
+"Are you sure you want to delete the reading list '%(reading_list_title)s'?"
+msgstr ""
+"Voulez-vous vraiment supprimer la liste de lecture '%(reading_list_title)s' ?"
+
+msgid "Make default"
+msgstr "Rendre par défaut"
+
+#, python-format
+msgid "Editing tag '%(tag_title)s'"
+msgstr "Modification de l’étiquette '%(tag_title)s'"
+
+msgid "Create a tag manually"
+msgstr "Créer une étiquette manuellement"
+
+msgid "Confirm tag deletion"
+msgstr "Confirmez la suppression de l’étiquette"
+
+#, python-format
+msgid "Are you sure you want to delete the tag '%(tag_title)s'?"
+msgstr "Voulez-vous vraiment supprimer l’étiquette '%(tag_title)s' ?"
+
+msgid "Reading lists"
+msgstr "Listes de lecture"
+
+#, python-format
+msgid "%(formatted_nb_articles)s article in total"
+msgid_plural "%(formatted_nb_articles)s articles in total"
+msgstr[0] "%(formatted_nb_articles)s article au total"
+msgstr[1] "%(formatted_nb_articles)s articles au total"
+
+msgid "Read on scroll"
+msgstr "Lire au défilement"
+
+msgid "Edit this feed"
+msgstr "Modifier ce flux"
+
+msgid "Go to advanced search"
+msgstr "Recherche avancée"
+
+msgid ""
+"You have too many articles to read on scroll. Please refresh the page to "
+"view the others."
+msgstr ""
+"Vous avez trop d’article à lire au défilement. Merci de rafraichir la page "
+"pour voir les autres."
+
+msgid "No articles to display."
+msgstr "Aucun article à afficher."
+
+msgid "Navigation between articles"
+msgstr "Navigation entre les articles"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Refresh current reading list"
+msgstr "Rafraichir la liste de lecture courante"
+
+msgid "Open details"
+msgstr "Ouvrir le détail"
+
+msgid "Confirm article deletion"
+msgstr "Confirmez la suppression de l’article"
+
+#, python-format
+msgid "Are you sure you want to delete the article '%(article_title)s'?"
+msgstr "Voulez-vous vraiment supprimer l’article '%(article_title)s' ?"
+
+#, python-format
+msgid "%(reading_time)s minute"
+msgid_plural "%(reading_time)s minutes"
+msgstr[0] "%(reading_time)s minute"
+msgstr[1] "%(reading_time)s minutes"
+
+msgid "Comment"
+msgstr "Commentaire"
+
+#, python-format
+msgid "You commented on %(comment_date)s"
+msgstr "Vous avez commenté le %(comment_date)s"
+
+msgid "Edit"
+msgstr "Éditer"
+
+msgid "Do you really want to delete this comment?"
+msgstr "Voulez-vous vraiment supprimer ce commentaire ?"
+
+msgid "View search actions"
+msgstr "Voir les actions de recherche"
+
+msgid "Update articles"
+msgstr "Mettre à jour des articles"
+
+msgid "Reading list admin"
+msgstr "Administration des listes de lecture"
+
+msgid "Edit/Delete reading list"
+msgstr "Modifier/Supprimer la liste de lecture"
+
+msgid "Searching articles..."
+msgstr "Recherche d’articles…"
+
+msgid "View advanced search fields"
+msgstr "Voir les champs de recherche avancée"
+
+msgid "No results were found 😞 Try another search 🔍"
+msgstr "Aucun résultat trouvé 😞 Essayez avec une autre recherche 🔍"
+
+msgid "Manually create a tag"
+msgstr "Créer une étiquette manuellement"
+
+msgid "Search for tags here..."
+msgstr "Rechercher des étiquettes…"
+
+#, python-format
+msgid "%(nb_articles)s&nbsp;article"
+msgid_plural "%(nb_articles)s&nbsp;articles"
+msgstr[0] "%(nb_articles)s&nbsp;article"
+msgstr[1] "%(nb_articles)s&nbsp;articles"
+
+msgid "Manage application tokens"
+msgstr "Gérer les jetons d’application"
+
+msgid "Manage API tokens"
+msgstr "Gérer les jeton d’API"
+
+#, python-format
+msgid ""
+"Successfully created token <em>%(token_title)s</em>. Copy the token below, "
+"you won’t be able to get it back."
+msgstr ""
+"Création réussi du jeton <em>%(token_title)s</em>. Copiez le jeton ci-"
+"dessous, vous ne pourrez pas le revoir."
+
+msgid "List of tokens"
+msgstr "Liste des jetons"
+
+msgid "Expired"
+msgstr "Expiré"
+
+msgid "Token id"
+msgstr "Id du jeton"
+
+#, python-format
+msgid "Created on %(created_at)s"
+msgstr "Créé le %(created_at)s"
+
+#, python-format
+msgid "Last used %(last_used_at)s"
+msgstr "Utilisé pour la dernière fois le %(last_used_at)s"
+
+msgid "Valid forever"
+msgstr "Toujours valid"
+
+#, python-format
+msgid "Valid until %(validity_end)s"
+msgstr "Valide jusqu’au %(validity_end)s"
+
+msgid "Confirm token deletion"
+msgstr "Confirmez la suppression du token"
+
+#, python-format
+msgid "Are you sure you want to delete the token '%(token_title)s'?"
+msgstr "Voulez-vous vraiment supprimer le jeton '%(token_title)s' ?"
+
+msgid "No token found"
+msgstr "Aucun jeton trouvé"
+
+msgid "Create new token"
+msgstr "Créer un nouveau jeton"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Mark all as read"
+msgstr "Tout marquer comme lu"
+
+#, python-format
+msgid "User: %(email)s"
+msgstr "Utilisateur : %(email)s"
+
+msgid "My Info"
+msgstr "Mes informations"
+
+msgid "E-Mail"
+msgstr "Email"
+
+msgid "My settings"
+msgstr "Mes paramètres"
+
+msgid "Change password"
+msgstr "Changer le mot de passe"
+
+msgid "Edit your settings"
+msgstr "Changer vos paramètres"
+
+msgid "Go to the default reading list"
+msgstr "Aller à la liste de lecteur par défaut"
+
+msgid "About legadilo"
+msgstr "À propos de legadilo"
+
+msgid ""
+"Legadilo is a project to help you subscribe to RSS feeds, save articles and "
+"organize them easily with tags and full customizable reading lists!"
+msgstr ""
+"Legadilo est un projet pour vous aider à suivre des flux RSS, sauvegarder "
+"des articles et les organiser avec des étiquettes et des listes de lecture "
+"complètement personnalisables !"
+
+msgid "Feeds"
+msgstr "Flux"
+
+msgid ""
+"You can subscribe to feeds, organize them in categories and tag all articles "
+"from these feeds to organize them."
+msgstr ""
+"Vous pouvez vous abonner à des flux, les organiser en catégorie et étiqueter "
+"tous les articles présent dans ces flux pour les organiser."
+
+msgid ""
+"If you are currently using a feed reader, you can import your feeds in OPML. "
+"You can also export your legadilo feeds in the same format."
+msgstr ""
+"Si vous utiliser déjà un lecteur de flux, vous pouvez importer ces flux au "
+"format OPML. Vous pouvez aussi exporter vos flux depuis Legadilo dans ce "
+"format."
+
+msgid "Reading"
+msgstr "Lecture"
+
+msgid ""
+"Save any article and organize them in different reading list with tags. You "
+"can mark articles as favorite or for later (to remove them from the current "
+"reading list). Some reading list are created by default (all articles, "
+"unread, recent, favorite and for later). You can also edit and delete them "
+"and create your own. They will allow you to auto-refresh a list, read "
+"articles on scroll and filter articles by tag, status or reading time!"
+msgstr ""
+"Sauvegardez n’importe quel article et organisez les dans différentes liste "
+"de lecture avec des étiquettes. Vous pouvez marquer des articles comme "
+"favoris ou pour plus tard (pour les retirer de la liste de lecture "
+"actuelle). Certaines listes de lecture sont créées par défaut (tous les "
+"articles, non lus, récents, favoris et pour plus tard). Vous pouvez les "
+"éditer, les supprimer et bien sûr créer les vôtres. Vous pouvez rafraichir "
+"automatiquement les listes de lecteur, lire les articles au défilement, les "
+"filtrer par étiquette, statut ou temps de lecture !"
+
+msgid "About the software"
+msgstr "À propos du logiciel"
+
+msgid ""
+"It’s written with the <a href=\"https://www.djangoproject.com/\">Django web "
+"framework</a>, <a href=\"https://getbootstrap.com/\">the bootstrap 5 "
+"frontend toolkit</a> and with enhancements given by <a href=\"https://"
+"htmx.org/\">htmx</a>."
+msgstr ""
+"Il est écrit avec <a href=\"https://www.djangoproject.com/\">le cadriciel "
+"Django</a>, <a href=\"https://getbootstrap.com/\">bootstrap 5</a> et <a "
+"href=\"https://htmx.org/\">htmx</a>."
+
+msgid ""
+"It’s opensource under the <a href=\"https://www.gnu.org/licenses/"
+"agpl-3.0.html#license-text\">GNU AGPLv3</a> license and is designed to be "
+"self-hostable, so you can run your own instance. The code source is "
+"available <a href=\"https://github.com/Jenselme/legadilo\">on GitHub</a>. "
+"Your <a href=\"https://github.com/Jenselme/legadilo/issues/new\">ideas</a>, "
+"<a href=\"https://github.com/Jenselme/legadilo/pulls\">contributions</a> and "
+"<a href=\"https://github.com/Jenselme/legadilo/discussions\">feedback</a> "
+"are welcomed! You can also check the <a href=\"https://www.legadilo.eu/"
+"\">official instance</a> to start using it more easily (you will be able to "
+"export and import your data in any instance)!"
+msgstr ""
+"C’est un logiciel libre publié sous la licence e <a href=\"https://"
+"www.gnu.org/licenses/agpl-3.0.html#license-text\">GNU AGPLv3</a>. Il est "
+"conçu pour être auto-hébergeable, vous pouvez donc utiliser votre propre "
+"instance. Le code source est disponible <a href=\"https://github.com/"
+"Jenselme/legadilo\">sur GitHub</a>. Vos  <a href=\"https://github.com/"
+"Jenselme/legadilo/issues/new\">idées</a>, <a href=\"https://github.com/"
+"Jenselme/legadilo/pulls\">contributions</a> et <a href=\"https://github.com/"
+"Jenselme/legadilo/discussions\">retours</a> sont bienvenus. Vous pouvez "
+"aussi démarrer en vous créant un compte sur <a href=\"https://"
+"www.legadilo.eu/\">l’instance officielle</a> (vous pourrez exporter et "
+"importer vos données dans n’importe quelle instance) !"
+
+msgid ""
+"Legadilo is an open source project released under the <a href=\"https://"
+"www.gnu.org/licenses/agpl-3.0.html#license-text\">GNU AGPLv3</a> license. "
+"You don’t have to take our word for what we say here, you can check <a "
+"href=\"https://github.com/Jenselme/legadilo\">the source code</a>. You can "
+"also host it yourself to have even more power over your data!"
+msgstr ""
+"Legadilo est un logiciel libre publié sous la licence <a href=\"https://"
+"www.gnu.org/licenses/agpl-3.0.html#license-text\">GNU AGPLv3</a>. Vous "
+"n’avez pas besoin de nous croire sur paroles, vous pouvez vérifier <a "
+"href=\"https://github.com/Jenselme/legadilo\">le code source</a>. Vous "
+"pouvez aussi l’héberger vous-même pour avoir encore plus de pouvoir sur vos "
+"données !"
+
+msgid ""
+"Our servers are provided by <a href=\"https://www.scaleway.com/en/"
+"\">Scaleway</a> a French hosting provider. They are located near/in the city "
+"of Paris, France (European Union)."
+msgstr ""
+"Le site est hébergé chez <a href=\"https://www.scaleway.com/en/\">Scaleway</"
+"a> un hébergeur français. Nos serveurs sont près de Paris, France (Union "
+"européenne)."
+
+msgid ""
+"We don’t read nor sell your data and <em>never</em> will. We track visits "
+"with <a href=\"https://plausible.io\">Plausible.io</a>. It is <em>GDPR "
+"compatible</em>, and collects so little we won’t even need to bother you "
+"with a cookie banner."
+msgstr ""
+"Nous ne lisons <em>pas</em> ni ne vendons vos données. Nous suivons les "
+"visites avec <a href=\"https://plausible.io\">Plausible.io</a>. C’est une "
+"solution <em>compatible avec le RGPD</em>, elle collecte tellement peu de "
+"choses que la bannière de cookie n’est pas nécessaire."
+
+msgid ""
+"Your data is yours and can be exported at any time from your account. If you "
+"want your account closed and your data deleted, please send us an email."
+msgstr ""
+"Vos données vous appartiennent et peuvent être exportées à n’importe quel "
+"moment depuis votre compte. Si vous voulez fermer votre compte et supprimer "
+"vos données, merci de nous envoyer un email."
+
+#, python-format
+msgid "Contact us at <a href=\"mailto:%(email)s\">%(email)s</a>"
+msgstr "Contactez nous à <a href=\"mailto:%(email)s\">%(email)s</a>"
+
 msgid "Personal info"
 msgstr "Personal info"
 
-#: legadilo/users/admin.py:19
 msgid "Permissions"
 msgstr "Permissions"
 
-#: legadilo/users/admin.py:30
 msgid "Important dates"
 msgstr "Dates importantes"
 
-#: legadilo/users/apps.py:7
 msgid "Users"
 msgstr "Utilisateurs"
 
-#: legadilo/users/forms.py:24
-#: legadilo/users/tests/test_forms.py:36
-msgid "This username has already been taken."
+msgid "This email has already been taken."
 msgstr "Ce nom d'utilisateur est déjà pris."
 
-#: legadilo/users/models.py:15
+msgid "Used to display times and updated feeds at a convenient time."
+msgstr ""
+"Utilisé pour afficher les heures et pour mettre à jour les flux à une heure "
+"pertinente."
+
+msgid "Give the token a nice name to identify its usage more easily."
+msgstr "Donnez au jeton un nom pour identifier ses usages plus facilement."
+
+msgid "Validity end"
+msgstr "Date de fin de validité"
+
+msgid "Leave empty to have a token that will last until deletion."
+msgstr "Laissez vide pour avoir un jeton valide jusqu’à sa suppression."
+
+msgid "When this token was last used to create an access token."
+msgstr ""
+"Quand ce jeton a été utilisé pour la dernière fois pour créer un jeton "
+"d’accès."
+
 msgid "Name of User"
 msgstr "Nom de l'utilisateur"
 
-#: legadilo/users/views.py:23
+msgid "email address"
+msgstr "adresse e-mail"
+
+msgid ""
+"Number of words you read in minutes. Used to calculate the reading time of "
+"articles."
+msgstr ""
+"Nombre de mots que vous pouvez lire par minute. Utilisé pour calculé le "
+"temps de lecture des articles."
+
 msgid "Information successfully updated"
 msgstr "Informations mises à jour avec succès"
+
+msgid "The timezone in which the validity end date should be understood."
+msgstr ""
+"Le fuseau horaire dans lequel la date de fin de validité doit être "
+"interprétée."
+
+msgid "A token already exists with this name."
+msgstr "Un jeton avec ce nom existe déjà."
+
+msgid "Settings correctly updated"
+msgstr "Paramètres correctement mis à jour"
+
+msgid "Failed to update settings"
+msgstr "Erreur lors de la mise à jour des paramètres"

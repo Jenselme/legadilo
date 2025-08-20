@@ -18,7 +18,7 @@ class MultipleTagsField(forms.MultipleChoiceField):
             raise ValidationError(self.error_messages["required"], code="required")
 
         if not all(value):
-            raise ValidationError(_("Tag cannot be empty"), code="empty-tag")
+            raise ValidationError(_("Tag cannot be empty."), code="empty-tag")
 
         if not all(slugify(tag_value) for tag_value in value):
             raise ValidationError(

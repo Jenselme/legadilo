@@ -217,7 +217,7 @@ class TestSubscribeToFeedView:
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["ERROR"],
-                message="The feed file is too big, we won't parse it. "
+                message="The feed file is too big, it won't be parsed. "
                 "Try to find a more lightweight feed.",
             )
         ]

@@ -34,7 +34,12 @@
         {% for tag in tags %}
             <div class="card">
                 <div class="card-body">
-                    {{ tag.title }} ({% blocktranslate with count=tag.annot_articles_count %}{{ count }}&nbsp;articles{% endblocktranslate %})
+                    {{ tag.title }}
+                    ({% blocktranslate trimmed count nb_articles=tag.annot_articles_count %}
+                        {{ nb_articles }}&nbsp;article
+                    {% plural %}
+                        {{ nb_articles }}&nbsp;articles
+                    {% endblocktranslate %})
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{% translate "View articles" %}</a>

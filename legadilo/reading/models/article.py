@@ -772,13 +772,13 @@ class Article(models.Model):
         validators=[list_of_strings_validator],
         blank=True,
         default=list,
-        help_text=_("Tags of the article from the its source"),
+        help_text=_("Tags of the article from its source"),
     )
     external_article_id = models.CharField(
         default="",
         blank=True,
         max_length=constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH,
-        help_text=_("The id of the article in the its source."),
+        help_text=_("The id of the article in its source."),
     )
     annotations = models.JSONField(
         blank=True,
@@ -841,11 +841,11 @@ class Article(models.Model):
     )
     obj_created_at = models.DateTimeField(
         auto_now_add=True,
-        help_text=_("Technical date for the creation of the article in our database."),
+        help_text=_("Technical date for the creation of the article in the database."),
     )
     obj_updated_at = models.DateTimeField(
         auto_now=True,
-        help_text=_("Technical date for the last update of the article in our database."),
+        help_text=_("Technical date for the last update of the article in the database."),
     )
 
     objects = ArticleManager()
