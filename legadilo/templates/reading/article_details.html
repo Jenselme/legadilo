@@ -36,7 +36,7 @@
         <div class="mt-1 mt-md-2 row px-0 mx-0 justify-content-center">
             <aside class="col col-2 d-none d-md-block article-aside">
                 <div id="article-side-actions">
-                    {% partialdef article-side-actions inline=True %}
+                    {% partialdef article-side-actions inline %}
                         <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
                         <div class="mt-5">
                             {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
@@ -124,7 +124,7 @@
                 </div>
                 <div id="article-mobile-actions"
                      class="d-flex d-md-none justify-content-center mt-2 mb-4">
-                    {% partialdef article-mobile-actions inline=True %}
+                    {% partialdef article-mobile-actions inline %}
                         {% include 'reading/partials/article_actions.html' with for_article_details=True %}
                     {% endpartialdef %}
                 </div>
@@ -134,7 +134,7 @@
                 <footer>
                     <div id="article-bottom-actions"
                          class="d-flex justify-content-center mt-2 mb-4">
-                        {% partialdef article-bottom-actions inline=True %}
+                        {% partialdef article-bottom-actions inline %}
                             {% include 'reading/partials/article_actions.html' with for_article_details=True %}
                         {% endpartialdef %}
                     </div>
@@ -142,7 +142,7 @@
             </article>
             <aside class="col col-2 d-none d-md-block article-aside">
                 <div id="article-side-toc">
-                    {% partialdef article-side-toc inline=True %}
+                    {% partialdef article-side-toc inline %}
                         <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
                             <p class="lead">{{ article.title }}</p>
                             {% for toc_entry in article.table_of_content %}

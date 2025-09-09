@@ -247,7 +247,7 @@ class FeedManager(models.Manager["Feed"]):
             self.get_queryset()
             .alias(
                 alias_feed_update_ids=ArrayAgg(
-                    "feed_updates__id", ordering="-feed_updates__created_at"
+                    "feed_updates__id", order_by="-feed_updates__created_at"
                 ),
             )
             .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
