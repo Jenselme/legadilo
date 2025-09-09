@@ -5,11 +5,14 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from importlib import import_module
 from typing import TYPE_CHECKING, Self
 
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
+from django.contrib.sessions.models import Session
 from django.core.validators import validate_email
 from django.db import models
 
@@ -86,7 +89,7 @@ class UserManager(DjangoUserManager[User]):
         return self.get_queryset().invalid_accounts().delete()
 
     def compute_stats(self) -> dict[str, int]:
-        return self.get_queryset().aggregate(
+        stats = self.get_queryset().aggregate(
             total_nb_users=models.Count("id", distinct=True),
             total_nb_active_users=models.Count(
                 "id", filter=models.Q(is_active=True), distinct=True
@@ -101,6 +104,16 @@ class UserManager(DjangoUserManager[User]):
                 "id", filter=models.Q(date_joined__gt=utcnow() - timedelta(days=7)), distinct=True
             ),
         )
+        session_store = import_module(settings.SESSION_ENGINE).SessionStore()
+        user_id_with_active_sessions = set()
+        for session in Session.objects.filter(expire_date__gte=utcnow()):
+            session_data = session_store.decode(session.session_data)
+            user_id = session_data.get("_auth_user_id")
+            user_id_with_active_sessions.add(user_id)
+
+        stats["nb_users_with_active_session"] = len(user_id_with_active_sessions)
+
+        return stats
 
     def list_admin_emails(self) -> list[str]:
         return list(
