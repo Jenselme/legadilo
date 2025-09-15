@@ -568,15 +568,15 @@ wheels = [
 
 [[package]]
 name = "django-version-checks"
-version = "1.14.0"
+version = "1.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/ff/cbb197e4b6e4c851631e987a64c6caf18b7f871939700e4b5ea069f17922/django_version_checks-1.14.0.tar.gz", hash = "sha256:ca8ed0777d173c32c047522bf79b8f054317a5e0ff14b798ee6806ddf1627348", size = 9814, upload-time = "2025-02-06T22:19:18.293Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/4a/69a98e456d0d2e36abbbf4c9cdbefc3c26b7bf9d0b4a3beb790f6421b853/django_version_checks-1.15.0.tar.gz", hash = "sha256:4b0bad96a71ef30aadaaae1521c7b6a9ce5f691ec53eecdcf2ed4e23a3df8ed6", size = 10216, upload-time = "2025-09-08T23:34:04.909Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/47/35026ed44ea67cc2c26016d30cd9220f314df5303edb073fc911cc493536/django_version_checks-1.14.0-py3-none-any.whl", hash = "sha256:b5ca9d2d792190f8b5afbb70d228e0feb2dbea7b3d42a2c5dc17b8fe5d1618eb", size = 7675, upload-time = "2025-02-06T22:19:16.521Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/2e/cbf921709e2323be0a7b6a9fcb4bb12dd1d2b6cdd951fe1689af5fb121cc/django_version_checks-1.15.0-py3-none-any.whl", hash = "sha256:0efedc3169eeae8d98e652bf1fcbe752dbd734a76bf3bae9074239608e375d82", size = 7698, upload-time = "2025-09-08T23:34:03.405Z" },
 ]
 
 [[package]]
