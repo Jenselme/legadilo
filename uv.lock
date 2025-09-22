@@ -581,15 +581,15 @@ wheels = [
 
 [[package]]
 name = "django-watchfiles"
-version = "1.1.0"
+version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "watchfiles" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/b1/89c36fb87f5af2736cfd0610ea050c38e382251b44bcebeef603d45ab100/django_watchfiles-1.1.0.tar.gz", hash = "sha256:7f7b716387d320778b003bf3ff32945b904f7e240a65f8c5432f140705a5fdda", size = 5300, upload-time = "2025-02-06T22:15:51.834Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1a/89/51b82766a1c937dea9fb92f0fb7666919d120379fc26dc84ab504e35f37e/django_watchfiles-1.4.0.tar.gz", hash = "sha256:88e253e8e8427834eac467923d334c35010279b3e9ceb5bb91014be83975b11b", size = 8647, upload-time = "2025-09-22T16:34:04.634Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fc/0f/c696529f2542c42c00a3eeef52a4c214ec01a610e769be9e8cd69ab684b9/django_watchfiles-1.1.0-py3-none-any.whl", hash = "sha256:a8256d9dc8eb4fce3f038ec6e630d4058458dda3a5e8130066f4aa4ebedef42a", size = 4598, upload-time = "2025-02-06T22:15:50.663Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/85/3d31f347e1a3eef9be381792df1994ff25e4db4659ab40a5cc3f814e3a1a/django_watchfiles-1.4.0-py3-none-any.whl", hash = "sha256:40cb3180987c63629b0681ab228b65afd68e0f783388cc72a45620378213bb48", size = 6766, upload-time = "2025-09-22T16:34:03.193Z" },
 ]
 
 [[package]]
