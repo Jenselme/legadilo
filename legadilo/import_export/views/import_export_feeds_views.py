@@ -3,10 +3,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
-from xml.etree.ElementTree import (  # noqa: S405 etree methods are vulnerable to XML attacks
-    ParseError as XmlParseError,
-)
 
+from defusedxml.ElementTree import ParseError as XmlParseError
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required

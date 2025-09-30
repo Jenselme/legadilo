@@ -10,7 +10,7 @@ from config import settings
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
-from legadilo.import_export.services.custom_csv import import_custom_csv_file_sync
+from legadilo.import_export.services.custom_csv import import_custom_csv_file
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory
@@ -19,14 +19,14 @@ from legadilo.utils.testing import all_model_fields_except, serialize_for_snapsh
 
 def test_import_invalid_custom_csv(user):
     with pytest.raises(DataImportError):
-        import_custom_csv_file_sync(
+        import_custom_csv_file(
             user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/invalid_file.csv"
         )
 
 
 @pytest.mark.django_db
 def test_import_empty_file(user):
-    nb_imported_articles, nb_imported_feeds, nb_imported_categories = import_custom_csv_file_sync(
+    nb_imported_articles, nb_imported_feeds, nb_imported_categories = import_custom_csv_file(
         user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/empty_file.csv"
     )
 
@@ -73,7 +73,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         url="https://example.com/rss8.xml",
     )
 
-    nb_imported_articles, nb_imported_feeds, nb_imported_categories = import_custom_csv_file_sync(
+    nb_imported_articles, nb_imported_feeds, nb_imported_categories = import_custom_csv_file(
         user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
     )
 

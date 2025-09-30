@@ -16,8 +16,7 @@ from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.views.search_views import SearchForm
-from legadilo.utils.http_utils import dict_to_query_dict
-from legadilo.utils.testing import AnyOfType
+from legadilo.utils.testing import AnyOfType, dict_to_query_dict
 
 
 class TestSearchForm:

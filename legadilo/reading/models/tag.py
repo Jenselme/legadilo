@@ -247,6 +247,8 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
         *,
         readd_deleted=False,
     ):
+        # Can associate tags with lots of (thousands!) articles at once. To prevent high memory
+        # usage, use a paginator.
         paginator: Paginator[Article] = Paginator(
             all_articles, core_constants.PER_PAGE_FOR_BULK_OPERATIONS
         )
@@ -297,6 +299,8 @@ class ArticleTag(models.Model):
     )
     tag = models.ForeignKey("reading.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
+    # Used to mark a tag initially associated because of a feed but manually deleted by the user.
+    # We don't want it to come back when we update the article!
     tagging_reason = models.CharField(
         choices=constants.TaggingReason.choices,
         default=constants.TaggingReason.ADDED_MANUALLY,

@@ -4,7 +4,7 @@
 
 from django.http import QueryDict
 
-from legadilo.utils.http_utils import dict_to_query_dict
+from legadilo.utils.testing import dict_to_query_dict
 
 
 def test_dict_to_query_dict():

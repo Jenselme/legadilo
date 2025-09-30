@@ -54,6 +54,11 @@ class NotificationManager(models.Manager["Notification"]):
         return self.get_queryset().for_user_list(user)
 
     def mark_as_read(self, user: User, notification_id: int | None = None) -> None:
+        """Mark notifications as read for the supplied user.
+
+        If notification_id is supplied, only mark that notification as read. Otherwise, mark all
+        notifications for the supplied user as read.
+        """
         qs = self.get_queryset().for_user(user)
         if notification_id:
             qs = qs.for_ids([notification_id])
@@ -61,6 +66,11 @@ class NotificationManager(models.Manager["Notification"]):
         qs.update(read_at=utcnow())
 
     def mark_as_unread(self, user: User, notification_id: int | None = None) -> None:
+        """Mark notifications as unread for the supplied user.
+
+        If notification_id is supplied, only mark that notification as unread. Otherwise, mark all
+        notifications for the supplied user as unread.
+        """
         qs = self.get_queryset().for_user(user)
         if notification_id:
             qs = qs.for_ids([notification_id])

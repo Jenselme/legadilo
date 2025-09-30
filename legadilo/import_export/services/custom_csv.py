@@ -36,11 +36,8 @@ from .. import constants
 
 logger = logging.getLogger(__name__)
 
+# To be sure the content of the article can be exported/imported in the CSV.
 csv.field_size_limit(sys.maxsize)
-
-
-def import_custom_csv_file_sync(user: User, path_to_file: str | Path) -> tuple[int, int, int]:
-    return import_custom_csv_file(user, path_to_file)
 
 
 def import_custom_csv_file(user: User, path_to_file) -> tuple[int, int, int]:

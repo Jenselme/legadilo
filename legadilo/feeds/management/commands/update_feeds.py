@@ -25,6 +25,7 @@ from legadilo.utils.time_utils import utcnow
 
 logger = logging.getLogger(__name__)
 
+# Don't send feed updates error to Sentry: there are lots of those they can't be solved.
 unlink_logger_from_sentry(logger)
 
 

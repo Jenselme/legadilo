@@ -123,7 +123,10 @@ class TestGetUserView:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json() == {"email": user.email}
+        assert response.json() == {
+            "email": user.email,
+            "settings": {"default_reading_time": 200, "timezone": "UTC"},
+        }
 
     def test_get_inactive_user(self, client, user, django_assert_num_queries):
         header = self._get_authorization_header(client, user)

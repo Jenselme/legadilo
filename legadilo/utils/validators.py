@@ -38,6 +38,7 @@ def sanitize_keep_safe_tags_validator(extra_tags: Set[str] = frozenset()) -> Aft
 
 
 def truncate(max_size: int) -> AfterValidator:
+    """Create a validator that truncates a string to the supplied size."""
     # We must use a lambda here: Pydantic cannot recognize the signature of
     # operator.itemgetter(slice(max_size)) if we pass it to its validator.
     return AfterValidator(lambda value: value[:max_size])  # noqa: FURB118 don't use a lambda

@@ -19,7 +19,11 @@ def get_nb_words_from_html(text: str) -> int:
 
 
 class ClearableStringIO:
-    """A buffer we can write to that resets on every read."""
+    """A buffer we can write to that resets on every read.
+
+    Can be passed to a CSV writer to hold only the data not yet transmitted over HTTP. This way,
+    the full data isn't loaded in the buffer, only the data that's not yet transmitted.
+    """
 
     def __init__(self):
         self.buffer = StringIO()

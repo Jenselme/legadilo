@@ -38,6 +38,10 @@ def update_model_from_schema(
     refresh_qs: models.QuerySet | None = None,
     excluded_fields: Set[str] = frozenset(),
 ):
+    """Do a partial update of a model from a Ninja schema.
+
+    Only fields set in the schema will be updated.
+    """
     data = schema.model_dump(exclude_unset=True)
     updated_attrs = []
 

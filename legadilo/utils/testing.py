@@ -4,8 +4,10 @@
 
 import json
 from typing import Any
+from urllib.parse import urlencode
 
 from django.db import models
+from django.http import QueryDict
 from pydantic import BaseModel as BaseSchema
 
 from legadilo.utils.collections_utils import CustomJsonEncoder
@@ -53,3 +55,8 @@ def extract_htmx_headers(response):
     return {
         name: value for name, value in response.headers.items() if name.lower().startswith("hx-")
     }
+
+
+def dict_to_query_dict(a_dict: dict) -> QueryDict:
+    qs = urlencode(a_dict, doseq=True)
+    return QueryDict(qs, mutable=False)

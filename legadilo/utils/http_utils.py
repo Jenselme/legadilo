@@ -2,11 +2,9 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from urllib.parse import urlencode
 
 import httpx
 from django.conf import settings
-from django.http import QueryDict
 
 from legadilo import constants
 
@@ -30,8 +28,3 @@ def get_rss_sync_client() -> httpx.Client:
         follow_redirects=True,
         headers={"User-Agent": "Legadilo RSS"},
     )
-
-
-def dict_to_query_dict(a_dict: dict) -> QueryDict:
-    qs = urlencode(a_dict, doseq=True)
-    return QueryDict(qs, mutable=False)

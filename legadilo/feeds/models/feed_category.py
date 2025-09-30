@@ -57,21 +57,6 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
             feed_categories.append({
                 "category_id": feed_category.id,
                 "category_title": feed_category.title,
-                "feed_id": "",
-                "feed_title": "",
-                "feed_url": "",
-                "feed_site_url": "",
-                "article_id": "",
-                "article_title": "",
-                "article_url": "",
-                "article_content": "",
-                "article_date_published": "",
-                "article_date_updated": "",
-                "article_authors": "",
-                "article_tags": "",
-                "article_read_at": "",
-                "article_is_favorite": "",
-                "article_lang": "",
             })
 
         return feed_categories

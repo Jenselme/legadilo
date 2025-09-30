@@ -89,6 +89,7 @@ class UserManager(DjangoUserManager[User]):
         return self.get_queryset().invalid_accounts().delete()
 
     def compute_stats(self) -> dict[str, int]:
+        """Compute various statistics about total and active users."""
         stats = self.get_queryset().aggregate(
             total_nb_users=models.Count("id", distinct=True),
             total_nb_active_users=models.Count(

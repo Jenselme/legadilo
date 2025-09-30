@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.09.2
+
+- Technical release to update deps and clean up the code.
+
 ## 25.09.1
 
 - Update Python deps to fix a vulnerability in Django.

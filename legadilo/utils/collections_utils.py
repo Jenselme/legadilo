@@ -43,6 +43,10 @@ def max_or_none[T](
 
 
 def merge_deletion_results(deletion_results: Iterable[DeletionResult]) -> DeletionResult:
+    """Merges deletion results into a single deletion result.
+
+    Deletion results are tuples of (total_deleted, deleted_models) as returned by Django's delete().
+    """
     total_deleted = 0
     deleted_models: dict[str, int] = {}
 

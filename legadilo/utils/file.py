@@ -14,8 +14,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUpload
 def ensure_file_on_disk(django_file: TemporaryUploadedFile | InMemoryUploadedFile):
     """Ensure the uploaded file is on the disk.
 
-    For TemporaryUploadedFile it yields the file and for InMemoryUploadedFile it saves the content
-    into a temporary file.
+    For TemporaryUploadedFile it yields the existing file path and for InMemoryUploadedFile it saves
+    the content into a temporary file and yields its path.
     """
     if hasattr(django_file, "temporary_file_path"):
         yield django_file.temporary_file_path()
@@ -28,7 +28,8 @@ def ensure_file_on_disk(django_file: TemporaryUploadedFile | InMemoryUploadedFil
 
 
 @contextlib.contextmanager
-def file_or_stdout(file_path: str | None):
+def file_or_stdout(file_path: str | None = None):
+    """Return a file object for the given file path or stdout if None is supplied."""
     if file_path is None:
         yield sys.stdout
         return

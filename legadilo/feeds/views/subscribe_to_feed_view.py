@@ -52,6 +52,8 @@ class SubscribeToFeedForm(forms.Form):
         required=False,
         widget=forms.HiddenInput(),
     )
+    # Filled automatically when adding a page from a site in which multiple feeds are found. This
+    # allows for the user to select the correct feed.
     proposed_feed_choices = forms.CharField(
         required=False,
         widget=forms.HiddenInput(),
