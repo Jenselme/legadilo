@@ -25,6 +25,9 @@ class FeedArticleManager(models.Manager):
 
 class FeedArticle(models.Model):
     feed = models.ForeignKey("feeds.Feed", related_name="feed_articles", on_delete=models.CASCADE)
+    # FeedArticle without an associated Article remains in the database to prevent a deleted article
+    # to be added again on the next feed update. Since the article can remain indefinitely in the
+    # feed, these objects are never deleted.
     article = models.ForeignKey(
         "reading.Article", related_name="feed_articles", on_delete=models.SET_NULL, null=True
     )

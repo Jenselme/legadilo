@@ -40,6 +40,7 @@ else:
 def _build_refresh_filters(  # noqa: C901, PLR0911, PLR0912 too complex
     tzinfo: ZoneInfo, refresh_delay: feeds_constants.FeedRefreshDelays
 ) -> models.When:
+    """Return a filter to determine whether a feed should be refreshed NOW."""
     now = datetime.now(tzinfo)
     last_day_of_month = calendar.monthrange(now.year, now.month)[1]
     base_filters = models.Q(refresh_delay=refresh_delay)
@@ -222,6 +223,7 @@ class FeedManager(models.Manager["Feed"]):
     def get_by_categories(
         self, user: User, searched_text: str = ""
     ) -> dict[str | None, list[Feed]]:
+        """Get categories by category title, filter by supplied text."""
         feeds_by_categories: dict[str | None, list[Feed]] = {}
         qs = (
             self.get_queryset()
@@ -247,7 +249,7 @@ class FeedManager(models.Manager["Feed"]):
             self.get_queryset()
             .alias(
                 alias_feed_update_ids=ArrayAgg(
-                    "feed_updates__id", ordering="-feed_updates__created_at"
+                    "feed_updates__id", order_by="-feed_updates__created_at"
                 ),
             )
             .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
@@ -294,6 +296,16 @@ class FeedManager(models.Manager["Feed"]):
 
     @transaction.atomic()
     def update_feed(self, feed: Feed, feed_data: FeedData):
+        """Update the feed with the latest data supplied as parameter.
+
+        This will:
+
+        * Update the URLs of existing articles if they changed.
+        * Create new articles and link them to the feed.
+        * Mark articles considered as republished as unread.
+        * Track when an article was last seen in the feed to allow for republication.
+        * Create a FeedUpdate object to track the last update status and datetime.
+        """
         self._update_article_urls_from_feed(feed, feed_data)
         deleted_feed_article_ids = FeedArticle.objects.list_deleted_feed_article_ids(feed.id)
         articles = [
@@ -409,6 +421,11 @@ class FeedManager(models.Manager["Feed"]):
 
     @transaction.atomic()
     def log_error(self, feed: Feed, error_message: str, technical_debug_data: dict | None = None):
+        """Log a FeedUpdate failure when the feed cannot be updated due to an error.
+
+        The reason for the error is tracked in the model. If the update failed too many times, the
+        feed is disabled.
+        """
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.FAILURE,
             error_message=error_message,
@@ -428,6 +445,7 @@ class FeedManager(models.Manager["Feed"]):
             )
 
     def log_not_modified(self, feed: Feed):
+        """Mark a feed as fetched but without new articles."""
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.NOT_MODIFIED,
             feed=feed,
@@ -444,17 +462,6 @@ class FeedManager(models.Manager["Feed"]):
                 "feed_title": feed.title if feed else "",
                 "feed_url": feed.feed_url if feed else "",
                 "feed_site_url": feed.site_url if feed else "",
-                "article_id": "",
-                "article_title": "",
-                "article_url": "",
-                "article_content": "",
-                "article_date_published": "",
-                "article_date_updated": "",
-                "article_authors": "",
-                "article_tags": "",
-                "article_read_at": "",
-                "article_is_favorite": "",
-                "article_lang": "",
             })
 
         return feeds

@@ -44,7 +44,10 @@ class SelectAutocompleteWidget(widgets.Select):
 
 
 class PrettyJSONWidget(widgets.Textarea):
-    """From https://stackoverflow.com/a/52627264"""
+    """Pretty format JSON data in a textarea.
+
+    From https://stackoverflow.com/a/52627264
+    """
 
     def format_value(self, value):
         try:

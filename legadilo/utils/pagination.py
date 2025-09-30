@@ -7,6 +7,10 @@ from django.db import models
 
 
 def get_requested_page(paginator: Paginator, requested_page: int) -> Page:
+    """Get the requested page from the paginator.
+
+    If the requested page is out of range, return the first page.
+    """
     return (
         paginator.page(requested_page)
         if 1 <= requested_page <= paginator.num_pages

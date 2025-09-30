@@ -35,7 +35,7 @@
 {% block center_navbar %}
     <div id="reading-list-dropdown-menu"
          class="col col-5 d-md-none dropdown d-flex justify-content-center">
-        {% partialdef reading-list-dropdown-menu inline=True %}
+        {% partialdef reading-list-dropdown-menu inline %}
             <button class="btn btn-secondary dropdown-toggle mw-100 d-flex align-items-center"
                     type="button"
                     data-bs-toggle="dropdown"
@@ -77,7 +77,7 @@
                     {% if count_articles_of_current_reading_list > 0 %}
                         <h2 class="fs-6 col-6 col-md-2 align-middle d-flex align-items-center px-0 mx-0">
                             <span id="articles-in-total">
-                                {% partialdef articles-in-total inline=True %}
+                                {% partialdef articles-in-total inline %}
                                     {% blocktranslate trimmed with formatted_nb_articles=count_articles_of_current_reading_list|intcomma count count_articles_of_current_reading_list=count_articles_of_current_reading_list %}
                                         {{ formatted_nb_articles }} article in total
                                     {% plural %}
@@ -115,7 +115,7 @@
                         {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-md-6" %}
                     {% endif %}
                 </div>
-                {% partialdef articles-page inline=True %}
+                {% partialdef articles-page inline %}
                     {% for article in articles_page %}
                         <div id="{{ article|article_card_id }}" class="article-card-container">
                             {% include 'reading/partials/article_card.html' %}

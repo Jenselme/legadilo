@@ -38,6 +38,11 @@ class CSPMiddleware(DjangoCSPMiddleware):
 
 
 class TimezoneMiddleware:
+    """Enables the user timezone for the current request to localize dates and times.
+
+    Fallbacks to UTC if the user is not authenticated.
+    """
+
     def __init__(self, get_response):
         self.get_response = get_response
 

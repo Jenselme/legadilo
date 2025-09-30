@@ -23,7 +23,8 @@ class TestUserStats:
             "total_nb_active_users: 2\n"
             "total_nb_active_users_with_validated_emails: 0\n"
             "total_nb_active_users_connected_last_week: 0\n"
-            "total_account_created_last_week: 2\n",
+            "total_account_created_last_week: 2\n"
+            "nb_users_with_active_session: 0\n",
             recipient_list=[admin_user.email],
             subject="[Legadilo] User stats",
         )

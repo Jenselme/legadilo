@@ -24,6 +24,7 @@ def create_path_converter_from_enum(enum_type: type[TextChoices]) -> type:
 
 
 def validate_referer_url(request: HttpRequest, fallback_url: str) -> str:
+    """Returns the referer URL if it's valid (ie made to us), otherwise returns the fallback URL."""
     referer = request.headers.get("Referer")
     if referer and _is_absolute_request_to_us(request, referer):
         return referer
@@ -41,6 +42,7 @@ def _is_relative_request(url: str) -> bool:
 
 
 def validate_from_url(request: HttpRequest, from_url: str | None, fallback_url: str):
+    """Returns the from URL if it's valid (ie made to us), otherwise returns the fallback URL."""
     if not from_url:
         return fallback_url
 

@@ -184,6 +184,7 @@ class TestUserManager:
             "total_nb_active_users_connected_last_week": 1,
             "total_nb_active_users_with_validated_emails": 2,
             "total_nb_users": 5,
+            "nb_users_with_active_session": 0,
         }
 
     def test_list_admin_emails(self):

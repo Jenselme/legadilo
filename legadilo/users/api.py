@@ -4,6 +4,7 @@
 
 from datetime import datetime
 from http import HTTPStatus
+from typing import Annotated
 from uuid import UUID
 
 import jwt
@@ -13,13 +14,14 @@ from ninja import ModelSchema, Router, Schema
 from ninja.errors import AuthenticationError
 from ninja.security import HttpBearer
 from pydantic import BaseModel as BaseSchema
+from pydantic import ConfigDict, PlainSerializer, field_serializer
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import field_serializer
 
 from config import settings
-from legadilo.users.models import ApplicationToken
+from legadilo.users.models import ApplicationToken, UserSettings
 from legadilo.utils.time_utils import utcnow
 
+from ..core.models import Timezone
 from ..utils.api import ApiError
 from .models import User
 from .user_types import AuthenticatedApiRequest
@@ -109,7 +111,19 @@ def _create_access_token(application_token: ApplicationToken) -> str:
     )
 
 
+class SettingsSchema(ModelSchema):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    timezone: Annotated[Timezone, PlainSerializer(lambda tz: tz.name, return_type=str)]  # type: ignore[valid-type]
+
+    class Meta:
+        model = UserSettings
+        exclude = ("id", "user")
+
+
 class UserSchema(ModelSchema):
+    settings: SettingsSchema
+
     class Meta:
         model = User
         fields = ("email",)

@@ -10,13 +10,14 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
-from legadilo.reading.services.views import get_from_url_for_article_details
 from legadilo.reading.templatetags import article_card_id
 from legadilo.reading.views.article_actions_views import (
     get_common_template_context,
     redirect_to_reading_list,
 )
 from legadilo.users.user_types import AuthenticatedHttpRequest
+
+from ._utils import get_from_url_for_article_details
 
 
 @require_POST

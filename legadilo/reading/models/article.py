@@ -150,23 +150,38 @@ class ArticleFullTextSearchQuery(ArticleSearchQuery):
                 assert_never(self.order)
 
 
-def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901 too complex
+def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901, PLR0912 too complex
     filters = models.Q()
 
-    if search_query.read_status == constants.ReadStatus.ONLY_READ:
-        filters &= models.Q(is_read=True)
-    elif search_query.read_status == constants.ReadStatus.ONLY_UNREAD:
-        filters &= models.Q(is_read=False)
+    match search_query.read_status:
+        case constants.ReadStatus.ALL:
+            pass
+        case constants.ReadStatus.ONLY_READ:
+            filters &= models.Q(is_read=True)
+        case constants.ReadStatus.ONLY_UNREAD:
+            filters &= models.Q(is_read=False)
+        case _:
+            assert_never(search_query.read_status)
 
-    if search_query.favorite_status == constants.FavoriteStatus.ONLY_FAVORITE:
-        filters &= models.Q(is_favorite=True)
-    elif search_query.favorite_status == constants.FavoriteStatus.ONLY_NON_FAVORITE:
-        filters &= models.Q(is_favorite=False)
+    match search_query.favorite_status:
+        case constants.FavoriteStatus.ALL:
+            pass
+        case constants.FavoriteStatus.ONLY_FAVORITE:
+            filters &= models.Q(is_favorite=True)
+        case constants.FavoriteStatus.ONLY_NON_FAVORITE:
+            filters &= models.Q(is_favorite=False)
+        case _:
+            assert_never(search_query.favorite_status)
 
-    if search_query.for_later_status == constants.ForLaterStatus.ONLY_FOR_LATER:
-        filters &= models.Q(is_for_later=True)
-    elif search_query.for_later_status == constants.ForLaterStatus.ONLY_NOT_FOR_LATER:
-        filters &= models.Q(is_for_later=False)
+    match search_query.for_later_status:
+        case constants.ForLaterStatus.ALL:
+            pass
+        case constants.ForLaterStatus.ONLY_FOR_LATER:
+            filters &= models.Q(is_for_later=True)
+        case constants.ForLaterStatus.ONLY_NOT_FOR_LATER:
+            filters &= models.Q(is_for_later=False)
+        case _:
+            assert_never(search_query.for_later_status)
 
     if search_query.articles_max_age_unit != constants.ArticlesMaxAgeUnit.UNSET:
         filters &= models.Q(
@@ -623,6 +638,10 @@ class ArticleManager(models.Manager["Article"]):
         error_message="",
         technical_debug_data: dict | None = None,
     ) -> tuple[Article, bool]:
+        """Force the creation of an article with only its URL.
+
+        Used to saved an article when data fetching failed.
+        """
         try:
             article = self.get(user=user, url=article_url)
             created = False

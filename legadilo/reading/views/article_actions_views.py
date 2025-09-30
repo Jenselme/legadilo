@@ -15,13 +15,14 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
-from legadilo.reading.services.views import (
-    get_from_url_for_article_details,
-    get_js_cfg_from_reading_list,
-)
 from legadilo.reading.templatetags import article_card_id
 from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.urls import validate_referer_url
+
+from ._utils import (
+    get_from_url_for_article_details,
+    get_js_cfg_from_reading_list,
+)
 
 
 @require_POST
@@ -142,6 +143,8 @@ def get_common_template_context(
 @login_required
 @transaction.atomic()
 def mark_articles_as_read_in_bulk_view(request: AuthenticatedHttpRequest) -> HttpResponse:
+    # To limit the number of requests made by read on scroll: mark all scrolled articles as read
+    # at once.
     try:
         article_ids = [int(id_) for id_ in request.POST["article_ids"].split(",") if id_]
     except (TypeError, ValueError, KeyError, IndexError):
