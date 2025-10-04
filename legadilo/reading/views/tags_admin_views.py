@@ -128,8 +128,6 @@ def edit_tag_view(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
     if request.method == "POST" and "delete" in request.POST:
         tag.delete()
         target_url = reverse("reading:tags_admin")
-        if not request.htmx:
-            return HttpResponseRedirect(target_url)
         return HttpResponse(headers={"HX-Redirect": target_url, "HX-Push-Url": "true"})
 
     all_tag_choices = Tag.objects.get_all_choices(request.user)

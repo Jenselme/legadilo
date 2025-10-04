@@ -11,6 +11,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## 25.10.1
 
 - Prevent horizontal scrolling on mobile because of long links.
+- Make JS required for some actions.
+  - Supporting non-JS users made the code a bit complex with no clear advantages since JS is required to use some parts of the app anyway.
+  - Most (if not all) users will have JS enabled.
+  - This could be reverted in the future if the justification to use the app without JS is stronger.
 
 ## 25.09.2
 

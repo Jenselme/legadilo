@@ -108,32 +108,6 @@ class TestReadingListWithArticlesView:
         assert response.context_data["from_url"] == self.reading_list_url
         assert response.context_data.get("update_articles_form") is None
 
-    def test_reading_list_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(15):
-            response = logged_in_sync_client.get(
-                self.reading_list_url,
-                HTTP_HX_Request="true",
-            )
-
-        assert response.status_code == HTTPStatus.OK
-        assert response.template_name == "reading/list_of_articles.html#articles-page"
-        assert response.context_data["page_title"] == self.reading_list.title
-        assert response.context_data["displayed_reading_list"] == self.reading_list
-        assert response.context_data["reading_lists"] == [
-            self.default_reading_list,
-            self.reading_list,
-        ]
-        assert response.context_data["js_cfg"] == {
-            "is_reading_on_scroll_enabled": True,
-            "auto_refresh_interval": 1,
-        }
-        assert isinstance(response.context_data["articles_paginator"], Paginator)
-        assert response.context_data["articles_page"].object_list == [
-            self.read_article,
-            self.unread_article,
-        ]
-        assert response.context_data["from_url"] == self.reading_list_url
-
 
 @pytest.mark.django_db
 class TestTagWithArticlesView:

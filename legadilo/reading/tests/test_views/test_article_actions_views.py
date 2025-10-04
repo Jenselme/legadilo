@@ -45,25 +45,11 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_article_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
-            response = logged_in_sync_client.post(
-                self.mark_as_read_url, HTTP_REFERER="http://testserver/reading/"
-            )
-
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.headers["Location"] == "http://testserver/reading/"
-        self.article.refresh_from_db()
-        self.other_article.refresh_from_db()
-        assert self.article.is_read
-        assert not self.other_article.is_read
-
-    def test_update_article_view_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.mark_as_read_url,
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
                 HTTP_REFERER="http://testserver/reading/",
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
@@ -102,7 +88,6 @@ class TestUpdateArticleView:
                 ),
                 data={"displayed_reading_list_id": str(reading_list_hide_for_later.id)},
                 HTTP_REFERER="http://testserver/reading/",
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
@@ -133,7 +118,6 @@ class TestUpdateArticleView:
                 ),
                 data={"displayed_reading_list_id": str(reading_list_hide_for_later.id)},
                 HTTP_REFERER="http://testserver/reading/",
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
@@ -160,7 +144,6 @@ class TestUpdateArticleView:
                 ),
                 data={"displayed_reading_list_id": str(self.reading_list.id)},
                 HTTP_REFERER="http://testserver/reading/",
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
@@ -181,7 +164,6 @@ class TestUpdateArticleView:
                 self.mark_as_read_url,
                 data={"for_article_details": "True"},
                 HTTP_REFERER="http://example.com/reading/",
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
@@ -196,7 +178,6 @@ class TestUpdateArticleView:
                 self.mark_as_favorite_url,
                 data={"for_article_details": "True"},
                 HTTP_REFERER="http://testserver/reading/articles/1",
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
