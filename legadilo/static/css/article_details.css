@@ -67,7 +67,8 @@ pre {
   max-width: calc(100vw - 24px);
 }
 
-code {
+code,
+a {
   overflow-wrap: anywhere;
 }
 

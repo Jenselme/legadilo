@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.10.1
+
+- Prevent horizontal scrolling on mobile because of long links.
+
 ## 25.09.2
 
 - Technical release to update deps and clean up the code.
