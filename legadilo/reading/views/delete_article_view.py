@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
@@ -16,8 +16,6 @@ from legadilo.reading.views.article_actions_views import (
     redirect_to_reading_list,
 )
 from legadilo.users.user_types import AuthenticatedHttpRequest
-
-from ._utils import get_from_url_for_article_details
 
 
 @require_POST
@@ -33,10 +31,6 @@ def delete_article_view(request: AuthenticatedHttpRequest, article_id: int) -> H
     for_article_details = request.POST.get("for_article_details", "")
     if for_article_details:
         return redirect_to_reading_list(request)
-
-    if not request.htmx:
-        from_url = get_from_url_for_article_details(request, request.POST)
-        return HttpResponseRedirect(from_url)
 
     return TemplateResponse(
         request,

@@ -40,23 +40,16 @@ class TestDeleteArticleView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_delete(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
-            response = logged_in_sync_client.post(self.url)
-
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("reading:default_reading_list")
-        assert Article.objects.count() == 0
-
     def test_delete_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.post(self.url, {"from_url": self.reading_list_url})
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == self.reading_list_url
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Reswap"] == "outerHTML show:none swap:1s"
+        assert response["HX-Retarget"] == f"#article-card-{self.article.id}"
         assert Article.objects.count() == 0
 
-    def test_delete_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
+    def test_delete(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url,
@@ -64,7 +57,6 @@ class TestDeleteArticleView:
                     "from_url": self.reading_list_url,
                     "displayed_reading_list_id": str(self.reading_list.id),
                 },
-                HTTP_HX_Request="true",
             )
 
         assert response.status_code == HTTPStatus.OK
@@ -90,8 +82,9 @@ class TestDeleteArticleView:
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == self.reading_list_url
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Redirect"] == self.reading_list_url
+        assert response["HX-Push-Url"] == "true"
         assert Article.objects.count() == 0
 
     def test_delete_article_linked_with_feed(
@@ -105,8 +98,7 @@ class TestDeleteArticleView:
                 self.url, {"from_url": self.reading_list_url, "for_article_details": "True"}
             )
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == self.reading_list_url
+        assert response.status_code == HTTPStatus.OK
         assert Article.objects.count() == 0
         assert FeedArticle.objects.count() == 1
         feed_article.refresh_from_db()

@@ -116,8 +116,9 @@ class TestEditTagView:
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(self.url, {"delete": "true"})
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("reading:tags_admin")
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Redirect"] == reverse("reading:tags_admin")
+        assert response["HX-Push-Url"] == "true"
         assert Tag.objects.count() == 0
 
     def test_delete_tag_with_sub_tags(self, user, logged_in_sync_client, django_assert_num_queries):
@@ -127,8 +128,9 @@ class TestEditTagView:
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(self.url, {"delete": "true"})
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("reading:tags_admin")
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Redirect"] == reverse("reading:tags_admin")
+        assert response["HX-Push-Url"] == "true"
         assert Tag.objects.count() == 1
         assert Tag.objects.get() == sub_tag
 
@@ -140,21 +142,11 @@ class TestEditTagView:
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(url, {"delete": "true"})
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("reading:tags_admin")
-        assert Tag.objects.count() == 1
-        assert Tag.objects.get() == self.tag
-
-    def test_delete_tag_with_htmx(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
-            response = logged_in_sync_client.post(
-                self.url, {"delete": "true"}, HTTP_HX_Request="true"
-            )
-
         assert response.status_code == HTTPStatus.OK
         assert response["HX-Redirect"] == reverse("reading:tags_admin")
         assert response["HX-Push-Url"] == "true"
-        assert Tag.objects.count() == 0
+        assert Tag.objects.count() == 1
+        assert Tag.objects.get() == self.tag
 
     def test_update_tag(self, logged_in_sync_client, django_assert_num_queries):
         with django_assert_num_queries(14):

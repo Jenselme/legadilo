@@ -126,15 +126,6 @@ def _display_list_of_articles(
         "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
     }
 
-    if request.htmx:
-        return TemplateResponse(
-            request,
-            "reading/list_of_articles.html#articles-page",
-            response_ctx,
-            status=status,
-            headers=headers,
-        )
-
     return TemplateResponse(
         request,
         "reading/list_of_articles.html",

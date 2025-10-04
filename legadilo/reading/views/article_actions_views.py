@@ -7,17 +7,15 @@ from typing import Any
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
 from legadilo.reading.templatetags import article_card_id
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.urls import validate_referer_url
 
 from ._utils import (
     get_from_url_for_article_details,
@@ -55,11 +53,6 @@ def update_article_view(
             headers={"HX-Reswap": "none show:none"},
         )
 
-    if not request.htmx:
-        return HttpResponseRedirect(
-            validate_referer_url(request, reverse("reading:default_reading_list"))
-        )
-
     ctx = get_common_template_context(request, update_action)
     hx_target = f"#{article_card_id(article)}"
     headers = (
@@ -81,9 +74,6 @@ def update_article_view(
 
 def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse:
     from_url = get_from_url_for_article_details(request, request.POST)
-    if not request.htmx:
-        return HttpResponseRedirect(from_url)
-
     return HttpResponse(headers={"HX-Redirect": from_url, "HX-Push-Url": "true"})
 
 
