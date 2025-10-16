@@ -92,7 +92,7 @@ doc = [
 default-groups = ["dev"]
 
 [tool.uv.sources]
-feedparser = { git = "https://github.com/Jenselme/feedparser.git", rev = "correct-media-parsing" }
+feedparser = { git = "https://github.com/Jenselme/feedparser.git", rev = "jen-release" }
 
 
 # ==== pytest ====
