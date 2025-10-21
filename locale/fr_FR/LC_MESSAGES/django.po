@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-20 17:20+0000\n"
+"POT-Creation-Date: 2025-10-21 20:26+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.7\n"
 
 msgid "English"
 msgstr "Anglais"
@@ -175,6 +175,7 @@ msgstr ""
 msgid "You are already subscribed to this feed."
 msgstr "Vous êtes déjà abonné à ce flux."
 
+#, python-brace-format
 msgid "Feed '<a href=\"{}\">{}</a>' added"
 msgstr "Flux '<a href=\"{}\">{}</a>' ajouté"
 
@@ -342,9 +343,9 @@ msgid ""
 "it will be calculated automatically from content length. If we don't have "
 "content, we will use 0."
 msgstr ""
-"Temps requis en minutes pour lire cet article. Si vide, il sera "
-"calculé automatiquement à partir de la longueur de l’article. 0 sera utilisé "
-"pour les articles sans contenu."
+"Temps requis en minutes pour lire cet article. Si vide, il sera calculé "
+"automatiquement à partir de la longueur de l’article. 0 sera utilisé pour "
+"les articles sans contenu."
 
 msgid "Tags of the article from its source"
 msgstr "Étiquettes de l’article dans sa source"
@@ -459,6 +460,7 @@ msgstr "Entrer votre commentaire ici. La syntaxe Markdown est supportée."
 msgid "URL of the article to add."
 msgstr "URL de l’article à ajouter."
 
+#, python-brace-format
 msgid ""
 "The article '<a href=\"{}\">{}</a>' was added but its content couldn't be "
 "fetched. Please check that it really points to an article."
@@ -466,9 +468,11 @@ msgstr ""
 "L’article  '<a href=\"{}\">{}</a>' a été ajouté, mais son contenu n’a pas pu "
 "être récupéré. Merci de vérifier que l’URL est valide."
 
+#, python-brace-format
 msgid "Article '<a href=\"{}\">{}</a>' successfully added!"
 msgstr "L’article '<a href=\"{}\">{}</a>' a été ajouté avec succès !"
 
+#, python-brace-format
 msgid "Article '<a href=\"{}\">{}</a>' already existed."
 msgstr "L’article '<a href=\"{}\">{}</a>' existait déjà."
 
@@ -482,15 +486,17 @@ msgstr ""
 msgid "The article was successfully re-fetched!"
 msgstr "L’article a été correctement rafraichi !"
 
+#, python-brace-format
 msgid ""
 "Failed to fetch the article. Please check that the URL you entered is "
 "correct, that the article exists and is accessible. Its URL was added "
 "directly. Go <a href=\"{}\">there</a> to access it."
 msgstr ""
 "Erreur lors de la récupération de l’article. Merci de vérifier que l’URL est "
-"correcte, que l’article existe et qu’il est accessible. Son URL a été ajoutée "
-"directement. Allez  <a href=\"{}\">ici</a> pour y accéder."
+"correcte, que l’article existe et qu’il est accessible. Son URL a été "
+"ajoutée directement. Allez  <a href=\"{}\">ici</a> pour y accéder."
 
+#, python-brace-format
 msgid ""
 "The article you are trying to fetch is too big and cannot be processed. Its "
 "URL was added directly. Go <a href=\"{}\">there</a> to access it."
@@ -1153,8 +1159,7 @@ msgid ""
 msgid_plural ""
 "There are %(unused_count)s out of %(total_count)s recovery codes available."
 msgstr[0] ""
-"Il y a %(unused_count)s code de récupération utilisable sur "
-"%(total_count)s."
+"Il y a %(unused_count)s code de récupération utilisable sur %(total_count)s."
 msgstr[1] ""
 "Il y a %(unused_count)s codes de récupération utilisables sur "
 "%(total_count)s."
@@ -1336,6 +1341,15 @@ msgstr "Administration des listes de lecture"
 
 msgid "Edit/Delete reading list"
 msgstr "Modifier/Supprimer la liste de lecture"
+
+msgid "Reading lists can be reordered with drag & drop."
+msgstr "Les listes de lecture peuvent être réordonnées par glisser/déposer."
+
+msgid "Reading lists successfully reordered."
+msgstr "Les listes de lecture ont été réordonnées avec succès."
+
+msgid "Failed to reorder reading lists."
+msgstr "Les listes de lecture n’ont pas pu être réordonnées."
 
 msgid "Searching articles..."
 msgstr "Recherche d’articles…"

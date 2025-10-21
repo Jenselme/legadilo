@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.10.2
+
+- Can reorder reading lists with drag and drop.
+
 ## 25.10.1
 
 - Prevent horizontal scrolling on mobile because of long links.

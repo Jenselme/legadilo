@@ -17,7 +17,7 @@ from pydantic import ValidationError as PydanticValidationError
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag, Comment, Tag
+from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     ArticleData,
@@ -227,3 +227,21 @@ def list_tags_view(request: AuthenticatedApiRequest):
         })
 
     return {"count": len(tags), "items": tags}
+
+
+class ReadingListReorderPayload(Schema):
+    order: dict[int, int]
+
+
+@reading_api_router.post(
+    "/lists/reorder/",
+    url_name="reorder_reading_lists",
+    summary="Reorder reading lists. Provide a mapping of reading list id to new order.",
+    response={HTTPStatus.NO_CONTENT: None},
+)
+def reorder_reading_lists_view(
+    request: AuthenticatedApiRequest, payload: ReadingListReorderPayload
+):
+    ReadingList.objects.reorder(request.auth, payload.order)
+
+    return HTTPStatus.NO_CONTENT, None

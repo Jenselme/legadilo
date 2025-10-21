@@ -65,7 +65,6 @@ class ReadingListForm(forms.ModelForm):
             "title",
             "enable_reading_on_scroll",
             "auto_refresh_interval",
-            "order",
             "read_status",
             "favorite_status",
             "for_later_status",

@@ -48,6 +48,30 @@ class TestReadingListManager:
         assert reading_list.is_default
         assert not initial_default_reading_list.is_default
 
+    def test_reorder(self, user, other_user):
+        reading_list_1 = ReadingListFactory(user=user, order=0)
+        reading_list_2 = ReadingListFactory(user=user, order=10)
+        reading_list_other_user = ReadingListFactory(user=other_user, order=20)
+
+        ReadingList.objects.reorder(
+            user,
+            {
+                reading_list_1.id: 100,
+                reading_list_2.id: 110,
+                # Must not do anything.
+                reading_list_other_user.id: 120,
+                # Must not crash if invalid ids are supplied.
+                -1: 0,
+            },
+        )
+
+        reading_list_1.refresh_from_db()
+        reading_list_2.refresh_from_db()
+        reading_list_other_user.refresh_from_db()
+        assert reading_list_1.order == 100
+        assert reading_list_2.order == 110
+        assert reading_list_other_user.order == 20
+
 
 @pytest.mark.django_db
 class TestReadingListModel:

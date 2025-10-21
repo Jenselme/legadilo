@@ -29,6 +29,18 @@ html {
   background-color: var(--bs-tertiary-bg);
 }
 
+[draggable="true"] {
+  cursor: grab;
+}
+
+.dragged {
+  opacity: 0.5;
+}
+
+.dragged-over {
+  background-color: var(--bs-primary-bg-subtle);
+}
+
 .content-body > .content-main-container {
   grid-area: main;
   padding-bottom: 2rem;

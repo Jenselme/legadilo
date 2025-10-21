@@ -16,6 +16,7 @@ from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
     CommentFactory,
+    ReadingListFactory,
     TagFactory,
 )
 from legadilo.reading.tests.fixtures import get_article_fixture_content
@@ -438,3 +439,30 @@ class TestListTagsView:
 
         assert response.status_code == HTTPStatus.OK
         snapshot.assert_match(serialize_for_snapshot(response.json()), "tags.json")
+
+
+@pytest.mark.django_db
+class TestReadingListsReorderView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user, other_user):
+        self.reading_list = ReadingListFactory(user=user, order=0)
+        self.reading_list_other_user = ReadingListFactory(user=other_user, order=10)
+        self.url = reverse("api-1.0.0:reorder_reading_lists")
+
+    def test_not_logged_in(self, client):
+        response = client.post(self.url, {}, content_type="application/json")
+
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_reorder(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {"order": {self.reading_list.id: 100, self.reading_list_other_user.id: 110, -1: 0}},
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        self.reading_list.refresh_from_db()
+        self.reading_list_other_user.refresh_from_db()
+        assert self.reading_list.order == 100
+        assert self.reading_list_other_user.order == 10
