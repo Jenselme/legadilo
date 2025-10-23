@@ -14,7 +14,16 @@ from legadilo.utils.testing import serialize_for_snapshot
 
 def test_get_article_from_url(httpx_mock, snapshot):
     url = "https://www.example.com/posts/en/1-super-article/"
-    httpx_mock.add_response(url=url, text=get_article_fixture_content("sample_blog_article.html"))
+    httpx_mock.add_response(url=url, html=get_article_fixture_content("sample_blog_article.html"))
+
+    article_data = get_article_from_url(url)
+
+    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
+
+
+def test_get_text_article_from_url(httpx_mock, snapshot):
+    url = "https://www.example.com/posts/en/1-super-article/"
+    httpx_mock.add_response(url=url, text="Just some raw text!")
 
     article_data = get_article_from_url(url)
 
@@ -27,10 +36,10 @@ def test_get_article_from_url(httpx_mock, snapshot):
 )
 def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
     url = "https://newsletter.com/article/1"
-    httpx_mock.add_response(url=url, text=get_article_fixture_content(fixture_file))
+    httpx_mock.add_response(url=url, html=get_article_fixture_content(fixture_file))
     article_url = "https://example.com/article/redirected-article/"
     httpx_mock.add_response(
-        url=article_url, text=get_article_fixture_content("sample_blog_article.html")
+        url=article_url, html=get_article_fixture_content("sample_blog_article.html")
     )
 
     article_data = get_article_from_url(url)
@@ -52,7 +61,7 @@ def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
 )
 def test_get_article_from_url_weird_content(fixture_file, expected_starts_with, httpx_mock):
     url = "https://www.example.com/posts/en/1-super-article/"
-    httpx_mock.add_response(url=url, text=get_article_fixture_content(fixture_file))
+    httpx_mock.add_response(url=url, html=get_article_fixture_content(fixture_file))
 
     article_data = get_article_from_url(url)
 
@@ -75,7 +84,7 @@ def test_get_article_from_url_process_fixture(
 ):
     url = "https://www.example.com/posts/en/1-super-article/"
     httpx_mock.add_response(
-        url=url, text=process_fn(get_article_fixture_content("sample_blog_article.html"))
+        url=url, html=process_fn(get_article_fixture_content("sample_blog_article.html"))
     )
 
     article_data = get_article_from_url(url)
@@ -93,6 +102,7 @@ def test_get_article_from_url_process_fixture(
                 "title": "<p>Title</p>",
                 "summary": """<p>Summary <span>?</span> <img src="/toto" /> </p>""",
                 "content": """<p>C <span>?</span> <img src="/t" /> <script>alert()</script></p>""",
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -114,6 +124,7 @@ def test_get_article_from_url_process_fixture(
                 "title": "",
                 "summary": """<p>Summary <span>?</span> <img src="/toto" /> </p>""",
                 "content": """<p>C <span>?</span> <img src="/t" /> <script>alert()</script></p>""",
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -135,6 +146,7 @@ def test_get_article_from_url_process_fixture(
                 "title": "<p>Title</p>",
                 "summary": "",
                 "content": """<p>C <span>?</span> <img src="/t" /> <script>alert()</script></p>""",
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -156,6 +168,7 @@ def test_get_article_from_url_process_fixture(
                 "title": "<p>Title</p>",
                 "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
                 "content": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a><img src="/relative.png" /><img src="https://example.com/image.png" /></p>""",  # noqa: E501
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -183,6 +196,7 @@ def test_get_article_from_url_process_fixture(
                 <h2>This one <em>has HTML</em> in <script>it</script></h2>
                 <h1>Another root title</h1>
                 """,
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -206,6 +220,7 @@ def test_get_article_from_url_process_fixture(
                 "content": """
                 <img src="data:image/png;base64" />
                 """,
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -230,6 +245,7 @@ def test_get_article_from_url_process_fixture(
                 <h1>1st h1</h1>
                 <h1>2nd h1</h1>
                 """,
+                "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
                 "tags": ["<span>tag</span>"],
@@ -243,6 +259,50 @@ def test_get_article_from_url_process_fixture(
                 "is_favorite": False,
             },
             id="multiple-h1",
+        ),
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "",
+                "title": "Title",
+                "summary": """Summary""",
+                "content": """Some content""",
+                "content_type": "text/plain",
+                "authors": [],
+                "contributors": [],
+                "tags": [],
+                "url": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "",
+                "published_at": None,
+                "updated_at": None,
+                "language": None,
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="plain-text",
+        ),
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "<p>source article title</p>",
+                "title": "Title",
+                "summary": """Summary""",
+                "content": """Some <p>content</p> <script>alert()</script>""",
+                "content_type": "text/plain",
+                "authors": [],
+                "contributors": [],
+                "tags": [],
+                "url": "https://example.com/articles/1",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "",
+                "published_at": None,
+                "updated_at": None,
+                "language": None,
+                "read_at": None,
+                "is_favorite": False,
+            },
+            id="plain-text-with-html",
         ),
     ],
 )

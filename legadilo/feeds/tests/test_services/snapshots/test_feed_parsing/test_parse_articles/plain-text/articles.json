@@ -2,14 +2,14 @@
   {
     "annotations": [],
     "authors": [],
-    "content": "Watch out for\n                <span>\nnasty tricks</span>",
-    "content_type": "application/xhtml+xml",
+    "content": "Testing plain text content.",
+    "content_type": "text/plain",
     "contributors": [],
     "external_article_id": "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3",
     "is_favorite": false,
     "language": "en-US",
-    "preview_picture_alt": "My image description My image credit",
-    "preview_picture_url": "https://example.com/my-image.jpg",
+    "preview_picture_alt": "",
+    "preview_picture_url": "",
     "published_at": "2005-11-09T00:23:47Z",
     "read_at": null,
     "source_title": "Some feed",
@@ -23,7 +23,7 @@
   {
     "annotations": [],
     "authors": [],
-    "content": "",
+    "content": "Testing.",
     "content_type": "text/plain",
     "contributors": [],
     "external_article_id": "https://example.com/articles/with-tags",
@@ -40,7 +40,7 @@
       "Other tag",
       "Tag"
     ],
-    "title": "With tags",
+    "title": "With plain bis",
     "updated_at": null,
     "url": "https://example.com/articles/with-tags"
   }

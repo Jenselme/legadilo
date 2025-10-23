@@ -72,6 +72,7 @@ class ArticleDataFactory(factory.DictFactory):
     title = factory.Sequence(lambda n: f"Article {n}")
     summary = ""
     content = ""
+    content_type = "text/plain"
     url = factory.Sequence(lambda n: f"https://example.com/article-{n}.html")
     language = "en"
 

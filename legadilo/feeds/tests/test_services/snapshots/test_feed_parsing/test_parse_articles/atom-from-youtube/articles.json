@@ -5,6 +5,7 @@
       "Some youtuber"
     ],
     "content": "",
+    "content_type": "text/plain",
     "contributors": [],
     "external_article_id": "yt:video:SOME_VIDEO_ID",
     "is_favorite": false,

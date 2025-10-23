@@ -15,6 +15,7 @@ CSV_HEADER_FIELDS = (
     "article_title",
     "article_url",
     "article_content",
+    "article_content_type",
     "article_date_published",
     "article_date_updated",
     "article_authors",

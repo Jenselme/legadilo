@@ -75,6 +75,7 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
             title=wallabag_article.title,
             summary="",
             content=wallabag_article.content,
+            content_type="text/html",
             authors=wallabag_article.published_by,
             contributors=(),
             tags=(),

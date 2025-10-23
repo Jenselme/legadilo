@@ -162,10 +162,7 @@ class TestCreateArticleView:
     def test_create_article_from_data(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
-        mocked_get_article_from_url = mocker.patch(
-            "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(url=self.article_url),
-        )
+        mocked_get_article_from_url = mocker.patch("legadilo.reading.api.get_article_from_url")
 
         with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
@@ -184,8 +181,42 @@ class TestCreateArticleView:
         assert article.url == "https://www.example.com/posts/en/1-super-article/"
         assert article.table_of_content == []
         assert not mocked_get_article_from_url.called
+        assert article.content_type == "text/html"
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
+            "article.json",
+        )
+
+    def test_create_article_from_text_data(
+        self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
+    ):
+        mocked_get_article_from_url = mocker.patch("legadilo.reading.api.get_article_from_url")
+
+        with django_assert_num_queries(16):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "url": self.article_url,
+                    "content": "Just some text",
+                    "content_type": "text/plain",
+                    "title": "My article",
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == self.article_url
+        assert article.table_of_content == []
+        assert not mocked_get_article_from_url.called
+        assert article.content_type == "text/plain"
+        data = response.json()
+        # Keep other fields since they shouldn't change for text data.
+        data["id"] = 1
+        data["details_url"] = "http://testserver/reading/articles/1-my-article/"
+        snapshot.assert_match(
+            serialize_for_snapshot(data),
             "article.json",
         )
 

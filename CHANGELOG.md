@@ -11,6 +11,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## 25.10.2
 
 - Can reorder reading lists with drag and drop.
+- Can add plain text articles in addition to HTML articles.
 
 ## 25.10.1
 

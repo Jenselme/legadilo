@@ -1,26 +1,20 @@
 {
   "annotations": [],
-  "authors": [
-    "me"
-  ],
-  "content": "<p>C <span>?</span> <img src=\"https://example.com/t\"/> </p>",
-  "content_type": "text/html",
-  "contributors": [
-    "me"
-  ],
+  "authors": [],
+  "content": "Some <p>content</p> <script>alert()</script>",
+  "content_type": "text/plain",
+  "contributors": [],
   "external_article_id": "external article id",
   "is_favorite": false,
-  "language": "en",
-  "preview_picture_alt": "Hi there!",
+  "language": "",
+  "preview_picture_alt": "",
   "preview_picture_url": "https://example.com/articles/1.png",
   "published_at": null,
   "read_at": null,
   "source_title": "source article title",
-  "summary": "<p>Summary <span>?</span>  </p>",
+  "summary": "Summary",
   "table_of_content": [],
-  "tags": [
-    "tag"
-  ],
+  "tags": [],
   "title": "Title",
   "updated_at": null,
   "url": "https://example.com/articles/1"

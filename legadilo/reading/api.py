@@ -30,6 +30,7 @@ from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
+    ContentType,
     ValidUrlValidator,
     remove_falsy_items,
 )
@@ -73,6 +74,7 @@ class ArticleCreation(Schema):
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
     # content of the article.
     content: str = ""
+    content_type: ContentType = "text/html"
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
 
     @model_validator(mode="after")
@@ -128,7 +130,10 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
 def _get_article_data(payload: ArticleCreation) -> ArticleData:
     if payload.has_data:
         return build_article_data_from_content(
-            url=payload.url, title=payload.title, content=payload.content
+            url=payload.url,
+            title=payload.title,
+            content=payload.content,
+            content_type=payload.content_type,
         )
     return get_article_from_url(payload.url)
 

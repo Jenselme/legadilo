@@ -4,6 +4,7 @@
     "me"
   ],
   "content": "\n<h1 id=\"1st-h1\">1st h1</h1>\n<h1 id=\"2nd-h1\">2nd h1</h1>\n",
+  "content_type": "text/html",
   "contributors": [
     "me"
   ],

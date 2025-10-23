@@ -33,13 +33,13 @@ export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSe
   }
 };
 
-export const saveArticle = async ({ url, title, content }) => {
+export const saveArticle = async ({ url, title, content, contentType }) => {
   if (!/^https?:\/\//.test(url)) {
     throw new Error("Invalid url");
   }
 
   // If content or title is empty, pass only the URL to avoid a 422 error.
-  const data = !!title && !!content ? { url, title, content } : { url };
+  const data = !!title && !!content ? { url, title, content, content_type: contentType } : { url };
 
   try {
     return await post("/api/reading/articles/", data);

@@ -287,6 +287,10 @@ class TestParseArticlesInFeed:
                 get_feed_fixture_content("sample_youtube_atom.xml"),
                 id="atom-from-youtube",
             ),
+            pytest.param(
+                get_feed_fixture_content("with_text_plain_articles.xml"),
+                id="plain-text",
+            ),
         ],
     )
     def test_parse_articles(self, feed_content, snapshot):

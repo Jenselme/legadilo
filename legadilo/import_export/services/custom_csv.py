@@ -160,6 +160,7 @@ def _import_article(user, feed, row):
         title=row["article_title"],
         summary="",
         content=row["article_content"],
+        content_type=row["article_content_type"],
         authors=_safe_json_parse(row["article_authors"], []),
         contributors=(),
         tags=_safe_json_parse(row["article_tags"], []),
