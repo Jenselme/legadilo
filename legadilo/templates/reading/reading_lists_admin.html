@@ -24,6 +24,9 @@
                     <div class="col">
                         <a href="{% url 'reading:edit_reading_list' reading_list_id=reading_list.id %}">{% translate "Edit/Delete reading list" %}</a>
                     </div>
+                    <div class="col">
+                        <a href="{% url 'reading:reading_list' reading_list_slug=reading_list.slug %}">{% translate "View" %}</a>
+                    </div>
                 </div>
             </li>
         {% endfor %}
