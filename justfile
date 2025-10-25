@@ -14,6 +14,15 @@ update-js-deps:
 dev:
     docker compose -f local.yml up
 
+test:
+    pytest
+
+makemigrations:
+    python manage.py makemigrations
+
+migrate:
+    python manage.py migrate
+
 clean-dev-container:
     docker compose -f local.yml down
 
