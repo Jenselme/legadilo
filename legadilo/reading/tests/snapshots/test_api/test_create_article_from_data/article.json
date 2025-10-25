@@ -12,6 +12,8 @@
   "external_tags": [
     "Musketeers"
   ],
+  "group": null,
+  "group_order": 0,
   "id": 1,
   "is_favorite": false,
   "is_for_later": false,

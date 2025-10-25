@@ -8,6 +8,8 @@
   "details_url": "http://testserver/reading/articles/1-my-article/",
   "external_article_id": "",
   "external_tags": [],
+  "group": null,
+  "group_order": 0,
   "id": 1,
   "is_favorite": false,
   "is_for_later": false,

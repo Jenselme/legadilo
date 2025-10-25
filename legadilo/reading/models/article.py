@@ -850,6 +850,11 @@ class Article(models.Model):
         "feeds.Feed", related_name="articles_main_feed", on_delete=models.SET_NULL, null=True
     )
 
+    group = models.ForeignKey(
+        "reading.ArticlesGroup", related_name="articles", on_delete=models.SET_NULL, null=True
+    )
+    group_order = models.PositiveIntegerField(default=0, help_text=_("Order in the group"))
+
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")
     )
@@ -884,6 +889,9 @@ class Article(models.Model):
                 condition=models.Q(
                     content_type__in=["application/xhtml+xml", "text/html", "text/plain"]
                 ),
+            ),
+            models.UniqueConstraint(
+                "group", "group_order", name="%(app_label)s_%(class)s_group_order_unique"
             ),
         ]
         indexes = [

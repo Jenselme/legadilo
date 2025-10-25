@@ -162,6 +162,9 @@ class Tag(models.Model):
     reading_lists = models.ManyToManyField(
         "reading.ReadingList", related_name="tags", through="reading.ReadingListTag"
     )
+    article_groups = models.ManyToManyField(
+        "reading.ArticlesGroup", related_name="tags", through="reading.ArticlesGroupTag"
+    )
 
     objects = TagManager()
 
@@ -328,3 +331,23 @@ class ReadingListTag(models.Model):
 
     def __str__(self):
         return f"ReadingListTag(reading_list={self.reading_list}, tag={self.tag})"
+
+
+class ArticlesGroupTag(models.Model):
+    article_group = models.ForeignKey(
+        "reading.ArticlesGroup", related_name="article_group_tags", on_delete=models.CASCADE
+    )
+    tag = models.ForeignKey(
+        "reading.Tag", related_name="article_group_tags", on_delete=models.CASCADE
+    )
+
+    class Meta(TypedModelMeta):
+        constraints = (
+            models.UniqueConstraint(
+                "article_group", "tag", name="%(app_label)s_%(class)s_tagged_once_per_article_group"
+            ),
+        )
+        ordering = ("tag__title", "tag_id")
+
+    def __str__(self):
+        return f"ArticlesGroupTag(article_group={self.article_group}, tag={self.tag})"
