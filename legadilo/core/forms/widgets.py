@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import json
+from collections.abc import Mapping
 from json import JSONDecodeError
+from typing import Any
 
 from django.forms import widgets
 
@@ -63,3 +65,10 @@ class PrettyJSONWidget(widgets.Textarea):
 
 class DateTimeWidget(widgets.DateTimeInput):
     input_type = "datetime-local"
+
+
+class ListWidget(widgets.Widget):
+    def value_from_datadict(self, data: Mapping[str, Any], files: Any, name: str):
+        if not hasattr(data, "getlist"):
+            return []
+        return data.getlist(name, [])

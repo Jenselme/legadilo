@@ -5,14 +5,6 @@
 (function () {
   let dragged = null;
   let dropTarget = null;
-  let saveRequest = Promise.resolve();
-  const successToast = bootstrap.Toast.getOrCreateInstance(
-    document.getElementById("reading-lists-reordered"),
-  );
-  const errorToast = bootstrap.Toast.getOrCreateInstance(
-    document.getElementById("reading-lists-reorder-error"),
-  );
-  const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
   document.querySelectorAll('[draggable="true"]').forEach((draggable) => {
     draggable.addEventListener("dragstart", () => {
@@ -61,6 +53,10 @@
         }
       });
 
+      if (currentPos !== dropPos) {
+        dragged.classList.add("drag-updated");
+      }
+
       if (currentPos < dropPos) {
         container.insertBefore(dragged, dropTarget.nextSibling);
       } else {
@@ -69,38 +65,6 @@
 
       dropTarget.classList.remove("dragged-over");
       dragged.classList.remove("dragged");
-
-      const reorderedReadingLists = Array.from(
-        container.querySelectorAll('[draggable="true"]'),
-      ).reduce(
-        (acc, readingList, index) => ({ ...acc, [readingList.dataset.readingListId]: index }),
-        {},
-      );
-      saveRequest = saveRequest
-        .then(() =>
-          fetch("/api/reading/lists/reorder/", {
-            "Content-Type": "application/json",
-            headers: {
-              "X-CSRFToken": csrftoken,
-            },
-            method: "POST",
-            body: JSON.stringify({ order: reorderedReadingLists }),
-          }),
-        )
-        .then((response) => {
-          console.log(response, response.ok);
-          if (!response.ok) {
-            return Promise.reject(new Error("Failed to reorder reading lists"));
-          }
-        })
-        .then(
-          () => {
-            successToast.show();
-          },
-          () => {
-            errorToast.show();
-          },
-        );
     });
   });
 })();

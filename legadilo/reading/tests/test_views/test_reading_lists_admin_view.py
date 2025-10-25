@@ -19,8 +19,9 @@ from legadilo.reading.tests.factories import ReadingListFactory, TagFactory
 @pytest.mark.django_db
 class TestReadingListsAdminView:
     @pytest.fixture(autouse=True)
-    def _setup_data(self):
+    def _setup_data(self, user):
         self.url = reverse("reading:reading_lists_admin")
+        self.reading_list = ReadingListFactory(user=user, order=0)
 
     def test_not_logged_in(self, client):
         response = client.get(self.url)
@@ -28,15 +29,35 @@ class TestReadingListsAdminView:
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == f"/accounts/login/?next={self.url}"
 
-    def test_get_page(self, logged_in_sync_client, user, other_user):
-        reading_list = ReadingListFactory(user=user)
+    def test_get_page(self, logged_in_sync_client, other_user):
         ReadingListFactory(user=other_user)
 
         response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/reading_lists_admin.html"
-        assert list(response.context_data["reading_lists"]) == [reading_list]
+        assert list(response.context_data["reading_lists"]) == [self.reading_list]
+
+    def test_reorder_invalid_data(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, data={"reading_list_order": ["a", "b"]})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["form"].errors == {
+            "reading_list_order": ["Enter a whole number."]
+        }
+
+    def test_reorder(self, user, logged_in_sync_client):
+        other_reading_list = ReadingListFactory(user=user, order=10)
+
+        response = logged_in_sync_client.post(
+            self.url, data={"reading_list_order": [other_reading_list.id, self.reading_list.id]}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        self.reading_list.refresh_from_db()
+        other_reading_list.refresh_from_db()
+        assert self.reading_list.order == 1
+        assert other_reading_list.order == 0
 
 
 @pytest.mark.django_db

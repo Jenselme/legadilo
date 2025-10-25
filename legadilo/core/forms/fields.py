@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
-from .widgets import SelectMultipleAutocompleteWidget
+from .widgets import ListWidget, SelectMultipleAutocompleteWidget
 
 
 class MultipleTagsField(forms.MultipleChoiceField):
@@ -34,3 +34,19 @@ class SlugifiableCharField(forms.CharField):
                 _("Cannot contain only spaces or special characters."),
                 code="cannot-be-slugified",
             )
+
+
+class ListField(forms.Field):
+    field: forms.Field
+    widget = ListWidget
+
+    def __init__(self, *args, field: forms.Field, **kwargs):
+        self.field = field
+        super().__init__(*args, **kwargs)
+
+    def validate(self, value: list[str]):
+        for v in value:
+            self.field.validate(v)
+
+    def clean(self, value: list[str]):
+        return [self.field.clean(v) for v in value]
