@@ -3,6 +3,7 @@
     "annotations": [],
     "authors": [],
     "content": "",
+    "content_type": "text/html",
     "contributors": [],
     "external_article_id": "",
     "external_tags": [],
@@ -30,6 +31,7 @@
     "annotations": [],
     "authors": [],
     "content": "Watch out for\n                <span>\nnasty tricks</span>",
+    "content_type": "text/plain",
     "contributors": [],
     "external_article_id": "http://example.org/entry/3",
     "external_tags": [],
@@ -59,6 +61,7 @@
       "author"
     ],
     "content": "<p>Test content</p>",
+    "content_type": "text/html",
     "contributors": [],
     "external_article_id": "custom_csv:439",
     "external_tags": [
@@ -88,6 +91,7 @@
     "annotations": [],
     "authors": [],
     "content": "",
+    "content_type": "text/plain",
     "contributors": [],
     "external_article_id": "https://example.com/articles/with-tags",
     "external_tags": [
@@ -120,6 +124,7 @@
       "author"
     ],
     "content": "<p>Test content </p>",
+    "content_type": "text/html",
     "contributors": [],
     "external_article_id": "custom_csv:440",
     "external_tags": [],
@@ -149,6 +154,7 @@
       "author"
     ],
     "content": "<p>Test content</p>",
+    "content_type": "text/html",
     "contributors": [],
     "external_article_id": "custom_csv:441",
     "external_tags": [
@@ -180,6 +186,7 @@
       "author"
     ],
     "content": "<p>Test content</p>",
+    "content_type": "text/html",
     "contributors": [],
     "external_article_id": "custom_csv:442",
     "external_tags": [],
@@ -209,6 +216,7 @@
       "author"
     ],
     "content": "<p>Test content</p>",
+    "content_type": "text/html",
     "contributors": [],
     "external_article_id": "custom_csv:444",
     "external_tags": [],

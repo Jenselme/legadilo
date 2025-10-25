@@ -14,9 +14,9 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_http_methods
 
-from legadilo.core.forms.fields import MultipleTagsField, SlugifiableCharField
+from legadilo.core.forms.fields import ListField, MultipleTagsField, SlugifiableCharField
 from legadilo.reading import constants
 from legadilo.reading.models import ReadingList, ReadingListTag, Tag
 from legadilo.users.models import User
@@ -24,13 +24,31 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 from legadilo.utils.types import FormChoices
 
 
-@require_GET
+class ReorderReadingListsForm(forms.Form):
+    reading_list_order = ListField(field=forms.IntegerField())
+
+
+@require_http_methods(["GET", "POST"])
 @login_required
 def reading_list_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
+    form = ReorderReadingListsForm()
+    status = HTTPStatus.OK
+    if request.method == "POST":
+        form = ReorderReadingListsForm(request.POST)
+        if form.is_valid():
+            new_order = {
+                reading_list_id: index
+                for index, reading_list_id in enumerate(form.cleaned_data["reading_list_order"])
+            }
+            ReadingList.objects.reorder(request.user, new_order)
+        else:
+            status = HTTPStatus.BAD_REQUEST
+
     return TemplateResponse(
         request,
         "reading/reading_lists_admin.html",
-        {"reading_lists": ReadingList.objects.get_all_for_user(request.user)},
+        {"reading_lists": ReadingList.objects.get_all_for_user(request.user), "form": form},
+        status=status,
     )
 
 
@@ -65,7 +83,6 @@ class ReadingListForm(forms.ModelForm):
             "title",
             "enable_reading_on_scroll",
             "auto_refresh_interval",
-            "order",
             "read_status",
             "favorite_status",
             "for_later_status",

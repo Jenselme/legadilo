@@ -44,7 +44,7 @@ class TestAddArticle:
         assert response.template_name == "reading/add_article.html"
 
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(text=self.article_content, url=self.article_url)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -66,7 +66,7 @@ class TestAddArticle:
     def test_add_article_with_tags(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
-        httpx_mock.add_response(text=self.article_content, url=self.article_url)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
         with django_assert_num_queries(17):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
@@ -94,7 +94,7 @@ class TestAddArticle:
     ):
         ArticleFactory(user=user, url=self.article_url)
         TagFactory(user=other_user, title=self.existing_tag.title, slug=self.existing_tag.slug)
-        httpx_mock.add_response(text=self.article_content, url=self.article_url)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
         response = logged_in_other_user_sync_client.post(self.url, self.payload_with_tags)
 
@@ -106,7 +106,7 @@ class TestAddArticle:
         assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}
 
     def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
-        httpx_mock.add_response(text=self.article_content, url=self.article_url)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
         mocker.patch("legadilo.reading.services.article_fetching._get_content", return_value="")
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -160,7 +160,7 @@ class TestAddArticle:
             content="Existing content",
             updated_at=utcdt(2024, 3, 1),
         )
-        httpx_mock.add_response(text=self.article_content, url=existing_article.url)
+        httpx_mock.add_response(html=self.article_content, url=existing_article.url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -206,7 +206,7 @@ class TestAddArticle:
             "legadilo.reading.services.article_fetching.sys.getsizeof",
             return_value=10 * 2048 * 1024,
         )
-        httpx_mock.add_response(text=self.article_content, url=self.article_url)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -262,7 +262,7 @@ class TestRefetchArticleView:
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
         httpx_mock.add_response(
-            text=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
+            html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
         )
 
         with django_assert_num_queries(13):
@@ -283,7 +283,7 @@ class TestRefetchArticleView:
     def test_refetch_article_with_from_url(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
-        httpx_mock.add_response(text="", url=self.article_url)
+        httpx_mock.add_response(html="", url=self.article_url)
 
         with django_assert_num_queries(13):
             response = logged_in_sync_client.post(

@@ -100,6 +100,18 @@ class ReadingListManager(models.Manager["ReadingList"]):
         reading_list.is_default = True
         reading_list.save()
 
+    @transaction.atomic()
+    def reorder(self, user: User, new_order: dict[int, int]):
+        reading_lists = {
+            reading_list.id: reading_list for reading_list in self.get_all_for_user(user)
+        }
+        for reading_list_id, new_order_value in new_order.items():
+            if reading_list_id not in reading_lists:
+                continue
+            reading_lists[reading_list_id].order = new_order_value
+
+        self.bulk_update(reading_lists.values(), ["order"])
+
 
 class ReadingList(models.Model):
     title = models.CharField(max_length=255)

@@ -24,6 +24,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
            article.title                                               AS article_title,
            article.link                                                AS article_url,
            article.content                                             AS article_content,
+           'text/html'                                                 AS article_content_type,
            article.date_entered                                        AS article_date_published,
            article.date_updated                                        AS article_date_updated,
            array_to_json(string_to_array(replace(replace(article.author, ' & ', ','), ' et ', ','),
@@ -51,7 +52,7 @@ You can load a set of articles, feed categories and feeds using a CSV file and t
 The CSV must be structured like this:
 
 ```csv
-"category_id","category_title","feed_id","feed_title","feed_url","feed_site_url","article_id","article_title","article_url","article_content","article_date_published","article_date_updated","article_authors","article_tags","article_read_at","article_is_favorite","article_lang","comments"
+"category_id","category_title","feed_id","feed_title","feed_url","feed_site_url","article_id","article_title","article_url","article_content","article_content_type","article_date_published","article_date_updated","article_authors","article_tags","article_read_at","article_is_favorite","article_lang","comments"
 ```
 
 If you don’t have an info, leave it empty.

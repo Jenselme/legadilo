@@ -218,13 +218,14 @@ def _parse_articles_in_feed(
     for entry in parsed_feed.entries:
         try:
             article_url = _get_article_url(feed_url, entry)
-            content = _get_article_content(entry)
+            content, content_type = _get_article_content(entry)
             articles_data.append(
                 ArticleData(
                     external_article_id=entry.get("id", article_url),
                     title=entry.title,
                     summary=_get_summary(article_url, entry),
                     content=content,
+                    content_type=content_type,
                     authors=_get_article_authors(entry),
                     contributors=_get_article_contributors(entry),
                     tags=_get_articles_tags(entry),
@@ -282,24 +283,28 @@ def _get_article_contributors(entry):
 
 
 def _get_article_content(entry):
-    content_entry = _get_article_content_entry(entry)
+    content_entry, content_type = _get_article_content_entry(entry)
     content_value = content_entry.get("value", "")
     if content_entry.get("type") == "application/xhtml+xml":
         content_value = unescape(content_value)
 
-    return content_value
+    return content_value, content_type
 
 
 def _get_article_content_entry(entry):
     for content_entry in entry.get("content", []):
-        if content_entry["type"] in {"text/html", "plain", "text/plain", "application/xhtml+xml"}:
-            return content_entry
+        content_type = content_entry["type"]
+        if content_type in {"text", "plain"}:
+            content_type = "text/plain"
 
-    return {}
+        if content_type in {"text/html", "text/plain", "application/xhtml+xml"}:
+            return content_entry, content_type
+
+    return {}, "text/plain"
 
 
 def _get_language(parsed_feed, entry):
-    content_entry = _get_article_content_entry(entry)
+    content_entry, _ = _get_article_content_entry(entry)
     return (
         content_entry.get("language")
         or content_entry.get("lang")

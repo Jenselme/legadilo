@@ -34,21 +34,23 @@ const connectToPort = () => {
 
 const runDefaultAction = async () => {
   const tab = await getCurrentTab();
-  const pageContent = await getPageContent(tab);
-  const feedNodes = getFeedNodes(pageContent);
+  const [pageContent, contentType] = await getPageContent(tab);
+  const feedNodes = getFeedNodes(pageContent, contentType);
 
   // No feed links, let's save immediately.
   if (feedNodes.length === 0) {
-    await saveArticle(tab, pageContent);
+    await saveArticle(tab, pageContent, contentType);
     return;
   }
 
   await displayActionsSelector();
 };
 
-const getFeedNodes = (pageContent) => {
+const getFeedNodes = (pageContent, contentType) => {
+  if (contentType === "text/plain") return [];
+
   const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, "text/html");
+  const htmlDoc = parser.parseFromString(pageContent, contentType);
   const feedNodes = [];
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
@@ -56,9 +58,11 @@ const getFeedNodes = (pageContent) => {
   return feedNodes;
 };
 
-const getCanonicalUrl = (tab, pageContent) => {
+const getCanonicalUrl = (tab, pageContent, contentType) => {
+  if (contentType === "text/plain") return null;
+
   const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, "text/html");
+  const htmlDoc = parser.parseFromString(pageContent, contentType);
 
   const canonicalLink = htmlDoc.querySelector("link[rel='canonical']");
   if (!canonicalLink) {
@@ -104,12 +108,12 @@ const onMessage = (request) => {
 const displayActionsSelector = async () => {
   displayLoader();
   const tab = await getCurrentTab();
-  const pageContent = await getPageContent(tab);
-  const feedNodes = getFeedNodes(pageContent);
+  const [pageContent, contentType] = await getPageContent(tab);
+  const feedNodes = getFeedNodes(pageContent, contentType);
   const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
   const pageUrl = getPageUrlFromTab(tab);
   const articleUrls = [pageUrl];
-  const articleCanonicalUrl = getCanonicalUrl(tab, pageContent);
+  const articleCanonicalUrl = getCanonicalUrl(tab, pageContent, contentType);
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
   }
@@ -167,7 +171,7 @@ const displayActionsSelector = async () => {
 
   document.querySelector("#save-article-action-btn").addEventListener("click", async () => {
     hideActionSelector();
-    await saveArticle(tab, pageContent);
+    await saveArticle(tab, pageContent, contentType);
   });
 };
 
@@ -385,22 +389,36 @@ const getCurrentTab = () =>
 
 const getPageContent = async (tab) => {
   try {
-    const scriptResult = await chrome.scripting.executeScript({
+    const getcontentTypeScriptResult = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () => document.documentElement.outerHTML,
+      func: () => document.contentType,
     });
-    return scriptResult[0].result;
+    const contentType = getcontentTypeScriptResult[0].result;
+    const getPageContentScriptResult = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () =>
+        document.contentType === "text/plain"
+          ? document.documentElement.outerText
+          : document.documentElement.outerHTML,
+    });
+    const content = getPageContentScriptResult[0].result;
+    return [content, contentType];
   } catch (error) {
     console.error(error);
-    return "";
+    return ["", "text/plain"];
   }
 };
 
-const saveArticle = (tab, pageContent) => {
+const saveArticle = (tab, pageContent, contentType) => {
   displayLoader();
   sendMessage({
     name: "save-article",
-    payload: { url: getPageUrlFromTab(tab), title: tab.title, content: pageContent },
+    payload: {
+      url: getPageUrlFromTab(tab),
+      title: tab.title,
+      content: pageContent,
+      contentType,
+    },
   });
 };
 

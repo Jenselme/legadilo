@@ -33,6 +33,7 @@ from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time_utils import utcnow
 from legadilo.utils.validators import (
+    CONTENT_TYPES,
     language_code_validator,
     list_of_strings_validator,
     table_of_content_validator,
@@ -561,6 +562,7 @@ class ArticleManager(models.Manager["Article"]):
                     slug=slugify(article_data.title),
                     summary=article_data.summary,
                     content=article_data.content,
+                    content_type=article_data.content_type,
                     table_of_content=article_data.table_of_content,
                     reading_time=get_nb_words_from_html(article_data.content)
                     // user.settings.default_reading_time,
@@ -718,6 +720,7 @@ class ArticleManager(models.Manager["Article"]):
                     "article_title": article.title,
                     "article_url": article.url,
                     "article_content": article.content,
+                    "article_content_type": article.content_type,
                     "article_date_published": article.published_at.isoformat()
                     if article.published_at
                     else "",
@@ -772,6 +775,11 @@ class Article(models.Model):
     slug = models.SlugField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)
     summary = models.TextField(blank=True)
     content = models.TextField(blank=True)
+    content_type = models.CharField(
+        choices=[(content_type, content_type) for content_type in CONTENT_TYPES],
+        max_length=50,
+        default="text/html",
+    )
     reading_time = models.PositiveIntegerField(
         default=0,
         help_text=_(

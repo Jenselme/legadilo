@@ -3,7 +3,8 @@
   "authors": [
     "me"
   ],
-  "content": "\n<img src=\"data:image/png;base64\">\n",
+  "content": "\n<img src=\"data:image/png;base64\"/>\n",
+  "content_type": "text/html",
   "contributors": [
     "me"
   ],

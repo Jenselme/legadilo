@@ -1,26 +1,48 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load crispy_forms_tags i18n static %}
 
 {% block title %}
     {% translate "Reading lists admin" %}
 {% endblock title %}
 
+{% block page_js %}
+    <script src="{% static 'js/draggable.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
+{% endblock page_js %}
+
+{% block page_css %}
+    <link rel="stylesheet"
+          href="{% static 'css/draggable.css' %}"
+          nonce="{{ request.csp_nonce }}" />
+{% endblock page_css %}
+
 {% block content %}
     <h1>{% translate "Reading list admin" %}</h1>
-    <a class="btn btn-outline-secondary"
+    <a class="btn btn-outline-primary"
        href="{% url 'reading:create_reading_list' %}"
        role="button">{% translate "Create a new reading list" %}</a>
-    <ul class="list-group mt-3">
-        {% for reading_list in reading_lists %}
-            <li class="list-group-item container">
-                <div class="row">
-                    <div class="col">{{ reading_list.title }}</div>
-                    <div class="col">
-                        <a href="{% url 'reading:edit_reading_list' reading_list_id=reading_list.id %}">{% translate "Edit/Delete reading list" %}</a>
+    <form method="post">
+        {% csrf_token %}
+        <ul class="list-group mt-3">
+            {% for reading_list in reading_lists %}
+                <li id="reading-list-{{ reading_list.id }}" class="list-group-item container" draggable="true" data-reading-list-id="{{ reading_list.id }}">
+                    <input type="hidden" name="reading_list_order" value="{{ reading_list.id }}" />
+                    <div class="row">
+                        <div class="col">{{ reading_list.title }}</div>
+                        <div class="col">
+                            <a href="{% url 'reading:edit_reading_list' reading_list_id=reading_list.id %}">{% translate "Edit/Delete reading list" %}</a>
+                        </div>
+                        <div class="col">
+                            <a href="{% url 'reading:reading_list' reading_list_slug=reading_list.slug %}">{% translate "View" %}</a>
+                        </div>
                     </div>
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+        <p class="mt-3 form-text">{% translate "Reading lists can be reordered with drag & drop." %}</p>
+        {% if form.errors or form.reading_list_order.errors %}
+            <div class="invalid-feedback d-block">{% translate "Failed to reorder" %}</div>
+        {% endif %}
+        <button class="btn btn-outline-secondary" type="submit">{% translate "Save new order" %}</button>
+    </form>
 {% endblock content %}

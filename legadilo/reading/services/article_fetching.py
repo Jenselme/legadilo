@@ -24,7 +24,9 @@ from legadilo.utils.security import (
 )
 from legadilo.utils.time_utils import safe_datetime_parse
 from legadilo.utils.validators import (
+    HTML_CONTENT_TYPES,
     CleanedString,
+    ContentType,
     FullSanitizeValidator,
     LanguageCodeValidatorOrDefault,
     TableOfContentItem,
@@ -42,14 +44,14 @@ from legadilo.utils.validators import (
 logger = logging.getLogger(__name__)
 
 
-Language = Annotated[
+type Language = Annotated[
     str,
     FullSanitizeValidator,
     truncate(constants.LANGUAGE_CODE_MAX_LENGTH),
     LanguageCodeValidatorOrDefault,
     none_to_value(""),
 ]
-OptionalUrl = Literal[""] | Annotated[str, ValidUrlValidator]
+type OptionalUrl = Literal[""] | Annotated[str, ValidUrlValidator]
 
 
 class ArticleData(BaseSchema):
@@ -64,7 +66,10 @@ class ArticleData(BaseSchema):
         str,
         sanitize_keep_safe_tags_validator(constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY),
     ]
-    content: Annotated[str, sanitize_keep_safe_tags_validator()]
+    # Sanitization is done in a model validation because the exact method depends on the content
+    # type.
+    content: str
+    content_type: ContentType
     table_of_content: tuple[TableOfContentTopItem, ...] = ()
     authors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     contributors: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
@@ -81,9 +86,7 @@ class ArticleData(BaseSchema):
 
     @model_validator(mode="before")
     @staticmethod
-    def prepare_values(
-        values: dict[str, Any],
-    ) -> dict[str, Any]:
+    def prepare_values(values: dict[str, Any]) -> dict[str, Any]:
         summary = values.get("summary", "")
         content = values.get("content", "")
         title = values.get("title", "")
@@ -116,6 +119,23 @@ class ArticleData(BaseSchema):
             "table_of_content": table_of_content,
         }
 
+    @model_validator(mode="before")
+    @staticmethod
+    def sanitize_content(values) -> dict[str, Any]:
+        content_type: ContentType = values.get("content_type", "text/html")
+
+        match content_type:
+            case "text/plain":
+                # Content will be displayed without |safe in a pre, allow HTML elements: they won't
+                # be interpreted as HTML.
+                values["content"] = values["content"].strip()
+            case "text/html" | "application/xhtml+xml":
+                values["content"] = sanitize_keep_safe_tags(values["content"])
+            case _:
+                raise ValueError(f"Unsupported content type {content_type=}")
+
+        return values
+
 
 def _resolve_relative_urls(article_url: str, content: str) -> str:
     soup = BeautifulSoup(content, "html.parser")
@@ -147,22 +167,23 @@ class ArticleTooBigError(Exception):
 
 
 def get_article_from_url(url: str) -> ArticleData:
-    url, soup, content_language = _get_page_content(url)
+    url, content, content_type, content_language = _get_page_content(url)
 
-    return _build_article_data_from_soup(
+    return _build_article_data(
         url,
-        soup,
+        content,
+        content_type=content_type,
         content_language=content_language,
     )
 
 
-def build_article_data_from_content(*, url: str, title: str, content: str) -> ArticleData:
-    soup = BeautifulSoup(content, "html.parser")
+def build_article_data_from_content(
+    *, url: str, title: str, content: str, content_type: ContentType
+) -> ArticleData:
+    return _build_article_data(url, content, content_type=content_type, forced_title=title)
 
-    return _build_article_data_from_soup(url, soup, forced_title=title)
 
-
-def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
+def _get_page_content(url: str) -> tuple[str, str, ContentType, str | None]:
     with get_sync_client() as client:
         # We can have HTTP redirect with the meta htt-equiv tag. Let's read them to up to 10 time
         # to find the final URL of the article we are looking for.
@@ -171,9 +192,14 @@ def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
             response.raise_for_status()
             if sys.getsizeof(response.content) > constants.MAX_ARTICLE_FILE_SIZE:
                 raise ArticleTooBigError
-            soup = BeautifulSoup(
-                response.content.decode(response.encoding or "utf-8"), "html.parser"
-            )
+
+            content = response.content.decode(response.encoding or "utf-8")
+            content_type = response.headers.get("Content-Type", "text/html").split(";")[0].strip()
+
+            if content_type not in HTML_CONTENT_TYPES:
+                break
+
+            soup = BeautifulSoup(content, "html.parser")
             if (
                 (http_equiv_refresh := soup.find("meta", attrs={"http-equiv": "refresh"}))
                 and (http_equiv_refresh_value := http_equiv_refresh.get("content"))  # type: ignore[union-attr]
@@ -184,7 +210,7 @@ def _get_page_content(url: str) -> tuple[str, BeautifulSoup, str | None]:
 
             break
 
-    return str(response.url), soup, response.headers.get("Content-Language")
+    return str(response.url), content, content_type, response.headers.get("Content-Language")
 
 
 def _parse_http_equiv_refresh(value: str) -> str | None:
@@ -202,13 +228,34 @@ def _parse_http_equiv_refresh(value: str) -> str | None:
     return None
 
 
-def _build_article_data_from_soup(
+def _build_article_data(
     fetched_url: str,
-    soup: BeautifulSoup,
+    raw_content: str,
     *,
+    content_type: ContentType,
     content_language: str | None = None,
     forced_title: str | None = None,
 ) -> ArticleData:
+    if content_type == "text/plain":
+        return ArticleData(
+            external_article_id="",
+            source_title=urlparse(fetched_url).netloc,
+            title=forced_title or fetched_url,
+            summary="",
+            content=raw_content,
+            content_type="text/plain",
+            authors=(),
+            contributors=(),
+            tags=(),
+            url=fetched_url,
+            preview_picture_url="",
+            preview_picture_alt="",
+            published_at=None,
+            updated_at=None,
+            language=content_language or "",
+        )
+
+    soup = BeautifulSoup(raw_content, "html.parser")
     content = _get_content(soup)
 
     return ArticleData(
@@ -217,6 +264,7 @@ def _build_article_data_from_soup(
         title=forced_title or _get_title(soup),
         summary=_get_summary(soup),
         content=content,
+        content_type=content_type,
         authors=tuple(_get_authors(soup)),
         contributors=(),
         tags=tuple(_get_tags(soup)),

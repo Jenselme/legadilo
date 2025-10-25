@@ -4,7 +4,8 @@
 
 import re
 from collections.abc import Set
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
+from typing import get_args as get_literal_args
 from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
 
 from django.core.exceptions import ValidationError
@@ -23,6 +24,10 @@ from pydantic import BaseModel as BaseSchema
 from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
+
+type ContentType = Literal["application/xhtml+xml", "text/html", "text/plain"]
+CONTENT_TYPES = tuple(content_type for content_type in get_literal_args(ContentType.__value__))
+HTML_CONTENT_TYPES = ("application/xhtml+xml", "text/html")
 
 default_frozen_model_config = ConfigDict(
     extra="forbid", frozen=True, validate_default=True, validate_assignment=True
@@ -59,7 +64,7 @@ def list_of_strings_validator(value: Any):
         raise ValidationError(str(e)) from e
 
 
-CleanedString = Annotated[str, FullSanitizeValidator, StringConstraints(strip_whitespace=True)]
+type CleanedString = Annotated[str, FullSanitizeValidator, StringConstraints(strip_whitespace=True)]
 
 
 class TableOfContentItem(BaseSchema):

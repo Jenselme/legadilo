@@ -17,7 +17,7 @@ from pydantic import ValidationError as PydanticValidationError
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag, Comment, Tag
+from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     ArticleData,
@@ -30,6 +30,7 @@ from legadilo.users.user_types import AuthenticatedApiRequest
 from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.utils.validators import (
     CleanedString,
+    ContentType,
     ValidUrlValidator,
     remove_falsy_items,
 )
@@ -73,6 +74,7 @@ class ArticleCreation(Schema):
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
     # content of the article.
     content: str = ""
+    content_type: ContentType = "text/html"
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
 
     @model_validator(mode="after")
@@ -128,7 +130,10 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
 def _get_article_data(payload: ArticleCreation) -> ArticleData:
     if payload.has_data:
         return build_article_data_from_content(
-            url=payload.url, title=payload.title, content=payload.content
+            url=payload.url,
+            title=payload.title,
+            content=payload.content,
+            content_type=payload.content_type,
         )
     return get_article_from_url(payload.url)
 
@@ -227,3 +232,21 @@ def list_tags_view(request: AuthenticatedApiRequest):
         })
 
     return {"count": len(tags), "items": tags}
+
+
+class ReadingListReorderPayload(Schema):
+    order: dict[int, int]
+
+
+@reading_api_router.post(
+    "/lists/reorder/",
+    url_name="reorder_reading_lists",
+    summary="Reorder reading lists. Provide a mapping of reading list id to new order.",
+    response={HTTPStatus.NO_CONTENT: None},
+)
+def reorder_reading_lists_view(
+    request: AuthenticatedApiRequest, payload: ReadingListReorderPayload
+):
+    ReadingList.objects.reorder(request.auth, payload.order)
+
+    return HTTPStatus.NO_CONTENT, None

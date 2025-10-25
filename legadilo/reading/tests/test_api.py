@@ -16,6 +16,7 @@ from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
     CommentFactory,
+    ReadingListFactory,
     TagFactory,
 )
 from legadilo.reading.tests.fixtures import get_article_fixture_content
@@ -161,10 +162,7 @@ class TestCreateArticleView:
     def test_create_article_from_data(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
-        mocked_get_article_from_url = mocker.patch(
-            "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(url=self.article_url),
-        )
+        mocked_get_article_from_url = mocker.patch("legadilo.reading.api.get_article_from_url")
 
         with django_assert_num_queries(16):
             response = logged_in_sync_client.post(
@@ -183,8 +181,42 @@ class TestCreateArticleView:
         assert article.url == "https://www.example.com/posts/en/1-super-article/"
         assert article.table_of_content == []
         assert not mocked_get_article_from_url.called
+        assert article.content_type == "text/html"
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
+            "article.json",
+        )
+
+    def test_create_article_from_text_data(
+        self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
+    ):
+        mocked_get_article_from_url = mocker.patch("legadilo.reading.api.get_article_from_url")
+
+        with django_assert_num_queries(16):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "url": self.article_url,
+                    "content": "Just some text",
+                    "content_type": "text/plain",
+                    "title": "My article",
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == self.article_url
+        assert article.table_of_content == []
+        assert not mocked_get_article_from_url.called
+        assert article.content_type == "text/plain"
+        data = response.json()
+        # Keep other fields since they shouldn't change for text data.
+        data["id"] = 1
+        data["details_url"] = "http://testserver/reading/articles/1-my-article/"
+        snapshot.assert_match(
+            serialize_for_snapshot(data),
             "article.json",
         )
 
@@ -438,3 +470,30 @@ class TestListTagsView:
 
         assert response.status_code == HTTPStatus.OK
         snapshot.assert_match(serialize_for_snapshot(response.json()), "tags.json")
+
+
+@pytest.mark.django_db
+class TestReadingListsReorderView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user, other_user):
+        self.reading_list = ReadingListFactory(user=user, order=0)
+        self.reading_list_other_user = ReadingListFactory(user=other_user, order=10)
+        self.url = reverse("api-1.0.0:reorder_reading_lists")
+
+    def test_not_logged_in(self, client):
+        response = client.post(self.url, {}, content_type="application/json")
+
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_reorder(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {"order": {self.reading_list.id: 100, self.reading_list_other_user.id: 110, -1: 0}},
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        self.reading_list.refresh_from_db()
+        self.reading_list_other_user.refresh_from_db()
+        assert self.reading_list.order == 100
+        assert self.reading_list_other_user.order == 10
