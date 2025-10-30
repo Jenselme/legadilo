@@ -1342,21 +1342,21 @@ class TestArticleManager:
         link = "http://toto.com/"
 
         with django_assert_num_queries(7):
-            article, created = Article.objects.create_invalid_article(
+            save_result = Article.objects.create_invalid_article(
                 user,
                 link,
                 [tag],
             )
 
-        assert created
-        assert article.url == link
-        assert article.title == link
-        assert article.slug == "toto-com"
-        assert article.updated_at is None
-        assert article.main_source_type == constants.ArticleSourceType.MANUAL
-        assert article.main_source_title == "toto.com"
-        assert list(article.tags.all()) == [tag]
-        assert article.article_fetch_errors.count() == 1
+        assert save_result.was_created
+        assert save_result.article.url == link
+        assert save_result.article.title == link
+        assert save_result.article.slug == "toto-com"
+        assert save_result.article.updated_at is None
+        assert save_result.article.main_source_type == constants.ArticleSourceType.MANUAL
+        assert save_result.article.main_source_title == "toto.com"
+        assert list(save_result.article.tags.all()) == [tag]
+        assert save_result.article.article_fetch_errors.count() == 1
 
     def test_create_article_title_cannot_be_slugified(self, user):
         article = Article.objects.create(url="https://toto.com/article", title="??", user=user)
@@ -1369,18 +1369,18 @@ class TestArticleManager:
         tag = TagFactory(user=user, title="Test")
 
         with django_assert_num_queries(4):
-            article, created = Article.objects.create_invalid_article(
+            save_result = Article.objects.create_invalid_article(
                 user,
                 initial_article.url,
                 [tag],
             )
 
-        assert not created
-        assert article.url == initial_article.url
-        assert article.title != initial_article.url
-        assert article.title == initial_article.title
-        assert article.tags.count() == 0
-        assert article.article_fetch_errors.count() == 1
+        assert not save_result.was_created
+        assert save_result.article.url == initial_article.url
+        assert save_result.article.title != initial_article.url
+        assert save_result.article.title == initial_article.title
+        assert save_result.article.tags.count() == 0
+        assert save_result.article.article_fetch_errors.count() == 1
 
     @patch.object(constants, "MAX_EXPORT_ARTICLES_PER_PAGE", 2)
     def test_export(self, user, other_user, snapshot, django_assert_num_queries):

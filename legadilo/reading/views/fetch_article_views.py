@@ -186,14 +186,14 @@ def _handle_save(
             )
         )[0]
     except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
-        invalid_article, created = Article.objects.create_invalid_article(
+        save_result = Article.objects.create_invalid_article(
             request.user,
             article_url,
             tags,
             error_message=format_exception(e),
             technical_debug_data=extract_debug_information(e),
         )
-        if created and isinstance(e, httpx.HTTPError):
+        if save_result.was_created and isinstance(e, httpx.HTTPError):
             messages.warning(
                 request,
                 format_html(
@@ -205,11 +205,11 @@ def _handle_save(
                             'Go <a href="{}">there</a> to access it.'
                         )
                     ),
-                    str(article_details_url(invalid_article)),
+                    str(article_details_url(save_result.article)),
                 ),
             )
             return HTTPStatus.CREATED, form, None
-        if created:
+        if save_result.was_created:
             messages.warning(
                 request,
                 format_html(
@@ -220,7 +220,7 @@ def _handle_save(
                             'Go <a href="{}">there</a> to access it.'
                         )
                     ),
-                    str(article_details_url(invalid_article)),
+                    str(article_details_url(save_result.article)),
                 ),
             )
             return HTTPStatus.CREATED, form, None

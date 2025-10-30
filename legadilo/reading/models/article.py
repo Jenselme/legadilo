@@ -639,7 +639,7 @@ class ArticleManager(models.Manager["Article"]):
         *,
         error_message="",
         technical_debug_data: dict | None = None,
-    ) -> tuple[Article, bool]:
+    ) -> SaveArticleResult:
         """Force the creation of an article with only its URL.
 
         Used to saved an article when data fetching failed.
@@ -665,7 +665,7 @@ class ArticleManager(models.Manager["Article"]):
         ArticleFetchError.objects.create(
             article=article, message=error_message, technical_debug_data=technical_debug_data
         )
-        return article, created
+        return SaveArticleResult(article=article, article_id_in_data="", was_created=created)
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
         return self.get_queryset().for_reading_list(reading_list)
