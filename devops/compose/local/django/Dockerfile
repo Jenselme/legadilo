@@ -45,6 +45,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml,readonly \
     uv sync --locked --no-install-project --dev
 
-COPY ./devops/compose/production/django/setup-django.sh /
-RUN chmod +x /setup-django.sh
-RUN /setup-django.sh
+COPY ./devops/compose/production/django/build-django.sh /
+RUN chmod +x /build-django.sh
+RUN /build-django.sh

@@ -29,6 +29,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONDEVMODE ${PYTHONDEVMODE}
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 ENV VERSION ${VERSION}
+# Some deps are install with git, so git must be installed here for the deps to be installed.
+# Don't install it on the image that will run the code since it increases the size by ~100MB.
+ENV INSTALL_GIT 1
 # make sure we use the virtualenv by default
 ENV PATH "${APP_HOME}/.venv/bin:$PATH"
 
@@ -48,9 +51,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 COPY . ${APP_HOME}
 COPY --from=node-builder /node_modules/ ${APP_HOME}/node_modules/
 
-COPY ./devops/compose/production/django/setup-django.sh /
-RUN chmod +x /setup-django.sh
-RUN /setup-django.sh
+COPY ./devops/compose/production/django/build-django.sh /
+RUN chmod +x /build-django.sh
+RUN /build-django.sh
 
 
 FROM python:3.13-slim-bookworm
@@ -75,21 +78,9 @@ ENV PATH "${APP_HOME}/.venv/bin:$PATH"
 
 WORKDIR ${APP_HOME}
 
-RUN <<EOT
-# Create user to use to run in production.
-addgroup --system django
-adduser --system --ingroup django django
-
-apt-get update -qy
-apt-get install -qyy \
-    -o APT::Install-Recommends=false \
-    -o APT::Install-Suggests=false \
-    gettext
-apt-get upgrade -y
-
-apt-get clean
-rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-EOT
+COPY ./devops/compose/production/django/setup-container.sh /
+RUN chmod +x /setup-container.sh
+RUN /setup-container.sh
 
 COPY --chown=django:django ./devops/compose/production/django/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
