@@ -56,4 +56,4 @@ release:
     docker image push "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
     docker image push rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
     git tag "${new_tag}"
-    git push --tags --no-verify
+    git push --follow-tags --no-verify
