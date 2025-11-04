@@ -121,7 +121,6 @@ THIRD_PARTY_APPS = [
     "ninja",
     "django_version_checks",
     "extra_checks",
-    "anymail",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
@@ -384,10 +383,7 @@ EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
     default="[Legadilo] ",
 )
-# https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-# https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
-# https://anymail.readthedocs.io/en/stable/esps
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = env("EMAIL_HOST", default="mailpit")
