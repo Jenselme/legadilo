@@ -44,9 +44,12 @@ pre {
   max-width: calc(100vw - 24px);
 }
 
-code,
-a {
+.article-content {
   overflow-wrap: anywhere;
+}
+
+.article-content pre {
+  overflow-wrap: normal;
 }
 
 table {
@@ -67,7 +70,7 @@ td {
   padding: 0.25em;
 }
 
-.article-content {
+.article-container {
   max-width: 900px;
 }
 
