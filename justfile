@@ -42,11 +42,15 @@ release:
     new_tag_revision=$((last_tag_revision+1))
     new_tag="${base_date_tag}.${new_tag_revision}"
 
+    sed -Ei "s/^version = \"[1-9]{2}\.[0-9]{2}\.[0-9]\"$/version = \"${new_tag}\"/g" pyproject.toml
+    sed -i 's/## Unreleased$/## Unreleased\n\n## ${new_tag}/g' CHANGELOG.md
+    uv lock
     echo "Creating version ${new_tag} Press enter to accept."
     read -r
 
+    git commit -am "chore: releasing ${new_tag}"
     docker pull python:3.13-slim-bookworm
-    docker compose -f production.yml build --build-arg "VERSION=${new_tag}" django
+    docker compose -f production.yml build django
     docker image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
     docker image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
     docker image push "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"

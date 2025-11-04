@@ -244,13 +244,9 @@
         </div>
         <footer class="content-footer d-flex flex-column justify-content-center py-4 text-white">
             <p class="ps-4 pe-4 text-center">
-                {% if VERSION %}
-                    {% blocktranslate trimmed with version=VERSION %}
-                        Legadilo <a class="text-reset" href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">version {{ version }}</a>
-                    {% endblocktranslate %}
-                {% else %}
-                    Legadilo
-                {% endif %}
+                {% blocktranslate trimmed with version=VERSION %}
+                    Legadilo <a class="text-reset" href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">version {{ version }}</a>
+                {% endblocktranslate %}
             </p>
             <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
                 <p class="ps-4 pe-4">

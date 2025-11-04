@@ -28,7 +28,7 @@ class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.
 
-    @override_settings(CONTACT_EMAIL="contact@legadilo.eu")
+    @override_settings(CONTACT_EMAIL="contact@legadilo.eu", VERSION="0.0.0")
     def test_registration_success(self, client, utc_tz, mocker, snapshot):
         self.client = client
         self.mocker = mocker

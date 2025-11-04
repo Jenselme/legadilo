@@ -14,7 +14,6 @@ FROM python:3.13-slim-bookworm AS python-builder
 ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app
 ARG PYTHONDEVMODE=''
-ARG VERSION=''
 
 ENV UV_LINK_MODE copy
 ENV UV_COMPILE_BYTECODE 1
@@ -28,7 +27,6 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONDEVMODE ${PYTHONDEVMODE}
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
-ENV VERSION ${VERSION}
 # Some deps are install with git, so git must be installed here for the deps to be installed.
 # Don't install it on the image that will run the code since it increases the size by ~100MB.
 ENV INSTALL_GIT 1
@@ -61,7 +59,6 @@ FROM python:3.13-slim-bookworm
 ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app
 ARG PYTHONDEVMODE=''
-ARG VERSION=''
 
 ENV UV_LINK_MODE copy
 ENV UV_COMPILE_BYTECODE 1
@@ -72,7 +69,6 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONDEVMODE ${PYTHONDEVMODE}
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
-ENV VERSION ${VERSION}
 # make sure we use the virtualenv by default
 ENV PATH "${APP_HOME}/.venv/bin:$PATH"
 

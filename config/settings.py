@@ -5,6 +5,7 @@
 """Base settings to build other settings files upon."""
 
 import concurrent
+import tomllib
 import warnings
 from datetime import timedelta
 from pathlib import Path
@@ -18,6 +19,10 @@ from django.utils.translation import gettext_lazy as _
 from template_partials.apps import wrap_loaders
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+PYPROJECT_TOML = BASE_DIR / "pyproject.toml"
+
+_project_metadata = tomllib.loads(PYPROJECT_TOML.read_text(encoding="utf-8"))
+
 # legadilo/
 APPS_DIR = BASE_DIR / "legadilo"
 env = environ.Env()
@@ -67,7 +72,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 ASGI_APPLICATION = "config.asgi.application"
-VERSION = env.str("VERSION", "")
+VERSION = _project_metadata["project"]["version"]
 
 
 # DATABASES
