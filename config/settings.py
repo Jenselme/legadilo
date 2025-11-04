@@ -73,6 +73,8 @@ USE_TZ = True
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 ASGI_APPLICATION = "config.asgi.application"
 VERSION = _project_metadata["project"]["version"]
+# Would be triggered in CI.
+SILENCED_SYSTEM_CHECKS = ["staticfiles.W004"]
 
 
 # DATABASES
