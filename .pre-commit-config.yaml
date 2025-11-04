@@ -132,8 +132,24 @@ repos:
         types: [python]
         pass_filenames: false
 
-  - repo: local
-    hooks:
+      - id: django-check
+        name: django-check
+        entry: env
+        args:
+          - DATABASE_URL=sqlite:///mypy.db
+          - IS_PRODUCTION=True
+          - DJANGO_SECRET_KEY=test-key
+          - DJANGO_ADMIN_URL=admin/
+          - uv
+          - run
+          - python
+          - manage.py
+          - check
+          - --fail-level=WARNING
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: pytest
         name: pytest
         entry: env

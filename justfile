@@ -2,20 +2,20 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-docker-cmd := "docker"
-docker-compose-cmd := "docker compose"
-
 default:
     just --list
 
 update-python-deps:
     uv sync --upgrade --all-groups
 
+update-js-deps:
+    npm update
+
 dev:
-    {{docker-compose-cmd}} -f local.yml up
+    docker compose -f local.yml up
 
 clean-dev-container:
-    {{docker-compose-cmd}} -f local.yml down
+    docker compose -f local.yml down
 
 update-po:
     python manage.py makemessages --all --no-location
@@ -42,14 +42,18 @@ release:
     new_tag_revision=$((last_tag_revision+1))
     new_tag="${base_date_tag}.${new_tag_revision}"
 
+    sed -Ei "s/^version = \"[1-9]{2}\.[0-9]{2}\.[0-9]\"$/version = \"${new_tag}\"/g" pyproject.toml
+    sed -i 's/## Unreleased$/## Unreleased\n\n## ${new_tag}/g' CHANGELOG.md
+    uv lock
     echo "Creating version ${new_tag} Press enter to accept."
     read -r
 
-    {{docker-cmd}} pull python:3.13-slim-bookworm
-    {{docker-compose-cmd}} -f production.yml build --build-arg "VERSION=${new_tag}" django
-    {{docker-cmd}} image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
-    {{docker-cmd}} image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
-    {{docker-cmd}} image push "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
-    {{docker-cmd}} image push rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
+    git commit -am "chore: releasing ${new_tag}"
+    docker pull python:3.13-slim-bookworm
+    docker compose -f production.yml build django
+    docker image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
+    docker image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
+    docker image push "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
+    docker image push rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
     git tag "${new_tag}"
     git push --tags --no-verify

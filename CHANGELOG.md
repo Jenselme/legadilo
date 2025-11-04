@@ -8,6 +8,18 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Update the article content type when content is updated.
+- Reduce the probability of invalid horizontal scroll.
+- Use lazy loaded images if any.
+- Browser extension:
+  - Prepare Firefox extension for data collection permissions.
+- Important technical changes:
+  - Cleanup Python deps.
+  - Update deps.
+  - Reduce Docker image size.
+  - Version is now part of the package and not supplied as an environment variable.
+    - The release script will now update the version in the changelog and in `pyproject.toml`
+
 ## 25.10.2
 
 - Can reorder reading lists with drag and drop.

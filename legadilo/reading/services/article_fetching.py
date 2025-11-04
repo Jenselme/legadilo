@@ -85,8 +85,8 @@ class ArticleData(BaseSchema):
     is_favorite: bool = False
 
     @model_validator(mode="before")
-    @staticmethod
-    def prepare_values(values: dict[str, Any]) -> dict[str, Any]:
+    @classmethod
+    def prepare_values(cls, values: dict[str, Any]) -> dict[str, Any]:
         summary = values.get("summary", "")
         content = values.get("content", "")
         title = values.get("title", "")
@@ -98,6 +98,8 @@ class ArticleData(BaseSchema):
         if url:
             summary = _resolve_relative_urls(url, summary)
             content = _resolve_relative_urls(url, content)
+
+        content = cls._sanitize_content(content, values.get("content_type", "text/html"))
 
         content, table_of_content = _build_table_of_content(content)
 
@@ -119,22 +121,17 @@ class ArticleData(BaseSchema):
             "table_of_content": table_of_content,
         }
 
-    @model_validator(mode="before")
     @staticmethod
-    def sanitize_content(values) -> dict[str, Any]:
-        content_type: ContentType = values.get("content_type", "text/html")
-
+    def _sanitize_content(content: str, content_type: ContentType) -> str:
         match content_type:
             case "text/plain":
                 # Content will be displayed without |safe in a pre, allow HTML elements: they won't
                 # be interpreted as HTML.
-                values["content"] = values["content"].strip()
+                return content.strip()
             case "text/html" | "application/xhtml+xml":
-                values["content"] = sanitize_keep_safe_tags(values["content"])
+                return sanitize_keep_safe_tags(content)
             case _:
                 raise ValueError(f"Unsupported content type {content_type=}")
-
-        return values
 
 
 def _resolve_relative_urls(article_url: str, content: str) -> str:
@@ -146,10 +143,13 @@ def _resolve_relative_urls(article_url: str, content: str) -> str:
         link["href"] = _normalize_url(article_url, href)
 
     for image in soup.find_all("img"):
-        if (src := image.get("src")) is None:
-            continue
+        is_lazy_loaded_image = image.get("decoding", "").lower() == "async" and image.get(
+            "data-src"
+        )
+        src = image.get("data-src") if is_lazy_loaded_image else image.get("src")
 
-        image["src"] = _normalize_url(article_url, src)
+        if src:
+            image["src"] = _normalize_url(article_url, src)
 
     return str(soup)
 

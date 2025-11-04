@@ -8,6 +8,13 @@
 .pre-commit-config.yaml
 .readthedocs.yml
 .travis.yml
+.app-template/
+.devcontainer/
+.import_linter_cache/
+.mypy_cache/
+.ruff_cache/
+browser-extension/
+docs/
 venv/
 .venv/
 .git/

@@ -21,6 +21,7 @@ from legadilo.reading.models.article import (
 )
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
+    ArticleDataFactory,
     ArticleFactory,
     CommentFactory,
     ReadingListFactory,
@@ -1778,3 +1779,11 @@ class TestArticleModel:
         assert was_updated
         for attr, value in expected_data.items():
             assert getattr(article, attr) == value
+
+    def test_update_content_type(self, user):
+        article = ArticleFactory.build(content_type="text/plain", user=user)
+
+        was_updated = article.update_article_from_data(ArticleDataFactory(content_type="text/html"))
+
+        assert was_updated
+        assert article.content_type == "text/html"

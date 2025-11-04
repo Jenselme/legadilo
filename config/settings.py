@@ -5,6 +5,7 @@
 """Base settings to build other settings files upon."""
 
 import concurrent
+import tomllib
 import warnings
 from datetime import timedelta
 from pathlib import Path
@@ -18,6 +19,10 @@ from django.utils.translation import gettext_lazy as _
 from template_partials.apps import wrap_loaders
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+PYPROJECT_TOML = BASE_DIR / "pyproject.toml"
+
+_project_metadata = tomllib.loads(PYPROJECT_TOML.read_text(encoding="utf-8"))
+
 # legadilo/
 APPS_DIR = BASE_DIR / "legadilo"
 env = environ.Env()
@@ -67,7 +72,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 ASGI_APPLICATION = "config.asgi.application"
-VERSION = env.str("VERSION", "")
+VERSION = _project_metadata["project"]["version"]
+# Would be triggered in CI.
+SILENCED_SYSTEM_CHECKS = ["staticfiles.W004"]
 
 
 # DATABASES
@@ -121,7 +128,6 @@ THIRD_PARTY_APPS = [
     "ninja",
     "django_version_checks",
     "extra_checks",
-    "anymail",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
@@ -384,10 +390,7 @@ EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
     default="[Legadilo] ",
 )
-# https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-# https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
-# https://anymail.readthedocs.io/en/stable/esps
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = env("EMAIL_HOST", default="mailpit")

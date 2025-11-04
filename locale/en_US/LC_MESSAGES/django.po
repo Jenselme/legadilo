@@ -813,7 +813,7 @@ msgstr ""
 msgid "Privacy"
 msgstr ""
 
-msgid "Report a bug."
+msgid "Report a bug"
 msgstr ""
 
 #, python-format

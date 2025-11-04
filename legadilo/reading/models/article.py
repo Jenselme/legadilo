@@ -889,6 +889,12 @@ class Article(models.Model):
                     main_source_type__in=constants.ArticleSourceType.names,
                 ),
             ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_content_type_valid",
+                condition=models.Q(
+                    content_type__in=["application/xhtml+xml", "text/html", "text/plain"]
+                ),
+            ),
         ]
         indexes = [
             models.Index(
@@ -949,6 +955,7 @@ class Article(models.Model):
             self.content = article_data.content
             self.table_of_content = article_data.table_of_content
 
+        self.content_type = article_data.content_type
         self.obj_updated_at = utcnow()
 
         return True

@@ -10,9 +10,12 @@ set -o nounset
 
 # Install required system dependencies and updates.
 apt-get update
-apt-get upgrade -y
 # Translations dependencies
-apt-get install --no-install-recommends -y gettext git
+apt-get install --no-install-recommends -y gettext
+
+if [[ "${INSTALL_GIT:-}" == 1 ]]; then
+    apt-get install --no-install-recommends -y git
+fi
 
 if [[ "${BUILD_ENV}" == "local" ]]; then
     # devcontainer dependencies and utils
@@ -22,6 +25,11 @@ if [[ "${BUILD_ENV}" == "local" ]]; then
     useradd --uid 1000 --gid dev-user --shell /bin/bash --create-home dev-user
     echo dev-user ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dev-user
     chmod 0440 /etc/sudoers.d/dev-user
+else
+    # Create user to use to run in production.
+    addgroup --system django
+    adduser --system --ingroup django django
+    apt-get upgrade -y
 fi
 
 # cleaning up unused files
