@@ -931,8 +931,8 @@ msgstr "À propos"
 msgid "Privacy"
 msgstr "Vie privée"
 
-msgid "Report a bug."
-msgstr "Remonter un bug."
+msgid "Report a bug"
+msgstr "Rapporter un bug"
 
 #, python-format
 msgid ""
