@@ -17,6 +17,7 @@ class ArticleFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f"Article {n}")
     summary = ""
     content = ""
+    content_type = "text/html"
     authors: list[str] = []
     contributors: list[str] = []
     external_tags: list[str] = []

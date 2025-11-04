@@ -949,6 +949,7 @@ class Article(models.Model):
             self.content = article_data.content
             self.table_of_content = article_data.table_of_content
 
+        self.content_type = article_data.content_type
         self.obj_updated_at = utcnow()
 
         return True
