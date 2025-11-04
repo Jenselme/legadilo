@@ -11,6 +11,9 @@ default:
 update-python-deps:
     uv sync --upgrade --all-groups
 
+update-js-deps:
+    npm update
+
 dev:
     {{docker-compose-cmd}} -f local.yml up
 
