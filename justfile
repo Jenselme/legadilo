@@ -43,7 +43,7 @@ release:
     new_tag="${base_date_tag}.${new_tag_revision}"
 
     sed -Ei "s/^version = \"[1-9]{2}\.[0-9]{2}\.[0-9]\"$/version = \"${new_tag}\"/g" pyproject.toml
-    sed -i 's/## Unreleased$/## Unreleased\n\n## ${new_tag}/g' CHANGELOG.md
+    sed -i "s/## Unreleased$/## Unreleased\n\n## ${new_tag}/g" CHANGELOG.md
     uv lock
     echo "Creating version ${new_tag} Press enter to accept."
     read -r

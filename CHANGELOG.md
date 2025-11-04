@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.11.1
+
 - Update the article content type when content is updated.
 - Reduce the probability of invalid horizontal scroll.
 - Use lazy loaded images if any.
