@@ -2,9 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-docker-cmd := "docker"
-docker-compose-cmd := "docker compose"
-
 default:
     just --list
 
@@ -15,10 +12,10 @@ update-js-deps:
     npm update
 
 dev:
-    {{docker-compose-cmd}} -f local.yml up
+    docker compose -f local.yml up
 
 clean-dev-container:
-    {{docker-compose-cmd}} -f local.yml down
+    docker compose -f local.yml down
 
 update-po:
     python manage.py makemessages --all --no-location
@@ -48,11 +45,11 @@ release:
     echo "Creating version ${new_tag} Press enter to accept."
     read -r
 
-    {{docker-cmd}} pull python:3.13-slim-bookworm
-    {{docker-compose-cmd}} -f production.yml build --build-arg "VERSION=${new_tag}" django
-    {{docker-cmd}} image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
-    {{docker-cmd}} image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
-    {{docker-cmd}} image push "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
-    {{docker-cmd}} image push rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
+    docker pull python:3.13-slim-bookworm
+    docker compose -f production.yml build --build-arg "VERSION=${new_tag}" django
+    docker image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
+    docker image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
+    docker image push "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
+    docker image push rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
     git tag "${new_tag}"
     git push --tags --no-verify
