@@ -129,9 +129,9 @@
                     {% endpartialdef %}
                 </div>
                 <main class="mt-3 article-content">
-                    {% if article.content_type == "text/plain" %}
+                    {% if article.content and article.content_type == "text/plain" %}
                         <pre class="raw-content">{{ article.content }}</pre>
-                    {% else %}
+                    {% elif article.content %}
                         {{ article.content|safe }}
                     {% endif %}
                 </main>
