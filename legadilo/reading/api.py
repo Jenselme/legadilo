@@ -99,7 +99,6 @@ class ArticleCreation(Schema):
     url_name="create_article",
     summary="Create a new article",
 )
-@transaction.atomic()
 def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreation):
     """Create an article either just with a link or with a link, a title and some content."""
     try:
@@ -110,14 +109,12 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
             "detail": f"Failed to fetch article data: {exception_detail}"
         }
 
-    # Tags specified in article data are the raw tags used in feeds, they are not used to link an
-    # article to tag objects.
-    tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
-    article_data = article_data.model_copy(update={"tags": ()})
+    with transaction.atomic():
+        tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
+        save_results = Article.objects.save_from_list_of_data(
+            request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
+        )
 
-    save_results = Article.objects.save_from_list_of_data(
-        request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
-    )
     save_result = save_results[0]
     article = Article.objects.get_queryset().for_api().get(id=save_result.article.id)
 
