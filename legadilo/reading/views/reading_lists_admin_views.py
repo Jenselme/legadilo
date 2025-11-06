@@ -97,11 +97,13 @@ class ReadingListForm(forms.ModelForm):
             "order_direction",
         )
 
+    @transaction.atomic()
     def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition
         self._update_tags()
 
         return super().save(commit=commit)
 
+    @transaction.atomic()
     def create(self, user: User):
         create_data = self.cleaned_data.copy()
         # Tags are managed with a many-to-many relationship and thus must be created independently
