@@ -118,17 +118,19 @@ class ReadingListForm(forms.ModelForm):
     def _update_tags(self):
         tags_to_include = self.cleaned_data.pop("tags_to_include")
         if tags_to_include != self.initial["tags_to_include"]:
-            ReadingListTag.objects.associate_reading_list_with_tag_slugs(
+            tags = Tag.objects.get_or_create_from_list(self.instance.user, tags_to_include)
+            ReadingListTag.objects.associate_reading_list_with_tags(
                 self.instance,
-                tags_to_include,
+                tags,
                 filter_type=constants.ReadingListTagFilterType.INCLUDE,
             )
 
         tags_to_exclude = self.cleaned_data.pop("tags_to_exclude")
         if tags_to_exclude != self.initial["tags_to_exclude"]:
-            ReadingListTag.objects.associate_reading_list_with_tag_slugs(
+            tags = Tag.objects.get_or_create_from_list(self.instance.user, tags_to_exclude)
+            ReadingListTag.objects.associate_reading_list_with_tags(
                 self.instance,
-                tags_to_exclude,
+                tags,
                 filter_type=constants.ReadingListTagFilterType.EXCLUDE,
             )
 

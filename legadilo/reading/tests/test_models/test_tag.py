@@ -368,17 +368,16 @@ class TestReadingListTagManager:
             filter_type=constants.ReadingListTagFilterType.EXCLUDE,
         )
 
-        ReadingListTag.objects.associate_reading_list_with_tag_slugs(
+        ReadingListTag.objects.associate_reading_list_with_tags(
             reading_list,
-            [tag2.slug, tag3.slug, "new-tag"],
+            [tag2, tag3],
             constants.ReadingListTagFilterType.INCLUDE,
         )
 
         reading_list.refresh_from_db()
         assert list(reading_list.reading_list_tags.values_list("tag__slug", "filter_type")) == [
-            ("new-tag", constants.ReadingListTagFilterType.INCLUDE),
             (tag2.slug, constants.ReadingListTagFilterType.INCLUDE),
             (tag3.slug, constants.ReadingListTagFilterType.INCLUDE),
             (tag4.slug, constants.ReadingListTagFilterType.EXCLUDE),
         ]
-        assert Tag.objects.count() == 5
+        assert Tag.objects.count() == 4
