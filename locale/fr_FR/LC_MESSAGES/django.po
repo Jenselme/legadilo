@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-25 07:58+0000\n"
+"POT-Creation-Date: 2025-11-07 21:31+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -144,15 +144,15 @@ msgstr ""
 "Étiquettes à associer à ce flux. Pour créer une nouvelle étiquette, tapez "
 "son titre et appuyez sur entrée."
 
-msgid "Failed to create the feed"
-msgstr "Échec de la création du flux"
-
+#, python-format
 msgid ""
 "Failed to fetch the feed. Please check that the URL you entered is correct, "
-"that the feed exists and is accessible."
+"that the feed exists, is accessible, valid and that the file is not above "
+"%(max_size)s MiB."
 msgstr ""
 "Impossible de récupérer le flux. Merci de vérifier que l’URL est correcte, "
-"que le flux existe et qu’il est publiquement accessible."
+"que le flux existe, qu’il est publiquement accessible, valide et ne dépasse "
+"pas %(max_size)s Mio."
 
 msgid "Failed to find a feed URL on the supplied page."
 msgstr "Impossible de trouver une URL de flux sur la page fournie."
@@ -160,24 +160,6 @@ msgstr "Impossible de trouver une URL de flux sur la page fournie."
 msgid ""
 "Multiple feeds were found at this location, please select the proper one."
 msgstr "Plusieurs flux ont été trouvés, merci de sélectionner le bon."
-
-msgid ""
-"The feed file is too big, it won't be parsed. Try to find a more lightweight "
-"feed."
-msgstr ""
-"Ce flux est trop gros, il ne sera pas analysé. Essayer de trouver un flux "
-"plus léger."
-
-msgid "Failed to parse the feed you supplied. Please check it's valid."
-msgstr ""
-"Impossible d’analyser le flux fourni. Merci de vérifier qu’il est valide."
-
-msgid "You are already subscribed to this feed."
-msgstr "Vous êtes déjà abonné à ce flux."
-
-#, python-brace-format
-msgid "Feed '<a href=\"{}\">{}</a>' added"
-msgstr "Flux '<a href=\"{}\">{}</a>' ajouté"
 
 msgid "The supplied file is too big to be imported."
 msgstr "Le fichier fourni est trop gros pour être importé."
@@ -460,21 +442,8 @@ msgstr "Entrer votre commentaire ici. La syntaxe Markdown est supportée."
 msgid "URL of the article to add."
 msgstr "URL de l’article à ajouter."
 
-#, python-brace-format
-msgid ""
-"The article '<a href=\"{}\">{}</a>' was added but its content couldn't be "
-"fetched. Please check that it really points to an article."
-msgstr ""
-"L’article  '<a href=\"{}\">{}</a>' a été ajouté, mais son contenu n’a pas pu "
-"être récupéré. Merci de vérifier que l’URL est valide."
-
-#, python-brace-format
-msgid "Article '<a href=\"{}\">{}</a>' successfully added!"
-msgstr "L’article '<a href=\"{}\">{}</a>' a été ajouté avec succès !"
-
-#, python-brace-format
-msgid "Article '<a href=\"{}\">{}</a>' already existed."
-msgstr "L’article '<a href=\"{}\">{}</a>' existait déjà."
+msgid "The article was successfully re-fetched!"
+msgstr "L’article a été correctement rafraichi !"
 
 msgid ""
 "The article was re-fetched but its content couldn't be fetched. Please check "
@@ -482,37 +451,6 @@ msgid ""
 msgstr ""
 "L’article a été rafraichi, mais son contenu n’a pas pu être récupéré. Merci "
 "de vérifier que l’URL est correcte."
-
-msgid "The article was successfully re-fetched!"
-msgstr "L’article a été correctement rafraichi !"
-
-#, python-brace-format
-msgid ""
-"Failed to fetch the article. Please check that the URL you entered is "
-"correct, that the article exists and is accessible. Its URL was added "
-"directly. Go <a href=\"{}\">there</a> to access it."
-msgstr ""
-"Erreur lors de la récupération de l’article. Merci de vérifier que l’URL est "
-"correcte, que l’article existe et qu’il est accessible. Son URL a été "
-"ajoutée directement. Allez  <a href=\"{}\">ici</a> pour y accéder."
-
-#, python-brace-format
-msgid ""
-"The article you are trying to fetch is too big and cannot be processed. Its "
-"URL was added directly. Go <a href=\"{}\">there</a> to access it."
-msgstr ""
-"L’article que vous essayez de récupérer est trop gros et ne peut pas être "
-"traité. Son URL a été ajoutée directement. Allez  <a href=\"{}\">ici</a> "
-"pour y accéder."
-
-msgid ""
-"Failed to fetch the article. Please check that the URL you entered is "
-"correct, that the article exists and is accessible. It was added before, "
-"please check its link."
-msgstr ""
-"Erreur lors de la récupération de l’article. Merci de vérifier que l’URL est "
-"correcte, que l’article existe et est accessible. Il a déjà été ajouté "
-"précédemment, merci de vérifier le lien."
 
 #, python-format
 msgid "Articles with tag '%(tag_title)s'"
@@ -872,6 +810,9 @@ msgstr ""
 msgid "Read your RSS feeds & other saved articles!"
 msgstr "Lisez vos flux RSS et vos articles sauvegardés!"
 
+msgid "Close"
+msgstr "Fermer"
+
 msgid "No"
 msgstr "Non"
 
@@ -1098,6 +1039,21 @@ msgstr "Voir les articles"
 msgid "Subscribe to a new feed"
 msgstr "S’abonner à un flux"
 
+#, python-format
+msgid ""
+"You are now subscribed to the feed <a href=\"%(feed_url)s\">%(feed_title)s</"
+"a>."
+msgstr ""
+"Vous êtes maintenant abonnés au flux <a "
+"href=\"%(feed_url)s\">%(feed_title)s</a>."
+
+#, python-format
+msgid ""
+"You are already subscribed to the feed <a "
+"href=\"%(feed_url)s\">%(feed_title)s</a>."
+msgstr ""
+"Vous êtes déjà abonné au flux <a href=\"%(feed_url)s\">%(feed_title)s</a>."
+
 msgid "Add"
 msgstr "Ajouter"
 
@@ -1218,6 +1174,33 @@ msgid ""
 msgstr ""
 "Vous êtes sur le point de désactiver la double authentification. Êtes-vous "
 "sûr ?"
+
+#, python-format
+msgid ""
+"Article <a href=\"%(article_details_url)s\">%(article_title)s</a> was added "
+"but its content couldn't be fetched. Please check that the URL is valid and "
+"accessible and the content size does not exceed %(max_article_size)s MiB."
+msgstr ""
+"L’article <a href=\"%(article_details_url)s\">%(article_title)s</a> a été "
+"ajouté, mais son contenu n’a pas pu être récupéré. Merci de vérifier que "
+"l’URL est valide et accessible publiquement et que la taille de la page "
+"n’excède pas %(max_article_size)s Mio."
+
+#, python-format
+msgid ""
+"Article <a href=\"%(article_details_url)s\">%(article_title)s</a> "
+"successfully added!"
+msgstr ""
+"L’article <a href=\"%(article_details_url)s\">%(article_title)s</a> a été "
+"ajouté avec succès !"
+
+#, python-format
+msgid ""
+"Article <a href=\"%(article_details_url)s\">%(article_title)s</a> already "
+"existed."
+msgstr ""
+"L’article <a href=\"%(article_details_url)s\">%(article_title)s</a> existait "
+"déjà."
 
 msgid "Update article"
 msgstr "Mettre l’article à jour"
@@ -1646,3 +1629,49 @@ msgstr "Paramètres correctement mis à jour"
 
 msgid "Failed to update settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
+
+#~ msgid "Failed to create the feed"
+#~ msgstr "Échec de la création du flux"
+
+#~ msgid ""
+#~ "The feed file is too big, it won't be parsed. Try to find a more "
+#~ "lightweight feed."
+#~ msgstr ""
+#~ "Ce flux est trop gros, il ne sera pas analysé. Essayer de trouver un flux "
+#~ "plus léger."
+
+#~ msgid "Failed to parse the feed you supplied. Please check it's valid."
+#~ msgstr ""
+#~ "Impossible d’analyser le flux fourni. Merci de vérifier qu’il est valide."
+
+#, python-brace-format
+#~ msgid "Feed '<a href=\"{}\">{}</a>' added"
+#~ msgstr "Flux '<a href=\"{}\">{}</a>' ajouté"
+
+#, python-brace-format
+#~ msgid ""
+#~ "Failed to fetch the article. Please check that the URL you entered is "
+#~ "correct, that the article exists and is accessible. Its URL was added "
+#~ "directly. Go <a href=\"{}\">there</a> to access it."
+#~ msgstr ""
+#~ "Erreur lors de la récupération de l’article. Merci de vérifier que l’URL "
+#~ "est correcte, que l’article existe et qu’il est accessible. Son URL a été "
+#~ "ajoutée directement. Allez  <a href=\"{}\">ici</a> pour y accéder."
+
+#, python-brace-format
+#~ msgid ""
+#~ "The article you are trying to fetch is too big and cannot be processed. "
+#~ "Its URL was added directly. Go <a href=\"{}\">there</a> to access it."
+#~ msgstr ""
+#~ "L’article que vous essayez de récupérer est trop gros et ne peut pas être "
+#~ "traité. Son URL a été ajoutée directement. Allez  <a href=\"{}\">ici</a> "
+#~ "pour y accéder."
+
+#~ msgid ""
+#~ "Failed to fetch the article. Please check that the URL you entered is "
+#~ "correct, that the article exists and is accessible. It was added before, "
+#~ "please check its link."
+#~ msgstr ""
+#~ "Erreur lors de la récupération de l’article. Merci de vérifier que l’URL "
+#~ "est correcte, que l’article existe et est accessible. Il a déjà été "
+#~ "ajouté précédemment, merci de vérifier le lien."
