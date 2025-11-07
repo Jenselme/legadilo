@@ -13,6 +13,30 @@
 {% endblock title %}
 
 {% block content %}
+    {% if subscription_result %}
+        {% url 'feeds:edit_feed' feed_id=subscription_result.feed.id as feed_url %}
+        <div class="container-lg">
+            <div class="alert alert-dismissible {% if subscription_result.was_created %}alert-success{% elif subscription_result.feed %}alert-info{% elif subscription_result.error_message %}alert-danger{% else %}alert-warning{% endif %}">
+                {% if subscription_result.was_created %}
+                    {% blocktranslate trimmed with feed_url=feed_url feed_title=subscription_result.feed.title %}
+                        You are now subscribed to the feed <a href="{{ feed_url }}">{{ feed_title }}</a>.
+                    {% endblocktranslate %}
+                {% elif subscription_result.feed %}
+                    {% blocktranslate trimmed with feed_url=feed_url feed_title=subscription_result.feed.title %}
+                        You are already subscribed to the feed <a href="{{ feed_url }}">{{ feed_title }}</a>.
+                    {% endblocktranslate %}
+                {% else %}
+                    {{ subscription_result.error_message }}
+                    {{ subscription_result.warning_message }}
+                {% endif %}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="{% translate 'Close' %}"></button>
+            </div>
+        </div>
+    {% endif %}
+
     <h1>{% translate "Subscribe to a new feed" %}</h1>
     <form method="post" action="{% url 'feeds:subscribe_to_feed' %}">
         {% csrf_token %}

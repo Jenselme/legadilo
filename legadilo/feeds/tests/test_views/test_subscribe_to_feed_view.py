@@ -6,8 +6,6 @@ from http import HTTPStatus
 
 import httpx
 import pytest
-from django.contrib.messages import DEFAULT_LEVELS, get_messages
-from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
@@ -18,6 +16,7 @@ from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import TagFactory
 
 from ... import constants as feeds_constants
+from ...views.subscribe_to_feed_view import SubscriptionResult
 from ..fixtures import get_feed_fixture_content, get_page_for_feed_subscription_content
 
 
@@ -71,14 +70,10 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
         feed = Feed.objects.get()
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["SUCCESS"],
-                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=feed, was_created=True
+        )
         assert feed.tags.count() == 0
         assert feed.open_original_url_by_default
         assert feed.refresh_delay == feeds_constants.FeedRefreshDelays.BIHOURLY
@@ -99,14 +94,10 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.CREATED, response.context_data["form"].errors
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
         feed = Feed.objects.get()
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["SUCCESS"],
-                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=feed, was_created=True
+        )
         assert not feed.open_original_url_by_default
         assert list(feed.tags.values_list("slug", flat=True)) == ["new", self.existing_tag.slug]
         assert Article.objects.count() > 0
@@ -135,14 +126,10 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
         feed = Feed.objects.get()
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["SUCCESS"],
-                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=feed, was_created=True
+        )
         assert Feed.objects.count() == 1
         assert feed.tags.count() == 0
         assert feed.category == category
@@ -171,14 +158,10 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
         feed = Feed.objects.get()
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["SUCCESS"],
-                message=f"Feed '<a href=\"/feeds/articles/{feed.id}/\">Sample Feed</a>' added",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=feed, was_created=True
+        )
         assert FeedUpdate.objects.count() == 1
 
     def test_invalid_form(self, logged_in_sync_client):
@@ -194,14 +177,13 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.NOT_ACCEPTABLE
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="Failed to fetch the feed. Please check that the URL you entered is "
-                "correct, that the feed exists and is accessible.",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=None,
+            error_message="Failed to fetch the feed. Please check that the URL you entered is "
+            "correct, that the feed exists, is accessible, valid and that the file is not above "
+            "10.0 MiB.",
+        )
+        assert Feed.objects.count() == 0
 
     def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker, sample_rss_feed):
         mocker.patch(
@@ -211,16 +193,15 @@ class TestSubscribeToFeedView:
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.NOT_ACCEPTABLE
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="The feed file is too big, it won't be parsed. "
-                "Try to find a more lightweight feed.",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=None,
+            error_message="Failed to fetch the feed. Please check that the URL you entered is "
+            "correct, that the feed exists, is accessible, valid and that the file is not above "
+            "10.0 MiB.",
+        )
+        assert Feed.objects.count() == 0
 
     def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx_mock):
         sample_rss_feed = get_feed_fixture_content(
@@ -238,20 +219,17 @@ class TestSubscribeToFeedView:
         assert Article.objects.count() == 0
 
     def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock, sample_rss_feed):
-        FeedFactory(feed_url=self.feed_url, user=user)
+        feed = FeedFactory(feed_url=self.feed_url, user=user)
         httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.CONFLICT
+        assert response.status_code == HTTPStatus.OK
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="You are already subscribed to this feed.",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=feed, was_created=False
+        )
+        assert Feed.objects.count() == 1
 
     def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
         sample_html_template = get_page_for_feed_subscription_content({"feed_urls": ""})
@@ -261,13 +239,10 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="Failed to find a feed URL on the supplied page.",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=None, error_message="Failed to find a feed URL on the supplied page."
+        )
+        assert Feed.objects.count() == 0
 
     def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx_mock):
         sample_html_template = get_page_for_feed_subscription_content({
@@ -283,13 +258,11 @@ class TestSubscribeToFeedView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "feeds/subscribe_to_feed.html"
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["WARNING"],
-                message="Multiple feeds were found at this location, please select the proper one.",
-            )
-        ]
+        assert response.context_data["subscription_result"] == SubscriptionResult(
+            feed=None,
+            warning_message="Multiple feeds were found at this location, please select the proper "
+            "one.",
+        )
         form = response.context_data["form"]
         assert form.fields["url"].widget.attrs["readonly"] == "true"
         assert form.initial == {
