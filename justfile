@@ -7,6 +7,9 @@ default:
 
 update-python-deps:
     uv sync --upgrade --all-groups
+    pre-commit run -a
+    uv run pytest
+    git commit uv.lock -m "chore: update deps"
 
 update-js-deps:
     npm update
