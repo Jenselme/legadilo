@@ -11,11 +11,11 @@ from django.urls import reverse
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
-from legadilo.reading.services.article_fetching import ArticleTooBigError
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
     CommentFactory,
+    FetchArticleResultFactory,
     ReadingListFactory,
     TagFactory,
 )
@@ -97,8 +97,9 @@ class TestCreateArticleView:
         assert article.url == self.article_url
 
     def test_create_article_from_url_only_http_failure(self, logged_in_sync_client, mocker):
-        mocked_get_article_from_url = mocker.patch(
-            "legadilo.reading.api.get_article_from_url", side_effect=ArticleTooBigError
+        mocked_fetch_article_data = mocker.patch(
+            "legadilo.reading.api.fetch_article_data",
+            return_value=FetchArticleResultFactory(error_message="ArticleTooBigError"),
         )
 
         response = logged_in_sync_client.post(
@@ -108,17 +109,19 @@ class TestCreateArticleView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json() == {"detail": "Failed to fetch article data: ArticleTooBigError"}
         assert Article.objects.count() == 0
-        mocked_get_article_from_url.assert_called_once_with(self.article_url)
+        mocked_fetch_article_data.assert_called_once_with(self.article_url)
 
     def test_create_article_from_url_only(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
-        mocked_get_article_from_url = mocker.patch(
-            "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(url=self.article_url, source_title="Source 0"),
+        mocked_fetch_article_data = mocker.patch(
+            "legadilo.reading.api.fetch_article_data",
+            return_value=FetchArticleResultFactory(
+                article_data=ArticleDataFactory(url=self.article_url, source_title="Source 0")
+            ),
         )
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )
@@ -127,7 +130,7 @@ class TestCreateArticleView:
         assert Article.objects.count() == 1
         article = Article.objects.get()
         assert article.url == self.article_url
-        mocked_get_article_from_url.assert_called_once_with(self.article_url)
+        mocked_fetch_article_data.assert_called_once_with(self.article_url)
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
@@ -136,12 +139,14 @@ class TestCreateArticleView:
     def test_create_article_with_tags(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
-        mocked_get_article_from_url = mocker.patch(
-            "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(url=self.article_url, source_title="Source 0"),
+        mocked_fetch_article_data = mocker.patch(
+            "legadilo.reading.api.fetch_article_data",
+            return_value=FetchArticleResultFactory(
+                article_data=ArticleDataFactory(url=self.article_url, source_title="Source 0")
+            ),
         )
 
-        with django_assert_num_queries(20):
+        with django_assert_num_queries(22):
             response = logged_in_sync_client.post(
                 self.url,
                 {"url": self.article_url, "tags": ["Some tag"]},
@@ -153,7 +158,7 @@ class TestCreateArticleView:
         article = Article.objects.get()
         assert article.url == self.article_url
         assert list(article.tags.all().values_list("title", flat=True)) == ["Some tag"]
-        mocked_get_article_from_url.assert_called_once_with(self.article_url)
+        mocked_fetch_article_data.assert_called_once_with(self.article_url)
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
@@ -162,9 +167,9 @@ class TestCreateArticleView:
     def test_create_article_from_data(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
-        mocked_get_article_from_url = mocker.patch("legadilo.reading.api.get_article_from_url")
+        mocked_fetch_article_data = mocker.patch("legadilo.reading.api.fetch_article_data")
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -180,7 +185,7 @@ class TestCreateArticleView:
         article = Article.objects.get()
         assert article.url == "https://www.example.com/posts/en/1-super-article/"
         assert article.table_of_content == []
-        assert not mocked_get_article_from_url.called
+        assert not mocked_fetch_article_data.called
         assert article.content_type == "text/html"
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
@@ -190,9 +195,9 @@ class TestCreateArticleView:
     def test_create_article_from_text_data(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
     ):
-        mocked_get_article_from_url = mocker.patch("legadilo.reading.api.get_article_from_url")
+        mocked_fetch_article_data = mocker.patch("legadilo.reading.api.fetch_article_data")
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -209,7 +214,7 @@ class TestCreateArticleView:
         article = Article.objects.get()
         assert article.url == self.article_url
         assert article.table_of_content == []
-        assert not mocked_get_article_from_url.called
+        assert not mocked_fetch_article_data.called
         assert article.content_type == "text/plain"
         data = response.json()
         # Keep other fields since they shouldn't change for text data.
@@ -227,15 +232,17 @@ class TestCreateArticleView:
             user=user, title="Existing", reading_time=14, url=self.article_url, read_at=utcnow()
         )
         mocker.patch(
-            "legadilo.reading.api.get_article_from_url",
-            return_value=ArticleDataFactory(
-                title="Fetched article",
-                url=self.article_url,
-                content="Blabla for reading time " * 50,
+            "legadilo.reading.api.fetch_article_data",
+            return_value=FetchArticleResultFactory(
+                article_data=ArticleDataFactory(
+                    title="Fetched article",
+                    url=self.article_url,
+                    content="Blabla for reading time " * 50,
+                )
             ),
         )
 
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url, {"url": self.article_url}, content_type="application/json"
             )

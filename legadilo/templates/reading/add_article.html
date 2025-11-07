@@ -14,10 +14,35 @@
 {% endblock title %}
 
 {% block content %}
+    {% if add_article_result %}
+        <div class="container-lg">
+            <div class="alert alert-dismissible {% if add_article_result.is_from_invalid_data %}alert-warning{% elif add_article_result.was_created %}alert-success{% else %}alert-info{% endif %}">
+                {% if add_article_result.was_created and add_article_result.is_from_invalid_data %}
+                    {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
+                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> was added but its content couldn't be fetched.
+                        Please check that the URL is valid and accessible and the content size does not exceed {{ max_article_size }} MiB.
+                    {% endblocktranslate %}
+                {% elif add_article_result.was_created %}
+                    {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
+                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> successfully added!
+                    {% endblocktranslate %}
+                {% else %}
+                    {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
+                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> already existed.
+                    {% endblocktranslate %}
+                {% endif %}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="{% translate 'Close' %}"></button>
+            </div>
+        </div>
+    {% endif %}
+
     <h1>{% translate "Add an article" %}</h1>
     <form method="post" action="{% url 'reading:add_article' %}">
         {% csrf_token %}
-        {{ form|crispy }}
+        {{ add_article_form|crispy }}
         <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>
     </form>
 {% endblock content %}

@@ -4,30 +4,25 @@
 
 from http import HTTPStatus
 
-import httpx
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
-from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.models.article import SaveArticleResult
 from legadilo.reading.services.article_fetching import (
-    ArticleTooBigError,
-    get_article_from_url,
+    fetch_article_data,
 )
-from legadilo.reading.templatetags import article_details_url
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.urls import add_query_params, pop_query_param, validate_referer_url
 
 
@@ -57,64 +52,26 @@ class FetchArticleForm(forms.Form):
 @login_required
 def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
-    form = FetchArticleForm(tag_choices=tag_choices)
+    add_article_form = FetchArticleForm(tag_choices=tag_choices)
+    add_article_result = None
     status = HTTPStatus.OK
 
     if request.method == "POST":
-        status, form, save_result = _handle_save(request, tag_choices, force_update=False)
-        _handle_add_article_save_result(request, save_result)
+        status, add_article_form, add_article_result = _handle_save(
+            request, tag_choices, force_update=False
+        )
 
     return TemplateResponse(
         request,
         "reading/add_article.html",
         {
-            "form": form,
+            "add_article_form": add_article_form,
+            "add_article_result": add_article_result,
+            "max_article_size": constants.MAX_ARTICLE_FILE_SIZE / (1024 * 1024),
             "tags_hierarchy": hierarchy,
         },
         status=status,
     )
-
-
-def _handle_add_article_save_result(
-    request: AuthenticatedHttpRequest, save_result: SaveArticleResult | None
-):
-    if not save_result:
-        return
-
-    details_url = str(article_details_url(save_result.article))
-
-    if not save_result.article.content:
-        messages.warning(
-            request,
-            format_html(
-                str(
-                    _(
-                        "The article '<a href=\"{}\">{}</a>' was added but its content couldn't be fetched. "  # noqa: E501
-                        "Please check that it really points to an article."
-                    )
-                ),
-                details_url,
-                save_result.article.title,
-            ),
-        )
-    elif save_result.was_created:
-        messages.success(
-            request,
-            format_html(
-                str(_("Article '<a href=\"{}\">{}</a>' successfully added!")),
-                details_url,
-                save_result.article.title,
-            ),
-        )
-    else:
-        messages.info(
-            request,
-            format_html(
-                str(_("Article '<a href=\"{}\">{}</a>' already existed.")),
-                details_url,
-                save_result.article.title,
-            ),
-        )
 
 
 @require_http_methods(["POST"])
@@ -126,7 +83,6 @@ def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedir
         [],
         force_update=True,
     )
-
     _handle_refetch_article_save_result(request, save_result)
 
     article.refresh_from_db()
@@ -150,16 +106,17 @@ def _handle_refetch_article_save_result(
     if not save_result:
         return
 
-    if not save_result.article.content:
-        messages.warning(
-            request,
-            _(
-                "The article was re-fetched but its content couldn't be fetched. "
-                "Please check that it really points to an article."
-            ),
-        )
-    else:
+    if save_result.article.content:
         messages.success(request, _("The article was successfully re-fetched!"))
+        return
+
+    messages.warning(
+        request,
+        _(
+            "The article was re-fetched but its content couldn't be fetched. "
+            "Please check that it really points to an article."
+        ),
+    )
 
 
 def _handle_save(
@@ -172,70 +129,17 @@ def _handle_save(
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
-    tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
     article_url = form.cleaned_data["url"]
-    try:
-        article_data = get_article_from_url(article_url)
-        save_result = (
-            Article.objects.save_from_list_of_data(
-                request.user,
-                [article_data],
-                tags,
-                source_type=constants.ArticleSourceType.MANUAL,
-                force_update=force_update,
-            )
+    fetch_article_result = fetch_article_data(article_url)
+    with transaction.atomic():
+        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
+        save_result = Article.objects.save_from_fetch_results(
+            request.user, [fetch_article_result], tags, force_update=force_update
         )[0]
-    except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
-        save_result = Article.objects.create_invalid_article(
-            request.user,
-            article_url,
-            tags,
-            error_message=format_exception(e),
-            technical_debug_data=extract_debug_information(e),
-        )
-        if save_result.was_created and isinstance(e, httpx.HTTPError):
-            messages.warning(
-                request,
-                format_html(
-                    str(
-                        _(
-                            "Failed to fetch the article. Please check that the URL you entered is "
-                            "correct, that the article exists and is accessible. "
-                            "Its URL was added directly. "
-                            'Go <a href="{}">there</a> to access it.'
-                        )
-                    ),
-                    str(article_details_url(save_result.article)),
-                ),
-            )
-            return HTTPStatus.CREATED, form, None
-        if save_result.was_created:
-            messages.warning(
-                request,
-                format_html(
-                    str(
-                        _(
-                            "The article you are trying to fetch is too big and cannot be processed. "  # noqa: E501
-                            "Its URL was added directly. "
-                            'Go <a href="{}">there</a> to access it.'
-                        )
-                    ),
-                    str(article_details_url(save_result.article)),
-                ),
-            )
-            return HTTPStatus.CREATED, form, None
-        messages.error(
-            request,
-            _(
-                "Failed to fetch the article. Please check that the URL you entered is "
-                "correct, that the article exists and is accessible. It was added before, "
-                "please check its link."
-            ),
-        )
-        return HTTPStatus.BAD_REQUEST, form, None
 
-    # Empty form after success
-    form = FetchArticleForm(tag_choices=tag_choices)
-    status = HTTPStatus.CREATED
+    new_tags = Tag.objects.get_all_choices(request.user)
+    if save_result.was_created:
+        # Refresh tags to get the newly created ones.
+        return HTTPStatus.CREATED, FetchArticleForm(tag_choices=new_tags), save_result
 
-    return status, form, save_result
+    return HTTPStatus.OK, FetchArticleForm(tag_choices=new_tags), save_result

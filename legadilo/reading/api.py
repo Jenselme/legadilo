@@ -6,24 +6,21 @@ from datetime import datetime
 from http import HTTPStatus
 from typing import Annotated, Self
 
-import httpx
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
-from pydantic import ValidationError as PydanticValidationError
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
-    ArticleData,
-    ArticleTooBigError,
+    FetchArticleResult,
     build_article_data_from_content,
-    get_article_from_url,
+    fetch_article_data,
 )
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
@@ -101,18 +98,18 @@ class ArticleCreation(Schema):
 )
 def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreation):
     """Create an article either just with a link or with a link, a title and some content."""
-    try:
-        article_data = _get_article_data(payload)
-    except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
-        exception_detail = str(e) or e.__class__.__name__
+    fetch_article_result = _get_article_data(payload)
+    if not fetch_article_result.is_success:
         return HTTPStatus.BAD_REQUEST, {
-            "detail": f"Failed to fetch article data: {exception_detail}"
+            "detail": f"Failed to fetch article data: {fetch_article_result.error_message}"
         }
 
     with transaction.atomic():
         tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
-        save_results = Article.objects.save_from_list_of_data(
-            request.auth, [article_data], tags, source_type=constants.ArticleSourceType.MANUAL
+        save_results = Article.objects.save_from_fetch_results(
+            request.auth,
+            [fetch_article_result],
+            tags,
         )
 
     save_result = save_results[0]
@@ -124,15 +121,16 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     return HTTPStatus.OK, article
 
 
-def _get_article_data(payload: ArticleCreation) -> ArticleData:
+def _get_article_data(payload: ArticleCreation) -> FetchArticleResult:
     if payload.has_data:
-        return build_article_data_from_content(
+        article_data = build_article_data_from_content(
             url=payload.url,
             title=payload.title,
             content=payload.content,
             content_type=payload.content_type,
         )
-    return get_article_from_url(payload.url)
+        return FetchArticleResult(article_data=article_data)
+    return fetch_article_data(payload.url)
 
 
 @reading_api_router.get(

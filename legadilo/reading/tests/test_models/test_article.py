@@ -14,7 +14,13 @@ from django.db import models
 
 from legadilo.feeds.tests.factories import FeedArticleFactory, FeedCategoryFactory, FeedFactory
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag, ReadingList, ReadingListTag
+from legadilo.reading.models import (
+    Article,
+    ArticleFetchError,
+    ArticleTag,
+    ReadingList,
+    ReadingListTag,
+)
 from legadilo.reading.models.article import (
     ArticleFullTextSearchQuery,
     _build_filters_from_reading_list,
@@ -24,6 +30,7 @@ from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
     CommentFactory,
+    FetchArticleResultFactory,
     ReadingListFactory,
     TagFactory,
 )
@@ -1337,20 +1344,30 @@ class TestArticleManager:
 
         assert articles == [article]
 
-    def test_create_invalid_article(self, user, django_assert_num_queries):
+    def test_create_invalid_articles(self, user, django_assert_num_queries):
         tag = TagFactory(user=user, title="Test")
         link = "http://toto.com/"
+        fetch_result = FetchArticleResultFactory(
+            error_message="Error",
+            article_data=ArticleDataFactory(
+                url=link,
+                title="toto.com",
+                source_title="toto.com",
+            ),
+        )
 
         with django_assert_num_queries(7):
-            save_result = Article.objects.create_invalid_article(
+            save_results = Article.objects.save_from_fetch_results(
                 user,
-                link,
+                [fetch_result],
                 [tag],
             )
 
+        assert len(save_results) == 1
+        save_result = save_results[0]
         assert save_result.was_created
         assert save_result.article.url == link
-        assert save_result.article.title == link
+        assert save_result.article.title == "toto.com"
         assert save_result.article.slug == "toto-com"
         assert save_result.article.updated_at is None
         assert save_result.article.main_source_type == constants.ArticleSourceType.MANUAL
@@ -1364,23 +1381,58 @@ class TestArticleManager:
         assert article.title == "??"
         assert article.slug == "no-slug"
 
-    def test_create_invalid_article_article_already_saved(self, user, django_assert_num_queries):
+    def test_create_invalid_article_articles_already_saved(self, user, django_assert_num_queries):
         initial_article = ArticleFactory(user=user)
         tag = TagFactory(user=user, title="Test")
+        fetch_result = FetchArticleResultFactory(
+            error_message="Error",
+            article_data=ArticleDataFactory(
+                url=initial_article.url,
+                title="New article title",
+                source_title="toto.com",
+            ),
+        )
 
-        with django_assert_num_queries(4):
-            save_result = Article.objects.create_invalid_article(
+        with django_assert_num_queries(6):
+            save_results = Article.objects.save_from_fetch_results(
                 user,
-                initial_article.url,
+                [fetch_result],
                 [tag],
             )
 
+        assert len(save_results) == 1
+        save_result = save_results[0]
         assert not save_result.was_created
         assert save_result.article.url == initial_article.url
         assert save_result.article.title != initial_article.url
         assert save_result.article.title == initial_article.title
-        assert save_result.article.tags.count() == 0
+        assert save_result.article.tags.count() == 1
         assert save_result.article.article_fetch_errors.count() == 1
+
+    def test_save_from_fetch_results(self, user, django_assert_num_queries):
+        tag = TagFactory(user=user, title="Test")
+        link = "http://toto.com/"
+        invalid_fetch_result = FetchArticleResultFactory(
+            error_message="Error",
+            article_data=ArticleDataFactory(
+                url=link,
+                title="toto.com",
+                source_title="toto.com",
+            ),
+        )
+        valid_fetch_result = FetchArticleResultFactory()
+
+        with django_assert_num_queries(13):
+            save_results = Article.objects.save_from_fetch_results(
+                user,
+                [valid_fetch_result, invalid_fetch_result],
+                [tag],
+            )
+
+        assert len(save_results) == 2
+        assert all(result.was_created for result in save_results)
+        assert Article.objects.count() == 2
+        assert ArticleFetchError.objects.count() == 1
 
     @patch.object(constants, "MAX_EXPORT_ARTICLES_PER_PAGE", 2)
     def test_export(self, user, other_user, snapshot, django_assert_num_queries):

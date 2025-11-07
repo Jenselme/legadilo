@@ -5,18 +5,22 @@
 from __future__ import annotations
 
 import logging
+import re
 import sys
 from datetime import datetime
 from typing import Annotated, Any, Literal
 from urllib.parse import urlparse
 
+import httpx
 from bs4 import BeautifulSoup
 from django.template.defaultfilters import truncatewords_html
 from pydantic import BaseModel as BaseSchema
+from pydantic import ValidationError as PydanticValidationError
 from pydantic import model_validator
 from slugify import slugify
 
 from legadilo.reading import constants
+from legadilo.utils.exceptions import extract_debug_information, format_exception
 from legadilo.utils.http_utils import get_sync_client
 from legadilo.utils.security import (
     full_sanitize,
@@ -79,7 +83,7 @@ class ArticleData(BaseSchema):
     preview_picture_alt: Annotated[CleanedString, none_to_value("")] = ""
     published_at: datetime | None = None
     updated_at: datetime | None = None
-    language: Language
+    language: Language = ""
     annotations: tuple[str, ...] = ()
     read_at: datetime | None = None
     is_favorite: bool = False
@@ -134,6 +138,22 @@ class ArticleData(BaseSchema):
                 raise ValueError(f"Unsupported content type {content_type=}")
 
 
+class FetchArticleResult(BaseSchema):
+    model_config = default_frozen_model_config
+
+    article_data: ArticleData
+    error_message: str = ""
+    technical_debug_data: dict | None = None
+
+    @property
+    def is_success(self) -> bool:
+        return not self.error_message
+
+    @property
+    def url(self) -> str:
+        return self.article_data.url
+
+
 def _resolve_relative_urls(article_url: str, content: str) -> str:
     soup = BeautifulSoup(content, "html.parser")
     for link in soup.find_all("a"):
@@ -166,15 +186,32 @@ class ArticleTooBigError(Exception):
     pass
 
 
-def get_article_from_url(url: str) -> ArticleData:
-    url, content, content_type, content_language = _get_page_content(url)
-
-    return _build_article_data(
-        url,
-        content,
-        content_type=content_type,
-        content_language=content_language,
-    )
+def fetch_article_data(url: str) -> FetchArticleResult:
+    try:
+        url, content, content_type, content_language = _get_page_content(url)
+        article_data = _build_article_data(
+            url,
+            content,
+            content_type=content_type,
+            content_language=content_language,
+        )
+        return FetchArticleResult(article_data=article_data)
+    except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
+        article_domain = urlparse(url).netloc
+        displayable_url = full_sanitize(re.sub(r"^https?://", "", url))
+        return FetchArticleResult(
+            article_data=ArticleData(
+                url=url,
+                title=displayable_url,
+                source_title=article_domain,
+                external_article_id="",
+                summary="",
+                content="",
+                content_type="text/plain",
+            ),
+            error_message=format_exception(e),
+            technical_debug_data=extract_debug_information(e),
+        )
 
 
 def build_article_data_from_content(

@@ -7,13 +7,11 @@ from __future__ import annotations
 import json
 import logging
 import math
-import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from itertools import chain
 from typing import TYPE_CHECKING, Literal, Self, assert_never
-from urllib.parse import urlparse
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -29,7 +27,6 @@ from slugify import slugify
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
 from legadilo.utils.collections_utils import CustomJsonEncoder, max_or_none, min_or_none
-from legadilo.utils.security import full_sanitize
 from legadilo.utils.text import get_nb_words_from_html
 from legadilo.utils.time_utils import utcnow
 from legadilo.utils.validators import (
@@ -46,7 +43,10 @@ if TYPE_CHECKING:
 
     from legadilo.reading.models.reading_list import ReadingList
     from legadilo.reading.models.tag import Tag
-    from legadilo.reading.services.article_fetching import ArticleData
+    from legadilo.reading.services.article_fetching import (
+        ArticleData,
+        FetchArticleResult,
+    )
     from legadilo.users.models import User
 else:
     TypedModelMeta = object
@@ -69,6 +69,7 @@ class SaveArticleResult:
     article_id_in_data: str
     was_updated: bool = False
     was_created: bool = False
+    is_from_invalid_data: bool = False
 
 
 @dataclass(frozen=True)
@@ -511,7 +512,7 @@ class ArticleManager(models.Manager["Article"]):
         articles_data: list[ArticleData],
         tags: Iterable[Tag],
         *,
-        source_type: constants.ArticleSourceType,
+        source_type: constants.ArticleSourceType = constants.ArticleSourceType.MANUAL,
         force_update: bool = False,
     ) -> list[SaveArticleResult]:
         if len(articles_data) == 0:
@@ -631,41 +632,109 @@ class ArticleManager(models.Manager["Article"]):
         return all_results
 
     @transaction.atomic()
-    def create_invalid_article(
+    def save_from_fetch_results(
         self,
         user: User,
-        article_url: str,
+        fetch_article_results: list[FetchArticleResult],
         tags: Iterable[Tag],
         *,
-        error_message="",
-        technical_debug_data: dict | None = None,
-    ) -> SaveArticleResult:
-        """Force the creation of an article with only its URL.
+        force_update: bool = False,
+    ) -> list[SaveArticleResult]:
+        """Save articles from a list of FetchArticleResult objects.
 
-        Used to saved an article when data fetching failed.
+        The returned list[SaveArticleResult] may not match the order of the inputs.
         """
-        try:
-            article = self.get(user=user, url=article_url)
-            created = False
-        except self.model.DoesNotExist:
-            created = True
-            article_domain = urlparse(article_url).netloc
-            article = Article.objects.create(
-                user=user,
-                url=article_url,
-                title=full_sanitize(article_url),
-                slug=slugify(re.sub(r"^https?://", "", article_url)),
-                main_source_type=constants.ArticleSourceType.MANUAL,
-                main_source_title=article_domain,
-            )
-            ArticleTag.objects.associate_articles_with_tags(
-                [article], tags, tagging_reason=constants.TaggingReason.ADDED_MANUALLY
+        valid_articles_data = []
+        invalid_fetch_results = []
+        for fetch_result in fetch_article_results:
+            if fetch_result.is_success:
+                valid_articles_data.append(fetch_result.article_data)
+            else:
+                invalid_fetch_results.append(fetch_result)
+
+        valid_saved_results = []
+        if valid_articles_data:
+            valid_saved_results = self.save_from_list_of_data(
+                user,
+                valid_articles_data,
+                tags,
+                force_update=force_update,
             )
 
-        ArticleFetchError.objects.create(
-            article=article, message=error_message, technical_debug_data=technical_debug_data
+        invalid_saved_results = []
+        if invalid_fetch_results:
+            invalid_saved_results = self._create_invalid_articles(user, invalid_fetch_results, tags)
+
+        return [*valid_saved_results, *invalid_saved_results]
+
+    def _create_invalid_articles(
+        self,
+        user: User,
+        fetch_article_results: list[FetchArticleResult],
+        tags: Iterable[Tag],
+    ) -> list[SaveArticleResult]:
+        """Force the creation of articles with only their URLs.
+
+        Used to save an article when data fetching failed. Data about the failure is also saved for
+        debugging purposes. This debugging data is cleaned up by the clean_data command after some
+        time.
+
+        If the article already exists, its content, title and summary won't be updated. Its tags
+        will and debugging data will be saved.
+        """
+        article_urls_to_articles = {
+            article.url: article
+            for article in self.get_queryset().filter(
+                user=user, url__in=[fetch_result.url for fetch_result in fetch_article_results]
+            )
+        }
+        existing_article_urls = set(article_urls_to_articles.keys())
+        articles_to_create = []
+        for fetch_result in fetch_article_results:
+            if fetch_result.url in existing_article_urls:
+                continue
+
+            article = self.model(
+                user=user,
+                url=fetch_result.url,
+                main_source_title=fetch_result.article_data.source_title,
+                main_source_type=constants.ArticleSourceType.MANUAL,
+                title=fetch_result.article_data.title,
+                slug=slugify(fetch_result.article_data.title),
+                content=fetch_result.article_data.content,
+                content_type=fetch_result.article_data.content_type,
+                summary=fetch_result.article_data.summary,
+            )
+            articles_to_create.append(article)
+            article_urls_to_articles[fetch_result.url] = article
+
+        self.bulk_create(articles_to_create, unique_fields=["user", "url"])
+        ArticleTag.objects.associate_articles_with_tags(
+            list(article_urls_to_articles.values()),
+            tags,
+            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
-        return SaveArticleResult(article=article, article_id_in_data="", was_created=created)
+
+        article_fetch_errors_to_create = [
+            ArticleFetchError(
+                article=article_urls_to_articles[fetch_result.url],
+                message=fetch_result.error_message,
+                technical_debug_data=fetch_result.technical_debug_data,
+            )
+            for fetch_result in fetch_article_results
+        ]
+        ArticleFetchError.objects.bulk_create(article_fetch_errors_to_create)
+
+        return [
+            SaveArticleResult(
+                article=article,
+                article_id_in_data=article.external_article_id,
+                was_created=article.url not in existing_article_urls,
+                was_updated=False,
+                is_from_invalid_data=True,
+            )
+            for article in article_urls_to_articles.values()
+        ]
 
     def get_articles_of_reading_list(self, reading_list: ReadingList) -> ArticleQuerySet:
         return self.get_queryset().for_reading_list(reading_list)
