@@ -6,15 +6,15 @@ from http import HTTPStatus
 
 import httpx
 import pytest
-from django.contrib.messages import DEFAULT_LEVELS, get_messages
-from django.contrib.messages.storage.base import Message
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
+from legadilo.reading.models.article import SaveArticleResult
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
+from legadilo.utils.testing import AnyOfType
 from legadilo.utils.time_utils import utcdt, utcnow
 
 
@@ -46,21 +46,21 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
-        messages = list(get_messages(response.wsgi_request))
-        article = Article.objects.get()
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["SUCCESS"],
-                message=f'Article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'
-                f"On the 3 musketeers</a>' successfully added!",
-            )
-        ]
+        assert response.context_data["max_article_size"] > 0
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data="",
+            was_updated=False,
+            was_created=True,
+            is_from_invalid_data=False,
+        )
         assert Article.objects.count() == 1
+        article = Article.objects.get()
         assert list(article.tags.all()) == []
 
     def test_add_article_with_tags(
@@ -68,20 +68,19 @@ class TestAddArticle:
     ):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(22):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
-        messages = list(get_messages(response.wsgi_request))
         article = Article.objects.get()
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["SUCCESS"],
-                message=f'Article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'
-                f"On the 3 musketeers</a>' successfully added!",
-            )
-        ]
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data="",
+            was_updated=False,
+            was_created=True,
+            is_from_invalid_data=False,
+        )
         assert Article.objects.count() == 1
         assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
             ("existing-tag", constants.TaggingReason.ADDED_MANUALLY),
@@ -113,16 +112,14 @@ class TestAddArticle:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
-        article = Article.objects.get()
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["WARNING"],
-                message=f'The article \'<a href="/reading/articles/{article.id}-on-the-3-musketeers/">'  # noqa: E501
-                f"On the 3 musketeers</a>' was added but its content couldn't be fetched. "
-                "Please check that it really points to an article.",
-            )
-        ]
+        assert Article.objects.count() == 1
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data="",
+            was_updated=False,
+            was_created=True,
+            is_from_invalid_data=False,
+        )
 
     def test_invalid_form(self, logged_in_sync_client):
         response = logged_in_sync_client.post(self.url, {"url": "Some trash"})
@@ -137,18 +134,14 @@ class TestAddArticle:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
-        article = Article.objects.get()
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["WARNING"],
-                message="Failed to fetch the article. Please check that the URL you entered is "
-                "correct, that the article exists and is accessible. "
-                "Its URL was added directly. "
-                f'Go <a href="/reading/articles/{article.id}-www-example-com-posts-en-1-super-article/'  # noqa: E501
-                '">there</a> to access it.',
-            )
-        ]
+        assert Article.objects.count() == 1
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data="",
+            was_updated=False,
+            was_created=True,
+            is_from_invalid_data=True,
+        )
 
     def test_add_already_saved(self, user, logged_in_sync_client, httpx_mock):
         existing_article = ArticleFactory(
@@ -164,17 +157,16 @@ class TestAddArticle:
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
-        assert response.status_code == HTTPStatus.CREATED
+        assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/add_article.html"
         article = Article.objects.get()
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["INFO"],
-                message=f'Article \'<a href="/reading/articles/{article.id}-{article.slug}/">'
-                f"{article.title}</a>' already existed.",
-            )
-        ]
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data="",
+            was_updated=True,
+            was_created=False,
+            is_from_invalid_data=False,
+        )
         assert article.read_at == existing_article.read_at
         assert article.title == existing_article.title
         assert article.slug == existing_article.slug
@@ -188,18 +180,16 @@ class TestAddArticle:
 
         response = logged_in_sync_client.post(self.url, {**self.sample_payload, "url": article.url})
 
-        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/add_article.html"
-        messages = list(get_messages(response.wsgi_request))
         assert Article.objects.count() == 1
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["ERROR"],
-                message="Failed to fetch the article. Please check that the URL you entered is "
-                "correct, that the article exists and is accessible. It was added before, "
-                "please check its link.",
-            )
-        ]
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data=AnyOfType(str),
+            was_updated=False,
+            was_created=False,
+            is_from_invalid_data=True,
+        )
 
     def test_content_too_big(self, logged_in_sync_client, httpx_mock, mocker):
         mocker.patch(
@@ -212,17 +202,14 @@ class TestAddArticle:
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.template_name == "reading/add_article.html"
-        article = Article.objects.get()
-        messages = list(get_messages(response.wsgi_request))
-        assert messages == [
-            Message(
-                level=DEFAULT_LEVELS["WARNING"],
-                message="The article you are trying to fetch is too big and cannot be processed. "
-                "Its URL was added directly. "
-                f'Go <a href="/reading/articles/{article.id}-www-example-com-posts-en-1-super-article/"'  # noqa: E501
-                ">there</a> to access it.",
-            )
-        ]
+        assert Article.objects.count() == 1
+        assert response.context_data["add_article_result"] == SaveArticleResult(
+            article=AnyOfType(Article),
+            article_id_in_data="",
+            was_updated=False,
+            was_created=True,
+            is_from_invalid_data=True,
+        )
 
 
 @pytest.mark.django_db
@@ -265,7 +252,7 @@ class TestRefetchArticleView:
             html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
         )
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -285,7 +272,7 @@ class TestRefetchArticleView:
     ):
         httpx_mock.add_response(html="", url=self.article_url)
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url,
                 self.sample_payload,

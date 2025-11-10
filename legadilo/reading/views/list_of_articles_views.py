@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -44,9 +44,9 @@ def reading_list_with_articles_view(
         displayed_reading_list = ReadingList.objects.get_reading_list(
             request.user, reading_list_slug
         )
-    except ReadingList.DoesNotExist:
+    except ReadingList.DoesNotExist as e:
         if reading_list_slug is not None:
-            return HttpResponseNotFound()
+            raise Http404("No reading list found") from e
         return HttpResponseRedirect(reverse("reading:default_reading_list"))
 
     return _display_list_of_articles(

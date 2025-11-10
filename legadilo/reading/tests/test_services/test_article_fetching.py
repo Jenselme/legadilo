@@ -5,36 +5,53 @@
 from collections.abc import Callable
 from typing import Any
 
+import httpx
 import pytest
 
-from legadilo.reading.services.article_fetching import ArticleData, get_article_from_url
+from legadilo.reading.services.article_fetching import ArticleData, fetch_article_data
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 from legadilo.utils.testing import serialize_for_snapshot
 
 
-def test_get_article_from_url(httpx_mock, snapshot):
+def test_fetch_article_data(httpx_mock, snapshot):
     url = "https://www.example.com/posts/en/1-super-article/"
     httpx_mock.add_response(url=url, html=get_article_fixture_content("sample_blog_article.html"))
 
-    article_data = get_article_from_url(url)
+    fetch_article_result = fetch_article_data(url)
 
-    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
+    snapshot.assert_match(
+        serialize_for_snapshot(fetch_article_result.article_data), "article_data.json"
+    )
 
 
 def test_get_text_article_from_url(httpx_mock, snapshot):
     url = "https://www.example.com/posts/en/1-super-article/"
     httpx_mock.add_response(url=url, text="Just some raw text!")
 
-    article_data = get_article_from_url(url)
+    fetch_article_result = fetch_article_data(url)
 
-    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
+    snapshot.assert_match(
+        serialize_for_snapshot(fetch_article_result.article_data), "article_data.json"
+    )
+
+
+def test_fetch_article_data_with_http_errors(httpx_mock, snapshot):
+    url = "https://www.example.com/posts/en/1-super-article/"
+    httpx_mock.add_exception(httpx.HTTPError("Error"))
+
+    fetch_article_result = fetch_article_data(url)
+
+    assert not fetch_article_result.is_success
+    snapshot.assert_match(
+        serialize_for_snapshot(fetch_article_result.article_data), "article_data.json"
+    )
 
 
 @pytest.mark.parametrize(
     "fixture_file",
     ["htm_redirection_invalid_http_equiv.html", "html_redirection.html"],
 )
-def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
+def test_fetch_article_data_with_http_equiv(fixture_file, httpx_mock):
     url = "https://newsletter.com/article/1"
     httpx_mock.add_response(url=url, html=get_article_fixture_content(fixture_file))
     article_url = "https://example.com/article/redirected-article/"
@@ -42,10 +59,13 @@ def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
         url=article_url, html=get_article_fixture_content("sample_blog_article.html")
     )
 
-    article_data = get_article_from_url(url)
+    fetch_article_result = fetch_article_data(url)
 
-    assert article_data.url == "https://www.example.com/posts/en/1-super-article/"
-    assert article_data.title == "On the 3 musketeers"
+    assert fetch_article_result.is_success
+    assert (
+        fetch_article_result.article_data.url == "https://www.example.com/posts/en/1-super-article/"
+    )
+    assert fetch_article_result.article_data.title == "On the 3 musketeers"
 
 
 @pytest.mark.parametrize(
@@ -59,15 +79,16 @@ def test_get_article_from_url_with_http_equiv(fixture_file, httpx_mock):
         ("multiple_articles_tags_identify_section_by_class.html", "\n<div>\n<p>\n"),
     ],
 )
-def test_get_article_from_url_weird_content(fixture_file, expected_starts_with, httpx_mock):
+def test_fetch_article_data_weird_content(fixture_file, expected_starts_with, httpx_mock):
     url = "https://www.example.com/posts/en/1-super-article/"
     httpx_mock.add_response(url=url, html=get_article_fixture_content(fixture_file))
 
-    article_data = get_article_from_url(url)
+    fetch_article_result = fetch_article_data(url)
 
-    assert article_data.title == "On the 3 musketeers"
-    assert article_data.content.startswith(expected_starts_with)
-    assert "Lorem ipsum dolor sit amet" in article_data.content
+    assert fetch_article_result.is_success
+    assert fetch_article_result.article_data.title == "On the 3 musketeers"
+    assert fetch_article_result.article_data.content.startswith(expected_starts_with)
+    assert "Lorem ipsum dolor sit amet" in fetch_article_result.article_data.content
 
 
 @pytest.mark.parametrize(
@@ -79,17 +100,17 @@ def test_get_article_from_url_weird_content(fixture_file, expected_starts_with, 
         ),
     ],
 )
-def test_get_article_from_url_process_fixture(
-    process_fn: Callable[[str], str], httpx_mock, snapshot
-):
+def test_fetch_article_data_process_fixture(process_fn: Callable[[str], str], httpx_mock, snapshot):
     url = "https://www.example.com/posts/en/1-super-article/"
     httpx_mock.add_response(
         url=url, html=process_fn(get_article_fixture_content("sample_blog_article.html"))
     )
 
-    article_data = get_article_from_url(url)
+    fetch_article_result = fetch_article_data(url)
 
-    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
+    snapshot.assert_match(
+        serialize_for_snapshot(fetch_article_result.article_data), "article_data.json"
+    )
 
 
 @pytest.mark.parametrize(

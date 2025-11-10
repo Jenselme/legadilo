@@ -107,16 +107,17 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
     try:
         with get_rss_sync_client() as client:
             feed_medata = get_feed_data(payload.feed_url, client=client)
-        tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
-        feed, created = Feed.objects.create_from_metadata(
-            feed_medata,
-            request.auth,
-            payload.refresh_delay,
-            payload.article_retention_time,
-            tags,
-            category,
-            open_original_url_by_default=payload.open_original_url_by_default,
-        )
+        with transaction.atomic():
+            tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
+            feed, created = Feed.objects.create_from_metadata(
+                feed_medata,
+                request.auth,
+                payload.refresh_delay,
+                payload.article_retention_time,
+                tags,
+                category,
+                open_original_url_by_default=payload.open_original_url_by_default,
+            )
     except (NoFeedUrlFoundError, MultipleFeedFoundError):
         return HTTPStatus.NOT_ACCEPTABLE, {
             "detail": "We failed to find a feed at the supplied URL."

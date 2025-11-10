@@ -351,13 +351,12 @@ class ReadingListTagManager(models.Manager["ReadingListTag"]):
         )
 
     @transaction.atomic()
-    def associate_reading_list_with_tag_slugs(
+    def associate_reading_list_with_tags(
         self,
         reading_list: ReadingList,
-        tag_slugs: list[str],
+        tags: Iterable[Tag],
         filter_type: constants.ReadingListTagFilterType,
     ):
-        tags = Tag.objects.get_or_create_from_list(reading_list.user, tag_slugs)
         reading_list_tags = [
             self.model(reading_list=reading_list, tag=tag, filter_type=filter_type) for tag in tags
         ]

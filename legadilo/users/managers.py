@@ -109,8 +109,8 @@ class UserManager(DjangoUserManager[User]):
         user_id_with_active_sessions = set()
         for session in Session.objects.filter(expire_date__gte=utcnow()):
             session_data = session_store.decode(session.session_data)
-            user_id = session_data.get("_auth_user_id")
-            user_id_with_active_sessions.add(user_id)
+            if user_id := session_data.get("_auth_user_id"):
+                user_id_with_active_sessions.add(user_id)
 
         stats["nb_users_with_active_session"] = len(user_id_with_active_sessions)
 

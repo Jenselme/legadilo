@@ -8,6 +8,13 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Simplify messages displayed when saving an article.
+- Correctly refetch the list of tags after creating an article.
+- Display a proper 404 page when a reading list is not found by slug. It used to be an empty page with a 404 status code.
+- Don’t display empty tags on article details when an article doesn’t have a content.
+- Remove last usages of `format_html`. Messages are now always formatted in HTML templates.
+- Correct count of users with active sessions
+
 ## 25.11.1
 
 - Update the article content type when content is updated.

@@ -7,12 +7,24 @@ default:
 
 update-python-deps:
     uv sync --upgrade --all-groups
+    pre-commit run -a
+    uv run pytest
+    git commit uv.lock -m "chore: update deps"
 
 update-js-deps:
     npm update
 
 dev:
     docker compose -f local.yml up
+
+test:
+    pytest
+
+makemigrations:
+    python manage.py makemigrations
+
+migrate:
+    python manage.py migrate
 
 clean-dev-container:
     docker compose -f local.yml down

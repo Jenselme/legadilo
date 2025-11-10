@@ -97,11 +97,13 @@ class ReadingListForm(forms.ModelForm):
             "order_direction",
         )
 
+    @transaction.atomic()
     def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition
         self._update_tags()
 
         return super().save(commit=commit)
 
+    @transaction.atomic()
     def create(self, user: User):
         create_data = self.cleaned_data.copy()
         # Tags are managed with a many-to-many relationship and thus must be created independently
@@ -118,17 +120,19 @@ class ReadingListForm(forms.ModelForm):
     def _update_tags(self):
         tags_to_include = self.cleaned_data.pop("tags_to_include")
         if tags_to_include != self.initial["tags_to_include"]:
-            ReadingListTag.objects.associate_reading_list_with_tag_slugs(
+            tags = Tag.objects.get_or_create_from_list(self.instance.user, tags_to_include)
+            ReadingListTag.objects.associate_reading_list_with_tags(
                 self.instance,
-                tags_to_include,
+                tags,
                 filter_type=constants.ReadingListTagFilterType.INCLUDE,
             )
 
         tags_to_exclude = self.cleaned_data.pop("tags_to_exclude")
         if tags_to_exclude != self.initial["tags_to_exclude"]:
-            ReadingListTag.objects.associate_reading_list_with_tag_slugs(
+            tags = Tag.objects.get_or_create_from_list(self.instance.user, tags_to_exclude)
+            ReadingListTag.objects.associate_reading_list_with_tags(
                 self.instance,
-                tags_to_exclude,
+                tags,
                 filter_type=constants.ReadingListTagFilterType.EXCLUDE,
             )
 

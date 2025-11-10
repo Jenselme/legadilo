@@ -4,16 +4,15 @@
 
 import json
 import logging
+from dataclasses import dataclass
 from http import HTTPMethod, HTTPStatus
 from typing import cast
 
 import httpx
 from django import forms
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.template.response import TemplateResponse
-from django.urls import reverse
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 from pydantic import ValidationError as PydanticValidationError
@@ -127,16 +126,30 @@ class SubscribeToFeedForm(forms.Form):
         return self.cleaned_data.get("feed_choices") or self.cleaned_data["url"]
 
 
+@dataclass(frozen=True)
+class SubscriptionResult:
+    feed: Feed | None
+    was_created: bool = False
+    warning_message: str = ""
+    error_message: str = ""
+
+
 @require_http_methods(["GET", "POST"])
 @login_required
 def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
+    subscription_result = None
     if request.method == HTTPMethod.GET:
         status = HTTPStatus.OK
         form = _get_subscribe_to_feed_form(data=None, user=request.user)
     else:
-        status, form = _handle_creation(request)
+        status, form, subscription_result = _handle_creation(request)
 
-    return TemplateResponse(request, "feeds/subscribe_to_feed.html", {"form": form}, status=status)
+    return TemplateResponse(
+        request,
+        "feeds/subscribe_to_feed.html",
+        {"form": form, "subscription_result": subscription_result},
+        status=status,
+    )
 
 
 def _get_subscribe_to_feed_form(data: dict | None, user: User):
@@ -145,40 +158,56 @@ def _get_subscribe_to_feed_form(data: dict | None, user: User):
     return SubscribeToFeedForm(data, tag_choices=tag_choices, category_choices=category_choices)
 
 
-def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too many return statements
+def _handle_creation(
+    request: AuthenticatedHttpRequest,
+) -> tuple[HTTPStatus, SubscribeToFeedForm, SubscriptionResult | None]:
     form = _get_subscribe_to_feed_form(request.POST, user=request.user)
     if not form.is_valid():
-        messages.error(request, _("Failed to create the feed"))
-        return HTTPStatus.BAD_REQUEST, form
+        return HTTPStatus.BAD_REQUEST, form, None
 
     try:
         with get_rss_sync_client() as client:
             feed_medata = get_feed_data(form.feed_url, client=client)
-        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
         category = FeedCategory.objects.get_first_for_user(
             request.user, form.cleaned_data.get("category")
         )
-        feed, created = Feed.objects.create_from_metadata(
-            feed_medata,
-            request.user,
-            form.cleaned_data["refresh_delay"],
-            form.cleaned_data["article_retention_time"],
-            tags,
-            category,
-            open_original_url_by_default=form.cleaned_data["open_original_url_by_default"],
+        with transaction.atomic():
+            tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
+            feed, created = Feed.objects.create_from_metadata(
+                feed_medata,
+                request.user,
+                form.cleaned_data["refresh_delay"],
+                form.cleaned_data["article_retention_time"],
+                tags,
+                category,
+                open_original_url_by_default=form.cleaned_data["open_original_url_by_default"],
+            )
+    except (
+        httpx.HTTPError,
+        FeedFileTooBigError,
+        InvalidFeedFileError,
+        PydanticValidationError,
+        ValueError,
+        TypeError,
+    ):
+        error_message = _(
+            "Failed to fetch the feed. Please check that the URL you entered is correct, that "
+            "the feed exists, is accessible, valid "
+            "and that the file is not above %(max_size)s MiB."
+        ) % {"max_size": constants.MAX_FEED_FILE_SIZE / 1024 / 1024}
+        return (
+            HTTPStatus.NOT_ACCEPTABLE,
+            form,
+            SubscriptionResult(feed=None, error_message=error_message),
         )
-    except httpx.HTTPError:
-        messages.error(
-            request,
-            _(
-                "Failed to fetch the feed. Please check that the URL you entered is correct, that "
-                "the feed exists and is accessible."
+    except NoFeedUrlFoundError:
+        return (
+            HTTPStatus.BAD_REQUEST,
+            form,
+            SubscriptionResult(
+                feed=None, error_message=str(_("Failed to find a feed URL on the supplied page."))
             ),
         )
-        return HTTPStatus.NOT_ACCEPTABLE, form
-    except NoFeedUrlFoundError:
-        messages.error(request, _("Failed to find a feed URL on the supplied page."))
-        return HTTPStatus.BAD_REQUEST, form
     except MultipleFeedFoundError as e:
         form = _get_subscribe_to_feed_form(
             {
@@ -187,36 +216,18 @@ def _handle_creation(request: AuthenticatedHttpRequest):  # noqa: PLR0911 Too ma
             },
             user=request.user,
         )
-        messages.warning(
-            request, _("Multiple feeds were found at this location, please select the proper one.")
+        return (
+            HTTPStatus.BAD_REQUEST,
+            form,
+            SubscriptionResult(
+                feed=None,
+                warning_message=str(
+                    _("Multiple feeds were found at this location, please select the proper one.")
+                ),
+            ),
         )
-        return HTTPStatus.BAD_REQUEST, form
-    except FeedFileTooBigError:
-        messages.error(
-            request,
-            _("The feed file is too big, it won't be parsed. Try to find a more lightweight feed."),
-        )
-        return HTTPStatus.BAD_REQUEST, form
-    except (InvalidFeedFileError, PydanticValidationError, ValueError, TypeError) as e:
-        logger.debug("Failed to parse feed: %s", e)
-        messages.error(
-            request,
-            _("Failed to parse the feed you supplied. Please check it's valid."),
-        )
-        return HTTPStatus.BAD_REQUEST, form
-
-    if not created:
-        messages.error(request, _("You are already subscribed to this feed."))
-        return HTTPStatus.CONFLICT, form
 
     # Empty form after success.
     form = _get_subscribe_to_feed_form(data=None, user=request.user)
-    messages.success(
-        request,
-        format_html(
-            str(_("Feed '<a href=\"{}\">{}</a>' added")),
-            str(reverse("feeds:feed_articles", kwargs={"feed_id": feed.id})),
-            feed.title,
-        ),
-    )
-    return HTTPStatus.CREATED, form
+    status = HTTPStatus.CREATED if created else HTTPStatus.OK
+    return status, form, SubscriptionResult(feed=feed, was_created=created)

@@ -10,7 +10,7 @@ from factory.django import DjangoModelFactory
 from legadilo.users.tests.factories import UserFactory
 
 from ..models import Article, ArticleFetchError, Comment, ReadingList, Tag
-from ..services.article_fetching import ArticleData
+from ..services.article_fetching import ArticleData, FetchArticleResult
 
 
 class ArticleFactory(DjangoModelFactory):
@@ -79,3 +79,12 @@ class ArticleDataFactory(factory.DictFactory):
 
     class Meta:
         model = ArticleData
+
+
+class FetchArticleResultFactory(factory.DictFactory):
+    article_data = factory.SubFactory(ArticleDataFactory)
+    error_message = ""
+    technical_debug_data = None
+
+    class Meta:
+        model = FetchArticleResult

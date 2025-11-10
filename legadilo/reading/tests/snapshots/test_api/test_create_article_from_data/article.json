@@ -9,7 +9,9 @@
   "contributors": [],
   "details_url": "http://testserver/reading/articles/1-article-slug/",
   "external_article_id": "external-article-id",
-  "external_tags": [],
+  "external_tags": [
+    "Musketeers"
+  ],
   "id": 1,
   "is_favorite": false,
   "is_for_later": false,
