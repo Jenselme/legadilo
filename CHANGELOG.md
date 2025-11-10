@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.11.2
+
 - Simplify messages displayed when saving an article.
 - Correctly refetch the list of tags after creating an article.
 - Display a proper 404 page when a reading list is not found by slug. It used to be an empty page with a 404 status code.
