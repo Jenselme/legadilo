@@ -11,6 +11,7 @@ from typing import cast
 import httpx
 from django import forms
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
@@ -167,19 +168,20 @@ def _handle_creation(
     try:
         with get_rss_sync_client() as client:
             feed_medata = get_feed_data(form.feed_url, client=client)
-        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
         category = FeedCategory.objects.get_first_for_user(
             request.user, form.cleaned_data.get("category")
         )
-        feed, created = Feed.objects.create_from_metadata(
-            feed_medata,
-            request.user,
-            form.cleaned_data["refresh_delay"],
-            form.cleaned_data["article_retention_time"],
-            tags,
-            category,
-            open_original_url_by_default=form.cleaned_data["open_original_url_by_default"],
-        )
+        with transaction.atomic():
+            tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data["tags"])
+            feed, created = Feed.objects.create_from_metadata(
+                feed_medata,
+                request.user,
+                form.cleaned_data["refresh_delay"],
+                form.cleaned_data["article_retention_time"],
+                tags,
+                category,
+                open_original_url_by_default=form.cleaned_data["open_original_url_by_default"],
+            )
     except (
         httpx.HTTPError,
         FeedFileTooBigError,
