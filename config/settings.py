@@ -353,7 +353,7 @@ CONTENT_SECURITY_POLICY = {
         "media-src": (SELF,),
         "frame-src": (NONE,),
         "font-src": (SELF,),
-        "connect-src": env.tuple("CSP_CONNECT_SRC", default=(SELF,)),
+        "connect-src": (SELF,),
         "style-src": (STRICT_DYNAMIC, UNSAFE_INLINE, "https:", NONCE),
         "style-src-attr": None,
         "style-src-elem": None,
@@ -646,7 +646,6 @@ NINJA_PAGINATION_CLASS = "ninja.pagination.LimitOffsetPagination"
 ARTICLE_FETCH_TIMEOUT = env.int("LEGADILO_ARTICLE_FETCH_TIMEOUT", default=50)
 RSS_FETCH_TIMEOUT = env.int("LEGADILO_RSS_FETCH_TIMEOUT", default=300)
 CONTACT_EMAIL = env.str("LEGADILO_CONTACT_EMAIL", default=None)
-CUSTOM_SCRIPT = env.json("LEGADILO_CUSTOM_SCRIPT", default=None)
 TOKEN_LENGTH = 50
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_MAX_AGE = timedelta(hours=24)
