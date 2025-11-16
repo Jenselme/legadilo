@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-07 21:31+0000\n"
+"POT-Creation-Date: 2025-11-16 11:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1210,6 +1210,9 @@ msgstr "Rafraichir le contenu"
 
 msgid "Comments"
 msgstr "Commentaires"
+
+msgid "This article has no content."
+msgstr "Cet article n’a pas de contenu."
 
 #, python-format
 msgid "Editing reading list '%(reading_list_title)s'"

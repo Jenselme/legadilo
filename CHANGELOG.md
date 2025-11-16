@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Display a message for articles without content.
+
 ## 25.11.2
 
 - Simplify messages displayed when saving an article.
