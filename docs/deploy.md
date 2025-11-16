@@ -147,8 +147,6 @@ Project related:
 | `LEGADILO_ARTICLE_FETCH_TIMEOUT`        | 50                 | The fetch timeout when fetching articles in seconds.                                                                                                                                                           |
 | `LEGADILO_RSS_FETCH_TIMEOUT`            | 300                | The fetch timeout when fetching feeds in seconds.                                                                                                                                                              |
 | `LEGADILO_CONTACT_EMAIL`                | `None`             | The contact email to display to authenticated user.                                                                                                                                                            |
-| `LEGADILO_CUSTOM_SCRIPT`                | `None`             | To inject an extra script (typically a visitor tracker) to the site. Must a JSON mapping of attribute to value like this: `{"src": "https://plausible.io"}`.<br>Nonce and `defer` will be added automatically. |
-| `CSP_CONNECT_SRC`                       | `("'self'",)`      | To change the default `connect-src` of the CSP.<br>Must be like `"'self',https://plausible.io/"`                                                                                                               |
 
 Running related with the `devops/compose/production/django/start.sh` script:
 

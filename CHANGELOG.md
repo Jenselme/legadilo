@@ -9,6 +9,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## Unreleased
 
 - Display a message for articles without content.
+- Remove the possibility to add a custom script.
 
 ## 25.11.2
 
