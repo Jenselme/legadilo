@@ -10,6 +10,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## 25.12.1
 
+- Update Python dependencies.
+
+## 25.12.1
+
 - Display a message for articles without content.
 - Remove the possibility to add a custom script.
 
