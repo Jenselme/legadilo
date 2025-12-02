@@ -30,6 +30,7 @@ from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
+    ArticlesGroupFactory,
     CommentFactory,
     FetchArticleResultFactory,
     ReadingListFactory,
@@ -1379,6 +1380,28 @@ class TestArticleManager:
         feed_article_to_deleted.refresh_from_db()
         assert feed_article_to_deleted.article is None
         assert Article.objects.count() == 2
+
+    def test_link_articles_to_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user)
+        article_already_linked_to_group = ArticleFactory(user=user, group=group, group_order=1)
+        other_group = ArticlesGroupFactory(user=user)
+        article_already_linked_to_other_group = ArticleFactory(user=user, group=other_group)
+        other_group.articles.add(article_already_linked_to_other_group)
+
+        articles_already_linked = Article.objects.link_articles_to_group(
+            group,
+            [article, article_already_linked_to_group, article_already_linked_to_other_group],
+        )
+
+        assert articles_already_linked == (article_already_linked_to_other_group,)
+        assert list(Article.objects.filter(group=group).values_list("id", "group_order")) == [
+            (article.id, 0),
+            (article_already_linked_to_group.id, 1),
+        ]
+        assert list(Article.objects.filter(group=other_group).values_list("id", flat=True)) == [
+            article_already_linked_to_other_group.id
+        ]
 
 
 class TestArticleModel:

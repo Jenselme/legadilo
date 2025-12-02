@@ -6,8 +6,13 @@ import pytest
 
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag, ReadingListTag, Tag
-from legadilo.reading.models.tag import SubTagMapping
-from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
+from legadilo.reading.models.tag import ArticlesGroupTag, SubTagMapping
+from legadilo.reading.tests.factories import (
+    ArticleFactory,
+    ArticlesGroupFactory,
+    ReadingListFactory,
+    TagFactory,
+)
 
 
 @pytest.mark.django_db
@@ -309,3 +314,18 @@ class TestReadingListTagManager:
             (tag4.slug, constants.ReadingListTagFilterType.EXCLUDE),
         ]
         assert Tag.objects.count() == 4
+
+
+class TestArticlesGroupTagManager:
+    def test_associate_group_with_tags(self, user):
+        group = ArticlesGroupFactory(user=user)
+        tag = TagFactory(user=user)
+        already_associated_tag = TagFactory(user=user)
+        ArticlesGroupTag.objects.create(article_group=group, tag=already_associated_tag)
+
+        ArticlesGroupTag.objects.associate_group_with_tags(group, [tag, already_associated_tag])
+
+        assert set(ArticlesGroupTag.objects.values_list("tag__slug", flat=True)) == {
+            tag.slug,
+            already_associated_tag.slug,
+        }

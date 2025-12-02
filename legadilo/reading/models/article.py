@@ -48,6 +48,8 @@ if TYPE_CHECKING:
         FetchArticleResult,
     )
     from legadilo.users.models import User
+
+    from .articles_group import ArticlesGroup
 else:
     TypedModelMeta = object
 
@@ -755,6 +757,39 @@ class ArticleManager(models.Manager["Article"]):
 
     def cleanup_articles(self):
         return self.get_queryset().for_cleanup().delete()
+
+    def link_articles_to_group(
+        self, group: ArticlesGroup, articles: Iterable[Article]
+    ) -> tuple[Article, ...]:
+        """Link supplied articles to the given group.
+
+        If any of the supplied articles are already linked to another group, they are not linked
+        again and remain in their original group. The ids of these articles are returned.
+        """
+        articles_already_linked_to_other_group = tuple(
+            article
+            for article in self.get_queryset()
+            .filter(id__in=[article.id for article in articles], group__isnull=False)
+            .exclude(group=group)
+        )
+        articles_to_update = []
+        for order, article in enumerate(articles):
+            if article in articles_already_linked_to_other_group:
+                continue
+
+            article.group = group
+            article.group_order = order
+            articles_to_update.append(article)
+
+        self.bulk_update(
+            articles_to_update,
+            fields=(
+                "group",
+                "group_order",
+            ),
+        )
+
+        return articles_already_linked_to_other_group
 
 
 class Article(models.Model):

@@ -6,29 +6,37 @@
     <script src="{% static 'js/tag_edition.js' %}"
             nonce="{{ csp_nonce }}"
             type="module"></script>
+    <script src="{% static 'js/formset.js' %}"
+            nonce="{{ request.csp_nonce }}"
+            defer></script>
     {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
 
 {% block title %}
-    {% translate "Add an article" %}
+    {% translate "Adding articles" %}
 {% endblock title %}
 
 {% block content %}
     {% if add_article_result %}
         <div class="container-lg">
-            <div class="alert alert-dismissible {% if add_article_result.is_from_invalid_data %}alert-warning{% elif add_article_result.was_created %}alert-success{% else %}alert-info{% endif %}">
+            <div
+                class="alert alert-dismissible {% if add_article_result.is_from_invalid_data %}alert-warning{% elif add_article_result.was_created %}alert-success{% else %}alert-info{% endif %}">
                 {% if add_article_result.was_created and add_article_result.is_from_invalid_data %}
                     {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
-                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> was added but its content couldn't be fetched.
-                        Please check that the URL is valid and accessible and the content size does not exceed {{ max_article_size }} MiB.
+                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> was
+                        added but its content couldn't be fetched.
+                        Please check that the URL is valid and accessible and the content size does
+                        not exceed {{ max_article_size }} MiB.
                     {% endblocktranslate %}
                 {% elif add_article_result.was_created %}
                     {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
-                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> successfully added!
+                        Article <a href="{{ article_details_url }}">{{ article_title }}</a>
+                        successfully added!
                     {% endblocktranslate %}
                 {% else %}
                     {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
-                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> already existed.
+                        Article <a href="{{ article_details_url }}">{{ article_title }}</a> already
+                        existed.
                     {% endblocktranslate %}
                 {% endif %}
                 <button type="button"
@@ -39,10 +47,81 @@
         </div>
     {% endif %}
 
+    {% if save_articles_group_result %}
+        <div class="container-lg">
+            <div
+                class="alert alert-dismissible {% if save_articles_group_result.success %}alert-success{% else %}alert-warning{% endif %}">
+                {% blocktranslate trimmed with group_url=save_articles_group_result.group|articles_group_details_url group_title=save_articles_group_result.group.title %}
+                    Your group <a href="{{ group_url }}">'{{ group_title }}'</a> has been saved.
+                {% endblocktranslate %}
+
+                {% if save_articles_group_result.articles_linked_to_other_group %}
+                    {% blocktranslate trimmed %}
+                        These articles were already linked to a group and were not linked to this
+                        one:
+                    {% endblocktranslate %}
+                    <ul>
+                        {% for article in save_articles_group_result.articles_linked_to_other_group %}
+                            <li><a href="{{ article|article_details_url }}">{{ article.title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if save_articles_group_result.articles_with_fetch_errors %}
+                    {% blocktranslate trimmed %}
+                        These articles were correctly linked to the group but their content couldn’t
+                        be fetched:
+                    {% endblocktranslate %}
+                    <ul>
+                        {% for article in save_articles_group_result.articles_with_fetch_errors %}
+                            <li><a href="{{ article|article_details_url }}">{{ article.title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+        </div>
+    {% endif %}
+
     <h1>{% translate "Add an article" %}</h1>
+    <h2>{% translate "Add a simple article" %}</h2>
     <form method="post" action="{% url 'reading:add_article' %}">
         {% csrf_token %}
         {{ add_article_form|crispy }}
-        <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>
+        <button type="submit" class="btn btn-primary"
+                name="add_article">{% translate "Add" %}</button>
+    </form>
+
+    <h2 class="mt-4">{% translate "Add a new group of articles" %}</h2>
+    <p class="form-text">
+        {% blocktranslate trimmed %}
+            Existing articles already linked to another group will be flagged as warning on save.
+            Existing articles not linked to a group will be added to this group and their tags
+            changed.
+            To add an article to an existing group, go to this group details page.
+        {% endblocktranslate %}
+    </p>
+    <form method="post" action="{% url 'reading:add_article' %}">
+        {% csrf_token %}
+        {{ articles_group_form|crispy }}
+        <div id="formset-container" class="mb-3 border rounded p-3">
+            {% crispy article_group_link_formset %}
+            <p class="form-text">
+                {% blocktranslate trimmed %}
+                    At least one URL must be supplied.
+                    You can add more URLs by clicking on the "Add another URL" button.
+                    Rows that are empty won’t be taken into account.
+                {% endblocktranslate %}
+            </p>
+            <button id="add-formset-row" class="btn btn-outline-secondary"
+                    type="button">{% translate "Add more URLs" %}</button>
+        </div>
+        <button type="submit" class="btn btn-primary"
+                name="add_articles_group">{% translate "Add articles in group" %}</button>
     </form>
 {% endblock content %}

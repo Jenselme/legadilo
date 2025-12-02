@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
 
     from legadilo.reading.models.article import Article, ArticleQuerySet
+    from legadilo.reading.models.articles_group import ArticlesGroup
     from legadilo.reading.models.reading_list import ReadingList
 else:
     TypedModelMeta = object
@@ -333,6 +334,23 @@ class ReadingListTag(models.Model):
         return f"ReadingListTag(reading_list={self.reading_list}, tag={self.tag})"
 
 
+class ArticlesGroupTagQuerySet(models.QuerySet["ArticlesGroupTag"]):
+    pass
+
+
+class ArticlesGroupTagManager(models.Manager["ArticlesGroupTag"]):
+    _hints: dict
+
+    def get_queryset(self) -> ArticlesGroupTagQuerySet:
+        return ArticlesGroupTagQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    @transaction.atomic()
+    def associate_group_with_tags(self, article_group: ArticlesGroup, tags: list[Tag]):
+        article_group.article_group_tags.all().delete()
+        group_tags = [self.model(article_group=article_group, tag=tag) for tag in tags]
+        self.bulk_create(group_tags)
+
+
 class ArticlesGroupTag(models.Model):
     article_group = models.ForeignKey(
         "reading.ArticlesGroup", related_name="article_group_tags", on_delete=models.CASCADE
@@ -340,6 +358,8 @@ class ArticlesGroupTag(models.Model):
     tag = models.ForeignKey(
         "reading.Tag", related_name="article_group_tags", on_delete=models.CASCADE
     )
+
+    objects = ArticlesGroupTagManager()
 
     class Meta(TypedModelMeta):
         constraints = (

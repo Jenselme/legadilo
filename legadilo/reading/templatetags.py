@@ -9,7 +9,7 @@ from markdown import Markdown
 
 from legadilo.core.utils.security import sanitize_keep_safe_tags
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ReadingList
+from legadilo.reading.models import Article, ArticlesGroup, ReadingList
 
 
 @register.filter
@@ -64,6 +64,13 @@ def opened_action_url(article: Article) -> str:
 def article_details_url(article: Article) -> str:
     return reverse(
         "reading:article_details", kwargs={"article_id": article.id, "article_slug": article.slug}
+    )
+
+
+@register.filter
+def articles_group_details_url(group: ArticlesGroup) -> str:
+    return reverse(
+        "reading:articles_group_details", kwargs={"group_id": group.id, "group_slug": group.slug}
     )
 
 
