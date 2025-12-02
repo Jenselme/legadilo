@@ -9,6 +9,7 @@ from legadilo.core.forms.widgets import PrettyJSONWidget
 from legadilo.reading.models import (
     Article,
     ArticleFetchError,
+    ArticlesGroup,
     ArticleTag,
     Comment,
     ReadingList,
@@ -89,3 +90,28 @@ class ArticleFetchErrorAdmin(admin.ModelAdmin):
     readonly_fields = ("article",)
     list_display = ["__str__", "created_at"]
     formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
+
+
+class ArticlesOfGroupInline(admin.TabularInline):
+    model = Article
+
+    fields = ("title", "url", "group_order")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by("group_order")
+
+
+@admin.register(ArticlesGroup)
+class ArticlesGroupAdmin(admin.ModelAdmin):
+    search_fields = ["title"]
+    list_display = ["__str__", "created_at"]
+    inlines = [ArticlesOfGroupInline]
