@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-FROM python:3.14-trixie
+FROM python:3.14-slim-trixie
 
 ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
