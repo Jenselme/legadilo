@@ -9,7 +9,7 @@ COPY ./package-lock.json /
 
 RUN cd / && npm install
 
-FROM python:3.13-slim-bookworm AS python-builder
+FROM python:3.14-trixie AS python-builder
 
 ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app
@@ -54,7 +54,7 @@ RUN chmod +x /build-django.sh
 RUN /build-django.sh
 
 
-FROM python:3.13-slim-bookworm
+FROM python:3.14-trixie
 
 ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app

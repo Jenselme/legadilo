@@ -5,7 +5,7 @@ readme = "README.md"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
 version = "25.12.1"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     # General
     "argon2-cffi >= 23.1.0",  # https://github.com/hynek/argon2_cffi
@@ -233,7 +233,7 @@ tabindex_no_positive = true
 
 # ==== mypy ====
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true

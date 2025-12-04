@@ -13,7 +13,7 @@ from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import Field, model_validator
+from pydantic import Field, field_serializer, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from config import settings
@@ -59,6 +59,15 @@ class OutFeedSchema(ModelSchema):
     class Meta:
         model = Feed
         exclude = ("user", "created_at", "updated_at", "articles")
+
+    @field_serializer("category")
+    def category_serializer(self, value: int | None) -> OutFeedCategorySchema | None:
+        # Workaround for https://github.com/vitalik/django-ninja/issues/1580
+        if value is None:
+            return None
+
+        feed_category = FeedCategory.objects.get(id=value)
+        return OutFeedCategorySchema.model_validate(feed_category)
 
 
 class FeedsSearchQuery(Schema):

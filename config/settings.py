@@ -523,7 +523,7 @@ MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
 # django-version-checks (https://pypi.org/project/django-version-checks/)
 # ------------------------------------------------------------------------------
 VERSION_CHECKS = {
-    "python": "==3.13.*",
+    "python": ">=3.13",
     "postgresql": ">=16",
 }
 

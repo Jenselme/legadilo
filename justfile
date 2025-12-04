@@ -62,7 +62,7 @@ release:
     read -r
 
     git commit -am "chore: releasing ${new_tag}"
-    docker pull python:3.13-slim-bookworm
+    docker pull python:3.14-trixie
     docker compose -f production.yml build django
     docker image tag legadilo_production_django:latest "rg.fr-par.scw.cloud/legadilo/legadilo-django:${new_tag}"
     docker image tag legadilo_production_django:latest rg.fr-par.scw.cloud/legadilo/legadilo-django:latest
