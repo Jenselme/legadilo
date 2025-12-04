@@ -8,6 +8,13 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+Dev changes:
+- Improve CSS files.
+- Correct installation of dependencies in dev container.
+- Enable brotli as a compression algorithm for static files.
+- Update Django to 6.0
+- Update Python to 3.14
+
 ## 25.12.1
 
 - Update Python dependencies.
