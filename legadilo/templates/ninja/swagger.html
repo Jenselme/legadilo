@@ -6,7 +6,7 @@
         <link type="text/css"
               rel="stylesheet"
               href="{% static 'ninja/swagger-ui.css' %}"
-              nonce="{{ request.csp_nonce }}" />
+              nonce="{{ csp_nonce }}" />
         <link rel="shortcut icon" href="{% static 'ninja/favicon.png' %}" />
         <title>{{ api.title }}</title>
     </head>
@@ -21,8 +21,8 @@
         </script>
         <div id="swagger-ui"></div>
         <script src="{% static 'ninja/swagger-ui-bundle.js' %}"
-                nonce="{{ request.csp_nonce }}"></script>
+                nonce="{{ csp_nonce }}"></script>
         <script src="{% static 'ninja/swagger-ui-init.js' %}"
-                nonce="{{ request.csp_nonce }}"></script>
+                nonce="{{ csp_nonce }}"></script>
     </body>
 </html>

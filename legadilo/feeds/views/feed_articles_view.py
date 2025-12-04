@@ -2,13 +2,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from csp.decorators import csp_update
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_http_methods
 
+from config import settings
 from legadilo.feeds.models import Feed
 from legadilo.reading.views.list_of_articles_views import (
     list_or_update_articles,
@@ -18,7 +19,7 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
+@csp_override({"img-src": settings.SECURE_CSP["img-src"] + ("https:",)})
 def feed_articles_view(
     request: AuthenticatedHttpRequest, feed_id: int, feed_slug: str | None = None
 ) -> TemplateResponse:

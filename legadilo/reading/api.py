@@ -14,6 +14,13 @@ from ninja.pagination import paginate
 from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
+from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
+from legadilo.core.utils.validators import (
+    CleanedString,
+    ContentType,
+    ValidUrlValidator,
+    remove_falsy_items,
+)
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
@@ -24,13 +31,6 @@ from legadilo.reading.services.article_fetching import (
 )
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
-from legadilo.utils.validators import (
-    CleanedString,
-    ContentType,
-    ValidUrlValidator,
-    remove_falsy_items,
-)
 
 reading_api_router = Router(tags=["reading"])
 

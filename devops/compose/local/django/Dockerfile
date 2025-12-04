@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-FROM python:3.13-slim-bookworm
+FROM python:3.14-trixie
 
 ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
@@ -31,7 +31,7 @@ COPY ./devops/compose/production/django/setup-container.sh /
 RUN chmod +x /setup-container.sh
 RUN /setup-container.sh
 
-COPY ./devops/compose/production/django/entrypoint.sh /entrypoint.sh
+COPY ./devops/compose/local/django/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 COPY ./devops/compose/production/django/start.sh /start.sh
@@ -39,11 +39,6 @@ RUN chmod +x /start.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/start.sh"]
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock,readonly \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,readonly \
-    uv sync --locked --no-install-project --dev
 
 COPY ./devops/compose/production/django/build-django.sh /
 RUN chmod +x /build-django.sh

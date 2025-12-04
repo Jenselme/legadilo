@@ -18,12 +18,12 @@ from django.views.decorators.http import require_http_methods
 from pydantic import ValidationError as PydanticValidationError
 
 from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.types import FormChoices
 from legadilo.reading.models import Tag
-from legadilo.utils.types import FormChoices
 
 from ...users.models import User
 from ...users.user_types import AuthenticatedHttpRequest
-from ...utils.http_utils import get_rss_sync_client
 from .. import constants
 from ..models import Feed, FeedCategory
 from ..services.feed_parsing import (

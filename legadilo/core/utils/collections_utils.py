@@ -10,7 +10,7 @@ from typing import Any
 from django.core.serializers.json import DjangoJSONEncoder
 from pydantic import BaseModel as BaseSchema
 
-from legadilo.utils.types import DeletionResult
+from legadilo.core.utils.types import DeletionResult
 
 
 class CustomJsonEncoder(DjangoJSONEncoder):

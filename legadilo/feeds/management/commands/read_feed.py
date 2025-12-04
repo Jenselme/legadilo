@@ -8,9 +8,9 @@ from pprint import pprint
 from django.core.management import CommandError
 from django.core.management.base import BaseCommand, CommandParser
 
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.validators import is_url_valid
 from legadilo.feeds.services.feed_parsing import build_feed_data_from_parsed_feed, parse_feed
-from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.validators import is_url_valid
 
 
 class Command(BaseCommand):

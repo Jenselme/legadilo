@@ -9,9 +9,9 @@ import pytest
 import time_machine
 from django.db import IntegrityError
 
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.users.models import ApplicationToken
 from legadilo.users.tests.factories import ApplicationTokenFactory
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db

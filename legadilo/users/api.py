@@ -18,11 +18,11 @@ from pydantic import ConfigDict, PlainSerializer, field_serializer
 from pydantic import ValidationError as PydanticValidationError
 
 from config import settings
+from legadilo.core.utils.api import ApiError
 from legadilo.users.models import ApplicationToken, UserSettings
-from legadilo.utils.time_utils import utcnow
 
 from ..core.models import Timezone
-from ..utils.api import ApiError
+from ..core.utils.time_utils import utcnow
 from .models import User
 from .user_types import AuthenticatedApiRequest
 
@@ -119,6 +119,11 @@ class SettingsSchema(ModelSchema):
     class Meta:
         model = UserSettings
         exclude = ("id", "user")
+
+    @field_serializer("timezone", mode="plain")
+    def tz_serializer(self, timezone_id: int) -> str:
+        # Workaround for https://github.com/vitalik/django-ninja/issues/1580
+        return Timezone.objects.get(id=timezone_id).name
 
 
 class UserSchema(ModelSchema):

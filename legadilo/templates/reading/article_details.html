@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% load crispy_forms_tags i18n partials static %}
+{% load crispy_forms_tags i18n static %}
 
 {% block page_js %}
     <script src="{% static 'js/article_details.js' %}"
-            nonce="{{ request.csp_nonce }}"
+            nonce="{{ csp_nonce }}"
             defer></script>
     <script src="{% static 'js/tag_edition.js' %}"
-            nonce="{{ request.csp_nonce }}"
+            nonce="{{ csp_nonce }}"
             type="module"></script>
     {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
@@ -15,7 +15,7 @@
 {% block page_css %}
     <link rel="stylesheet"
           href="{% static 'css/article_details.css' %}"
-          nonce="{{ request.csp_nonce }}" />
+          nonce="{{ csp_nonce }}" />
 {% endblock page_css %}
 
 {% block title %}

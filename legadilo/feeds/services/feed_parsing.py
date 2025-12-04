@@ -18,13 +18,8 @@ from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 from pydantic import BaseModel as BaseSchema
 
-from legadilo.reading.services.article_fetching import (
-    ArticleData,
-    parse_tags_list,
-)
-
-from ...utils.time_utils import dt_to_http_date
-from ...utils.validators import (
+from legadilo.core.utils.time_utils import dt_to_http_date
+from legadilo.core.utils.validators import (
     CleanedString,
     ValidUrlValidator,
     default_frozen_model_config,
@@ -32,6 +27,11 @@ from ...utils.validators import (
     normalize_url,
     truncate,
 )
+from legadilo.reading.services.article_fetching import (
+    ArticleData,
+    parse_tags_list,
+)
+
 from .. import constants
 
 logger = logging.getLogger(__name__)

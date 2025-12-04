@@ -7,7 +7,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import legadilo.utils.validators
+import legadilo.core.utils.validators
 
 
 class Migration(migrations.Migration):
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 default=list,
-                validators=[legadilo.utils.validators.list_of_strings_validator],
+                validators=[legadilo.core.utils.validators.list_of_strings_validator],
             ),
         ),
         migrations.AlterField(

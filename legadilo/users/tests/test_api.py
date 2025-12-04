@@ -10,8 +10,8 @@ import time_machine
 from django.urls import reverse
 
 from config import settings
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.users.models import ApplicationToken
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db
@@ -116,7 +116,7 @@ class TestGetUserView:
     def test_get_user(self, client, user, django_assert_num_queries):
         header = self._get_authorization_header(client, user)
 
-        with django_assert_num_queries(1):
+        with django_assert_num_queries(2):
             response = client.get(
                 self.url,
                 HTTP_AUTHORIZATION=header,

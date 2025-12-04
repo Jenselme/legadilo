@@ -17,11 +17,11 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import ListField, MultipleTagsField, SlugifiableCharField
+from legadilo.core.utils.types import FormChoices
 from legadilo.reading import constants
 from legadilo.reading.models import ReadingList, ReadingListTag, Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.types import FormChoices
 
 
 class ReorderReadingListsForm(forms.Form):

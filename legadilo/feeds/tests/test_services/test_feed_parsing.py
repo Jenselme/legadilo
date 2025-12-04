@@ -5,6 +5,7 @@
 import httpx
 import pytest
 
+from legadilo.core.utils.testing import serialize_for_snapshot
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.services.feed_parsing import (
     FeedFileTooBigError,
@@ -17,7 +18,6 @@ from legadilo.feeds.services.feed_parsing import (
     get_feed_data,
     parse_feed,
 )
-from legadilo.utils.testing import serialize_for_snapshot
 
 from ..fixtures import (
     get_feed_fixture_content,

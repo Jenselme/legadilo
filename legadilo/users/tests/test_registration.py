@@ -3,32 +3,26 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
-from unittest.mock import patch
 
 import pytest
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.test import override_settings
+from django.test import modify_settings, override_settings
 from django.urls import reverse
 
-from legadilo.core.middlewares import CSPMiddleware
 from legadilo.core.models import Timezone
 from legadilo.users.admin import User
 from legadilo.users.models import UserSettings
 
 
-def create_nonce(self, request, *args, **kwargs):
-    request.csp_nonce = "test-nonce"
-
-
 @pytest.mark.django_db(reset_sequences=True)
-@patch.object(CSPMiddleware, "process_request", create_nonce)
 class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.
 
     @override_settings(CONTACT_EMAIL="contact@legadilo.eu", VERSION="0.0.0")
+    @modify_settings(MIDDLEWARE={"remove": ["legadilo.core.middlewares.CSPMiddleware"]})
     def test_registration_success(self, client, utc_tz, mocker, snapshot):
         self.client = client
         self.mocker = mocker

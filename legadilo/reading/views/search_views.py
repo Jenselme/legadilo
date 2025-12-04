@@ -16,6 +16,8 @@ from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
+from legadilo.core.utils.types import FormChoices
+from legadilo.core.utils.validators import is_url_valid
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.models.article import (
@@ -24,10 +26,8 @@ from legadilo.reading.models.article import (
     ArticleTagSearch,
 )
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.types import FormChoices
 
 from ...users.models import User
-from ...utils.validators import is_url_valid
 from .list_of_articles_views import UpdateArticlesForm, update_list_of_articles
 
 logger = logging.getLogger(__name__)

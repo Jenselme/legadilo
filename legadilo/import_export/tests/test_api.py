@@ -1,17 +1,18 @@
 #  SPDX-FileCopyrightText: 2025 Legadilo contributors
 #
 #  SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 
 import pytest
 import time_machine
 from django.urls import reverse
 
+from legadilo.core.utils.testing import read_streamable_response, serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds.models import FeedArticle
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.reading.tests.factories import ArticleFactory
-from legadilo.utils.testing import read_streamable_response, serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db

@@ -9,12 +9,12 @@ import httpx
 import pytest
 from django.urls import reverse
 
+from legadilo.core.utils.testing import serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedDataFactory, FeedFactory
 from legadilo.reading.tests.factories import TagFactory
-from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt
 
 
 def _prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, Any]:
@@ -320,7 +320,7 @@ class TestSubscribeToFeedView:
         category = FeedCategoryFactory(user=user)
         existing_tag = TagFactory(user=user)
 
-        with django_assert_num_queries(28):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -446,7 +446,7 @@ class TestUpdateFeedView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_category(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.patch(
                 self.url,
                 {"category_id": self.other_feed_category.id},
@@ -495,7 +495,7 @@ class TestUpdateFeedView:
         }
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -544,7 +544,7 @@ class TestUpdateFeedView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.feed.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(19):
             response = logged_in_sync_client.patch(
                 self.url,
                 {

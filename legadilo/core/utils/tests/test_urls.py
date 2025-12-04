@@ -5,7 +5,7 @@
 import pytest
 from django.test import RequestFactory
 
-from legadilo.utils.urls import (
+from legadilo.core.utils.urls import (
     add_query_params,
     pop_query_param,
     validate_from_url,

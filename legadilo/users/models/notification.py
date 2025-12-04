@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Self
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
-from legadilo.utils.time_utils import utcnow
+from legadilo.core.utils.time_utils import utcnow
 
 from .user import User
 

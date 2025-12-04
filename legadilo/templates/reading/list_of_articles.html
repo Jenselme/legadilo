@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_tags humanize i18n partials static %}
+{% load crispy_forms_tags humanize i18n static %}
 
 {% block title %}
     {{ page_title }}
@@ -8,11 +8,11 @@
 
 {% block page_js %}
     <script src="{% static 'js/list_of_articles.js' %}"
-            nonce="{{ request.csp_nonce }}"
+            nonce="{{ csp_nonce }}"
             defer></script>
     {{ js_cfg|json_script:"js-cfg" }}
     <script src="{% static 'js/tag_edition.js' %}"
-            nonce="{{ request.csp_nonce }}"
+            nonce="{{ csp_nonce }}"
             type="module"></script>
 {% endblock page_js %}
 {% partialdef reading-list-group %}

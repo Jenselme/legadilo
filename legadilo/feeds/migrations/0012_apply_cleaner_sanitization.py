@@ -7,7 +7,7 @@ import html
 
 from django.db import migrations
 
-from legadilo.utils.security import full_sanitize
+from legadilo.core.utils.security import full_sanitize
 
 
 def apply_cleaner_sanitization(apps, schema_editor):

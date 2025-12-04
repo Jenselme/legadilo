@@ -16,9 +16,8 @@ from django.contrib.sessions.models import Session
 from django.core.validators import validate_email
 from django.db import models
 
-from legadilo.utils.time_utils import utcnow
-from legadilo.utils.types import DeletionResult
-
+from ..core.utils.time_utils import utcnow
+from ..core.utils.types import DeletionResult
 from . import constants as users_constants
 
 if TYPE_CHECKING:

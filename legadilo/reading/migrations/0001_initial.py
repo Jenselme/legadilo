@@ -8,7 +8,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import legadilo.utils.validators
+import legadilo.core.utils.validators
 
 
 class Migration(migrations.Migration):
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=list,
-                        validators=[legadilo.utils.validators.list_of_strings_validator],
+                        validators=[legadilo.core.utils.validators.list_of_strings_validator],
                     ),
                 ),
                 (
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=list,
-                        validators=[legadilo.utils.validators.list_of_strings_validator],
+                        validators=[legadilo.core.utils.validators.list_of_strings_validator],
                     ),
                 ),
                 ("link", models.URLField(max_length=1024)),
@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         default=list,
                         help_text="Tags of the article from its source",
-                        validators=[legadilo.utils.validators.list_of_strings_validator],
+                        validators=[legadilo.core.utils.validators.list_of_strings_validator],
                     ),
                 ),
                 (
@@ -92,7 +92,7 @@ class Migration(migrations.Migration):
                         default="",
                         help_text="The language code for this article",
                         max_length=5,
-                        validators=[legadilo.utils.validators.language_code_validator],
+                        validators=[legadilo.core.utils.validators.language_code_validator],
                     ),
                 ),
                 ("read_at", models.DateTimeField(blank=True, null=True)),

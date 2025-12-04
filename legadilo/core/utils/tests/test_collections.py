@@ -4,8 +4,8 @@
 
 import pytest
 
-from legadilo.utils.collections_utils import max_or_none, merge_deletion_results, min_or_none
-from legadilo.utils.time_utils import utcdt
+from legadilo.core.utils.collections_utils import max_or_none, merge_deletion_results, min_or_none
+from legadilo.core.utils.time_utils import utcdt
 
 
 @pytest.mark.parametrize(

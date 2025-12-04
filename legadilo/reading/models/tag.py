@@ -14,9 +14,9 @@ from django.db.models.functions import Coalesce
 from slugify import slugify
 
 from legadilo.core import constants as core_constants
+from legadilo.core.utils.types import FormChoices
 from legadilo.reading import constants
 from legadilo.users.models import User
-from legadilo.utils.types import FormChoices
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta

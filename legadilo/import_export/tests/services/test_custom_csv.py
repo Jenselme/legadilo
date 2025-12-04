@@ -7,6 +7,7 @@ import pytest
 import time_machine
 
 from config import settings
+from legadilo.core.utils.testing import all_model_fields_except, serialize_for_snapshot
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
@@ -14,7 +15,6 @@ from legadilo.import_export.services.custom_csv import import_custom_csv_file
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory
-from legadilo.utils.testing import all_model_fields_except, serialize_for_snapshot
 
 
 def test_import_invalid_custom_csv(user):

@@ -5,7 +5,7 @@
 import pytest
 from django.core.paginator import Paginator
 
-from legadilo.utils.pagination import get_requested_page
+from legadilo.core.utils.pagination import get_requested_page
 
 
 @pytest.mark.parametrize(

@@ -16,6 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.utils.urls import add_query_params, pop_query_param, validate_referer_url
 from legadilo.reading import constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.models.article import SaveArticleResult
@@ -23,7 +24,6 @@ from legadilo.reading.services.article_fetching import (
     fetch_article_data,
 )
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.urls import add_query_params, pop_query_param, validate_referer_url
 
 
 class FetchArticleForm(forms.Form):

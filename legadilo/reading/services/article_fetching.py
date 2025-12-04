@@ -19,15 +19,14 @@ from pydantic import ValidationError as PydanticValidationError
 from pydantic import model_validator
 from slugify import slugify
 
-from legadilo.reading import constants
-from legadilo.utils.exceptions import extract_debug_information, format_exception
-from legadilo.utils.http_utils import get_sync_client
-from legadilo.utils.security import (
+from legadilo.core.utils.exceptions import extract_debug_information, format_exception
+from legadilo.core.utils.http_utils import get_sync_client
+from legadilo.core.utils.security import (
     full_sanitize,
     sanitize_keep_safe_tags,
 )
-from legadilo.utils.time_utils import safe_datetime_parse
-from legadilo.utils.validators import (
+from legadilo.core.utils.time_utils import safe_datetime_parse
+from legadilo.core.utils.validators import (
     HTML_CONTENT_TYPES,
     CleanedString,
     ContentType,
@@ -44,6 +43,7 @@ from legadilo.utils.validators import (
     sanitize_keep_safe_tags_validator,
     truncate,
 )
+from legadilo.reading import constants
 
 logger = logging.getLogger(__name__)
 

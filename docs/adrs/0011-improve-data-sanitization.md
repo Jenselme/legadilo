@@ -13,7 +13,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 When an article is added with RSS, the form or the API, its title, tags, summary and content are sanitized.
 
-Safe HTML elements (as defined in `legadilo.utils.security.DEFAULT_ALLOWED_ATTRIBUTES`) and some of their attributes are allowed in the summary and the content.
+Safe HTML elements (as defined in `legadilo.core.utils.security.DEFAULT_ALLOWED_ATTRIBUTES`) and some of their attributes are allowed in the summary and the content.
 They cannot be edited directly by the user: the article must be updated either with an automatic feed update or by the user by adding an article manually or refreshing the content directly.
 In both cases, the data is sanitized again.
 When rendering an article card or the details, these fields are marked as safe with the `|safe` template filter to allow Django to render their HTML without escaping.

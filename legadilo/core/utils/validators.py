@@ -23,7 +23,7 @@ from pydantic import (
 from pydantic import BaseModel as BaseSchema
 from pydantic import ValidationError as PydanticValidationError
 
-from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
+from legadilo.core.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 type ContentType = Literal["application/xhtml+xml", "text/html", "text/plain"]
 CONTENT_TYPES = tuple(content_type for content_type in get_literal_args(ContentType.__value__))

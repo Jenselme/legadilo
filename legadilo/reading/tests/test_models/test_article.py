@@ -12,6 +12,9 @@ import time_machine
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 
+from legadilo.core.utils.testing import serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt, utcnow
+from legadilo.core.utils.validators import TableOfContentTopItem
 from legadilo.feeds.tests.factories import FeedArticleFactory, FeedCategoryFactory, FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import (
@@ -34,9 +37,6 @@ from legadilo.reading.tests.factories import (
     ReadingListFactory,
     TagFactory,
 )
-from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt, utcnow
-from legadilo.utils.validators import TableOfContentTopItem
 
 
 @pytest.mark.parametrize(

@@ -12,9 +12,9 @@ from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.core.models import Timezone
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.users.models import ApplicationToken
 from legadilo.users.tests.factories import ApplicationTokenFactory
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db

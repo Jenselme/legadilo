@@ -5,7 +5,8 @@
 from django.urls import path
 from django.urls.converters import register_converter
 
-from ..utils.urls import create_path_converter_from_enum
+from legadilo.core.utils.urls import create_path_converter_from_enum
+
 from . import constants, views
 
 app_name = "reading"

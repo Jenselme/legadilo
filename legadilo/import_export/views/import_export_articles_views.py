@@ -15,10 +15,10 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_http_methods
 from pydantic import ValidationError as PydanticValidationError
 
+from legadilo.core.utils.file import ensure_file_on_disk
 from legadilo.import_export.services.exceptions import DataImportError
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
-from ...utils.file import ensure_file_on_disk
 from .. import constants
 from ..services.custom_csv import import_custom_csv_file
 from ..services.export import export_articles

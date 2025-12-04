@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING, assert_never
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
-from ...utils.time_utils import utcnow
-from ...utils.validators import list_of_strings_validator
+from legadilo.core.utils.time_utils import utcnow
+from legadilo.core.utils.validators import list_of_strings_validator
+
 from .. import constants
 
 if TYPE_CHECKING:

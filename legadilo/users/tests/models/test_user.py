@@ -11,10 +11,10 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
 
+from legadilo.core.utils.time_utils import utcnow
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.users.models import User
 from legadilo.users.tests.factories import UserFactory
-from legadilo.utils.time_utils import utcnow
 
 
 @pytest.mark.django_db

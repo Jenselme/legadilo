@@ -15,14 +15,14 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
+from legadilo.core.utils.time_utils import utcnow
+from legadilo.core.utils.types import DeletionResult
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models.article import Article, ArticleQuerySet, SaveArticleResult
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
-from legadilo.utils.types import DeletionResult
 
 from ...users.models import Notification
-from ...utils.time_utils import utcnow
 from .. import constants as feeds_constants
 from ..services.feed_parsing import FeedData
 from .feed_article import FeedArticle

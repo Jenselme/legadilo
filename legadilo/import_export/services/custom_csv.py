@@ -14,6 +14,9 @@ from urllib.parse import urlparse
 import httpx
 from django.db import IntegrityError
 
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.time_utils import safe_datetime_parse
+from legadilo.core.utils.validators import is_url_valid
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedArticle, FeedCategory
 from legadilo.feeds.services.feed_parsing import (
@@ -28,9 +31,6 @@ from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.users.models import User
-from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.time_utils import safe_datetime_parse
-from legadilo.utils.validators import is_url_valid
 
 from .. import constants
 

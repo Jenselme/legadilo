@@ -5,7 +5,7 @@
 import string
 from io import StringIO
 
-from legadilo.utils.security import full_sanitize
+from legadilo.core.utils.security import full_sanitize
 
 
 def get_nb_words_from_html(text: str) -> int:

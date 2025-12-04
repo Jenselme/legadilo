@@ -13,10 +13,17 @@ from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import Field, model_validator
+from pydantic import Field, field_serializer, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from config import settings
+from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.validators import (
+    CleanedString,
+    ValidUrlValidator,
+    remove_falsy_items,
+)
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedCategory, FeedTag
 from legadilo.feeds.services.feed_parsing import (
@@ -29,13 +36,6 @@ from legadilo.reading.api import OutTagSchema
 from legadilo.reading.models import Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
-from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.validators import (
-    CleanedString,
-    ValidUrlValidator,
-    remove_falsy_items,
-)
 
 feeds_api_router = Router(tags=["feeds"])
 
@@ -59,6 +59,15 @@ class OutFeedSchema(ModelSchema):
     class Meta:
         model = Feed
         exclude = ("user", "created_at", "updated_at", "articles")
+
+    @field_serializer("category")
+    def category_serializer(self, value: int | None) -> OutFeedCategorySchema | None:
+        # Workaround for https://github.com/vitalik/django-ninja/issues/1580
+        if value is None:
+            return None
+
+        feed_category = FeedCategory.objects.get(id=value)
+        return OutFeedCategorySchema.model_validate(feed_category)
 
 
 class FeedsSearchQuery(Schema):
