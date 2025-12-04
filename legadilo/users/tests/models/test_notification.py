@@ -5,8 +5,8 @@
 import pytest
 import time_machine
 
+from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.users.models import Notification
-from legadilo.utils.time_utils import utcdt, utcnow
 
 from ..factories import NotificationFactory
 

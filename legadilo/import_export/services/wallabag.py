@@ -12,16 +12,16 @@ from django.core.files import File
 from pydantic import BaseModel as BaseSchema
 from pydantic import ConfigDict, TypeAdapter
 
-from legadilo.reading import constants as reading_constants
-from legadilo.reading.models import Article, Tag
-from legadilo.reading.services.article_fetching import ArticleData, Language, OptionalUrl
-from legadilo.users.models import User
-from legadilo.utils.validators import (
+from legadilo.core.utils.validators import (
     CleanedString,
     ValidUrlValidator,
     remove_falsy_items,
     sanitize_keep_safe_tags_validator,
 )
+from legadilo.reading import constants as reading_constants
+from legadilo.reading.models import Article, Tag
+from legadilo.reading.services.article_fetching import ArticleData, Language, OptionalUrl
+from legadilo.users.models import User
 
 logger = logging.getLogger(__name__)
 

@@ -7,9 +7,9 @@ from __future__ import annotations
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
+from legadilo.core.utils.time_utils import utcnow
+from legadilo.core.utils.types import DeletionResult
 from legadilo.reading import constants
-from legadilo.utils.time_utils import utcnow
-from legadilo.utils.types import DeletionResult
 
 
 class ArticleFetchErrorQuerySet(models.QuerySet["ArticleFetchError"]):

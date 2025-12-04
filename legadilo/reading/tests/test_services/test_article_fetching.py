@@ -8,9 +8,9 @@ from typing import Any
 import httpx
 import pytest
 
+from legadilo.core.utils.testing import serialize_for_snapshot
 from legadilo.reading.services.article_fetching import ArticleData, fetch_article_data
 from legadilo.reading.tests.fixtures import get_article_fixture_content
-from legadilo.utils.testing import serialize_for_snapshot
 
 
 def test_fetch_article_data(httpx_mock, snapshot):

@@ -6,11 +6,11 @@ import pytest
 import time_machine
 from django.core.management import call_command
 
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedArticleFactory, FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article, ArticleFetchError
 from legadilo.reading.tests.factories import ArticleFactory, ArticleFetchErrorFactory
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db

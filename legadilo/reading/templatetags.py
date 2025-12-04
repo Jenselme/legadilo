@@ -7,9 +7,9 @@ from django.template.defaulttags import register
 from django.urls import reverse
 from markdown import Markdown
 
+from legadilo.core.utils.security import sanitize_keep_safe_tags
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
-from legadilo.utils.security import sanitize_keep_safe_tags
 
 
 @register.filter

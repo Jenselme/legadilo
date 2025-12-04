@@ -23,13 +23,13 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
+from legadilo.core.utils.pagination import get_requested_page
+from legadilo.core.utils.types import FormChoices
+from legadilo.core.utils.validators import get_page_number_from_request
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
 from legadilo.reading.models.article import ArticleQuerySet
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.pagination import get_requested_page
-from legadilo.utils.types import FormChoices
-from legadilo.utils.validators import get_page_number_from_request
 
 from ._utils import get_js_cfg_from_reading_list
 

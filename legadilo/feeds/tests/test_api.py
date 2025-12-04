@@ -9,12 +9,12 @@ import httpx
 import pytest
 from django.urls import reverse
 
+from legadilo.core.utils.testing import serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedDataFactory, FeedFactory
 from legadilo.reading.tests.factories import TagFactory
-from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt
 
 
 def _prepare_feed_for_snapshot(data: dict[str, Any], feed: Feed) -> dict[str, Any]:

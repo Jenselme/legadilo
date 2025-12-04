@@ -4,7 +4,7 @@
 
 import pytest
 
-from legadilo.utils.text import ClearableStringIO, get_nb_words_from_html
+from legadilo.core.utils.text import ClearableStringIO, get_nb_words_from_html
 
 
 @pytest.mark.parametrize(

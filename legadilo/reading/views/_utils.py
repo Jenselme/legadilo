@@ -4,8 +4,8 @@
 
 from django.urls import reverse
 
+from legadilo.core.utils.urls import validate_from_url
 from legadilo.reading.models import ReadingList
-from legadilo.utils.urls import validate_from_url
 
 
 def get_js_cfg_from_reading_list(reading_list: ReadingList):

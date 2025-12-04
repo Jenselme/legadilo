@@ -7,7 +7,7 @@ from ssl import SSLCertVerificationError
 import httpx
 import pytest
 
-from legadilo.utils.exceptions import extract_debug_information, format_exception
+from legadilo.core.utils.exceptions import extract_debug_information, format_exception
 
 
 @pytest.mark.parametrize(

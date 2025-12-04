@@ -4,7 +4,7 @@
 
 import pytest
 
-from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
+from legadilo.core.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 
 @pytest.mark.parametrize(

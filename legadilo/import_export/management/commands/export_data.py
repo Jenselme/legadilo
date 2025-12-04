@@ -5,9 +5,9 @@
 from django.core.management import BaseCommand, CommandError, CommandParser
 from django.template.loader import render_to_string
 
+from legadilo.core.utils.file import file_or_stdout
 from legadilo.import_export.services.export import build_feeds_export_context, export_articles
 from legadilo.users.models import User
-from legadilo.utils.file import file_or_stdout
 
 
 class Command(BaseCommand):

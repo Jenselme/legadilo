@@ -7,7 +7,7 @@
 from django.core.paginator import Paginator
 from django.db import migrations, models
 
-import legadilo.utils.validators
+import legadilo.core.utils.validators
 from legadilo.reading.services.article_fetching import _build_table_of_content
 
 
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 default=list,
                 help_text="The table of content of the article.",
-                validators=[legadilo.utils.validators.table_of_content_validator],
+                validators=[legadilo.core.utils.validators.table_of_content_validator],
             ),
         ),
         migrations.RunPython(build_toc, reverse_code=migrations.RunPython.noop),

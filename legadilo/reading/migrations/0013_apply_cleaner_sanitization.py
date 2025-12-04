@@ -7,8 +7,8 @@ import html
 
 from django.db import migrations
 
-from legadilo.utils.pagination import paginate_qs
-from legadilo.utils.security import full_sanitize, sanitize_keep_safe_tags
+from legadilo.core.utils.pagination import paginate_qs
+from legadilo.core.utils.security import full_sanitize, sanitize_keep_safe_tags
 
 
 def apply_cleaner_sanitization(apps, schema_editor):

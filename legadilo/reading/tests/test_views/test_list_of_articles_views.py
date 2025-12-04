@@ -11,10 +11,10 @@ from django.template.defaultfilters import urlencode
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.core.utils.time_utils import utcnow
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
-from legadilo.utils.time_utils import utcnow
 
 
 @pytest.mark.django_db

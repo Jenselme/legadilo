@@ -10,13 +10,13 @@ from django.http import QueryDict
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.core.utils.testing import AnyOfType, dict_to_query_dict
 from legadilo.feeds.models import Feed
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.views.search_views import SearchForm
-from legadilo.utils.testing import AnyOfType, dict_to_query_dict
 
 
 class TestSearchForm:

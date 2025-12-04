@@ -9,6 +9,8 @@ import pytest
 import time_machine
 from django.urls import reverse
 
+from legadilo.core.utils.testing import serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.tests.factories import (
@@ -20,8 +22,6 @@ from legadilo.reading.tests.factories import (
     TagFactory,
 )
 from legadilo.reading.tests.fixtures import get_article_fixture_content
-from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt, utcnow
 
 
 def _prepare_article_for_serialization(data: dict[str, Any], article: Article) -> dict[str, Any]:

@@ -15,17 +15,17 @@ from django.test import override_settings
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.core.utils.testing import (
+    all_model_fields_except,
+    read_streamable_response,
+    serialize_for_snapshot,
+)
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds.models import Feed
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleFactory, CommentFactory
-from legadilo.utils.testing import (
-    all_model_fields_except,
-    read_streamable_response,
-    serialize_for_snapshot,
-)
-from legadilo.utils.time_utils import utcdt
 
 
 class TestExportArticlesView:

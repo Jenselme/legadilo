@@ -24,17 +24,17 @@ from ninja.schema import Schema
 from pydantic import ConfigDict
 from slugify import slugify
 
-from legadilo.reading import constants
-from legadilo.reading.models.tag import ArticleTag
-from legadilo.utils.collections_utils import CustomJsonEncoder, max_or_none, min_or_none
-from legadilo.utils.text import get_nb_words_from_html
-from legadilo.utils.time_utils import utcnow
-from legadilo.utils.validators import (
+from legadilo.core.utils.collections_utils import CustomJsonEncoder, max_or_none, min_or_none
+from legadilo.core.utils.text import get_nb_words_from_html
+from legadilo.core.utils.time_utils import utcnow
+from legadilo.core.utils.validators import (
     CONTENT_TYPES,
     language_code_validator,
     list_of_strings_validator,
     table_of_content_validator,
 )
+from legadilo.reading import constants
+from legadilo.reading.models.tag import ArticleTag
 
 from .article_fetch_error import ArticleFetchError
 

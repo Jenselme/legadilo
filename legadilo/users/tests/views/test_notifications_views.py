@@ -8,7 +8,7 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
-from legadilo.utils.time_utils import utcnow
+from legadilo.core.utils.time_utils import utcnow
 
 from ..factories import NotificationFactory
 

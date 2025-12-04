@@ -14,7 +14,8 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
-from ...utils.time_utils import utcnow
+from legadilo.core.utils.time_utils import utcnow
+
 from .user import User
 
 if TYPE_CHECKING:

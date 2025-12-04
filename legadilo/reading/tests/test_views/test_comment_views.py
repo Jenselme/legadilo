@@ -8,9 +8,9 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.core.utils.testing import extract_htmx_headers
 from legadilo.reading.models import Article, Comment
 from legadilo.reading.tests.factories import CommentFactory
-from legadilo.utils.testing import extract_htmx_headers
 
 
 @pytest.mark.django_db

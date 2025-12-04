@@ -6,8 +6,8 @@ import logging
 
 from django.db import connection, migrations, models
 
-import legadilo.utils.time_utils
-from legadilo.utils.pagination import paginate_qs
+import legadilo.core.utils.time_utils
+from legadilo.core.utils.pagination import paginate_qs
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="feedarticle",
             name="last_seen_at",
-            field=models.DateTimeField(default=legadilo.utils.time_utils.utcnow),
+            field=models.DateTimeField(default=legadilo.core.utils.time_utils.utcnow),
         ),
         migrations.RunPython(fill_feed_article_id, migrations.RunPython.noop),
         migrations.AddConstraint(

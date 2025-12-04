@@ -18,11 +18,11 @@ from pydantic import ConfigDict, PlainSerializer, field_serializer
 from pydantic import ValidationError as PydanticValidationError
 
 from config import settings
+from legadilo.core.utils.api import ApiError
 from legadilo.users.models import ApplicationToken, UserSettings
-from legadilo.utils.time_utils import utcnow
 
 from ..core.models import Timezone
-from ..utils.api import ApiError
+from ..core.utils.time_utils import utcnow
 from .models import User
 from .user_types import AuthenticatedApiRequest
 

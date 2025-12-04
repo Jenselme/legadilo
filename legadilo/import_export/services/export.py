@@ -5,12 +5,12 @@
 import csv
 from datetime import datetime
 
+from legadilo.core.utils.text import ClearableStringIO
+from legadilo.core.utils.time_utils import utcnow
 from legadilo.feeds.models import Feed, FeedCategory
 from legadilo.import_export import constants
 from legadilo.reading.models import Article
 from legadilo.users.models import User
-from legadilo.utils.text import ClearableStringIO
-from legadilo.utils.time_utils import utcnow
 
 
 def export_articles(

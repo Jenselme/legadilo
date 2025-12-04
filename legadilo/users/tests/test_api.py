@@ -10,8 +10,8 @@ import time_machine
 from django.urls import reverse
 
 from config import settings
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.users.models import ApplicationToken
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db

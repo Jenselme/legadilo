@@ -9,13 +9,13 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.core.utils.testing import AnyOfType
+from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag
 from legadilo.reading.models.article import SaveArticleResult
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
-from legadilo.utils.testing import AnyOfType
-from legadilo.utils.time_utils import utcdt, utcnow
 
 
 @pytest.mark.django_db

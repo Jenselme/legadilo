@@ -10,7 +10,7 @@ from django.db import models
 from django.http import QueryDict
 from pydantic import BaseModel as BaseSchema
 
-from legadilo.utils.collections_utils import CustomJsonEncoder
+from legadilo.core.utils.collections_utils import CustomJsonEncoder
 
 
 class AnyOfType:

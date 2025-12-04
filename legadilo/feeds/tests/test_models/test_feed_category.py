@@ -5,10 +5,10 @@
 import pytest
 import time_machine
 
+from legadilo.core.utils.testing import serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds.models import FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory
-from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt
 
 
 @pytest.mark.django_db

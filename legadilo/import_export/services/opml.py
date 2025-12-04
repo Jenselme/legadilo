@@ -10,6 +10,9 @@ from defusedxml.ElementTree import parse
 from django.db import IntegrityError
 from pydantic import ValidationError as PydanticValidationError
 
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.time_utils import utcnow
+from legadilo.core.utils.validators import is_url_valid
 from legadilo.feeds import constants as feeds_constants
 from legadilo.feeds.models import Feed, FeedCategory
 from legadilo.feeds.services.feed_parsing import (
@@ -18,9 +21,6 @@ from legadilo.feeds.services.feed_parsing import (
     get_feed_data,
 )
 from legadilo.users.models import User
-from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.time_utils import utcnow
-from legadilo.utils.validators import is_url_valid
 
 logger = logging.getLogger(__name__)
 

@@ -6,8 +6,7 @@
 
 from django.db import migrations, models
 
-import legadilo.utils.collections_utils
-import legadilo.utils.validators
+import legadilo.core.utils.validators
 
 
 class Migration(migrations.Migration):
@@ -22,9 +21,9 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 default=list,
-                encoder=legadilo.utils.collections_utils.CustomJsonEncoder,
+                encoder=legadilo.core.utils.collections_utils.CustomJsonEncoder,
                 help_text="The table of content of the article.",
-                validators=[legadilo.utils.validators.table_of_content_validator],
+                validators=[legadilo.core.utils.validators.table_of_content_validator],
             ),
         ),
     ]

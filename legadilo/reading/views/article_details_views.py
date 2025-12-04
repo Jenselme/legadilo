@@ -14,10 +14,10 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.utils.types import FormChoices
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Tag
 from legadilo.users.user_types import AuthenticatedHttpRequest
-from legadilo.utils.types import FormChoices
 
 from ._utils import get_from_url_for_article_details
 from .comment_views import CommentArticleForm

@@ -291,7 +291,6 @@ layers = [
     "legadilo.reading",
     "legadilo.users",
     "legadilo.core",
-    "legadilo.utils",
 ]
 ignore_imports = [
     "legadilo.reading.tests.test_models.test_article -> legadilo.feeds.tests.factories",

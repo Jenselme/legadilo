@@ -9,6 +9,8 @@ import pytest
 import time_machine
 
 from legadilo.core.models import Timezone
+from legadilo.core.utils.testing import serialize_for_snapshot
+from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.feeds.models import FeedArticle, FeedUpdate
 from legadilo.feeds.services.feed_parsing import ArticleData, FeedData
 from legadilo.feeds.tests.factories import (
@@ -22,8 +24,6 @@ from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import ArticleDataFactory, ArticleFactory, TagFactory
 from legadilo.users.models import Notification
 from legadilo.users.tests.factories import UserFactory
-from legadilo.utils.testing import serialize_for_snapshot
-from legadilo.utils.time_utils import utcdt, utcnow
 
 from ... import constants as feeds_constants
 from ...models import Feed

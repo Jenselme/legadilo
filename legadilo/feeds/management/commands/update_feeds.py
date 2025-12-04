@@ -14,14 +14,14 @@ from django.core.management.base import BaseCommand, CommandParser
 from httpx import HTTPError, HTTPStatusError
 
 from legadilo import constants
+from legadilo.core.utils.exceptions import extract_debug_information, format_exception
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.loggers import unlink_logger_from_sentry
+from legadilo.core.utils.time_utils import utcnow
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
 from legadilo.users.models import User
-from legadilo.utils.exceptions import extract_debug_information, format_exception
-from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.loggers import unlink_logger_from_sentry
-from legadilo.utils.time_utils import utcnow
 
 logger = logging.getLogger(__name__)
 

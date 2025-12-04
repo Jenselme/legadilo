@@ -10,11 +10,11 @@ import pytest
 import time_machine
 from django.core.management import call_command
 
+from legadilo.core.utils.time_utils import utcdt
 from legadilo.feeds.models import FeedUpdate
 from legadilo.feeds.tests.factories import FeedFactory, FeedUpdateFactory
 from legadilo.reading.models import Article
 from legadilo.users.models import Notification
-from legadilo.utils.time_utils import utcdt
 
 from ... import constants
 from ..fixtures import get_feed_fixture_content

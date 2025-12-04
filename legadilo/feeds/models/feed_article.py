@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
-from legadilo.utils.time_utils import utcnow
+from legadilo.core.utils.time_utils import utcnow
 
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta

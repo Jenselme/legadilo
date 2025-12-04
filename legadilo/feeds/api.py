@@ -17,6 +17,13 @@ from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from config import settings
+from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
+from legadilo.core.utils.http_utils import get_rss_sync_client
+from legadilo.core.utils.validators import (
+    CleanedString,
+    ValidUrlValidator,
+    remove_falsy_items,
+)
 from legadilo.feeds import constants
 from legadilo.feeds.models import Feed, FeedCategory, FeedTag
 from legadilo.feeds.services.feed_parsing import (
@@ -29,13 +36,6 @@ from legadilo.reading.api import OutTagSchema
 from legadilo.reading.models import Tag
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
-from legadilo.utils.api import ApiError, NotSet, update_model_from_schema
-from legadilo.utils.http_utils import get_rss_sync_client
-from legadilo.utils.validators import (
-    CleanedString,
-    ValidUrlValidator,
-    remove_falsy_items,
-)
 
 feeds_api_router = Router(tags=["feeds"])
 
