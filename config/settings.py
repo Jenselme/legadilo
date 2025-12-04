@@ -13,10 +13,9 @@ from pathlib import Path
 import asgiref
 import django
 import environ
-from csp.constants import NONCE, NONE, SELF, STRICT_DYNAMIC, UNSAFE_INLINE
 from django.contrib.messages import constants as messages
+from django.utils.csp import CSP
 from django.utils.translation import gettext_lazy as _
-from template_partials.apps import wrap_loaders
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 PYPROJECT_TOML = BASE_DIR / "pyproject.toml"
@@ -136,7 +135,6 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount",
     "axes",
     "django_htmx",
-    "template_partials.apps.SimpleAppConfig",
     "corsheaders",
 ]
 LOCAL_APPS = [
@@ -256,6 +254,7 @@ MEDIA_URL = "/media/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
 TEMPLATES = [
     {
+        "APP_DIRS": True,
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "NAME": "default-template-backend",
@@ -271,6 +270,7 @@ TEMPLATES = [
                 "django.template.context_processors.media",
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
+                "django.template.context_processors.csp",
                 "django.contrib.messages.context_processors.messages",
                 "legadilo.users.context_processors.allauth_settings",
                 "legadilo.core.context_processors.provide_global_context",
@@ -283,7 +283,6 @@ TEMPLATES = [
         },
     },
 ]
-wrap_loaders("default-template-backend")
 
 MESSAGE_TAGS = {
     messages.ERROR: "danger",
@@ -339,32 +338,29 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # CSP
 # ------------------------------------------------------------------------------
-# https://django-csp.readthedocs.io/en/latest/configuration.html
-# https://content-security-policy.com/
-# https://csp-evaluator.withgoogle.com/
-CONTENT_SECURITY_POLICY = {
-    "DIRECTIVES": {
-        "default-src": (SELF,),
-        "script-src": (STRICT_DYNAMIC, UNSAFE_INLINE, "https:", NONCE),
-        "script-src-attr": None,
-        "script-src-elem": None,
-        "img-src": (SELF, "data:"),
-        "object-src": (NONE,),
-        "media-src": (SELF,),
-        "frame-src": (NONE,),
-        "font-src": (SELF,),
-        "connect-src": (SELF,),
-        "style-src": (STRICT_DYNAMIC, UNSAFE_INLINE, "https:", NONCE),
-        "style-src-attr": None,
-        "style-src-elem": None,
-        "base-uri": (NONE,),
-        "child-src": (NONE,),
-        "frame-ancestors": (NONE,),
-        "form-action": (SELF,),
-        "manifest-src": (SELF,),
-        "worker-src": (SELF,),
-        "upgrade-insecure-requests": IS_PRODUCTION,
-    },
+# https://docs.djangoproject.com/en/6.0/ref/csp/#csp-settings
+# https://docs.djangoproject.com/en/6.0/ref/settings/#std-setting-SECURE_CSP
+SECURE_CSP = {
+    "default-src": (CSP.SELF,),
+    "script-src": (CSP.STRICT_DYNAMIC, CSP.UNSAFE_INLINE, "https:", CSP.NONCE),
+    "script-src-attr": None,
+    "script-src-elem": None,
+    "img-src": (CSP.SELF, "data:"),
+    "object-src": (CSP.NONE,),
+    "media-src": (CSP.SELF,),
+    "frame-src": (CSP.NONE,),
+    "font-src": (CSP.SELF,),
+    "connect-src": (CSP.SELF,),
+    "style-src": (CSP.STRICT_DYNAMIC, CSP.UNSAFE_INLINE, "https:", CSP.NONCE),
+    "style-src-attr": None,
+    "style-src-elem": None,
+    "base-uri": (CSP.NONE,),
+    "child-src": (CSP.NONE,),
+    "frame-ancestors": (CSP.NONE,),
+    "form-action": (CSP.SELF,),
+    "manifest-src": (CSP.SELF,),
+    "worker-src": (CSP.SELF,),
+    "upgrade-insecure-requests": IS_PRODUCTION,
 }
 
 

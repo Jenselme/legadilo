@@ -8,7 +8,6 @@ from http import HTTPStatus
 from typing import Any
 from urllib.parse import unquote_plus, urlencode
 
-from csp.decorators import csp_update
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -19,8 +18,10 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_GET, require_http_methods
 
+from config import settings
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.core.utils.pagination import get_requested_page
@@ -36,7 +37,7 @@ from ._utils import get_js_cfg_from_reading_list
 
 @require_GET
 @login_required
-@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
+@csp_override({"img-src": settings.SECURE_CSP["img-src"] + ("https:",)})
 def reading_list_with_articles_view(
     request: AuthenticatedHttpRequest, reading_list_slug: str | None = None
 ) -> HttpResponse:
@@ -137,7 +138,7 @@ def _display_list_of_articles(
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
+@csp_override({"img-src": settings.SECURE_CSP["img-src"] + ("https:",)})
 def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> TemplateResponse:
     displayed_tag = get_object_or_404(
         Tag,
@@ -155,7 +156,7 @@ def tag_with_articles_view(request: AuthenticatedHttpRequest, tag_slug: str) -> 
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
+@csp_override({"img-src": settings.SECURE_CSP["img-src"] + ("https:",)})
 def external_tag_with_articles_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     external_tag = request.GET.get("tag", "")
     external_tag = unquote_plus(external_tag)

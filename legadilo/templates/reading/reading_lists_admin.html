@@ -7,13 +7,13 @@
 {% endblock title %}
 
 {% block page_js %}
-    <script src="{% static 'js/draggable.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
+    <script src="{% static 'js/draggable.js' %}" nonce="{{ csp_nonce }}" defer></script>
 {% endblock page_js %}
 
 {% block page_css %}
     <link rel="stylesheet"
           href="{% static 'css/draggable.css' %}"
-          nonce="{{ request.csp_nonce }}" />
+          nonce="{{ csp_nonce }}" />
 {% endblock page_css %}
 
 {% block content %}

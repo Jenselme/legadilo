@@ -4,37 +4,28 @@
 
 from zoneinfo import ZoneInfo
 
-from csp.middleware import CSPMiddleware as DjangoCSPMiddleware
-from csp.middleware import PolicyParts
 from django.conf import settings
-from django.http.request import HttpRequest
-from django.http.response import HttpResponseBase
+from django.http import HttpRequest, HttpResponseBase
+from django.middleware.csp import ContentSecurityPolicyMiddleware
 from django.utils import timezone
+from django.utils.csp import CSP, build_policy
 
 
-class CSPMiddleware(DjangoCSPMiddleware):
+class CSPMiddleware(ContentSecurityPolicyMiddleware):
     """Override the default middleware to allow usage of self for script and style on admin pages.
 
     It's the easiest solution and avoid having to override many templates with the nonce.
     """
 
-    def get_policy_parts(
-        self,
-        request: HttpRequest,
-        response: HttpResponseBase,
-        report_only: bool = False,  # noqa: FBT001,FBT002 Boolean default positional argument in function definition
-    ):
-        policy_parts = super().get_policy_parts(request, response, report_only=report_only)
-        if not request.path.startswith(f"/{settings.ADMIN_URL}"):
-            return policy_parts
+    def process_response(self, request: HttpRequest, response: HttpResponseBase):
+        if request.path.startswith(f"/{settings.ADMIN_URL}"):
+            response.headers[str(CSP.HEADER_ENFORCE)] = build_policy({
+                **settings.SECURE_CSP,
+                "script-src": (CSP.SELF,),
+                "style-src": (CSP.SELF,),
+            })
 
-        base_replace = policy_parts.replace or {}
-        replace = {
-            **base_replace,
-            "script-src": "'self'",
-            "style-src": "'self'",
-        }
-        return PolicyParts(policy_parts.config, policy_parts.update, replace, policy_parts.nonce)
+        return super().process_response(request, response)
 
 
 class TimezoneMiddleware:

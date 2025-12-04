@@ -4,13 +4,14 @@
 
 from http import HTTPStatus
 
-from csp.decorators import csp_update
 from django import forms
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms.fields import MultipleTagsField
@@ -49,7 +50,7 @@ class EditArticleForm(forms.Form):
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@csp_update({"img-src": "https:"})  # type: ignore[arg-type]
+@csp_override({"img-src": settings.SECURE_CSP["img-src"] + ("https:",)})
 def article_details_view(
     request: AuthenticatedHttpRequest, article_id: int, article_slug: str
 ) -> TemplateResponse:
