@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.12.2
+
 Dev changes:
 - Improve CSS files.
 - Correct installation of dependencies in dev container.
