@@ -572,9 +572,7 @@ if DEBUG:
     # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
     INSTALLED_APPS = ["whitenoise.runserver_nostatic", *INSTALLED_APPS]
     # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#prerequisites
-    INSTALLED_APPS += ["debug_toolbar", "django_watchfiles", "django_browser_reload"]
-    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#middleware
-    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+    INSTALLED_APPS += ["django_watchfiles", "django_browser_reload"]
     MIDDLEWARE.insert(0, "django_browser_reload.middleware.BrowserReloadMiddleware")
     # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
     DEBUG_TOOLBAR_CONFIG = {
