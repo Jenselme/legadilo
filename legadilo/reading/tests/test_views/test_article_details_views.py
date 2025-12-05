@@ -133,7 +133,7 @@ class TestUpdateArticleDetailsView:
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(28):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
@@ -153,7 +153,7 @@ class TestUpdateArticleDetailsView:
     ):
         initial_slug = self.article.slug
 
-        with django_assert_num_queries(28):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
             )

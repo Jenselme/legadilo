@@ -70,13 +70,14 @@ class TestTagManager:
             (self.tag2.slug, self.tag2.title),
         ]
 
-    def test_all_choices_with_hierarchy(self, user, other_user):
+    def test_all_choices_with_hierarchy(self, user, other_user, django_assert_num_queries):
         self.tag1.sub_tags.add(self.tag2)
         tag3 = TagFactory(user=user)
         tag4 = TagFactory(user=user)
         self.tag2.sub_tags.add(tag3, tag4)
 
-        choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
+        with django_assert_num_queries(2):
+            choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
 
         assert choices == [
             (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),

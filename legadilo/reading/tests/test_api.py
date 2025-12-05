@@ -472,7 +472,7 @@ class TestListTagsView:
         tag_with_sub_tag = TagFactory(user=user, title="With sub tags")
         tag_with_sub_tag.sub_tags.add(self.tag)
 
-        with django_assert_num_queries(6):
+        with django_assert_num_queries(7):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK

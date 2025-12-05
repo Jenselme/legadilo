@@ -7,10 +7,8 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Self, TypedDict
 
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db import models, transaction
-from django.db.models.functions import Coalesce
 from slugify import slugify
 
 from legadilo.core import constants as core_constants
@@ -97,36 +95,13 @@ class TagManager(models.Manager["Tag"]):
     def get_all_choices_with_hierarchy(self, user: User) -> tuple[FormChoices, TagsHierarchy]:
         choices: FormChoices = []
         hierarchy: TagsHierarchy = {}
-        for tag_data in (
-            self.get_queryset()
-            .for_user(user)
-            .annotate(
-                sub_tag_titles=Coalesce(
-                    ArrayAgg(
-                        "sub_tags__title",
-                        filter=models.Q(sub_tags__title__isnull=False),
-                        order_by=("sub_tags__title",),
-                    ),
-                    [],
-                ),
-                sub_tag_slugs=Coalesce(
-                    ArrayAgg(
-                        "sub_tags__slug",
-                        filter=models.Q(sub_tags__slug__isnull=False),
-                        order_by=("sub_tags__title",),
-                    ),
-                    [],
-                ),
-            )
-            .values("slug", "title", "sub_tag_titles", "sub_tag_slugs")
-            .order_by("title", "id")
+
+        for tag in (
+            self.get_queryset().for_user(user).prefetch_related("sub_tags").order_by("title", "id")
         ):
-            choices.append((tag_data["slug"], tag_data["title"]))
-            hierarchy[tag_data["slug"]] = [
-                {"title": sub_tag_title, "slug": sub_tag_slug}
-                for sub_tag_title, sub_tag_slug in zip(
-                    tag_data["sub_tag_titles"], tag_data["sub_tag_slugs"], strict=False
-                )
+            choices.append((tag.slug, tag.title))
+            hierarchy[tag.slug] = [
+                {"title": sub_tag.title, "slug": sub_tag.slug} for sub_tag in tag.sub_tags.all()
             ]
 
         return choices, hierarchy
