@@ -9,14 +9,12 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, assert_never, cast
 from zoneinfo import ZoneInfo
 
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
 from legadilo.core.utils.time_utils import utcnow
-from legadilo.core.utils.types import DeletionResult
 from legadilo.reading import constants as reading_constants
 from legadilo.reading.models.article import Article, ArticleQuerySet, SaveArticleResult
 from legadilo.reading.models.tag import Tag
@@ -243,19 +241,6 @@ class FeedManager(models.Manager["Feed"]):
 
     def get_articles(self, feed: Feed) -> ArticleQuerySet:
         return cast(ArticleQuerySet, feed.articles.all()).for_feed()
-
-    def cleanup_feed_updates(self) -> DeletionResult:
-        latest_feed_update_ids = (
-            self.get_queryset()
-            .alias(
-                alias_feed_update_ids=ArrayAgg(
-                    "feed_updates__id", order_by="-feed_updates__created_at"
-                ),
-            )
-            .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
-            .values_list("annot_latest_feed_update_id", flat=True)
-        )
-        return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids)).delete()
 
     @transaction.atomic()
     def create_from_metadata(  # noqa: PLR0913 too many arguments

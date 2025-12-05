@@ -50,6 +50,20 @@ class TestFeedUpdateQuerySet:
 
         assert list(feed_updates_to_cleanup) == [feed_update_to_cleanup]
 
+    def test_most_recent_for_each_feed(self):
+        feed_with_multiple_updates = FeedFactory()
+        feed_with_one_update = FeedFactory()
+        FeedFactory(title="Feed without update")
+        with time_machine.travel("2025-01-01 12:00:00"):
+            FeedUpdateFactory(feed=feed_with_multiple_updates)
+            only_feed_update = FeedUpdateFactory(feed=feed_with_one_update)
+        with time_machine.travel("2025-02-01 12:00:00"):
+            feed_update2 = FeedUpdateFactory(feed=feed_with_multiple_updates)
+
+        most_recent_for_each_feed = FeedUpdate.objects.get_queryset().most_recent_for_each_feed()
+
+        assert list(most_recent_for_each_feed) == [feed_update2, only_feed_update]
+
 
 @pytest.mark.django_db
 class TestFeedUpdateManager:
@@ -87,3 +101,25 @@ class TestFeedUpdateManager:
         FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 
         assert not FeedUpdate.objects.must_disable_feed(feed)
+
+    def test_cleanup(self):
+        feed = FeedFactory()
+        other_feed = FeedFactory()
+        with time_machine.travel("2024-03-15 12:00:00"):
+            feed_update_to_cleanup = FeedUpdateFactory(feed=feed)
+            # We only have this one, let's keep it.
+            FeedUpdateFactory()
+
+        with time_machine.travel("2024-05-01 12:00:00"):
+            FeedUpdateFactory(feed=feed)
+            FeedUpdateFactory(feed=other_feed)  # Too recent.
+
+        with time_machine.travel("2024-05-03 12:00:00"):
+            FeedUpdateFactory(feed=other_feed)  # Too recent.
+
+        with time_machine.travel("2024-06-01 12:00:00"):
+            deletion_result = FeedUpdate.objects.cleanup()
+
+        assert FeedUpdate.objects.filter(id=feed_update_to_cleanup.id).count() == 0
+        assert FeedUpdate.objects.count() == 4
+        assert deletion_result == (1, {"feeds.FeedUpdate": 1})

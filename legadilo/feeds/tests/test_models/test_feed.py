@@ -825,28 +825,6 @@ class TestFeedManager:
         assert feed_update.status == feeds_constants.FeedUpdateStatus.SUCCESS
         assert feed_update.ignored_article_ids == [deleted_feed_article_id]
 
-    def test_cleanup_feed_updates(self):
-        feed = FeedFactory()
-        other_feed = FeedFactory()
-        with time_machine.travel("2024-03-15 12:00:00"):
-            feed_update_to_cleanup = FeedUpdateFactory(feed=feed)
-            # We only have this one, let's keep it.
-            FeedUpdateFactory()
-
-        with time_machine.travel("2024-05-01 12:00:00"):
-            FeedUpdateFactory(feed=feed)
-            FeedUpdateFactory(feed=other_feed)  # Too recent.
-
-        with time_machine.travel("2024-05-03 12:00:00"):
-            FeedUpdateFactory(feed=other_feed)  # Too recent.
-
-        with time_machine.travel("2024-06-01 12:00:00"):
-            deletion_result = Feed.objects.cleanup_feed_updates()
-
-        assert FeedUpdate.objects.filter(id=feed_update_to_cleanup.id).count() == 0
-        assert FeedUpdate.objects.count() == 4
-        assert deletion_result == (1, {"feeds.FeedUpdate": 1})
-
     def test_export(self, user, other_user, snapshot, django_assert_num_queries):
         feed_category = FeedCategoryFactory(user=user, id=1, title="Some category")
         feed_with_category = FeedFactory(

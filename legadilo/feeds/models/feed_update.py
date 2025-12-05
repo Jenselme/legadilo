@@ -12,6 +12,7 @@ from django.db import models
 from legadilo.core.utils.time_utils import utcnow
 from legadilo.core.utils.validators import list_of_strings_validator
 
+from ...core.utils.types import DeletionResult
 from .. import constants
 
 if TYPE_CHECKING:
@@ -36,6 +37,9 @@ class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):
         return self.filter(
             created_at__lt=utcnow() - relativedelta(days=constants.KEEP_FEED_UPDATES_FOR)
         ).exclude(id__in=latest_feed_update_ids)
+
+    def most_recent_for_each_feed(self):
+        return self.order_by("feed_id", "-created_at").distinct("feed_id")
 
 
 class FeedUpdateManager(models.Manager["FeedUpdate"]):
@@ -99,6 +103,12 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
                 return relativedelta(months=4)
             case _:
                 assert_never(refresh_delay)
+
+    def cleanup(self) -> DeletionResult:
+        most_recent_updates = set(
+            self.get_queryset().most_recent_for_each_feed().values_list("id", flat=True)
+        )
+        return self.get_queryset().for_cleanup(most_recent_updates).delete()
 
 
 class FeedUpdate(models.Model):
