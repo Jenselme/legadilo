@@ -1,5 +1,13 @@
 version = 1
 
+# Migrations
+[[annotations]]
+path = [
+    "legadilo/**/migrations/*.py",
+]
+SPDX-FileCopyrightText = "Legadilo contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
 # HTML templates
 [[annotations]]
 path = [
