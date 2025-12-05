@@ -15,7 +15,6 @@ from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
 from legadilo.core.utils.time_utils import utcnow
-from legadilo.reading import constants as reading_constants
 from legadilo.reading.models.article import Article, ArticleQuerySet, SaveArticleResult
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
@@ -302,7 +301,7 @@ class FeedManager(models.Manager["Feed"]):
             feed.user,
             articles,
             feed.tags.all(),
-            source_type=reading_constants.ArticleSourceType.FEED,
+            initial_main_feed_id=feed.id,
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,

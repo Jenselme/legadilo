@@ -84,6 +84,7 @@ class TestExportArticlesApi:
             url="https://example.com/article/1",
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+            main_feed=feed,
         )
         FeedArticle.objects.create(feed=feed, article=article)
         ArticleFactory(

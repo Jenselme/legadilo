@@ -176,36 +176,6 @@ class TestArticleQuerySet:
 
         assert list(articles) == [unread_article]
 
-    def test_for_feed_links(self, user):
-        ArticleFactory(user=user, title="Not linked to a feed")
-        feed = FeedFactory(user=user)
-        article_one_feed = ArticleFactory(user=user, title="One feed")
-        FeedArticleFactory(feed=feed, article=article_one_feed)
-        other_feed = FeedFactory(user=user)
-        article_two_feeds = ArticleFactory(user=user, title="Two feed")
-        FeedArticleFactory(feed=feed, article=article_two_feeds)
-        FeedArticleFactory(feed=other_feed, article=article_two_feeds)
-        feed_no_slug = FeedFactory(
-            user=user, title="No slug", slug="", open_original_url_by_default=True
-        )
-        article_feed_no_slug = ArticleFactory(user=user, title="Article feed no slug")
-        FeedArticleFactory(feed=feed_no_slug, article=article_feed_no_slug)
-
-        articles = (
-            Article.objects.get_queryset()  # type: ignore[misc]
-            .for_feed_links()
-            .values_list(
-                "title", "annot_feed_id", "annot_feed_slug", "annot_open_original_by_default"
-            )
-        )
-
-        assert list(articles) == [
-            ("Not linked to a feed", None, None, None),
-            ("One feed", feed.id, feed.slug, False),
-            ("Two feed", feed.id, feed.slug, False),
-            ("Article feed no slug", feed_no_slug.id, "", True),
-        ]
-
     def test_for_reading_list_with_tags_basic_include(self, user, django_assert_num_queries):
         reading_list = ReadingListFactory(user=user)
         tag_to_include = TagFactory(user=user)
@@ -1091,7 +1061,6 @@ class TestArticleManager:
                     ),
                 ],
                 [tag1, tag2],
-                source_type=constants.ArticleSourceType.MANUAL,
             )
 
         assert Article.objects.count() == 4
@@ -1179,8 +1148,7 @@ class TestArticleManager:
                         language="fr",
                     ),
                 ],
-                [],
-                source_type=constants.ArticleSourceType.MANUAL,
+                tags=[],
             )
 
         assert Article.objects.count() == 1
@@ -1220,9 +1188,7 @@ class TestArticleManager:
         )
 
         with django_assert_num_queries(4):
-            Article.objects.save_from_list_of_data(
-                user, [article_data], [], source_type=constants.ArticleSourceType.MANUAL
-            )
+            Article.objects.save_from_list_of_data(user, [article_data], tags=[])
 
         existing_article.refresh_from_db()
         assert existing_article.read_at is not None
@@ -1230,6 +1196,7 @@ class TestArticleManager:
 
     def test_readd_read_article_from_a_feed(self, user, django_assert_num_queries):
         now_dt = utcnow()
+        feed = FeedFactory(user=user)
         existing_article = ArticleFactory(
             title="Old title",
             content="Old content",
@@ -1238,6 +1205,7 @@ class TestArticleManager:
             external_article_id="existing-article-feed",
             updated_at=utcdt(2023, 4, 20),
             read_at=now_dt,
+            main_feed=feed,
         )
         article_data = ArticleData(
             external_article_id=existing_article.external_article_id,
@@ -1260,7 +1228,10 @@ class TestArticleManager:
 
         with django_assert_num_queries(4):
             Article.objects.save_from_list_of_data(
-                user, [article_data], [], source_type=constants.ArticleSourceType.FEED
+                user,
+                [article_data],
+                tags=[],
+                initial_main_feed_id=feed.id,
             )
 
         existing_article.refresh_from_db()
@@ -1465,6 +1436,7 @@ class TestArticleManager:
             opened_at=utcdt(2024, 6, 25, 12, 0, 0),
             is_favorite=True,
             is_for_later=True,
+            main_feed=feed_without_category,
         )
         FeedArticleFactory(feed=feed_without_category, article=article_from_feed)
         article_two_feeds = ArticleFactory(
@@ -1474,6 +1446,7 @@ class TestArticleManager:
             url="https://example.com/article/multiple-feeds-article/",
             published_at=utcdt(2024, 6, 23, 12, 0, 0),
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+            main_feed=feed_with_category,
         )
         FeedArticleFactory(feed=feed_with_category, article=article_two_feeds)
         FeedArticleFactory(feed=feed_without_category, article=article_two_feeds)
@@ -1495,10 +1468,10 @@ class TestArticleManager:
         assert len(articles[0]) == 2
         assert len(articles[1]) == 1
         assert articles[0][0]["article_id"] == article_from_feed.id
-        assert articles[0][0]["feed_id"] == str(feed_without_category.id)
+        assert articles[0][0]["feed_id"] == feed_without_category.id
         assert articles[0][1]["article_id"] == article_two_feeds.id
-        assert articles[0][1]["feed_id"] == str(feed_with_category.id)
-        assert articles[0][1]["category_id"] == str(feed_category.id)
+        assert articles[0][1]["feed_id"] == feed_with_category.id
+        assert articles[0][1]["category_id"] == feed_category.id
         assert articles[1][0]["article_id"] == article_no_feed.id
         snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
 

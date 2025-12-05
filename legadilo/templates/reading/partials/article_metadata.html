@@ -17,13 +17,13 @@
         {{ article.published_at|date:"SHORT_DATETIME_FORMAT" }}
     {% endif %}
     <span class="me-2">
-        {% if article.main_source_type == 'FEED' and article.annot_feed_id %}
-            {% if article.annot_feed_slug %}
-                <a href="{% url 'feeds:feed_articles' feed_id=article.annot_feed_id feed_slug=article.annot_feed_slug %}">
+        {% if article.main_source_type == 'FEED' and article.main_feed_id %}
+            {% if article.main_feed.slug %}
+                <a href="{% url 'feeds:feed_articles' feed_id=article.main_feed.id feed_slug=article.main_feed.slug %}">
                     {% include "core/partials/bs-icons/feed_source.html" %}
                 {{ article.main_source_title }}</a>
             {% else %}
-                <a href="{% url 'feeds:feed_articles' feed_id=article.annot_feed_id %}">
+                <a href="{% url 'feeds:feed_articles' feed_id=article.main_feed.id %}">
                     {% include "core/partials/bs-icons/feed_source.html" %}
                 {{ article.main_source_title }}</a>
             {% endif %}

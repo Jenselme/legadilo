@@ -18,7 +18,6 @@ from legadilo.core.utils.validators import (
     remove_falsy_items,
     sanitize_keep_safe_tags_validator,
 )
-from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.services.article_fetching import ArticleData, Language, OptionalUrl
 from legadilo.users.models import User
@@ -91,7 +90,6 @@ def _import_wallabag_data(user: User, data: list[dict]) -> int:
             user=user,
             articles_data=[article_data],
             tags=tags,
-            source_type=reading_constants.ArticleSourceType.MANUAL,
         )
         nb_added_articles += 1
 

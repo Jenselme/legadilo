@@ -14,9 +14,9 @@
       "article_tags": "",
       "article_title": "Article from feed",
       "article_url": "https://example.com/article/feed-article/",
-      "category_id": "",
+      "category_id": null,
       "category_title": "",
-      "feed_id": "2",
+      "feed_id": 2,
       "feed_site_url": "https://example.com",
       "feed_title": "Feed without category",
       "feed_url": "https://example.com/feeds/without_cat.xml"
@@ -35,9 +35,9 @@
       "article_tags": "",
       "article_title": "Article with 2 feeds",
       "article_url": "https://example.com/article/multiple-feeds-article/",
-      "category_id": "1",
+      "category_id": 1,
       "category_title": "Feed category",
-      "feed_id": "1",
+      "feed_id": 1,
       "feed_site_url": "https://example.com",
       "feed_title": "Feed with category",
       "feed_url": "https://example.com/feeds/with_cat.xml"
