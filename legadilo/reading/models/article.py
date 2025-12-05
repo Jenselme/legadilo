@@ -92,7 +92,7 @@ class ArticleSearchQuery(Schema):
     )
     include_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
     exclude_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
-    tags: Iterable[ArticleTagSearch] = ()
+    tags_search: Iterable[ArticleTagSearch] = ()
 
     @classmethod
     def from_reading_list(cls, reading_list: ReadingList):
@@ -112,7 +112,7 @@ class ArticleSearchQuery(Schema):
             exclude_tag_operator=constants.ReadingListTagOperator(
                 reading_list.exclude_tag_operator
             ),
-            tags=[
+            tags_search=[
                 ArticleTagSearch(
                     filter_type=constants.ReadingListTagFilterType(reading_list_tag.filter_type),
                     tag_id=reading_list_tag.tag_id,
@@ -212,7 +212,7 @@ def _get_tags_filters(search_query: ArticleSearchQuery) -> models.Q:
     filters = models.Q()
     tags_to_include = []
     tags_to_exclude = []
-    for tag in search_query.tags:
+    for tag in search_query.tags_search:
         match tag.filter_type:
             case constants.ReadingListTagFilterType.INCLUDE:
                 tags_to_include.append(tag.tag_id)
@@ -751,7 +751,7 @@ class ArticleManager(models.Manager["Article"]):
             )
             for reading_list in reading_lists
         }
-        # We only count unread articles in the reading list. Not all article. I think it's more
+        # We only count unread articles in the reading list. Not all articles. I think it's more
         # relevant.
         return (
             self.get_queryset()
