@@ -190,9 +190,9 @@ class TestArticleTagQuerySet:
 
         assert article_tags == [self.article_tag1, self.article_tag2]
 
-    def test_for_deleted_urls(self):
+    def test_for_deleted_links(self):
         article_tags_marked_as_deleted = list(
-            ArticleTag.objects.get_queryset().for_deleted_urls([
+            ArticleTag.objects.get_queryset().for_deleted_links([
                 (self.article.id, self.tag1.id),
                 (self.article.id, self.tag2.id),
                 (self.article.id, self.tag3.id),

@@ -194,7 +194,7 @@ class ArticleTagQuerySet(models.QuerySet["ArticleTag"]):
             article_id__in=[article.id for article in articles], tag_id__in=[tag.id for tag in tags]
         )
 
-    def for_deleted_urls(self, links: Iterable[tuple[int, int]]) -> Self:
+    def for_deleted_links(self, links: Iterable[tuple[int, int]]) -> Self:
         article_ids = [link[0] for link in links]
         tag_ids = [link[1] for link in links]
 
@@ -242,7 +242,7 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
             self.bulk_create(article_tags_to_create)
 
             if readd_deleted:
-                self.get_queryset().for_deleted_urls(existing_article_tag_urls).update(
+                self.get_queryset().for_deleted_links(existing_article_tag_urls).update(
                     tagging_reason=constants.TaggingReason.ADDED_MANUALLY
                 )
 
