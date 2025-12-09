@@ -1461,7 +1461,7 @@ class TestArticleManager:
         )
         CommentFactory(id=1, article=article_from_feed, text="A comment")
 
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(7):
             articles = self._export_all_articles(user)
 
         assert len(articles) == 2

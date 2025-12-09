@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
@@ -17,6 +16,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.db.models.functions import Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
@@ -319,18 +319,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
         qs = (
             self.for_user(user)
-            .annotate(
-                annot_comments=Coalesce(
-                    ArrayAgg(
-                        "comments__text",
-                        order="comments__created_at",
-                        filter=models.Q(comments__isnull=False),
-                    ),
-                    models.Value([]),
-                ),
-            )
             .select_related("main_feed", "main_feed__category")
-            .prefetch_related(_build_prefetch_article_tags())
+            .prefetch_related(_build_prefetch_article_tags(), "comments")
             .order_by("id")
         )
         if updated_since:
@@ -728,15 +718,11 @@ class ArticleManager(models.Manager["Article"]):
 
     def export(self, user: User, *, updated_since: datetime | None = None):
         articles_qs = self.get_queryset().for_export(user, updated_since=updated_since)
-        nb_pages = math.ceil(articles_qs.count() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
-        for page in range(nb_pages):
+        paginator = Paginator(articles_qs, constants.MAX_EXPORT_ARTICLES_PER_PAGE)
+        for page_index in paginator.page_range:
+            page = paginator.page(page_index)
             articles = []
-            start_index = page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
-            end_index = (
-                page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
-                + constants.MAX_EXPORT_ARTICLES_PER_PAGE
-            )
-            for article in articles_qs[start_index:end_index]:
+            for article in page.object_list:
                 articles.append({
                     "category_id": article.main_feed.category_id if article.main_feed else "",
                     "category_title": article.main_feed.category.title
@@ -758,13 +744,15 @@ class ArticleManager(models.Manager["Article"]):
                     if article.updated_at
                     else "",
                     "article_authors": json.dumps(article.authors) if article.authors else "",
-                    "article_tags": json.dumps([tag.title for tag in article.tags_to_display])  # type: ignore[attr-defined]
-                    if article.tags_to_display  # type: ignore[attr-defined]
+                    "article_tags": json.dumps([tag.title for tag in article.tags_to_display])
+                    if article.tags_to_display
                     else "",
                     "article_read_at": article.read_at.isoformat() if article.read_at else "",
                     "article_is_favorite": article.is_favorite,
                     "article_lang": article.language,
-                    "article_comments": json.dumps(article.annot_comments),  # type: ignore[attr-defined]
+                    "article_comments": json.dumps([
+                        comment.text for comment in article.comments.all()
+                    ]),
                 })
 
             yield articles
