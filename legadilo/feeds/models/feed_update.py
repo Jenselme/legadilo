@@ -30,16 +30,18 @@ class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):
     def only_success(self):
         return self.filter(status=constants.FeedUpdateStatus.SUCCESS)
 
-    def only_latest(self):
-        return self.values("id").order_by("feed_id", "-created_at").distinct("feed_id")
-
-    def for_cleanup(self, latest_feed_update_ids: set[int | None]):
+    def for_cleanup(self, latest_feed_update_ids: set[int]):
         return self.filter(
             created_at__lt=utcnow() - relativedelta(days=constants.KEEP_FEED_UPDATES_FOR)
         ).exclude(id__in=latest_feed_update_ids)
 
     def most_recent_for_each_feed(self):
-        return self.order_by("feed_id", "-created_at").distinct("feed_id")
+        return (
+            # Force a group by on feed_id with .values("feed_id")
+            self.values("feed_id")
+            .annotate(latest=models.Max("id"))
+            .values_list("latest", flat=True)
+        )
 
 
 class FeedUpdateManager(models.Manager["FeedUpdate"]):
@@ -104,10 +106,11 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
             case _:
                 assert_never(refresh_delay)
 
+    def list_most_recent_for_each_feed(self) -> set[int]:
+        return set(self.get_queryset().most_recent_for_each_feed())
+
     def cleanup(self) -> DeletionResult:
-        most_recent_updates = set(
-            self.get_queryset().most_recent_for_each_feed().values_list("id", flat=True)
-        )
+        most_recent_updates = self.list_most_recent_for_each_feed()
         return self.get_queryset().for_cleanup(most_recent_updates).delete()
 
 

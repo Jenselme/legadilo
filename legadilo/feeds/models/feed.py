@@ -159,6 +159,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
         return self.for_status_search(enabled=True)
 
     def for_update(self, user: User):
+        most_recent_feed_ids = FeedUpdate.objects.list_most_recent_for_each_feed()
         return (
             self.alias(
                 # We need to filter for update only on the latest FeedUpdate object. If we have
@@ -168,11 +169,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
                 # on the latest entry to check whether it's too old and thus must be updated or not.
                 latest_feed_update=models.FilteredRelation(
                     "feed_updates",
-                    condition=models.Q(
-                        feed_updates__id__in=models.Subquery(
-                            FeedUpdate.objects.get_queryset().only_latest()
-                        )
-                    ),
+                    condition=models.Q(feed_updates__id__in=most_recent_feed_ids),
                 ),
                 must_update=models.Case(
                     *[

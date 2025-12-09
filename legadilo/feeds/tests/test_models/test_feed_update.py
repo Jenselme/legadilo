@@ -15,18 +15,6 @@ from ..factories import FeedFactory, FeedUpdateFactory
 
 @pytest.mark.django_db
 class TestFeedUpdateQuerySet:
-    def test_only_latest(self):
-        feed = FeedFactory()
-        with time_machine.travel("2024-05-08 11:00:00"):
-            latest_for_feed = FeedUpdateFactory(feed=feed)
-        with time_machine.travel("2024-05-08 10:00:00"):
-            FeedUpdateFactory(feed=feed)
-            latest_for_other_feed = FeedUpdateFactory()
-
-        latest = FeedUpdate.objects.get_queryset().only_latest()
-
-        assert list(latest) == [{"id": latest_for_feed.id}, {"id": latest_for_other_feed.id}]
-
     def test_for_cleanup(self):
         feed = FeedFactory()
         other_feed = FeedFactory()
@@ -49,20 +37,6 @@ class TestFeedUpdateQuerySet:
             })
 
         assert list(feed_updates_to_cleanup) == [feed_update_to_cleanup]
-
-    def test_most_recent_for_each_feed(self):
-        feed_with_multiple_updates = FeedFactory()
-        feed_with_one_update = FeedFactory()
-        FeedFactory(title="Feed without update")
-        with time_machine.travel("2025-01-01 12:00:00"):
-            FeedUpdateFactory(feed=feed_with_multiple_updates)
-            only_feed_update = FeedUpdateFactory(feed=feed_with_one_update)
-        with time_machine.travel("2025-02-01 12:00:00"):
-            feed_update2 = FeedUpdateFactory(feed=feed_with_multiple_updates)
-
-        most_recent_for_each_feed = FeedUpdate.objects.get_queryset().most_recent_for_each_feed()
-
-        assert list(most_recent_for_each_feed) == [feed_update2, only_feed_update]
 
 
 @pytest.mark.django_db
@@ -101,6 +75,20 @@ class TestFeedUpdateManager:
         FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 
         assert not FeedUpdate.objects.must_disable_feed(feed)
+
+    def test_list_most_recent_for_each_feed(self):
+        feed_with_multiple_updates = FeedFactory()
+        feed_with_one_update = FeedFactory()
+        FeedFactory(title="Feed without update")
+        with time_machine.travel("2025-01-01 12:00:00"):
+            FeedUpdateFactory(feed=feed_with_multiple_updates)
+            only_feed_update = FeedUpdateFactory(feed=feed_with_one_update)
+        with time_machine.travel("2025-02-01 12:00:00"):
+            feed_update2 = FeedUpdateFactory(feed=feed_with_multiple_updates)
+
+        most_recent_for_each_feed = FeedUpdate.objects.list_most_recent_for_each_feed()
+
+        assert most_recent_for_each_feed == {feed_update2.id, only_feed_update.id}
 
     def test_cleanup(self):
         feed = FeedFactory()
