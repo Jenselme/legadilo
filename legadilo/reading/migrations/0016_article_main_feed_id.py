@@ -15,7 +15,9 @@ def set_main_feed(apps, schema_editor):
                 "feed_articles__feed_id",
                 order_by=("feed_articles__created_at", "feed_articles__feed_id"),
             )
-        ).all()
+        )
+        .order_by("id")
+        .all()
     ):
         article.main_feed_id = article.feed_ids[0]
         article.save(update_fields=["main_feed_id"])
