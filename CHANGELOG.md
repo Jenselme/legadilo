@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 25.12.3
+
 Dev changes:
 
 - Simplify many-to-many relations. The end goal is to be able to support multiple database backends.
