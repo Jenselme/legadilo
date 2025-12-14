@@ -27,7 +27,6 @@ from legadilo.feeds.services.feed_parsing import (
     get_feed_data,
 )
 from legadilo.import_export.services.exceptions import DataImportError
-from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.users.models import User
@@ -177,9 +176,7 @@ def _import_article(user, feed, row):
         user=user,
         articles_data=[article_data],
         tags=[],
-        source_type=reading_constants.ArticleSourceType.FEED
-        if feed
-        else reading_constants.ArticleSourceType.MANUAL,
+        initial_main_feed_id=feed.id if feed else None,
     )
 
     if feed:

@@ -11,6 +11,7 @@
     "is_for_later": false,
     "is_read": false,
     "language": "en",
+    "main_feed": null,
     "main_source_title": "www.thoughtworks.com",
     "main_source_type": "MANUAL",
     "opened_at": null,

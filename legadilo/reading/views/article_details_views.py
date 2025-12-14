@@ -94,9 +94,7 @@ def _handle_update(
     if form.is_valid():
         status = HTTPStatus.OK
         tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data.pop("tags"))
-        ArticleTag.objects.associate_articles_with_tags(
-            [article], tags, constants.TaggingReason.ADDED_MANUALLY, readd_deleted=True
-        )
+        ArticleTag.objects.associate_articles_with_tags([article], tags)
         ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
         article.update_from_details(**form.cleaned_data)
         article.save()

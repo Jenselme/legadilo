@@ -30,12 +30,7 @@ class FeedTagManager(models.Manager["FeedTag"]):
         return FeedTagQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     def get_selected_values(self) -> list[str]:
-        return list(
-            self.get_queryset()
-            .select_related("tag")
-            .annotate(slug=models.F("tag__slug"))
-            .values_list("slug", flat=True)
-        )
+        return list(self.get_queryset().values_list("tag__slug", flat=True))
 
     def associate_feed_with_tags(self, feed: Feed, tags: Iterable[Tag]):
         feed_tags = [self.model(feed=feed, tag=tag) for tag in tags]

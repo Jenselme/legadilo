@@ -9,15 +9,12 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, assert_never, cast
 from zoneinfo import ZoneInfo
 
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
 from legadilo.core.utils.time_utils import utcnow
-from legadilo.core.utils.types import DeletionResult
-from legadilo.reading import constants as reading_constants
 from legadilo.reading.models.article import Article, ArticleQuerySet, SaveArticleResult
 from legadilo.reading.models.tag import Tag
 from legadilo.users.models import User
@@ -162,6 +159,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
         return self.for_status_search(enabled=True)
 
     def for_update(self, user: User):
+        most_recent_feed_ids = FeedUpdate.objects.list_most_recent_for_each_feed()
         return (
             self.alias(
                 # We need to filter for update only on the latest FeedUpdate object. If we have
@@ -171,11 +169,7 @@ class FeedQuerySet(models.QuerySet["Feed"]):
                 # on the latest entry to check whether it's too old and thus must be updated or not.
                 latest_feed_update=models.FilteredRelation(
                     "feed_updates",
-                    condition=models.Q(
-                        feed_updates__id__in=models.Subquery(
-                            FeedUpdate.objects.get_queryset().only_latest()
-                        )
-                    ),
+                    condition=models.Q(feed_updates__id__in=most_recent_feed_ids),
                 ),
                 must_update=models.Case(
                     *[
@@ -244,19 +238,6 @@ class FeedManager(models.Manager["Feed"]):
     def get_articles(self, feed: Feed) -> ArticleQuerySet:
         return cast(ArticleQuerySet, feed.articles.all()).for_feed()
 
-    def cleanup_feed_updates(self) -> DeletionResult:
-        latest_feed_update_ids = (
-            self.get_queryset()
-            .alias(
-                alias_feed_update_ids=ArrayAgg(
-                    "feed_updates__id", order_by="-feed_updates__created_at"
-                ),
-            )
-            .annotate(annot_latest_feed_update_id=models.F("alias_feed_update_ids__0"))
-            .values_list("annot_latest_feed_update_id", flat=True)
-        )
-        return FeedUpdate.objects.get_queryset().for_cleanup(set(latest_feed_update_ids)).delete()
-
     @transaction.atomic()
     def create_from_metadata(  # noqa: PLR0913 too many arguments
         self,
@@ -317,7 +298,7 @@ class FeedManager(models.Manager["Feed"]):
             feed.user,
             articles,
             feed.tags.all(),
-            source_type=reading_constants.ArticleSourceType.FEED,
+            initial_main_feed_id=feed.id,
         )
         FeedUpdate.objects.create(
             status=feeds_constants.FeedUpdateStatus.SUCCESS,

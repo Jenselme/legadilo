@@ -81,6 +81,11 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
     assert nb_imported_feeds == 3
     assert nb_imported_categories == 2
     assert Article.objects.count() == 8
+    assert set(Article.objects.filter(main_feed__isnull=False).values_list("url", flat=True)) == {
+        "https://example.com/articles/with-tags",  # From a feed file.
+        "http://example.org/entry/3",  # From a feed file.
+        "https://example.com/article/4",
+    }
     assert Feed.objects.count() == 4
     assert FeedCategory.objects.count() == 3
     assert FeedArticle.objects.count() == 5
@@ -90,7 +95,7 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
             list(
                 Article.objects.order_by("id").values(
                     *all_model_fields_except(
-                        Article, {"id", "user", "obj_created_at", "obj_updated_at"}
+                        Article, {"id", "user", "obj_created_at", "obj_updated_at", "main_feed"}
                     )
                 )
             )

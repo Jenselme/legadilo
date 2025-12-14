@@ -70,13 +70,14 @@ class TestTagManager:
             (self.tag2.slug, self.tag2.title),
         ]
 
-    def test_all_choices_with_hierarchy(self, user, other_user):
+    def test_all_choices_with_hierarchy(self, user, other_user, django_assert_num_queries):
         self.tag1.sub_tags.add(self.tag2)
         tag3 = TagFactory(user=user)
         tag4 = TagFactory(user=user)
         self.tag2.sub_tags.add(tag3, tag4)
 
-        choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
+        with django_assert_num_queries(2):
+            choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
 
         assert choices == [
             (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),
@@ -163,22 +164,12 @@ class TestArticleTagQuerySet:
         self.tag1 = TagFactory(user=user)
         self.tag2 = TagFactory(user=user)
         self.tag3 = TagFactory(user=user)
-        self.article_tag1 = ArticleTag.objects.create(
-            tag=self.tag1, article=self.article, tagging_reason=constants.TaggingReason.FROM_FEED
-        )
-        self.article_tag2 = ArticleTag.objects.create(
-            tag=self.tag2, article=self.article, tagging_reason=constants.TaggingReason.DELETED
-        )
+        self.article_tag1 = ArticleTag.objects.create(tag=self.tag1, article=self.article)
+        self.article_tag2 = ArticleTag.objects.create(tag=self.tag2, article=self.article)
         self.article_tag3 = ArticleTag.objects.create(
             tag=self.tag3,
             article=self.article,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
         )
-
-    def test_for_reading_list(self):
-        article_tags = ArticleTag.objects.get_queryset().for_reading_list().order_by("id")
-
-        assert list(article_tags) == [self.article_tag1, self.article_tag3]
 
     def test_for_articles_and_tags(self):
         article_tags = list(
@@ -188,17 +179,6 @@ class TestArticleTagQuerySet:
         )
 
         assert article_tags == [self.article_tag1, self.article_tag2]
-
-    def test_for_deleted_urls(self):
-        article_tags_marked_as_deleted = list(
-            ArticleTag.objects.get_queryset().for_deleted_urls([
-                (self.article.id, self.tag1.id),
-                (self.article.id, self.tag2.id),
-                (self.article.id, self.tag3.id),
-            ])
-        )
-
-        assert article_tags_marked_as_deleted == [self.article_tag2]
 
 
 @pytest.mark.django_db
@@ -210,20 +190,7 @@ class TestArticleTagManager:
         self.tag1 = TagFactory(user=user)
         self.tag2 = TagFactory(user=user)
         self.tag3 = TagFactory(user=user)
-        # The article already has the tag, nothing must happen.
-        ArticleTag.objects.create(
-            article=self.article1, tag=self.tag1, tagging_reason=constants.TaggingReason.FROM_FEED
-        )
-        # The user deleted the tag, nothing must happen.
-        ArticleTag.objects.create(
-            article=self.article1, tag=self.tag2, tagging_reason=constants.TaggingReason.DELETED
-        )
-        # The user added a tag manually, nothing must happen.
-        ArticleTag.objects.create(
-            article=self.article1,
-            tag=self.tag3,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        self.article1.tags.add(self.tag1, self.tag3)
 
     def test_get_selected_values(self):
         choices = list(ArticleTag.objects.get_selected_values())
@@ -235,64 +202,29 @@ class TestArticleTagManager:
         tags = [self.tag1, self.tag2]
 
         with django_assert_num_queries(2):
-            ArticleTag.objects.associate_articles_with_tags(
-                articles, tags, tagging_reason=constants.TaggingReason.FROM_FEED
-            )
+            ArticleTag.objects.associate_articles_with_tags(articles, tags)
 
-        created_article_tags = list(ArticleTag.objects.values("article", "tag", "tagging_reason"))
+        created_article_tags = list(ArticleTag.objects.values("article", "tag"))
         assert created_article_tags == [
             {
                 "article": self.article1.id,
                 "tag": self.tag1.id,
-                "tagging_reason": constants.TaggingReason.FROM_FEED,
             },
             {
                 "article": self.article1.id,
                 "tag": self.tag2.id,
-                "tagging_reason": constants.TaggingReason.DELETED,
             },
             {
                 "article": self.article1.id,
                 "tag": self.tag3.id,
-                "tagging_reason": constants.TaggingReason.ADDED_MANUALLY,
             },
             {
                 "article": self.article2.id,
                 "tag": self.tag1.id,
-                "tagging_reason": constants.TaggingReason.FROM_FEED,
             },
             {
                 "article": self.article2.id,
                 "tag": self.tag2.id,
-                "tagging_reason": constants.TaggingReason.FROM_FEED,
-            },
-        ]
-
-    def test_associate_articles_with_tags_readd_deleted(self, user, django_assert_num_queries):
-        articles = [self.article1]
-        tags = [self.tag1, self.tag2]
-
-        with django_assert_num_queries(2):
-            ArticleTag.objects.associate_articles_with_tags(
-                articles, tags, tagging_reason=constants.TaggingReason.FROM_FEED, readd_deleted=True
-            )
-
-        created_article_tags = list(ArticleTag.objects.values("article", "tag", "tagging_reason"))
-        assert created_article_tags == [
-            {
-                "article": self.article1.id,
-                "tag": self.tag1.id,
-                "tagging_reason": constants.TaggingReason.FROM_FEED,
-            },
-            {
-                "article": self.article1.id,
-                "tag": self.tag2.id,
-                "tagging_reason": constants.TaggingReason.ADDED_MANUALLY,
-            },
-            {
-                "article": self.article1.id,
-                "tag": self.tag3.id,
-                "tagging_reason": constants.TaggingReason.ADDED_MANUALLY,
             },
         ]
 
@@ -302,20 +234,16 @@ class TestArticleTagManager:
                 [self.article1, self.article2], [self.tag1, self.tag2]
             )
 
-        assert list(ArticleTag.objects.values("article", "tag", "tagging_reason")) == [
-            {"article": self.article1.id, "tag": self.tag1.id, "tagging_reason": "DELETED"},
-            {"article": self.article1.id, "tag": self.tag2.id, "tagging_reason": "DELETED"},
-            {"article": self.article1.id, "tag": self.tag3.id, "tagging_reason": "ADDED_MANUALLY"},
+        assert list(ArticleTag.objects.values("article", "tag")) == [
+            {"article": self.article1.id, "tag": self.tag3.id},
         ]
 
     def test_dissociate_article_with_tags_not_in_list(self, user, django_assert_num_queries):
         with django_assert_num_queries(2):
             ArticleTag.objects.dissociate_article_with_tags_not_in_list(self.article1, [self.tag1])
 
-        assert list(self.article1.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            (self.tag1.slug, constants.TaggingReason.FROM_FEED),
-            (self.tag2.slug, constants.TaggingReason.DELETED),
-            (self.tag3.slug, constants.TaggingReason.DELETED),
+        assert list(self.article1.article_tags.values_list("tag__slug", flat=True)) == [
+            self.tag1.slug
         ]
 
 

@@ -13,6 +13,7 @@
   "is_for_later": false,
   "is_read": false,
   "language": "",
+  "main_feed": null,
   "main_source_title": "example.com",
   "main_source_type": "MANUAL",
   "opened_at": null,

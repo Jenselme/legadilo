@@ -321,7 +321,7 @@ def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
     form_data["articles_reading_time"] = form_data["articles_reading_time"] or 0
     query = ArticleFullTextSearchQuery(
         **form_data,
-        tags=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),
+        tags_search=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),
     )
     return Article.objects.search(user, query)
 

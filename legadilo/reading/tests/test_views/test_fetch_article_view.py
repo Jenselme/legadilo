@@ -11,8 +11,7 @@ from django.urls import reverse
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.core.utils.testing import AnyOfType
 from legadilo.core.utils.time_utils import utcdt, utcnow
-from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag
+from legadilo.reading.models import Article
 from legadilo.reading.models.article import SaveArticleResult
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
@@ -46,7 +45,7 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(19):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -68,7 +67,7 @@ class TestAddArticle:
     ):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(22):
+        with django_assert_num_queries(23):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -82,10 +81,10 @@ class TestAddArticle:
             is_from_invalid_data=False,
         )
         assert Article.objects.count() == 1
-        assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            ("existing-tag", constants.TaggingReason.ADDED_MANUALLY),
-            ("new", constants.TaggingReason.ADDED_MANUALLY),
-            ("tag-with-spaces", constants.TaggingReason.ADDED_MANUALLY),
+        assert list(article.article_tags.values_list("tag__slug", flat=True)) == [
+            "existing-tag",
+            "new",
+            "tag-with-spaces",
         ]
 
     def test_add_article_with_tags_other_user(
@@ -227,11 +226,7 @@ class TestRefetchArticleView:
             content="Initial content",
         )
         self.existing_tag = TagFactory(title="Existing tag", user=user)
-        ArticleTag.objects.create(
-            tag=self.existing_tag,
-            article=self.article,
-            tagging_reason=constants.TaggingReason.FROM_FEED,
-        )
+        self.article.tags.add(self.existing_tag)
 
         self.sample_payload = {"url": self.article_url}
 
@@ -263,9 +258,7 @@ class TestRefetchArticleView:
         assert article.slug == self.article.slug
         assert article.summary.startswith("I just wrote a new book")
         assert "Lorem ipsum" in article.content
-        assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            ("existing-tag", constants.TaggingReason.FROM_FEED),
-        ]
+        assert list(article.article_tags.values_list("tag__slug", flat=True)) == ["existing-tag"]
 
     def test_refetch_article_with_from_url(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock

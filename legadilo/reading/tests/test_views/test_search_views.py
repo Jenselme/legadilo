@@ -14,7 +14,6 @@ from legadilo.core.utils.testing import AnyOfType, dict_to_query_dict
 from legadilo.feeds.models import Feed
 from legadilo.feeds.tests.factories import FeedFactory
 from legadilo.reading import constants
-from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, TagFactory
 from legadilo.reading.views.search_views import SearchForm
 
@@ -176,17 +175,9 @@ class TestSearchView:
         tag_to_include = TagFactory(user=user)
         tag_to_exclude = TagFactory(user=user)
         article_with_tag_to_include = ArticleFactory(user=user, title="Claudius")
-        ArticleTag.objects.create(
-            article=article_with_tag_to_include,
-            tag=tag_to_include,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        article_with_tag_to_include.tags.add(tag_to_include)
         article_with_tag_to_exclude = ArticleFactory(user=user, title="Claudius")
-        ArticleTag.objects.create(
-            article=article_with_tag_to_exclude,
-            tag=tag_to_exclude,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        article_with_tag_to_exclude.tags.add(tag_to_exclude)
 
         response = logged_in_sync_client.get(
             self.url,
@@ -234,17 +225,9 @@ class TestSearchView:
         tag_to_include = TagFactory(user=user)
         tag_to_exclude = TagFactory(user=user)
         article_with_tag_to_include = ArticleFactory(user=user, title="Claudius")
-        ArticleTag.objects.create(
-            article=article_with_tag_to_include,
-            tag=tag_to_include,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        article_with_tag_to_include.tags.add(tag_to_include)
         article_with_tag_to_exclude = ArticleFactory(user=user, title="Claudius")
-        ArticleTag.objects.create(
-            article=article_with_tag_to_exclude,
-            tag=tag_to_exclude,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        article_with_tag_to_exclude.tags.add(tag_to_exclude)
         get_data = urlencode(
             {
                 "q": "Claudius",

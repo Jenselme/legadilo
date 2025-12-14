@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
@@ -17,8 +16,9 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.paginator import Paginator
 from django.db import models, transaction
-from django.db.models.functions import Cast, Coalesce, Lower
+from django.db.models.functions import Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
 from ninja.schema import Schema
 from pydantic import ConfigDict
@@ -92,7 +92,7 @@ class ArticleSearchQuery(Schema):
     )
     include_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
     exclude_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
-    tags: Iterable[ArticleTagSearch] = ()
+    tags_search: Iterable[ArticleTagSearch] = ()
 
     @classmethod
     def from_reading_list(cls, reading_list: ReadingList):
@@ -112,7 +112,7 @@ class ArticleSearchQuery(Schema):
             exclude_tag_operator=constants.ReadingListTagOperator(
                 reading_list.exclude_tag_operator
             ),
-            tags=[
+            tags_search=[
                 ArticleTagSearch(
                     filter_type=constants.ReadingListTagFilterType(reading_list_tag.filter_type),
                     tag_id=reading_list_tag.tag_id,
@@ -212,7 +212,7 @@ def _get_tags_filters(search_query: ArticleSearchQuery) -> models.Q:
     filters = models.Q()
     tags_to_include = []
     tags_to_exclude = []
-    for tag in search_query.tags:
+    for tag in search_query.tags_search:
         match tag.filter_type:
             case constants.ReadingListTagFilterType.INCLUDE:
                 tags_to_include.append(tag.tag_id)
@@ -244,14 +244,6 @@ def _get_reading_list_tags_sql_operator(
             return "overlap"
 
 
-def _build_prefetch_article_tags():
-    return models.Prefetch(
-        "article_tags",
-        queryset=ArticleTag.objects.get_queryset().for_reading_list(),
-        to_attr="tags_to_display",
-    )
-
-
 class ArticleQuerySet(models.QuerySet["Article"]):
     def for_user(self, user: User):
         return self.filter(user=user)
@@ -261,52 +253,35 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_current_tag_filtering(self) -> Self:
         return self.alias(
-            alias_tag_ids_for_article=ArrayAgg(
-                "article_tags__tag_id",
-                filter=~models.Q(article_tags__tagging_reason=constants.TaggingReason.DELETED),
-                default=models.Value([]),
-            ),
-        )
-
-    def for_feed_links(self) -> Self:
-        return self.alias(
-            feed_ids=ArrayAgg("feeds__id", order_by="feeds__id"),
-            feed_slugs=ArrayAgg("feeds__slug", order_by="feeds__id"),
-            feed_open_original_url_by_default=ArrayAgg(
-                "feeds__open_original_url_by_default", order_by="feeds__id"
-            ),
-        ).annotate(
-            annot_feed_id=models.F("feed_ids__0"),
-            annot_feed_slug=models.F("feed_slugs__0"),
-            annot_open_original_by_default=models.F("feed_open_original_url_by_default__0"),
+            alias_tag_ids_for_article=ArrayAgg("article_tags__tag_id", default=models.Value([])),
         )
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
             self.for_user(reading_list.user)
             .for_current_tag_filtering()
-            .for_feed_links()
             .filter(
                 _build_filters_from_reading_list(ArticleSearchQuery.from_reading_list(reading_list))
             )
-            .prefetch_related(_build_prefetch_article_tags())
+            .select_related("main_feed")
+            .prefetch_related("tags")
             .default_order_by(reading_list.order_direction)
         )
 
     def for_tag(self, tag: Tag) -> Self:
         return (
             self.for_current_tag_filtering()
-            .for_feed_links()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
-            .prefetch_related(_build_prefetch_article_tags())
+            .select_related("main_feed")
+            .prefetch_related("tags")
             .default_order_by()
         )
 
     def for_external_tag(self, tag: str) -> Self:
         return (
-            self.for_feed_links()
-            .filter(external_tags__icontains=tag)
-            .prefetch_related(_build_prefetch_article_tags())
+            self.filter(external_tags__icontains=tag)
+            .prefetch_related("tags")
+            .select_related("main_feed")
             .default_order_by()
         )
 
@@ -318,67 +293,16 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(filters)
 
     def for_feed(self) -> Self:
-        return (
-            self.prefetch_related(_build_prefetch_article_tags())
-            .for_feed_links()
-            .default_order_by()
-        )
+        return self.prefetch_related("tags").select_related("main_feed").default_order_by()
 
     def for_details(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags(), "comments").for_feed_links()
+        return self.prefetch_related("tags", "comments").select_related("main_feed")
 
     def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
         qs = (
             self.for_user(user)
-            .alias(
-                feed_category_ids=ArrayAgg("feeds__category__id", order_by="feeds__id"),
-                feed_category_titles=ArrayAgg("feeds__category__title", order_by="feeds__id"),
-                feed_ids=ArrayAgg("feeds__id", order_by="feeds__id"),
-                feed_titles=ArrayAgg("feeds__title", order_by="feeds__id"),
-                feed_urls=ArrayAgg("feeds__feed_url", order_by="feeds__id"),
-                feed_site_urls=ArrayAgg("feeds__site_url", order_by="feeds__id"),
-            )
-            .annotate(
-                annot_feed_category_id=Coalesce(
-                    Cast(models.F("feed_category_ids__0"), output_field=models.TextField()),
-                    models.Value(""),
-                    output_field=models.TextField(),
-                ),
-                annot_feed_cateory_title=Coalesce(
-                    Cast(models.F("feed_category_titles__0"), output_field=models.TextField()),
-                    models.Value(""),
-                    output_field=models.TextField(),
-                ),
-                annot_feed_id=Coalesce(
-                    Cast(models.F("feed_ids__0"), output_field=models.TextField()),
-                    models.Value(""),
-                    output_field=models.TextField(),
-                ),
-                annot_feed_title=Coalesce(
-                    Cast(models.F("feed_titles__0"), output_field=models.TextField()),
-                    models.Value(""),
-                    output_field=models.TextField(),
-                ),
-                annot_feed_url=Coalesce(
-                    Cast(models.F("feed_urls__0"), output_field=models.TextField()),
-                    models.Value(""),
-                    output_field=models.TextField(),
-                ),
-                annot_feed_site_url=Coalesce(
-                    Cast(models.F("feed_site_urls__0"), output_field=models.TextField()),
-                    models.Value(""),
-                    output_field=models.TextField(),
-                ),
-                annot_comments=Coalesce(
-                    ArrayAgg(
-                        "comments__text",
-                        order="comments__created_at",
-                        filter=models.Q(comments__isnull=False),
-                    ),
-                    models.Value([]),
-                ),
-            )
-            .prefetch_related(_build_prefetch_article_tags())
+            .select_related("main_feed", "main_feed__category")
+            .prefetch_related("tags", "comments")
             .order_by("id")
         )
         if updated_since:
@@ -496,7 +420,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(filters)
 
     def for_api(self):
-        return self.prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related("tags")
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -512,9 +436,15 @@ class ArticleManager(models.Manager["Article"]):
         articles_data: list[ArticleData],
         tags: Iterable[Tag],
         *,
-        source_type: constants.ArticleSourceType = constants.ArticleSourceType.MANUAL,
+        initial_main_feed_id: int | None = None,
         force_update: bool = False,
     ) -> list[SaveArticleResult]:
+        initial_source_type = (
+            constants.ArticleSourceType.FEED
+            if initial_main_feed_id
+            else constants.ArticleSourceType.MANUAL
+        )
+
         if len(articles_data) == 0:
             return []
 
@@ -537,7 +467,7 @@ class ArticleManager(models.Manager["Article"]):
                 was_updated = article_to_update.update_article_from_data(
                     article_data, force_update=force_update
                 )
-                if source_type == constants.ArticleSourceType.MANUAL:
+                if initial_source_type == constants.ArticleSourceType.MANUAL:
                     if article_to_update.main_source_type == constants.ArticleSourceType.FEED:
                         # We force the source type to manual if we manually add it so prevent any
                         # cleanup later one.
@@ -575,8 +505,9 @@ class ArticleManager(models.Manager["Article"]):
                     preview_picture_alt=article_data.preview_picture_alt,
                     published_at=article_data.published_at,
                     updated_at=article_data.updated_at,
-                    main_source_type=source_type,
+                    main_source_type=initial_source_type,
                     main_source_title=article_data.source_title,
+                    main_feed_id=initial_main_feed_id,
                     language=article_data.language,
                     annotations=article_data.annotations,
                     read_at=article_data.read_at,
@@ -592,6 +523,9 @@ class ArticleManager(models.Manager["Article"]):
 
         self.bulk_create(
             [result.article for result in articles_to_create], unique_fields=["user", "url"]
+        )
+        ArticleTag.objects.associate_articles_with_tags(
+            [result.article for result in articles_to_create], tags
         )
 
         self.bulk_update(
@@ -615,19 +549,9 @@ class ArticleManager(models.Manager["Article"]):
             ],
         )
 
-        all_articles = []
         all_results = []
         for result in chain(articles_to_create, articles_to_update):
-            all_articles.append(result.article)
             all_results.append(result)
-
-        ArticleTag.objects.associate_articles_with_tags(
-            all_articles,
-            tags,
-            tagging_reason=constants.TaggingReason.FROM_FEED
-            if source_type == constants.ArticleSourceType.FEED
-            else constants.TaggingReason.ADDED_MANUALLY,
-        )
 
         return all_results
 
@@ -709,11 +633,7 @@ class ArticleManager(models.Manager["Article"]):
             article_urls_to_articles[fetch_result.url] = article
 
         self.bulk_create(articles_to_create, unique_fields=["user", "url"])
-        ArticleTag.objects.associate_articles_with_tags(
-            list(article_urls_to_articles.values()),
-            tags,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        ArticleTag.objects.associate_articles_with_tags(articles_to_create, tags)
 
         article_fetch_errors_to_create = [
             ArticleFetchError(
@@ -751,7 +671,7 @@ class ArticleManager(models.Manager["Article"]):
             )
             for reading_list in reading_lists
         }
-        # We only count unread articles in the reading list. Not all article. I think it's more
+        # We only count unread articles in the reading list. Not all articles. I think it's more
         # relevant.
         return (
             self.get_queryset()
@@ -769,22 +689,20 @@ class ArticleManager(models.Manager["Article"]):
 
     def export(self, user: User, *, updated_since: datetime | None = None):
         articles_qs = self.get_queryset().for_export(user, updated_since=updated_since)
-        nb_pages = math.ceil(articles_qs.count() / constants.MAX_EXPORT_ARTICLES_PER_PAGE)
-        for page in range(nb_pages):
+        paginator = Paginator(articles_qs, constants.MAX_EXPORT_ARTICLES_PER_PAGE)
+        for page_index in paginator.page_range:
+            page = paginator.page(page_index)
             articles = []
-            start_index = page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
-            end_index = (
-                page * constants.MAX_EXPORT_ARTICLES_PER_PAGE
-                + constants.MAX_EXPORT_ARTICLES_PER_PAGE
-            )
-            for article in articles_qs[start_index:end_index]:
+            for article in page.object_list:
                 articles.append({
-                    "category_id": article.annot_feed_category_id,  # type: ignore[attr-defined]
-                    "category_title": article.annot_feed_cateory_title,  # type: ignore[attr-defined]
-                    "feed_id": article.annot_feed_id,  # type: ignore[attr-defined]
-                    "feed_title": article.annot_feed_title,  # type: ignore[attr-defined]
-                    "feed_url": article.annot_feed_url,  # type: ignore[attr-defined]
-                    "feed_site_url": article.annot_feed_site_url,  # type: ignore[attr-defined]
+                    "category_id": article.main_feed.category_id if article.main_feed else "",
+                    "category_title": article.main_feed.category.title
+                    if article.main_feed and article.main_feed.category
+                    else "",
+                    "feed_id": article.main_feed_id or "",
+                    "feed_title": article.main_feed.title if article.main_feed else "",
+                    "feed_url": article.main_feed.feed_url if article.main_feed else "",
+                    "feed_site_url": article.main_feed.site_url if article.main_feed else "",
                     "article_id": article.id,
                     "article_title": article.title,
                     "article_url": article.url,
@@ -797,13 +715,13 @@ class ArticleManager(models.Manager["Article"]):
                     if article.updated_at
                     else "",
                     "article_authors": json.dumps(article.authors) if article.authors else "",
-                    "article_tags": json.dumps([tag.title for tag in article.tags_to_display])  # type: ignore[attr-defined]
-                    if article.tags_to_display  # type: ignore[attr-defined]
-                    else "",
+                    "article_tags": json.dumps([tag.title for tag in article.tags.all()]),
                     "article_read_at": article.read_at.isoformat() if article.read_at else "",
                     "article_is_favorite": article.is_favorite,
                     "article_lang": article.language,
-                    "article_comments": json.dumps(article.annot_comments),  # type: ignore[attr-defined]
+                    "article_comments": json.dumps([
+                        comment.text for comment in article.comments.all()
+                    ]),
                 })
 
             yield articles
@@ -812,9 +730,9 @@ class ArticleManager(models.Manager["Article"]):
         articles_qs = (
             self.get_queryset()
             .for_user(user)
-            .for_feed_links()
             .for_current_tag_filtering()
-            .prefetch_related(_build_prefetch_article_tags())
+            .select_related("main_feed")
+            .prefetch_related("tags")
             .filter(_build_filters_from_reading_list(search_query))
         )
 
@@ -928,6 +846,9 @@ class Article(models.Model):
         max_length=100,
     )
     main_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
+    main_feed = models.ForeignKey(
+        "feeds.Feed", related_name="articles_main_feed", on_delete=models.SET_NULL, null=True
+    )
 
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")
