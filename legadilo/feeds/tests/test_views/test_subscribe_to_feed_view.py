@@ -11,7 +11,6 @@ from django.urls import reverse
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
-from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import TagFactory
 
@@ -103,9 +102,9 @@ class TestSubscribeToFeedView:
         assert Article.objects.count() > 0
         article = Article.objects.first()
         assert article is not None
-        assert list(article.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            ("new", reading_constants.TaggingReason.FROM_FEED),
-            (self.existing_tag.slug, reading_constants.TaggingReason.FROM_FEED),
+        assert list(article.article_tags.values_list("tag__slug", flat=True)) == [
+            "new",
+            self.existing_tag.slug,
         ]
         assert FeedUpdate.objects.count() == 1
 

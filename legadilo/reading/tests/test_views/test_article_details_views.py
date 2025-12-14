@@ -8,8 +8,6 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
-from legadilo.reading import constants
-from legadilo.reading.models import ArticleTag
 from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
 
 
@@ -72,23 +70,9 @@ class TestUpdateArticleDetailsView:
         self.article = ArticleFactory(user=user)
         self.reading_list = ReadingListFactory(user=user)
         self.tag_to_keep = TagFactory(user=user)
-        ArticleTag.objects.create(
-            tag=self.tag_to_keep,
-            article=self.article,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
         self.tag_to_delete = TagFactory(user=user)
-        ArticleTag.objects.create(
-            tag=self.tag_to_delete,
-            article=self.article,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        self.article.tags.add(self.tag_to_keep, self.tag_to_delete)
         self.deleted_tag_to_readd = TagFactory(user=user)
-        ArticleTag.objects.create(
-            tag=self.deleted_tag_to_readd,
-            article=self.article,
-            tagging_reason=constants.TaggingReason.DELETED,
-        )
         self.existing_tag_to_add = TagFactory(user=user)
         self.some_other_tag = TagFactory(user=user)
         self.url = reverse(
@@ -133,19 +117,18 @@ class TestUpdateArticleDetailsView:
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(29):
+        with django_assert_num_queries(28):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert list(self.article.article_tags.values_list("tag__slug", "tagging_reason")) == [
-            ("some-tag", constants.TaggingReason.ADDED_MANUALLY),
-            (self.tag_to_keep.slug, constants.TaggingReason.ADDED_MANUALLY),
-            (self.tag_to_delete.slug, constants.TaggingReason.DELETED),
-            (self.deleted_tag_to_readd.slug, constants.TaggingReason.ADDED_MANUALLY),
-            (self.existing_tag_to_add.slug, constants.TaggingReason.ADDED_MANUALLY),
+        assert list(self.article.article_tags.values_list("tag__slug", flat=True)) == [
+            "some-tag",
+            self.tag_to_keep.slug,
+            self.deleted_tag_to_readd.slug,
+            self.existing_tag_to_add.slug,
         ]
 
     def test_update_other_values_for_article_details(
@@ -153,7 +136,7 @@ class TestUpdateArticleDetailsView:
     ):
         initial_slug = self.article.slug
 
-        with django_assert_num_queries(29):
+        with django_assert_num_queries(28):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
             )

@@ -12,7 +12,7 @@ from django.urls import reverse
 from legadilo.core.utils.testing import serialize_for_snapshot
 from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag
+from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
@@ -326,17 +326,7 @@ class TestGetArticleView:
 
     def test_get(self, user, logged_in_sync_client, snapshot, django_assert_num_queries):
         tag = TagFactory(user=user, title="Some tag")
-        tag_to_exclude = TagFactory(user=user, title="Deleted tag")
-        ArticleTag.objects.create(
-            article=self.article,
-            tag=tag,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
-        ArticleTag.objects.create(
-            article=self.article,
-            tag=tag_to_exclude,
-            tagging_reason=constants.TaggingReason.DELETED,
-        )
+        self.article.tags.add(tag)
         with time_machine.travel("2025-07-01"):
             CommentFactory(article=self.article, text="Some comment")
 
@@ -404,7 +394,7 @@ class TestUpdateArticleView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.article.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -414,12 +404,9 @@ class TestUpdateArticleView:
             )
 
         self.article.refresh_from_db()
-        assert list(
-            self.article.article_tags.all().values_list("tag__title", "tagging_reason")
-        ) == [
-            ("New tag", constants.TaggingReason.ADDED_MANUALLY),
-            ("Tag to delete", constants.TaggingReason.DELETED),
-            ("Tag to keep", constants.TaggingReason.ADDED_MANUALLY),
+        assert list(self.article.article_tags.all().values_list("tag__title", flat=True)) == [
+            "New tag",
+            "Tag to keep",
         ]
         snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 

@@ -182,26 +182,9 @@ class Tag(models.Model):
 
 
 class ArticleTagQuerySet(models.QuerySet["ArticleTag"]):
-    def for_reading_list(self):
-        return (
-            self.exclude(tagging_reason=constants.TaggingReason.DELETED)
-            .select_related("tag")
-            .annotate(title=models.F("tag__title"), slug=models.F("tag__slug"))
-        )
-
     def for_articles_and_tags(self, articles: Iterable[Article], tags: Iterable[Tag]) -> Self:
         return self.filter(
             article_id__in=[article.id for article in articles], tag_id__in=[tag.id for tag in tags]
-        )
-
-    def for_deleted_links(self, links: Iterable[tuple[int, int]]) -> Self:
-        article_ids = [link[0] for link in links]
-        tag_ids = [link[1] for link in links]
-
-        return self.filter(
-            article_id__in=article_ids,
-            tag_id__in=tag_ids,
-            tagging_reason=constants.TaggingReason.DELETED,
         )
 
 
@@ -212,15 +195,10 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
         return ArticleTagQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     def get_selected_values(self) -> list[str]:
-        return list(self.get_queryset().for_reading_list().values_list("slug", flat=True))
+        return list(self.get_queryset().values_list("tag__slug", flat=True))
 
     def associate_articles_with_tags(
-        self,
-        all_articles: Sequence[Article] | ArticleQuerySet,
-        tags: Iterable[Tag],
-        tagging_reason: constants.TaggingReason,
-        *,
-        readd_deleted=False,
+        self, all_articles: Sequence[Article] | ArticleQuerySet, tags: Iterable[Tag]
     ):
         # Can associate tags with lots of (thousands!) articles at once. To prevent high memory
         # usage, use a paginator.
@@ -234,17 +212,12 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
                 .values_list("article_id", "tag_id")
             )
             article_tags_to_create = [
-                self.model(article=article, tag=tag, tagging_reason=tagging_reason)
+                self.model(article=article, tag=tag)
                 for article in page.object_list
                 for tag in tags
                 if (article.id, tag.id) not in existing_article_tag_urls
             ]
             self.bulk_create(article_tags_to_create)
-
-            if readd_deleted:
-                self.get_queryset().for_deleted_links(existing_article_tag_urls).update(
-                    tagging_reason=constants.TaggingReason.ADDED_MANUALLY
-                )
 
     def dissociate_article_with_tags_not_in_list(self, article: Article, tags: Iterable[Tag]):
         existing_article_tag_slugs = set(article.tags.all().values_list("slug", flat=True))
@@ -252,9 +225,7 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
         article_tag_slugs_to_delete = existing_article_tag_slugs - tag_slugs_to_keep
 
         if article_tag_slugs_to_delete:
-            article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).update(
-                tagging_reason=constants.TaggingReason.DELETED
-            )
+            article.article_tags.filter(tag__slug__in=article_tag_slugs_to_delete).delete()
 
     def dissociate_articles_with_tags(
         self, all_articles: Sequence[Article] | ArticleQuerySet, tags: Iterable[Tag]
@@ -263,9 +234,7 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
             all_articles, core_constants.PER_PAGE_FOR_BULK_OPERATIONS
         )
         for page in paginator:
-            self.get_queryset().for_articles_and_tags(page.object_list, tags).update(
-                tagging_reason=constants.TaggingReason.DELETED
-            )
+            self.get_queryset().for_articles_and_tags(page.object_list, tags).delete()
 
 
 class ArticleTag(models.Model):
@@ -274,24 +243,10 @@ class ArticleTag(models.Model):
     )
     tag = models.ForeignKey("reading.Tag", related_name="article_tags", on_delete=models.CASCADE)
 
-    # Used to mark a tag initially associated because of a feed but manually deleted by the user.
-    # We don't want it to come back when we update the article!
-    tagging_reason = models.CharField(
-        choices=constants.TaggingReason.choices,
-        default=constants.TaggingReason.ADDED_MANUALLY,
-        max_length=100,
-    )
-
     objects = ArticleTagManager()
 
     class Meta(TypedModelMeta):
         constraints = [
-            models.CheckConstraint(
-                name="%(app_label)s_%(class)s_tagging_reason_valid",
-                condition=models.Q(
-                    tagging_reason__in=constants.TaggingReason.names,
-                ),
-            ),
             models.UniqueConstraint(
                 "article", "tag", name="%(app_label)s_%(class)s_tagged_once_per_article"
             ),
@@ -299,10 +254,7 @@ class ArticleTag(models.Model):
         ordering = ["article_id", "tag__title", "tag_id"]
 
     def __str__(self):
-        return (
-            f"ArticleTag(article={self.article}, tag={self.tag},"
-            f"tagging_reason={self.tagging_reason})"
-        )
+        return f"ArticleTag(article={self.article}, tag={self.tag})"
 
 
 class ReadingListTagQuerySet(models.QuerySet["ReadingListTag"]):

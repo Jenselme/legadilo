@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
-from pydantic import Field, model_validator
+from pydantic import model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
@@ -21,7 +21,6 @@ from legadilo.core.utils.validators import (
     ValidUrlValidator,
     remove_falsy_items,
 )
-from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
@@ -48,7 +47,7 @@ class OutCommentSchema(ModelSchema):
 
 
 class OutArticleSchema(ModelSchema):
-    tags: list[OutTagSchema] = Field(alias="tags_to_display")
+    tags: list[OutTagSchema]
     comments: list[OutCommentSchema]
     details_url: str
 
@@ -190,12 +189,7 @@ def update_article_view(
 
 def _update_article_tags(user: User, article: Article, new_tags: tuple[str, ...]):
     tags = Tag.objects.get_or_create_from_list(user, new_tags)
-    ArticleTag.objects.associate_articles_with_tags(
-        [article],
-        tags,
-        tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        readd_deleted=True,
-    )
+    ArticleTag.objects.associate_articles_with_tags([article], tags)
     ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
 
 

@@ -262,12 +262,7 @@ def update_list_of_articles(
         tags_to_add = Tag.objects.get_or_create_from_list(
             request.user, form.cleaned_data["add_tags"]
         )
-        ArticleTag.objects.associate_articles_with_tags(
-            articles_qs.all(),
-            tags_to_add,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-            readd_deleted=True,
-        )
+        ArticleTag.objects.associate_articles_with_tags(articles_qs.all(), tags_to_add)
 
     if form.cleaned_data["remove_tags"]:
         # Note: the form validation assures us we won't create any tags here.

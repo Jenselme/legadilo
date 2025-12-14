@@ -214,28 +214,21 @@ class TestUpdateArticlesFromTagWithArticlesView:
         assert response.status_code == HTTPStatus.OK
         self.article_in_list.refresh_from_db()
         assert self.article_in_list.read_at is None
-        assert set(
-            self.article_in_list.article_tags.values_list("tag__slug", "tagging_reason")
-        ) == {
-            ("new-tag", constants.TaggingReason.ADDED_MANUALLY),
-            (self.tag_to_display.slug, constants.TaggingReason.ADDED_MANUALLY),
+        assert set(self.article_in_list.article_tags.values_list("tag__slug", flat=True)) == {
+            "new-tag",
+            self.tag_to_display.slug,
         }
         self.other_article_in_list.refresh_from_db()
         assert self.other_article_in_list.read_at is None
-        assert set(
-            self.other_article_in_list.article_tags.values_list("tag__slug", "tagging_reason")
-        ) == {
-            ("new-tag", constants.TaggingReason.ADDED_MANUALLY),
-            (self.tag_to_remove.slug, constants.TaggingReason.DELETED),
-            (self.tag_to_display.slug, constants.TaggingReason.ADDED_MANUALLY),
+        assert set(self.other_article_in_list.article_tags.values_list("tag__slug", flat=True)) == {
+            "new-tag",
+            self.tag_to_display.slug,
         }
         self.article_not_in_list.refresh_from_db()
         assert self.article_not_in_list.read_at is None
-        assert set(
-            self.article_not_in_list.article_tags.values_list("tag__slug", "tagging_reason")
-        ) == {
-            (self.other_tag.slug, constants.TaggingReason.ADDED_MANUALLY),
-            (self.tag_to_remove.slug, constants.TaggingReason.ADDED_MANUALLY),
+        assert set(self.article_not_in_list.article_tags.values_list("tag__slug", flat=True)) == {
+            self.other_tag.slug,
+            self.tag_to_remove.slug,
         }
 
 

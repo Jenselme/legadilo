@@ -40,12 +40,6 @@ class ArticlesReadingTimeOperator(TextChoices):
     LESS_THAN = "LESS_THAN", _("Less than than")
 
 
-class TaggingReason(TextChoices):
-    ADDED_MANUALLY = "ADDED_MANUALLY", _("Added manually")
-    FROM_FEED = "FROM_FEED", _("From feed")
-    DELETED = "DELETED", _("Deleted")
-
-
 class ReadingListTagFilterType(TextChoices):
     INCLUDE = "INCLUDE", _("Include")
     EXCLUDE = "EXCLUDE", _("Exclude")

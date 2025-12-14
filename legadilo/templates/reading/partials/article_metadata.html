@@ -21,11 +21,13 @@
             {% if article.main_feed.slug %}
                 <a href="{% url 'feeds:feed_articles' feed_id=article.main_feed.id feed_slug=article.main_feed.slug %}">
                     {% include "core/partials/bs-icons/feed_source.html" %}
-                {{ article.main_source_title }}</a>
+                    {{ article.main_source_title }}
+                </a>
             {% else %}
                 <a href="{% url 'feeds:feed_articles' feed_id=article.main_feed.id %}">
                     {% include "core/partials/bs-icons/feed_source.html" %}
-                {{ article.main_source_title }}</a>
+                    {{ article.main_source_title }}
+                </a>
             {% endif %}
         {% else %}
             {% include "core/partials/bs-icons/article_source.html" %}
@@ -43,15 +45,17 @@
         </span>
     {% endif %}
 </p>
-{% if article.tags_to_display or article.external_tags %}
+{% if article.tags.all or article.external_tags %}
     <p>
-        {% for tag in article.tags_to_display %}
+        {% for tag in article.tags.all %}
             <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1 text-wrap"
                href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{{ tag.title }}</a>
         {% endfor %}
         {% for tag in article.external_tags %}
             <a class="link-underline link-underline-opacity-0 badge text-bg-secondary me-1 text-wrap"
-               href="{% url 'reading:external_tag_with_articles' %}{% querystring tag=tag %}">{{ tag }}</a>
+               href="{% url 'reading:external_tag_with_articles' %}{% querystring tag=tag %}">
+                {{ tag }}
+            </a>
         {% endfor %}
     </p>
 {% endif %}

@@ -244,14 +244,6 @@ def _get_reading_list_tags_sql_operator(
             return "overlap"
 
 
-def _build_prefetch_article_tags():
-    return models.Prefetch(
-        "article_tags",
-        queryset=ArticleTag.objects.get_queryset().for_reading_list(),
-        to_attr="tags_to_display",
-    )
-
-
 class ArticleQuerySet(models.QuerySet["Article"]):
     def for_user(self, user: User):
         return self.filter(user=user)
@@ -261,11 +253,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_current_tag_filtering(self) -> Self:
         return self.alias(
-            alias_tag_ids_for_article=ArrayAgg(
-                "article_tags__tag_id",
-                filter=~models.Q(article_tags__tagging_reason=constants.TaggingReason.DELETED),
-                default=models.Value([]),
-            ),
+            alias_tag_ids_for_article=ArrayAgg("article_tags__tag_id", default=models.Value([])),
         )
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
@@ -276,7 +264,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                 _build_filters_from_reading_list(ArticleSearchQuery.from_reading_list(reading_list))
             )
             .select_related("main_feed")
-            .prefetch_related(_build_prefetch_article_tags())
+            .prefetch_related("tags")
             .default_order_by(reading_list.order_direction)
         )
 
@@ -285,14 +273,14 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             self.for_current_tag_filtering()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
             .select_related("main_feed")
-            .prefetch_related(_build_prefetch_article_tags())
+            .prefetch_related("tags")
             .default_order_by()
         )
 
     def for_external_tag(self, tag: str) -> Self:
         return (
             self.filter(external_tags__icontains=tag)
-            .prefetch_related(_build_prefetch_article_tags())
+            .prefetch_related("tags")
             .select_related("main_feed")
             .default_order_by()
         )
@@ -305,22 +293,16 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(filters)
 
     def for_feed(self) -> Self:
-        return (
-            self.prefetch_related(_build_prefetch_article_tags())
-            .select_related("main_feed")
-            .default_order_by()
-        )
+        return self.prefetch_related("tags").select_related("main_feed").default_order_by()
 
     def for_details(self) -> Self:
-        return self.prefetch_related(_build_prefetch_article_tags(), "comments").select_related(
-            "main_feed"
-        )
+        return self.prefetch_related("tags", "comments").select_related("main_feed")
 
     def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
         qs = (
             self.for_user(user)
             .select_related("main_feed", "main_feed__category")
-            .prefetch_related(_build_prefetch_article_tags(), "comments")
+            .prefetch_related("tags", "comments")
             .order_by("id")
         )
         if updated_since:
@@ -438,7 +420,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(filters)
 
     def for_api(self):
-        return self.prefetch_related(_build_prefetch_article_tags())
+        return self.prefetch_related("tags")
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -542,6 +524,9 @@ class ArticleManager(models.Manager["Article"]):
         self.bulk_create(
             [result.article for result in articles_to_create], unique_fields=["user", "url"]
         )
+        ArticleTag.objects.associate_articles_with_tags(
+            [result.article for result in articles_to_create], tags
+        )
 
         self.bulk_update(
             [result.article for result in articles_to_update if result.was_updated],
@@ -564,19 +549,9 @@ class ArticleManager(models.Manager["Article"]):
             ],
         )
 
-        all_articles = []
         all_results = []
         for result in chain(articles_to_create, articles_to_update):
-            all_articles.append(result.article)
             all_results.append(result)
-
-        ArticleTag.objects.associate_articles_with_tags(
-            all_articles,
-            tags,
-            tagging_reason=constants.TaggingReason.FROM_FEED
-            if initial_source_type == constants.ArticleSourceType.FEED
-            else constants.TaggingReason.ADDED_MANUALLY,
-        )
 
         return all_results
 
@@ -658,11 +633,7 @@ class ArticleManager(models.Manager["Article"]):
             article_urls_to_articles[fetch_result.url] = article
 
         self.bulk_create(articles_to_create, unique_fields=["user", "url"])
-        ArticleTag.objects.associate_articles_with_tags(
-            list(article_urls_to_articles.values()),
-            tags,
-            tagging_reason=constants.TaggingReason.ADDED_MANUALLY,
-        )
+        ArticleTag.objects.associate_articles_with_tags(articles_to_create, tags)
 
         article_fetch_errors_to_create = [
             ArticleFetchError(
@@ -744,9 +715,7 @@ class ArticleManager(models.Manager["Article"]):
                     if article.updated_at
                     else "",
                     "article_authors": json.dumps(article.authors) if article.authors else "",
-                    "article_tags": json.dumps([tag.title for tag in article.tags_to_display])
-                    if article.tags_to_display
-                    else "",
+                    "article_tags": json.dumps([tag.title for tag in article.tags.all()]),
                     "article_read_at": article.read_at.isoformat() if article.read_at else "",
                     "article_is_favorite": article.is_favorite,
                     "article_lang": article.language,
@@ -763,7 +732,7 @@ class ArticleManager(models.Manager["Article"]):
             .for_user(user)
             .for_current_tag_filtering()
             .select_related("main_feed")
-            .prefetch_related(_build_prefetch_article_tags())
+            .prefetch_related("tags")
             .filter(_build_filters_from_reading_list(search_query))
         )
 
