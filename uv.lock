@@ -833,7 +833,7 @@ wheels = [
 
 [[package]]
 name = "legadilo"
-version = "25.12.3"
+version = "25.12.4"
 source = { virtual = "." }
 dependencies = [
     { name = "argon2-cffi" },

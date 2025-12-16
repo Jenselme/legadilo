@@ -4,7 +4,7 @@ description = "Legadilo is a project to help you subscribe to RSS feeds, save ar
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
-version = "25.12.3"
+version = "25.12.4"
 requires-python = ">=3.14"
 dependencies = [
     # General
