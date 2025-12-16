@@ -102,3 +102,10 @@ def markdown(value: str) -> str:
     rendered_value = md.convert(value)
     cleaned_value = sanitize_keep_safe_tags(rendered_value)
     return cleaned_value.strip()
+
+
+@register.filter
+def open_original_with_link(article: Article) -> bool:
+    return not article.content or bool(
+        article.main_feed and article.main_feed.open_original_url_by_default
+    )

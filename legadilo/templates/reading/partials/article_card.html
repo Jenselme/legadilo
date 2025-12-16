@@ -5,9 +5,7 @@
     <div class="card-body">
         <header>
             <h2 class="card-title text-break">
-                {% if article.content and not article.annot_open_original_by_default %}
-                    <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title }}</a>
-                {% else %}
+                {% if article|open_original_with_link %}
                     <a class="open-original"
                        data-article-id="{{ article.id }}"
                        href="{{ article.url }}"
@@ -15,6 +13,8 @@
                         {{ article.title }}
                         <span>{% include "core/partials/bs-icons/new-tab.html" %}</span>
                     </a>
+                {% else %}
+                    <a href="{{ article|article_details_url }}?from_url={{ from_url|urlencode }}">{{ article.title }}</a>
                 {% endif %}
             </h2>
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
