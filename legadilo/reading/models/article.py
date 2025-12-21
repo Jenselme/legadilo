@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 import json
 import logging
@@ -260,7 +259,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
-            self.for_user(reading_list.user)
+            self
+            .for_user(reading_list.user)
             .for_current_tag_filtering()
             .filter(
                 _build_filters_from_reading_list(ArticleSearchQuery.from_reading_list(reading_list))
@@ -272,7 +272,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_tag(self, tag: Tag) -> Self:
         return (
-            self.for_current_tag_filtering()
+            self
+            .for_current_tag_filtering()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
             .select_related("main_feed")
             .prefetch_related("tags")
@@ -281,7 +282,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_external_tag(self, tag: str) -> Self:
         return (
-            self.filter(external_tags__icontains=tag)
+            self
+            .filter(external_tags__icontains=tag)
             .prefetch_related("tags")
             .select_related("main_feed")
             .default_order_by()
@@ -302,7 +304,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
         qs = (
-            self.for_user(user)
+            self
+            .for_user(user)
             .select_related("main_feed", "main_feed__category")
             .prefetch_related("tags", "comments")
             .order_by("id")
@@ -362,7 +365,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_cleanup(self) -> Self:
         return (
-            self.for_deletion()
+            self
+            .for_deletion()
             .alias(
                 min_feed_retention_time=models.Min("feeds__article_retention_time"),
                 # Let's keep the article until the last feed says it's time to collect.
@@ -402,14 +406,16 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             config="english",
         )
         return (
-            self.alias(search=SEARCH_VECTOR)
+            self
+            .alias(search=SEARCH_VECTOR)
             .annotate(rank=SearchRank(SEARCH_VECTOR, full_text_search_query))
             .filter(search=full_text_search_query)
         )
 
     def for_tags_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
         return (
-            self.alias(lower_tags_title=Lower("tags__title"))
+            self
+            .alias(lower_tags_title=Lower("tags__title"))
             .annotate(rank=models.Value(0))
             .filter(lower_tags_title=search_query.q.lower())
         )
@@ -452,7 +458,8 @@ class ArticleManager(models.Manager["Article"]):
 
         existing_urls_to_articles = {
             article.url: article
-            for article in self.get_queryset()
+            for article in self
+            .get_queryset()
             .filter(user=user, url__in=[article_data.url for article_data in articles_data])
             .select_related("user", "user__settings")
         }
@@ -676,7 +683,8 @@ class ArticleManager(models.Manager["Article"]):
         # We only count unread articles in the reading list. Not all articles. I think it's more
         # relevant.
         return (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_user(user)
             .only_unread()
             .for_current_tag_filtering()
@@ -730,7 +738,8 @@ class ArticleManager(models.Manager["Article"]):
 
     def search(self, user: User, search_query: ArticleFullTextSearchQuery) -> ArticleQuerySet:
         articles_qs = (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_user(user)
             .for_current_tag_filtering()
             .select_related("main_feed")
@@ -768,7 +777,8 @@ class ArticleManager(models.Manager["Article"]):
         """
         articles_already_linked_to_other_group = tuple(
             article
-            for article in self.get_queryset()
+            for article in self
+            .get_queryset()
             .filter(id__in=[article.id for article in articles], group__isnull=False)
             .exclude(group=group)
         )

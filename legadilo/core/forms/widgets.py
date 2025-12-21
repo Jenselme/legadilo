@@ -59,7 +59,7 @@ class PrettyJSONWidget(widgets.Textarea):
             self.attrs["rows"] = min(max(len(row_lengths) + 2, 10), 30)
             self.attrs["cols"] = min(max(max(row_lengths) + 2, 40), 120)
             return value
-        except (JSONDecodeError, ValueError, TypeError):
+        except JSONDecodeError, ValueError, TypeError:
             return super().format_value(value)
 
 

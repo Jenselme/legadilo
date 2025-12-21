@@ -107,7 +107,7 @@ def get_common_template_context(
             or for_later_but_excluded_from_list
             or not_for_later_but_excluded_from_list
         )
-    except (ValueError, TypeError, ReadingList.DoesNotExist):
+    except ValueError, TypeError, ReadingList.DoesNotExist:
         displayed_reading_list = None
         count_articles_of_current_reading_list = None
         js_cfg = {}
@@ -137,7 +137,7 @@ def mark_articles_as_read_in_bulk_view(request: AuthenticatedHttpRequest) -> Htt
     # at once.
     try:
         article_ids = [int(id_) for id_ in request.POST["article_ids"].split(",") if id_]
-    except (TypeError, ValueError, KeyError, IndexError):
+    except TypeError, ValueError, KeyError, IndexError:
         article_ids = []
 
     if len(article_ids) == 0:
@@ -148,7 +148,8 @@ def mark_articles_as_read_in_bulk_view(request: AuthenticatedHttpRequest) -> Htt
         )
 
     articles_qs = (
-        Article.objects.get_queryset()
+        Article.objects
+        .get_queryset()
         .for_details()
         .filter(user=request.user, id__in=article_ids)
         .order_by("id")

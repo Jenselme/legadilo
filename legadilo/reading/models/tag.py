@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Self, TypedDict
@@ -38,7 +37,8 @@ TagsHierarchy = dict[str, list[SubTag]]
 class SubTagMappingManager(models.Manager):
     def get_selected_mappings(self, tag: Tag) -> FormChoices:
         return list(
-            self.filter(base_tag=tag)
+            self
+            .filter(base_tag=tag)
             .values_list("sub_tag__slug", flat=True)
             .order_by("sub_tag__title")
         )
@@ -110,7 +110,8 @@ class TagManager(models.Manager["Tag"]):
     def get_slugs_to_ids(self, user: User, slugs: Iterable[str]) -> dict[str, int]:
         return {
             slug: id_
-            for id_, slug in self.get_queryset()
+            for id_, slug in self
+            .get_queryset()
             .for_user(user)
             .for_slugs(slugs)
             .values_list("id", "slug")
@@ -119,7 +120,8 @@ class TagManager(models.Manager["Tag"]):
     @transaction.atomic()
     def get_or_create_from_list(self, user: User, titles_or_slugs: Iterable[str]) -> list[Tag]:
         existing_tags = list(
-            Tag.objects.get_queryset()
+            Tag.objects
+            .get_queryset()
             .for_user(user)
             .for_slugs([slugify(title_or_slug) for title_or_slug in titles_or_slugs])
         )
@@ -135,7 +137,8 @@ class TagManager(models.Manager["Tag"]):
 
     def list_for_admin(self, user: User, searched_text: str = "") -> list[Tag]:
         qs = (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_user(user)
             .annotate(annot_articles_count=models.Count("articles"))
             .order_by("title")
@@ -211,7 +214,8 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
         )
         for page in paginator:
             existing_article_tag_urls = list(
-                self.get_queryset()
+                self
+                .get_queryset()
                 .for_articles_and_tags(page.object_list, tags)
                 .values_list("article_id", "tag_id")
             )
@@ -264,7 +268,8 @@ class ArticleTag(models.Model):
 class ReadingListTagQuerySet(models.QuerySet["ReadingListTag"]):
     def for_reading_list(self, filter_type: constants.ReadingListTagFilterType):
         return (
-            self.select_related("tag")
+            self
+            .select_related("tag")
             .filter(filter_type=filter_type)
             .annotate(title=models.F("tag__title"), slug=models.F("tag__slug"))
         )

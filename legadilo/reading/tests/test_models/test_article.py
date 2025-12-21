@@ -687,7 +687,8 @@ class TestArticleQuerySet:
         search_in_summary = ArticleFactory(title="Search in summary", user=user, summary="Claudius")
 
         searched_articles = list(
-            Article.objects.get_queryset()
+            Article.objects
+            .get_queryset()
             .for_search(
                 ArticleFullTextSearchQuery(
                     q="Claudius", search_type=constants.ArticleSearchType.PLAIN
@@ -871,9 +872,8 @@ class TestArticleManager:
             }
         ]
         tag_slugs = list(
-            Article.objects.annotate(
-                tag_slugs=models.StringAgg("tags__slug", delimiter=models.Value("|"))
-            )
+            Article.objects
+            .annotate(tag_slugs=models.StringAgg("tags__slug", delimiter=models.Value("|")))
             .values_list("url", "tag_slugs")
             .order_by("url")
         )

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
@@ -35,7 +34,8 @@ class NotificationQuerySet(models.QuerySet["Notification"]):
             is_read__isnull=False, read_at__gt=utcnow() - relativedelta(months=3)
         )
         return (
-            self.for_user(user)
+            self
+            .for_user(user)
             .filter(only_recent_and_unread)
             .order_by(models.F("read_at").desc(nulls_first=True), "created_at")
         )

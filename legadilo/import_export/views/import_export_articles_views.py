@@ -85,7 +85,7 @@ def _import_custom_csv(request: AuthenticatedHttpRequest):
                 nb_imported_feeds,
                 nb_imported_categories,
             ) = import_custom_csv_file(request.user, file_path)
-    except (DataImportError, UnicodeDecodeError, PydanticValidationError):
+    except DataImportError, UnicodeDecodeError, PydanticValidationError:
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
     else:
@@ -117,7 +117,7 @@ def _import_wallabag(request: AuthenticatedHttpRequest):
         nb_imported_articles = import_wallabag_file(
             request.user, import_wallabag_form.cleaned_data["wallabag_file"]
         )
-    except (JSONDecodeError, UnicodeDecodeError, PydanticValidationError):
+    except JSONDecodeError, UnicodeDecodeError, PydanticValidationError:
         status = HTTPStatus.BAD_REQUEST
         messages.error(request, _("The file you supplied is not valid."))
     else:

@@ -45,8 +45,7 @@ class Command(BaseCommand):
     def _read_feed(self, feed_file):
         file_path = Path(feed_file)
         if file_path.exists() and file_path.is_file():
-            with file_path.open("r", encoding="utf-8") as f:
-                return f.read()
+            return file_path.read_text(encoding="utf-8")
 
         if is_url_valid(feed_file):
             with get_rss_sync_client() as client:

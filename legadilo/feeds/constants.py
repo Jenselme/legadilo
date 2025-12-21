@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _

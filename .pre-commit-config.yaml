@@ -6,7 +6,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -28,12 +28,12 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/fsfe/reuse-tool
-    rev: v5.0.2
+    rev: v6.2.0
     hooks:
       - id: reuse
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: "1.25.0"
+    rev: "1.29.1"
     hooks:
       - id: django-upgrade
         args: ["--target-version", "5.0"]
@@ -42,7 +42,7 @@ repos:
     rev: v3.21.2
     hooks:
       - id: pyupgrade
-        args: [--py313-plus]
+        args: [--py314-plus]
 
   - repo: local
     hooks:
@@ -59,11 +59,6 @@ repos:
         require_serial: true
         language: system
 
-  - repo: https://github.com/seddonym/import-linter
-    rev: v2.3
-    hooks:
-      - id: import-linter
-
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.36.4
     hooks:
@@ -76,14 +71,14 @@ repos:
         args: [--target-version, "5.2"]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
         exclude: ".envrc"
         args: [-e, SC1091]
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v16.22.0
+    rev: v16.26.1
     hooks:
       - id: stylelint
         args: [--fix]
@@ -109,12 +104,22 @@ repos:
         exclude: (\.vscode)
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.34.0
+    rev: v1.40.0
     hooks:
       - id: typos
 
   - repo: local
     hooks:
+      - id: import-linter
+        name: import-linter
+        entry: env
+        args:
+          - uv
+          - run
+          - lint-imports
+        language: system
+        pass_filenames: false
+
       - id: mypy
         name: mypy
         entry: env

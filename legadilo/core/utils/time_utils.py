@@ -36,5 +36,5 @@ def safe_datetime_parse(data: Any) -> datetime | None:
 
     try:
         return datetime_parse(data).astimezone(UTC)
-    except (ParserError, OverflowError):
+    except ParserError, OverflowError:
         return None

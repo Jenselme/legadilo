@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 import calendar
 from datetime import datetime, timedelta
@@ -161,7 +160,8 @@ class FeedQuerySet(models.QuerySet["Feed"]):
     def for_update(self, user: User):
         most_recent_feed_ids = FeedUpdate.objects.list_most_recent_for_each_feed()
         return (
-            self.alias(
+            self
+            .alias(
                 # We need to filter for update only on the latest FeedUpdate object. If we have
                 # entries that are too old, we don't want to include them or the feed will be
                 # refreshed even if according to its rules it should not: by default, we do a left
@@ -220,7 +220,8 @@ class FeedManager(models.Manager["Feed"]):
         """Get categories by category title, filter by supplied text."""
         feeds_by_categories: dict[str | None, list[Feed]] = {}
         qs = (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_user(user)
             .select_related("category")
             .order_by("category__title", "id")
@@ -348,7 +349,8 @@ class FeedManager(models.Manager["Feed"]):
             ).values_list("url", flat=True)
         )
         for feed_article in (
-            FeedArticle.objects.all()
+            FeedArticle.objects
+            .all()
             .filter(
                 feed=feed,
                 feed_article_id__in=[article.external_article_id for article in feed_data.articles],
