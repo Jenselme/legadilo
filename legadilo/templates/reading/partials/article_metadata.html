@@ -34,6 +34,14 @@
             {{ article.main_source_title }}
         {% endif %}
     </span>
+    {% if article.group %}
+        <span class="me-2">
+            <a href="{{ article.group|articles_group_details_url }}">
+                {% include "core/partials/bs-icons/group_of_article.html" %}
+                {{ article.group.title }}
+            </a>
+        </span>
+    {% endif %}
     {% if article.reading_time > 0 %}
         <span class="me-2">
             {% include "core/partials/bs-icons/reading_time.html" %}
