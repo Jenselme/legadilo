@@ -9,6 +9,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## Unreleased
 
 - Correct tags admin display on mobile.
+- Display active nav item it top bar.
 
 ## 25.12.4
 
