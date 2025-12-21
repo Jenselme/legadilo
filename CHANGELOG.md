@@ -10,6 +10,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 - Correct tags admin display on mobile.
 - Display active nav item it top bar.
+- Show the number of displayed articles on search if not all articles are displayed.
 
 ## 25.12.4
 
