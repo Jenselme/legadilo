@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}
+    {% translate "Articles groups" %}
+{% endblock title %}
+
+{% block content %}
+    <h1>{% translate "Articles groups" %}</h1>
+
+    <form class="mt-2 mb-3" method="get">
+        <div class="input-group">
+            <span id="groups-search-glass"
+                  class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
+            <input type="text"
+                   class="form-control"
+                   name="q"
+                   placeholder="{% translate 'Search for articles groups here...' %}"
+                   value="{{ searched_text }}"
+                   aria-label="Search for articles groups"
+                   aria-describedby="groups-search-glass"/>
+            <button class="btn btn-outline-secondary"
+                    type="submit">{% translate "Search" %}</button>
+        </div>
+    </form>
+
+    {% for group in groups %}
+        <div class="card mb-2 {% if not group.annot_has_unread_articles %}opacity-50{% endif %}">
+            <div class="card-body">
+                <header>
+                    <h2 class="card-title">
+                        <a href="{{ group|articles_group_details_url }}">{{ group.title }}</a>
+                    </h2>
+                    {% include "reading/partials/articles_groups_metadata.html" %}
+                </header>
+                <main class="card-text">
+                    <p>{{ group.description }}</p>
+                    <ul class="list-group list-group-flush">
+                        {% for article in group.sorted_articles %}
+                            <li class="list-group-item {% if article.is_read %}opacity-50{% endif %}">
+                                <a href="{{ article|article_details_url }}">{{ article.title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </main>
+            </div>
+            <footer class="card-footer d-flex justify-content-end">
+                <a class="card-link"
+                   href="{{ group|articles_group_details_url }}">
+                    {% translate "View group details" %}
+                </a>
+            </footer>
+        </div>
+    {% endfor %}
+{% endblock content %}

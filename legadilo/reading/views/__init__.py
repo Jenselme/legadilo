@@ -7,7 +7,7 @@ from .article_actions_views import (
     update_article_view,
 )
 from .article_details_views import article_details_view
-from .articles_group_views import articles_group_details_view
+from .articles_group_views import articles_group_details_view, articles_groups_list_view
 from .comment_views import (
     create_comment_view,
     delete_comment_view,
@@ -33,6 +33,7 @@ __all__ = [
     "add_article_view",
     "article_details_view",
     "articles_group_details_view",
+    "articles_groups_list_view",
     "create_comment_view",
     "create_tag_view",
     "delete_article_view",

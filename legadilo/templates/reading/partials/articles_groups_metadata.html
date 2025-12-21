@@ -1,0 +1,27 @@
+{% load i18n %}
+
+<p class="mb-0 text-secondary">
+    {% blocktranslate trimmed count nb_articles=group.annot_nb_articles_in_group %}
+        {{ nb_articles }} article in group
+    {% plural %}
+        {{ nb_articles }} articles in group
+    {% endblocktranslate %}
+
+    {% if group.annot_total_reading_time > 0 %}
+        <span class="me-2">
+            {% include "core/partials/bs-icons/reading_time.html" %}
+            {% blocktranslate trimmed count reading_time=group.annot_total_reading_time %}
+                {{ reading_time }} minute
+            {% plural %}
+                {{ reading_time }} minutes
+            {% endblocktranslate %}
+        </span>
+    {% endif %}
+</p>
+{% if group.tags.all %}
+    <p>
+        {% for tag in group.tags.all %}
+            <span class="badge text-bg-primary me-1 text-wrap">{{ tag.title }}</span>
+        {% endfor %}
+    </p>
+{% endif %}

@@ -48,6 +48,7 @@ urlpatterns = [
     ),
     path("articles/add/", views.add_article_view, name="add_article"),
     path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
+    path("articles-groups/", views.articles_groups_list_view, name="articles_groups_list"),
     path(
         "articles-groups/<int:group_id>-<slug:group_slug>/",
         views.articles_group_details_view,
