@@ -8,6 +8,7 @@ import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
+from functools import cached_property
 from itertools import chain
 from typing import TYPE_CHECKING, Literal, Self, assert_never
 
@@ -300,7 +301,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.prefetch_related("tags").select_related("main_feed").default_order_by()
 
     def for_details(self) -> Self:
-        return self.prefetch_related("tags", "comments").select_related("main_feed")
+        return self.prefetch_related("tags", "comments").select_related("main_feed", "group")
 
     def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
         qs = (
@@ -1006,3 +1007,25 @@ class Article(models.Model):
     def update_from_details(self, *, title: str, reading_time: int):
         self.title = title
         self.reading_time = reading_time
+
+    @cached_property
+    def next_article_of_group(self) -> Article | None:
+        if self.group_id is None:
+            return None
+        return (
+            self.group.articles  # type: ignore[union-attr]
+            .filter(group_order__gt=self.group_order)
+            .order_by("group_order")
+            .first()
+        )
+
+    @cached_property
+    def previous_article_of_group(self) -> Article | None:
+        if self.group_id is None:
+            return None
+        return (
+            self.group.articles  # type: ignore[union-attr]
+            .filter(group_order__lt=self.group_order)
+            .order_by("group_order")
+            .last()
+        )

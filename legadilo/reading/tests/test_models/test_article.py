@@ -1404,6 +1404,7 @@ class TestArticleManager:
         ]
 
 
+@pytest.mark.django_db
 class TestArticleModel:
     @pytest.mark.django_db
     def test_generated_fields(self):
@@ -1589,3 +1590,32 @@ class TestArticleModel:
 
         assert was_updated
         assert article.content_type == "text/html"
+
+    def test_adjoining_articles_of_group_no_group(self, django_assert_num_queries):
+        article = ArticleFactory(group=None)
+
+        with django_assert_num_queries(0):
+            assert article.next_article_of_group is None
+            assert article.previous_article_of_group is None
+
+    def test_adjoining_articles_of_group_with_group_no_other_article(
+        self, django_assert_num_queries
+    ):
+        article = ArticleFactory.build(group=ArticlesGroupFactory())
+
+        with django_assert_num_queries(2):
+            assert article.next_article_of_group is None
+            assert article.previous_article_of_group is None
+
+    def test_adjoining_articles_of_group(self):
+        group = ArticlesGroupFactory()
+        article_1 = ArticleFactory(group=group, group_order=1)
+        article_3 = ArticleFactory(group=group, group_order=3)
+        article_2 = ArticleFactory(group=group, group_order=2)
+
+        assert article_1.next_article_of_group == article_2
+        assert article_1.previous_article_of_group is None
+        assert article_2.next_article_of_group == article_3
+        assert article_2.previous_article_of_group == article_1
+        assert article_3.next_article_of_group is None
+        assert article_3.previous_article_of_group == article_2
