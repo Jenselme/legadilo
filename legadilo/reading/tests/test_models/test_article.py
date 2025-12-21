@@ -1631,3 +1631,20 @@ class TestArticleModel:
         assert article_2.previous_article_of_group == article_1
         assert article_3.next_article_of_group is None
         assert article_3.previous_article_of_group == article_2
+
+    def test_update_from_details_link_to_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user, group=None)
+
+        article.update_from_details(title="Test title", reading_time=10, group=group)
+
+        assert article.group == group
+        assert article.group_order == 1
+
+    def test_update_from_details_unlink_from_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user, group=group)
+
+        article.update_from_details(title="Test title", reading_time=10, group=None)
+
+        assert article.group_id is None

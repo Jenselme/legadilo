@@ -17,14 +17,17 @@ from django.views.decorators.http import require_http_methods
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.utils.types import FormChoices
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticleTag, Tag
+from legadilo.reading.models import Article, ArticlesGroup, ArticleTag, Tag
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
+from ...core.forms.widgets import SelectAutocompleteWidget
+from ..models.articles_group import ArticlesGroupQuerySet
 from ._utils import get_from_url_for_article_details
 from .comment_views import CommentArticleForm
 
 
 class EditArticleForm(forms.Form):
+    title = forms.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH, required=True)
     tags = MultipleTagsField(
         required=False,
         choices=[],
@@ -32,7 +35,15 @@ class EditArticleForm(forms.Form):
             "Tags to associate to this article. To create a new tag, type and press enter."
         ),
     )
-    title = forms.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH, required=True)
+    group = forms.ModelChoiceField(
+        ArticlesGroup.objects.none(),
+        required=False,
+        widget=SelectAutocompleteWidget(allow_new=False),
+        help_text=_(
+            "Group to associate this article with. If you need to create a new group, create it "
+            "from the groups list page."
+        ),
+    )
     reading_time = forms.IntegerField(required=True, min_value=0)
 
     class Meta:
@@ -42,10 +53,13 @@ class EditArticleForm(forms.Form):
         self,
         *args,
         tag_choices: list[tuple[str, str]],
+        groups_qs: ArticlesGroupQuerySet,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["group"].queryset = groups_qs  # type: ignore[attr-defined]
+        self.fields["group"].label_from_instance = lambda obj: obj.title  # type: ignore[attr-defined]
 
 
 @require_http_methods(["GET", "POST"])
@@ -113,6 +127,8 @@ def _build_edit_article_form_from_instance(tag_choices: FormChoices, article: Ar
             "tags": article.article_tags.get_selected_values(),
             "title": article.title,
             "reading_time": article.reading_time,
+            "group": article.group_id,
         },
         tag_choices=tag_choices,
+        groups_qs=ArticlesGroup.objects.get_queryset().for_user(article.user),
     )

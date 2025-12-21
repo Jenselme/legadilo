@@ -8,7 +8,12 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
-from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
+from legadilo.reading.tests.factories import (
+    ArticleFactory,
+    ArticlesGroupFactory,
+    ReadingListFactory,
+    TagFactory,
+)
 
 
 @pytest.mark.django_db
@@ -42,7 +47,7 @@ class TestArticleDetailsView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_view_details(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -53,7 +58,7 @@ class TestArticleDetailsView:
 
     def test_view_details_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
         from_url = "/reading/lists/unread/"
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.get(self.url, data={"from_url": from_url})
 
         assert response.status_code == HTTPStatus.OK
@@ -117,7 +122,7 @@ class TestUpdateArticleDetailsView:
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(28):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
@@ -136,7 +141,7 @@ class TestUpdateArticleDetailsView:
     ):
         initial_slug = self.article.slug
 
-        with django_assert_num_queries(28):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
             )
@@ -162,3 +167,37 @@ class TestUpdateArticleDetailsView:
         assert response.context_data["edit_article_form"].errors == {
             "tags": ["Tag cannot contain only spaces or special characters."]
         }
+
+    def test_link_to_group(self, user, logged_in_sync_client, django_assert_num_queries):
+        group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user)
+
+        with django_assert_num_queries(36):
+            response = logged_in_sync_client.post(
+                self.url, {**self.sample_payload, "group": group.id}
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.group == group
+
+    def test_unlink_from_group(self, user, logged_in_sync_client, django_assert_num_queries):
+        group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user, group=group)
+
+        with django_assert_num_queries(30):
+            response = logged_in_sync_client.post(self.url, {**self.sample_payload})
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.group_id is None
+
+    def test_link_to_group_of_other_user(self, user, other_user, logged_in_sync_client):
+        group = ArticlesGroupFactory(user=other_user)
+        ArticleFactory(user=user, group=group)
+
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "group": group.id})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        self.article.refresh_from_db()
+        assert self.article.group_id is None
