@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Correct tags admin display on mobile.
+
 ## 25.12.4
 
 - Fix how to open articles by default.
