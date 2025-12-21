@@ -3,6 +3,7 @@
 #  SPDX-License-Identifier: AGPL-3.0-or-later
 
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
 
 from django.db import models
@@ -70,7 +71,9 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
         ArticlesGroupTag.objects.associate_group_with_tags(group, tags)
         return group
 
-    def list_for_admin(self, user: User, searched_text: str = "") -> ArticlesGroupQuerySet:
+    def list_for_admin(
+        self, user: User, searched_text: str = "", tag_slugs: Iterable[str] = ()
+    ) -> ArticlesGroupQuerySet:
         qs = (
             self
             .get_queryset()
@@ -81,6 +84,8 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
         )
         if searched_text:
             qs = qs.for_search(searched_text)
+        if tag_slugs:
+            qs = qs.filter(tags__slug__in=tag_slugs)
 
         return qs.order_by("-annot_unread_articles_count", "created_at")
 

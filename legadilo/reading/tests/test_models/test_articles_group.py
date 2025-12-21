@@ -93,10 +93,20 @@ class TestArticlesGroupManager:
 
         assert groups == [other_group, group]
 
-    def test_list_for_admin_with_search(self, user):
+    def test_list_for_admin_with_search_text(self, user):
         group = ArticlesGroupFactory(user=user, title="About groups")
         ArticlesGroupFactory(user=user, title="Other group")
 
         groups = list(ArticlesGroup.objects.list_for_admin(user, "groups"))
+
+        assert groups == [group]
+
+    def test_list_for_admin_with_search_text_and_tags(self, user):
+        group = ArticlesGroupFactory(user=user, title="About groups")
+        tag = TagFactory(user=user, title="Groups")
+        group.tags.add(tag)
+        ArticlesGroupFactory(user=user, title="Other groups")
+
+        groups = list(ArticlesGroup.objects.list_for_admin(user, "groups", tag_slugs=[tag.slug]))
 
         assert groups == [group]

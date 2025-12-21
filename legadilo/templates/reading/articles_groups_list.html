@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load crispy_forms_tags i18n static %}
+
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{ csp_nonce }}"
+            type="module"></script>
+{% endblock page_js %}
 
 {% block title %}
     {% translate "Articles groups" %}
@@ -9,21 +15,32 @@
 {% block content %}
     <h1>{% translate "Articles groups" %}</h1>
 
-    <form class="mt-2 mb-3" method="get">
-        <div class="input-group">
-            <span id="groups-search-glass"
-                  class="input-group-text">{% include "core/partials/bs-icons/search.html" %}</span>
-            <input type="text"
-                   class="form-control"
-                   name="q"
-                   placeholder="{% translate 'Search for articles groups here...' %}"
-                   value="{{ searched_text }}"
-                   aria-label="Search for articles groups"
-                   aria-describedby="groups-search-glass"/>
-            <button class="btn btn-outline-secondary"
-                    type="submit">{% translate "Search" %}</button>
+    <div id="articles-groups-search-accordion" class="accordion mb-3">
+        <div class="accordion-item">
+            <div class="accordion-header">
+                <button
+                    class="accordion-button {% if not form.is_filled %}collapsed{% endif %} p-2"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#articles-groups-search-form-container"
+                    aria-expanded="{% if form.is_filled %}true{% else %}false{% endif %}"
+                    aria-controls="articles-groups-search-form-container">
+                    {% translate "Filter groups" %}
+                </button>
+            </div>
+            <div id="articles-groups-search-form-container"
+                 class="accordion-collapse collapse {% if form.is_filled %}show{% endif %}"
+                 data-bs-parent="#articles-groups-search-accordion">
+                <div class="accordion-body p-2 px-3">
+                    <form class="mt-2 mb-3" method="get">
+                        {{ form|crispy }}
+                        <button class="btn btn-outline-secondary"
+                                type="submit">{% translate "Search" %}</button>
+                    </form>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 
     {% for group in groups_page %}
         <div class="card mb-2 {% if not group.annot_has_unread_articles %}opacity-50{% endif %}">

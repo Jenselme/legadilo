@@ -116,3 +116,14 @@ def open_original_with_link(article: Article) -> bool:
     return not article.content or bool(
         article.main_feed and article.main_feed.open_original_url_by_default
     )
+
+
+@register.simple_tag(name="append_qs_params", takes_context=True)
+def append_qs_params(context, **kwargs):
+    params = context.request.GET.copy()
+    for key, value in kwargs.items():
+        existing_values = params.getlist(key)
+        params.setlist(key, list({*existing_values, value}))
+
+    qs = params.urlencode()
+    return f"?{qs}"

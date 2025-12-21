@@ -21,7 +21,10 @@
 {% if group.tags.all %}
     <p>
         {% for tag in group.tags.all %}
-            <span class="badge text-bg-primary me-1 text-wrap">{{ tag.title }}</span>
+            <a class="link-underline link-underline-opacity-0 badge text-bg-primary me-1 text-wrap"
+               href="{% url 'reading:articles_groups_list' %}{% append_qs_params tags=tag.slug %}">
+                {{ tag.title }}
+            </a>
         {% endfor %}
     </p>
 {% endif %}

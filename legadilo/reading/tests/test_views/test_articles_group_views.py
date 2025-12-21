@@ -7,7 +7,7 @@ from http import HTTPStatus
 import pytest
 from django.urls import reverse
 
-from legadilo.reading.tests.factories import ArticlesGroupFactory
+from legadilo.reading.tests.factories import ArticlesGroupFactory, TagFactory
 
 
 @pytest.mark.django_db
@@ -40,3 +40,20 @@ class TestArticlesGroupsListView:
 
         assert response.status_code == HTTPStatus.OK
         assert list(response.context_data["groups_page"].object_list) == []
+
+    def test_search_with_tags(self, user, logged_in_sync_client):
+        tag = TagFactory(user=user, title="test")
+        self.group.tags.add(tag)
+
+        response = logged_in_sync_client.get(self.url, data={"tags": [tag.slug]})
+
+        assert response.status_code == HTTPStatus.OK
+        assert list(response.context_data["groups_page"].object_list) == [self.group]
+
+    def test_invalid_search_form(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url, data={"q": "a"})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["form"].errors == {
+            "q": ["Ensure this value has at least 3 characters (it has 1)."]
+        }
