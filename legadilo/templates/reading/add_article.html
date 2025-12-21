@@ -7,7 +7,7 @@
             nonce="{{ csp_nonce }}"
             type="module"></script>
     <script src="{% static 'js/formset.js' %}"
-            nonce="{{ request.csp_nonce }}"
+            nonce="{{ csp_nonce }}"
             defer></script>
     {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
@@ -36,7 +36,7 @@
                 {% else %}
                     {% blocktranslate trimmed with article_details_url=add_article_result.article|article_details_url article_title=add_article_result.article.title %}
                         Article <a href="{{ article_details_url }}">{{ article_title }}</a> already
-                        existed.
+                        existed. Neither its tags nor group were changed.
                     {% endblocktranslate %}
                 {% endif %}
                 <button type="button"

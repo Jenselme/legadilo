@@ -1396,12 +1396,24 @@ class TestArticleManager:
 
         assert articles_already_linked == (article_already_linked_to_other_group,)
         assert list(Article.objects.filter(group=group).values_list("id", "group_order")) == [
-            (article.id, 0),
-            (article_already_linked_to_group.id, 1),
+            (article.id, 2),
+            (article_already_linked_to_group.id, 3),
         ]
         assert list(Article.objects.filter(group=other_group).values_list("id", flat=True)) == [
             article_already_linked_to_other_group.id
         ]
+
+    def test_link_new_article_to_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user, group=group, group_order=1)
+        article = ArticleFactory(user=user)
+
+        articles_already_linked = Article.objects.link_articles_to_group(group, [article])
+
+        assert articles_already_linked == ()
+        article.refresh_from_db()
+        assert article.group == group
+        assert article.group_order == 2
 
 
 @pytest.mark.django_db

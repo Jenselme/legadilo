@@ -14,7 +14,7 @@ from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.reading.models import Article, ArticlesGroup
 from legadilo.reading.models.article import SaveArticleResult
 from legadilo.reading.services.articles_groups import SaveArticlesGroupResult
-from legadilo.reading.tests.factories import ArticleFactory, TagFactory
+from legadilo.reading.tests.factories import ArticleFactory, ArticlesGroupFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 
 
@@ -47,7 +47,7 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -63,13 +63,14 @@ class TestAddArticle:
         assert Article.objects.count() == 1
         article = Article.objects.get()
         assert list(article.tags.all()) == []
+        assert article.group_id is None
 
     def test_add_article_with_tags(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(24):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -213,6 +214,78 @@ class TestAddArticle:
             is_from_invalid_data=True,
         )
 
+    def test_add_article_linked_to_group(
+        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        group = ArticlesGroupFactory(user=user)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        payload = {
+            **self.sample_payload,
+            "group": group.id,
+        }
+
+        with django_assert_num_queries(24):
+            response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group == group
+
+    def test_add_article_linked_to_group_article_already_exists(
+        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        ArticleFactory(user=user, url=self.article_url)
+        group = ArticlesGroupFactory(user=user)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        payload = {
+            **self.sample_payload,
+            "group": group.id,
+        }
+
+        with django_assert_num_queries(21):
+            response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.OK
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group_id is None
+
+    def test_add_article_linked_to_group_article_already_exists_and_linked_to_other_group(
+        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        some_group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user, url=self.article_url, group=some_group)
+        group = ArticlesGroupFactory(user=user)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        payload = {
+            **self.sample_payload,
+            "group": group.id,
+        }
+
+        with django_assert_num_queries(21):
+            response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.OK
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group == some_group
+
+    def test_add_article_linked_to_group_other_user(self, user, other_user, logged_in_sync_client):
+        group_other_user = ArticlesGroupFactory(user=other_user)
+        payload = {
+            **self.sample_payload,
+            "group": group_other_user.id,
+        }
+
+        response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["add_article_form"].errors == {
+            "group": ["Select a valid choice. That choice is not one of the available choices."],
+        }
+        assert Article.objects.count() == 0
+
 
 @pytest.mark.django_db
 class TestAddArticlesGroup:
@@ -242,7 +315,7 @@ class TestAddArticlesGroup:
         )
         httpx_mock.add_response(html="", url=self.no_content_article_url)
 
-        with django_assert_num_queries(29):
+        with django_assert_num_queries(31):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -320,6 +393,8 @@ class TestRefetchArticleView:
         assert article.summary.startswith("I just wrote a new book")
         assert "Lorem ipsum" in article.content
         assert list(article.article_tags.values_list("tag__slug", flat=True)) == ["existing-tag"]
+        self.article.refresh_from_db()
+        assert self.article.group_id is None
 
     def test_refetch_article_with_from_url(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
@@ -338,3 +413,19 @@ class TestRefetchArticleView:
             response["Location"]
             == f"/reading/articles/{self.article.id}-initial-slug/?from_url=%2Ftoto%2F"
         )
+
+    def test_refetch_article_with_group(
+        self, user, logged_in_sync_client, django_assert_num_queries, httpx_mock
+    ):
+        httpx_mock.add_response(html="", url=self.article_url)
+        group = ArticlesGroupFactory(user=user)
+        self.article.group = group
+        self.article.save()
+
+        with django_assert_num_queries(18):
+            response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == f"/reading/articles/{self.article.id}-initial-slug/"
+        self.article.refresh_from_db()
+        assert self.article.group == group

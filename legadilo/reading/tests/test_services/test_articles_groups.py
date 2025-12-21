@@ -15,7 +15,7 @@ class TestSaveArticlesGroup:
         tag = TagFactory(title="existing-tag", user=user)
         httpx_mock.add_response(text="Data", url="https://example.com/article-with-content/")
 
-        with django_assert_num_queries(21):
+        with django_assert_num_queries(22):
             result = save_articles_group(
                 user,
                 "My new group",
@@ -35,7 +35,7 @@ class TestSaveArticlesGroup:
         assert new_group.description == "Some description"
         assert new_group.slug == "my-new-group"
         assert set(new_group.articles.values_list("id", "group_order")) == {
-            (new_article.id, 0),
+            (new_article.id, 1),
         }
         assert set(new_article.tags.values_list("slug", flat=True)) == {"existing-tag", "new-tag"}
         assert result == SaveArticlesGroupResult(
@@ -54,7 +54,7 @@ class TestSaveArticlesGroup:
         httpx_mock.add_response(text="Data", url="https://example.com/article-with-content/")
         httpx_mock.add_response(text="", url="https://example.com/articles-without-content/")
 
-        with django_assert_num_queries(22):
+        with django_assert_num_queries(23):
             result = save_articles_group(
                 user,
                 "My new group",
@@ -74,8 +74,8 @@ class TestSaveArticlesGroup:
         new_article = Article.objects.get(url="https://example.com/article-with-content/")
         empty_article = Article.objects.get(url="https://example.com/articles-without-content/")
         assert set(new_group.articles.values_list("id", "group_order")) == {
-            (new_article.id, 0),
-            (empty_article.id, 1),
+            (new_article.id, 1),
+            (empty_article.id, 2),
         }
         assert result == SaveArticlesGroupResult(
             group=new_group,

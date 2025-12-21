@@ -775,6 +775,9 @@ class ArticleManager(models.Manager["Article"]):
 
         If any of the supplied articles are already linked to another group, they are not linked
         again and remain in their original group. The ids of these articles are returned.
+
+        The newly linked articles have a group_order higher than the highest group_order of the
+        articles in the group.
         """
         articles_already_linked_to_other_group = tuple(
             article
@@ -783,8 +786,11 @@ class ArticleManager(models.Manager["Article"]):
             .filter(id__in=[article.id for article in articles], group__isnull=False)
             .exclude(group=group)
         )
+        max_group_order = group.articles.aggregate(
+            max_group_order=Coalesce(models.Max("group_order"), 0)
+        )["max_group_order"]
         articles_to_update = []
-        for order, article in enumerate(articles):
+        for order, article in enumerate(articles, start=max_group_order + 1):
             if article in articles_already_linked_to_other_group:
                 continue
 

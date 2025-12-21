@@ -18,10 +18,12 @@ from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms import BaseInlineTableFormSet
 from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.widgets import SelectAutocompleteWidget
 from legadilo.core.utils.urls import add_query_params, pop_query_param, validate_referer_url
 from legadilo.reading import constants
-from legadilo.reading.models import Article, Tag
+from legadilo.reading.models import Article, ArticlesGroup, Tag
 from legadilo.reading.models.article import SaveArticleResult
+from legadilo.reading.models.articles_group import ArticlesGroupQuerySet
 from legadilo.reading.services.article_fetching import (
     fetch_article_data,
 )
@@ -42,13 +44,29 @@ class FetchArticleForm(forms.Form):
             "Tags to associate to this article. To create a new tag, type and press enter."
         ),
     )
+    group = forms.ModelChoiceField(
+        ArticlesGroup.objects.none(),
+        required=False,
+        widget=SelectAutocompleteWidget(allow_new=False),
+        help_text=_(
+            "Group to add the article to. If you need to create a new group, use the form below."
+        ),
+    )
 
     class Meta:
         fields = ("url", "tags")
 
-    def __init__(self, *args, tag_choices: list[tuple[str, str]], **kwargs):
+    def __init__(
+        self,
+        *args,
+        tag_choices: list[tuple[str, str]],
+        groups_qs: ArticlesGroupQuerySet,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["group"].queryset = groups_qs  # type: ignore[attr-defined]
+        self.fields["group"].label_from_instance = lambda obj: obj.title  # type: ignore[attr-defined]
 
 
 class ArticleGroupForm(forms.Form):
@@ -95,7 +113,10 @@ class ArticleGroupLinkForm(forms.Form):
 @login_required
 def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
-    add_article_form = FetchArticleForm(tag_choices=tag_choices)
+    add_article_form = FetchArticleForm(
+        tag_choices=tag_choices,
+        groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+    )
     add_article_result = None
     articles_group_form = ArticleGroupForm(tag_choices=tag_choices)
     article_group_link_formset = _build_article_group_link_formset()
@@ -217,7 +238,11 @@ def _handle_article_save(
     *,
     force_update: bool,
 ) -> tuple[HTTPStatus, FetchArticleForm, SaveArticleResult | None]:
-    form = FetchArticleForm(request.POST, tag_choices=tag_choices)
+    form = FetchArticleForm(
+        request.POST,
+        tag_choices=tag_choices,
+        groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+    )
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
@@ -228,10 +253,29 @@ def _handle_article_save(
         save_result = Article.objects.save_from_fetch_results(
             request.user, [fetch_article_result], tags, force_update=force_update
         )[0]
+        # Group cannot be removed from here: we are either creating a new article of refetching the
+        # content of an existing article. Link between articles and groups are handled on article
+        # details.
+        if save_result.was_created and (group := form.cleaned_data.get("group")):
+            Article.objects.link_articles_to_group(group, [save_result.article])
 
     new_tags = Tag.objects.get_all_choices(request.user)
     if save_result.was_created:
         # Refresh tags to get the newly created ones.
-        return HTTPStatus.CREATED, FetchArticleForm(tag_choices=new_tags), save_result
+        return (
+            HTTPStatus.CREATED,
+            FetchArticleForm(
+                tag_choices=new_tags,
+                groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+            ),
+            save_result,
+        )
 
-    return HTTPStatus.OK, FetchArticleForm(tag_choices=new_tags), save_result
+    return (
+        HTTPStatus.OK,
+        FetchArticleForm(
+            tag_choices=new_tags,
+            groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+        ),
+        save_result,
+    )
