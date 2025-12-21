@@ -47,7 +47,7 @@ class UserSignupForm(SignupForm):
     timezone = ModelChoiceField(
         Timezone.objects.all(),
         required=True,
-        widget=SelectAutocompleteWidget(),
+        widget=SelectAutocompleteWidget(allow_new=False),
         help_text=_("Used to display times and updated feeds at a convenient time."),
     )
 
@@ -68,7 +68,7 @@ class UserSettingsForm(ModelForm):
     timezone = ModelChoiceField(
         Timezone.objects.all(),
         required=True,
-        widget=SelectAutocompleteWidget(),
+        widget=SelectAutocompleteWidget(allow_new=False),
         help_text=_("Used to display times and updated feeds at a convenient time."),
     )
 
