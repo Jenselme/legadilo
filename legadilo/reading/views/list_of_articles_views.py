@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from http import HTTPStatus
 from typing import Any
@@ -91,14 +90,14 @@ def _display_list_of_articles(
     articles_per_page = (
         constants.MAX_ARTICLES_PER_PAGE_WITH_READ_ON_SCROLL
         if page_ctx.get("js_cfg", {}).get("is_reading_on_scroll_enabled")
-        else constants.MAX_ARTICLES_PER_PAGE
+        else constants.MAX_OBJECTS_PER_PAGE
     )
     articles_paginator = Paginator(
         articles_qs,
         articles_per_page,
         # Prevent pages with less that 10% of the number of articles. Display them on the previous
         # page instead of as orphans.
-        orphans=int(articles_per_page * constants.ARTICLES_ORPHANS_PERCENTAGE),
+        orphans=int(articles_per_page * constants.PAGINATION_ORPHANS_PERCENTAGE),
     )
     requested_page = get_page_number_from_request(request)
     articles_page = get_requested_page(articles_paginator, requested_page)

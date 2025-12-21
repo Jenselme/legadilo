@@ -25,7 +25,7 @@
         </div>
     </form>
 
-    {% for group in groups %}
+    {% for group in groups_page %}
         <div class="card mb-2 {% if not group.annot_has_unread_articles %}opacity-50{% endif %}">
             <div class="card-body">
                 <header>
@@ -53,4 +53,9 @@
             </footer>
         </div>
     {% endfor %}
+
+    {% if groups_paginator.num_pages > 1 %}
+        {% translate 'Navigation between articles groups' as pagination_aria_label %}
+        {% include "core/partials/pagination.html" with arial_label=pagination_aria_label objects_page=groups_page elided_page_range=elided_page_range %}
+    {% endif %}
 {% endblock content %}

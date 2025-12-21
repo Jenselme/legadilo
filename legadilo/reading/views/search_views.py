@@ -287,7 +287,7 @@ def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
     # Articles have been updated. Some may not be part of the search anymore. Rerun it.
     articles_qs = _search(request.user, search_form)
-    articles = list(articles_qs[: constants.MAX_ARTICLES_PER_PAGE])
+    articles = list(articles_qs[: constants.MAX_OBJECTS_PER_PAGE])
     total_results = articles_qs.count()
 
     return TemplateResponse(

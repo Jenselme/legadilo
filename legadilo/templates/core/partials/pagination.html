@@ -1,0 +1,24 @@
+{% load i18n %}
+
+<nav aria-label="{{ aria_label }}">
+    <ul class="pagination d-flex justify-content-center flex-wrap">
+        <li class="page-item">
+            <a class="page-link {% if not objects_page.has_previous %}disabled{% endif %}"
+               {% if objects_page.has_previous %}href="{% querystring page=objects_page.previous_page_number %}"{% endif %}>
+                {% translate "Previous" %}
+            </a>
+        </li>
+        {% for page_number in elided_page_range %}
+            <li class="page-item">
+                <a class="page-link {% if objects_page.number == page_number %}active{% endif %}{% if page_number == '…' %}disabled{% endif %}"
+                   href="{% querystring page=page_number %}">{{ page_number }}</a>
+            </li>
+        {% endfor %}
+        <li class="page-item">
+            <a class="page-link {% if not objects_page.has_next %}disabled{% endif %}"
+               {% if objects_page.has_next %}href="{% querystring page=objects_page.next_page_number %}"{% endif %}>
+                {% translate "Next" %}
+            </a>
+        </li>
+    </ul>
+</nav>

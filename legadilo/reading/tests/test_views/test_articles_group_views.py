@@ -27,16 +27,16 @@ class TestArticlesGroupsListView:
         response = logged_in_other_user_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
-        assert response.context_data["groups"].count() == 0
+        assert list(response.context_data["groups_page"].object_list) == []
 
     def test_list(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
-        assert response.context_data["groups"].count() == 1
+        assert response.context_data["groups_page"].object_list == [self.group]
 
     def test_search(self, logged_in_sync_client):
         response = logged_in_sync_client.get(self.url, data={"q": "Something"})
 
         assert response.status_code == HTTPStatus.OK
-        assert response.context_data["groups"].count() == 0
+        assert list(response.context_data["groups_page"].object_list) == []
