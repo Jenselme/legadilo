@@ -44,6 +44,13 @@ class SelectAutocompleteWidget(widgets.Select):
             attrs["data-allow-new"] = "true"
         super().__init__(attrs, choices)
 
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        attrs = super().build_attrs(base_attrs, extra_attrs)
+        classes = attrs.get("class", "")
+        classes = f"{classes} visually-hidden"
+        attrs["class"] = classes
+        return attrs
+
 
 class PrettyJSONWidget(widgets.Textarea):
     """Pretty format JSON data in a textarea.
