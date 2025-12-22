@@ -350,18 +350,18 @@ class ArticlesGroupTagManager(models.Manager["ArticlesGroupTag"]):
         return ArticlesGroupTagQuerySet(model=self.model, using=self._db, hints=self._hints)
 
     @transaction.atomic()
-    def associate_group_with_tags(self, article_group: ArticlesGroup, tags: list[Tag]):
-        article_group.article_group_tags.all().delete()
-        group_tags = [self.model(article_group=article_group, tag=tag) for tag in tags]
+    def associate_group_with_tags(self, articles_group: ArticlesGroup, tags: list[Tag]):
+        articles_group.articles_group_tags.all().delete()
+        group_tags = [self.model(articles_group=articles_group, tag=tag) for tag in tags]
         self.bulk_create(group_tags)
 
 
 class ArticlesGroupTag(models.Model):
-    article_group = models.ForeignKey(
-        "reading.ArticlesGroup", related_name="article_group_tags", on_delete=models.CASCADE
+    articles_group = models.ForeignKey(
+        "reading.ArticlesGroup", related_name="articles_group_tags", on_delete=models.CASCADE
     )
     tag = models.ForeignKey(
-        "reading.Tag", related_name="article_group_tags", on_delete=models.CASCADE
+        "reading.Tag", related_name="articles_group_tags", on_delete=models.CASCADE
     )
 
     objects = ArticlesGroupTagManager()
@@ -369,10 +369,12 @@ class ArticlesGroupTag(models.Model):
     class Meta(TypedModelMeta):
         constraints = (
             models.UniqueConstraint(
-                "article_group", "tag", name="%(app_label)s_%(class)s_tagged_once_per_article_group"
+                "articles_group",
+                "tag",
+                name="%(app_label)s_%(class)s_tagged_once_per_article_group",
             ),
         )
         ordering = ("tag__title", "tag_id")
 
     def __str__(self):
-        return f"ArticlesGroupTag(article_group={self.article_group}, tag={self.tag})"
+        return f"ArticlesGroupTag(articles_group={self.articles_group}, tag={self.tag})"

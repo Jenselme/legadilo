@@ -321,7 +321,7 @@ class TestArticlesGroupTagManager:
         group = ArticlesGroupFactory(user=user)
         tag = TagFactory(user=user)
         already_associated_tag = TagFactory(user=user)
-        ArticlesGroupTag.objects.create(article_group=group, tag=already_associated_tag)
+        ArticlesGroupTag.objects.create(articles_group=group, tag=already_associated_tag)
 
         ArticlesGroupTag.objects.associate_group_with_tags(group, [tag, already_associated_tag])
 
