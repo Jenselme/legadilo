@@ -118,6 +118,17 @@ def open_original_with_link(article: Article) -> bool:
     )
 
 
+@register.filter
+def article_title_anchor_id(article: Article) -> str:
+    return f"legadilo-article-{article.id}"
+
+
+@register.filter
+def article_title_anchor(article: Article) -> str:
+    anchor_id = article_title_anchor_id(article)
+    return f"#{anchor_id}"
+
+
 @register.simple_tag(name="append_qs_params", takes_context=True)
 def append_qs_params(context, **kwargs):
     params = context.request.GET.copy()

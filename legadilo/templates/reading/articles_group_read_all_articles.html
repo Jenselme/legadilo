@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% load i18n static %}
+
+{% block page_css %}
+    <link rel="stylesheet"
+          href="{% static 'css/article_details.css' %}"
+          nonce="{{ csp_nonce }}"/>
+{% endblock page_css %}
+
+{% block title %}
+    {% translate "All articles" %} | {{ group.title }}
+{% endblock title %}
+
+{% block content %}
+    <form id="mark-all-articles-as-read" class="visually-hidden" aria-hidden="true" method="post">
+        {% csrf_token %}
+    </form>
+
+    <div class="container-fluid px-0">
+        <div class="mt-1 mt-md-2 row px-0 mx-0 justify-content-center">
+            <aside class="col col-2 d-none d-md-block article-aside">
+                <div id="article-side-actions" class="btn-group-vertical w-100">
+                    <button type="submit" class="btn btn-primary text-start"
+                            form="mark-all-articles-as-read">
+                        {% include "core/partials/bs-icons/mark_as_read.html" %}
+                        <span
+                            class="d-none d-md-inline">{% translate "Mark all as read" %}</span>
+                    </button>
+                    <a class="btn btn-outline-secondary text-start"
+                       href="{{ group|articles_group_details_url }}">
+                        {% include "core/partials/bs-icons/back.html" %}
+                        <span class="d-none d-md-inline">{% translate "Back" %}</span>
+                    </a>
+                </div>
+            </aside>
+
+            <main class="col col-12 col-md-7 article-container">
+                <h1 id="legadilo-group-title">
+                    {% blocktranslate trimmed with group_title=group.title %}
+                        Reading all articles of group '{{ group_title }}'
+                    {% endblocktranslate %}
+                </h1>
+
+                {% include "reading/partials/articles_groups_metadata.html" %}
+
+                <p class="text-body-secondary">{{ group.description }}</p>
+
+                <hr class="article-separator"/>
+
+                {% for article in group.sorted_articles %}
+                    <article>
+                        <h2 id="{{ article|article_title_anchor_id }}">{{ article.title }}</h2>
+                        {% include "reading/partials/article_metadata.html" %}
+                        {% include "reading/partials/article_content.html" %}
+                    </article>
+                    <hr class="article-separator"/>
+                {% endfor %}
+
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group">
+                        <a class="btn btn-outline-secondary"
+                           href="{{ group|articles_group_details_url }}">
+                            {% include "core/partials/bs-icons/back.html" %}
+                            <span class="d-none d-md-inline">{% translate "Back" %}</span>
+                        </a>
+                        <button type="button" class="btn btn-primary">
+                            {% include "core/partials/bs-icons/mark_as_read.html" %}
+                            <span class="d-none d-md-inline">
+                                {% translate "Mark all as read" %}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="col col-2 d-none d-md-block article-aside">
+                <div id="article-side-toc">
+                    <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
+                        {% for article in group.sorted_articles %}
+                            {% include "reading/partials/article_toc.html" with article_title_anchor=article|article_title_anchor %}
+                        {% endfor %}
+                    </nav>
+                    <div class="text-center mt-2">
+                        <a href="#legadilo-group-title">
+                            {% include "core/partials/bs-icons/back_to_top.html" %}
+                            {% translate "Back to top" %}
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+{% endblock content %}

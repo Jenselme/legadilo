@@ -59,6 +59,9 @@ class ArticlesGroupQuerySet(models.QuerySet["ArticlesGroup"]):
             )
         )
 
+    def for_details(self, user: User) -> Self:
+        return self.with_metadata().with_articles().for_user(user)
+
 
 class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
     _hints: dict

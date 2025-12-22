@@ -105,6 +105,10 @@ pre.raw-content {
   white-space: pre-wrap;
 }
 
+hr.article-separator {
+  border-top: 5px dashed var(--bs-secondary-color);
+}
+
 @media print {
   a.badge {
     background: none !important;

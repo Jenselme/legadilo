@@ -54,6 +54,11 @@ urlpatterns = [
         views.articles_group_details_view,
         name="articles_group_details",
     ),
+    path(
+        "articles-groups/<int:group_id>-<slug:group_slug>/all/",
+        views.article_groups_read_all_articles_view,
+        name="article_groups_read_all_articles",
+    ),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     # To clearly differentiate from the view that list articles in list/<slug>.
     path("lists/edit/create/", views.reading_list_create_view, name="create_reading_list"),
