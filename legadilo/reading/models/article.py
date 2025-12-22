@@ -307,9 +307,9 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         qs = (
             self
             .for_user(user)
-            .select_related("main_feed", "main_feed__category")
-            .prefetch_related("tags", "comments")
-            .order_by("id")
+            .select_related("main_feed", "main_feed__category", "group")
+            .prefetch_related("tags", "comments", "group__tags")
+            .order_by("group_order", "id")
         )
         if updated_since:
             qs = qs.filter(
@@ -706,6 +706,12 @@ class ArticleManager(models.Manager["Article"]):
             articles = []
             for article in page.object_list:
                 articles.append({
+                    "group_id": article.group.id if article.group else "",
+                    "group_title": article.group.title if article.group else "",
+                    "group_description": article.group.description if article.group else "",
+                    "group_tags": json.dumps([tag.title for tag in article.group.tags.all()])
+                    if article.group
+                    else "[]",
                     "category_id": article.main_feed.category_id if article.main_feed else "",
                     "category_title": article.main_feed.category.title
                     if article.main_feed and article.main_feed.category

@@ -14,6 +14,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
    ```sql
     SELECT row_number() over (),
+           NULL                                                        AS group_id,
+           ''                                                          AS group_title,
+           '[]'                                                        AS group_description,
+           NULL                                                        AS group_tags,
            cat.id                                                      AS category_id,
            cat.title                                                   AS category_title,
            feeds.id                                                    AS feed_id,
@@ -40,7 +44,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
     WHERE user_entries.owner_uid = 1;
     ```
 2. If the export is not too big (less than a megabytes), you can go to the [import/export articles page](https://www.legadilo.eu/import-export/articles/import_export/) from you profile. You can import the feeds and articles thanks to the import custom CSV feature there.
-3. If the file is too big, you will have to import it with the `import_data` command using the `custom_csv` format. For instance:
+3. If the file is too big, you will have to import it with the `import_data` command using the
+   `custom_csv` format. For instance:
 
    ```bash
    python manage.py import_data --user-id 1 --source-type custom_csv ttrss_data.csv
@@ -48,17 +53,21 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ### How to load custom data
 
-You can load a set of articles, feed categories and feeds using a CSV file and the `import_data` command with the `custom_csv` format.
+You can load a set of articles, feed categories and feeds using a CSV file and the
+`import_data` command with the `custom_csv` format.
 The CSV must be structured like this:
 
 ```csv
-"category_id","category_title","feed_id","feed_title","feed_url","feed_site_url","article_id","article_title","article_url","article_content","article_content_type","article_date_published","article_date_updated","article_authors","article_tags","article_read_at","article_is_favorite","article_lang","comments"
+"group_id","group_title","group_description","group_tags","category_id","category_title","feed_id","feed_title","feed_url","feed_site_url","article_id","article_title","article_url","article_content","article_content_type","article_date_published","article_date_updated","article_authors","article_tags","article_read_at","article_is_favorite","article_lang","comments"
 ```
 
 If you don’t have an info, leave it empty.
 Please note that:
+
 - To create a category, you must provide a `category_title`
-- To create a feed, you must provide a `feed_url`. We will try to download the feed file and add it properly. If this fail, we will use `feed_title` to save the feed.
+- To create a feed, you must provide a
+  `feed_url`. We will try to download the feed file and add it properly. If this fail, we will use
+  `feed_title` to save the feed.
 - To create an article, you need `article_url`.
 - You can create categories, feeds and articles and associate them all by adding data to create a feed, a category and an article in the same line. If data are missing, we will just skip the corresponding entry. If an entry was already added, it will be skipped.
 
@@ -81,4 +90,6 @@ You can export your feeds and their categories in the standard OPML format direc
 
 ### How to export everything (articles, feeds, categories…)?
 
-Go to the [import/export articles page](https://www.jujens.eu/import-export/articles/import_export/) from your profile. From there, click the _Export all articles, feeds, categories and tags_ button. You will get a CSV formatted as described above to manipulate locally or import directly. All articles will be associated with their feed and tags.
+Go to the [import/export articles page](https://www.jujens.eu/import-export/articles/import_export/) from your profile. From there, click the
+_Export all articles, feeds, categories and
+tags_ button. You will get a CSV formatted as described above to manipulate locally or import directly. All articles will be associated with their feed and tags.

@@ -13,8 +13,8 @@ from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
 from legadilo.feeds.tests.fixtures import get_feed_fixture_content
 from legadilo.import_export.services.custom_csv import import_custom_csv_file
 from legadilo.import_export.services.exceptions import DataImportError
-from legadilo.reading.models import Article
-from legadilo.reading.tests.factories import ArticleFactory
+from legadilo.reading.models import Article, ArticlesGroup
+from legadilo.reading.tests.factories import ArticleFactory, ArticlesGroupFactory
 
 
 def test_import_invalid_custom_csv(user):
@@ -58,6 +58,9 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         published_at="2024-05-17T13:00:00+00:00",
         updated_at="2024-05-17T13:00:00+00:00",
     )
+    articles_group = ArticlesGroupFactory(
+        user=user, title="Existing group", description="Existing group description"
+    )
 
     httpx_mock.add_response(url="https://example.com/existing.xml", content="")
     httpx_mock.add_response(
@@ -77,10 +80,13 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         user, settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
     )
 
-    assert nb_imported_articles == 6
+    assert nb_imported_articles == 8
     assert nb_imported_feeds == 3
     assert nb_imported_categories == 2
-    assert Article.objects.count() == 8
+    assert Article.objects.count() == 10
+    assert ArticlesGroup.objects.count() == 2
+    assert articles_group.articles.all().count() == 1
+    assert Article.objects.filter(group__isnull=False).count() == 2
     assert set(Article.objects.filter(main_feed__isnull=False).values_list("url", flat=True)) == {
         "https://example.com/articles/with-tags",  # From a feed file.
         "http://example.org/entry/3",  # From a feed file.
@@ -95,7 +101,8 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
             list(
                 Article.objects.order_by("id").values(
                     *all_model_fields_except(
-                        Article, {"id", "user", "obj_created_at", "obj_updated_at", "main_feed"}
+                        Article,
+                        {"id", "user", "obj_created_at", "obj_updated_at", "main_feed", "group"},
                     )
                 )
             )

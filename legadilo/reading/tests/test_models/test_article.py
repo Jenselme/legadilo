@@ -1217,19 +1217,47 @@ class TestArticleManager:
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
         CommentFactory(id=1, article=article_from_feed, text="A comment")
+        group = ArticlesGroupFactory(id=1, user=user, title="Group", description="A group")
+        second_article_of_group = ArticleFactory(
+            id=4,
+            user=user,
+            group=group,
+            group_order=2,
+            title="2nd article in group",
+            content="Content",
+            content_type="text/plain",
+            url="https://example.com/article/in-group2/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
+        first_article_of_group = ArticleFactory(
+            id=5,
+            user=user,
+            group=group,
+            group_order=1,
+            title="1st article in group",
+            content="Content",
+            content_type="text/plain",
+            url="https://example.com/article/in-group/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(12):
             articles = self._export_all_articles(user)
 
-        assert len(articles) == 2
+        assert len(articles) == 3
         assert len(articles[0]) == 2
-        assert len(articles[1]) == 1
+        assert len(articles[1]) == 2
+        assert len(articles[2]) == 1
         assert articles[0][0]["article_id"] == article_from_feed.id
         assert articles[0][0]["feed_id"] == feed_without_category.id
         assert articles[0][1]["article_id"] == article_two_feeds.id
         assert articles[0][1]["feed_id"] == feed_with_category.id
         assert articles[0][1]["category_id"] == feed_category.id
         assert articles[1][0]["article_id"] == article_no_feed.id
+        assert articles[1][1]["article_id"] == first_article_of_group.id
+        assert articles[2][0]["article_id"] == second_article_of_group.id
         snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
 
     @patch.object(constants, "MAX_EXPORT_ARTICLES_PER_PAGE", 2)

@@ -27,7 +27,7 @@ from legadilo.feeds.services.feed_parsing import (
     get_feed_data,
 )
 from legadilo.import_export.services.exceptions import DataImportError
-from legadilo.reading.models import Article
+from legadilo.reading.models import Article, ArticlesGroup, Tag
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.users.models import User
 
@@ -78,9 +78,13 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str,
     if row["feed_url"] and is_url_valid(row["feed_url"]) and is_url_valid(row["feed_site_url"]):
         feed, created_feed = _import_feed(user, category, row, feed_url_in_file_to_true_feed)
 
+    articles_group = None
+    if row["group_title"]:
+        articles_group = _import_articles_group(user, row)
+
     created_article = False
     if row["article_url"] and is_url_valid(row["article_url"]):
-        created_article = _import_article(user, feed, row)
+        created_article = _import_article(user, feed, articles_group, row)
 
     return (
         1 if created_article else 0,
@@ -152,7 +156,23 @@ def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         return None, False
 
 
-def _import_article(user, feed, row):
+def _import_articles_group(user, row):
+    if existing_group := ArticlesGroup.objects.filter(user=user, title=row["group_title"]).first():
+        return existing_group
+
+    tags = _safe_json_parse(row["group_tags"], [])
+    if tags:
+        tags = Tag.objects.get_or_create_from_list(user, tags)
+
+    return ArticlesGroup.objects.create_with_tags(
+        user,
+        row["group_title"],
+        row["group_description"],
+        tags,
+    )
+
+
+def _import_article(user, feed, group, row):
     article_data = ArticleData(
         external_article_id=f"custom_csv:{row['article_id']}",
         source_title=feed.title if feed else urlparse(row["article_url"]).netloc,
@@ -181,6 +201,9 @@ def _import_article(user, feed, row):
 
     if feed:
         FeedArticle.objects.get_or_create(feed=feed, article=save_results[0].article)
+
+    if group:
+        Article.objects.link_articles_to_group(group, [save_results[0].article])
 
     return True
 

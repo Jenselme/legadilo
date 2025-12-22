@@ -172,7 +172,7 @@ class TestImportCustomCSV:
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Successfully imported 4 feeds, 3 feed categories and 6 articles.",
+                message="Successfully imported 4 feeds, 3 feed categories and 8 articles.",
             )
         ]
 
@@ -215,7 +215,7 @@ class TestImportCustomCSV:
         assert messages == [
             Message(
                 level=DEFAULT_LEVELS["SUCCESS"],
-                message="Successfully imported 4 feeds, 3 feed categories and 6 articles.",
+                message="Successfully imported 4 feeds, 3 feed categories and 8 articles.",
             )
         ]
 
