@@ -176,6 +176,7 @@ typings/
 .idea/dictionaries
 .idea/jsLibraryMappings.xml
 .idea/queries/*.sql
+.idea/shelf/
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
