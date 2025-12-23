@@ -102,8 +102,9 @@
         {% blocktranslate trimmed %}
             Existing articles already linked to another group will be flagged as warning on save.
             Existing articles not linked to a group will be added to this group and their tags
-            changed.
-            To add an article to an existing group, go to this group details page.
+            won’t be changed.
+            To add an article to an existing group, use the form above or use the article details
+            page.
         {% endblocktranslate %}
     </p>
     <form method="post" action="{% url 'reading:add_article' %}">
@@ -114,7 +115,7 @@
             <p class="form-text">
                 {% blocktranslate trimmed %}
                     At least one URL must be supplied.
-                    You can add more URLs by clicking on the "Add another URL" button.
+                    You can add more URLs by clicking on the "Add more URL" button.
                     Rows that are empty won’t be taken into account.
                 {% endblocktranslate %}
             </p>

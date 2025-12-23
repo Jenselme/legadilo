@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-16 11:00+0000\n"
+"POT-Creation-Date: 2025-12-23 19:12+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.7\n"
+"X-Generator: Poedit 3.8\n"
 
 msgid "English"
 msgstr "Anglais"
@@ -233,15 +233,6 @@ msgstr "Plus que"
 msgid "Less than than"
 msgstr "Moins que"
 
-msgid "Added manually"
-msgstr "Ajouté manuellement"
-
-msgid "From feed"
-msgstr "Depuis un flux"
-
-msgid "Deleted"
-msgstr "Supprimé"
-
 msgid "Include"
 msgstr "Inclus"
 
@@ -348,6 +339,9 @@ msgstr "Code de la langue de l’article"
 msgid "The table of content of the article."
 msgstr "Table des matières de l’article."
 
+msgid "Order in the group"
+msgstr "Ordre au sein du groupe"
+
 msgid "The date of publication of the article."
 msgstr "Date de publication de l’article."
 
@@ -436,11 +430,41 @@ msgstr ""
 "Étiquettes à associer à cet article. Pour créer une nouvelle étiquette, "
 "taper et appuyer sur entrée."
 
+msgid ""
+"Group to associate this article with. If you need to create a new group, "
+"create it from the add article page."
+msgstr ""
+"Groupe à associer à cet article. Pour créer un nouveau groupe, passez par la "
+"page d’ajout d’articles."
+
 msgid "Type your comment here. Markdown syntax is supported."
 msgstr "Entrer votre commentaire ici. La syntaxe Markdown est supportée."
 
 msgid "URL of the article to add."
 msgstr "URL de l’article à ajouter."
+
+msgid ""
+"Group to add the article to. If you need to create a new group, use the form "
+"below."
+msgstr ""
+"Groupe à associer à cet article. Si vous voulez créer un nouveau groupe, "
+"faites le depuis la page d’ajout d’articles."
+
+msgid "Title of the group."
+msgstr "Titre du groupe."
+
+msgid "Description of the group."
+msgstr "Description du groupe."
+
+msgid ""
+"Tags to associate to this group and all articles in it. To create a new tag, "
+"type and press enter."
+msgstr ""
+"Étiquettes à associer à ce groupe et à tous ses articles. Pour créer une "
+"nouvelle étiquette, taper et appuyer sur entrée."
+
+msgid "URL of an article to add to the group."
+msgstr "URL de d’un article à ajouter au groupe."
 
 msgid "The article was successfully re-fetched!"
 msgstr "L’article a été correctement rafraichi !"
@@ -822,6 +846,9 @@ msgstr "Oui"
 msgid "Default reading list"
 msgstr "Liste de lecture par défaut"
 
+msgid "Articles groups"
+msgstr "Groupe d’articles"
+
 msgid "Search articles here..."
 msgstr "Chercher des articles…"
 
@@ -861,10 +888,10 @@ msgstr "Admin"
 #, python-format
 msgid ""
 "Legadilo <a class=\"text-reset\" href=\"https://github.com/Jenselme/legadilo/"
-"blob/main/CHANGELOG.md\">version %(version)s</a>"
+"blob/main/CHANGELOG.md\"> version %(version)s </a>"
 msgstr ""
 "Legadilo <a class=\"text-reset\" href=\"https://github.com/Jenselme/legadilo/"
-"blob/main/CHANGELOG.md\">version %(version)s</a>"
+"blob/main/CHANGELOG.md\"> version %(version)s</a>"
 
 msgid "About"
 msgstr "À propos"
@@ -902,6 +929,9 @@ msgstr "Supprimer"
 
 msgid "Feed title"
 msgstr "Titre du flux"
+
+msgid "Group of the article"
+msgstr "Groupe de l’article"
 
 msgid "Info"
 msgstr "Information"
@@ -941,6 +971,12 @@ msgstr "Mis à jour le"
 
 msgid "Loading..."
 msgstr "Changement en cours…"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Next"
+msgstr "Suivant"
 
 msgid "Light"
 msgstr "Lumineux"
@@ -1175,6 +1211,9 @@ msgstr ""
 "Vous êtes sur le point de désactiver la double authentification. Êtes-vous "
 "sûr ?"
 
+msgid "Adding articles"
+msgstr "Ajouter des articles"
+
 #, python-format
 msgid ""
 "Article <a href=\"%(article_details_url)s\">%(article_title)s</a> was added "
@@ -1197,10 +1236,63 @@ msgstr ""
 #, python-format
 msgid ""
 "Article <a href=\"%(article_details_url)s\">%(article_title)s</a> already "
-"existed."
+"existed. Neither its tags nor group were changed."
 msgstr ""
 "L’article <a href=\"%(article_details_url)s\">%(article_title)s</a> existait "
-"déjà."
+"déjà. Ni ses étiquettes ni son groupe n’ont été changés."
+
+#, python-format
+msgid ""
+"Your group <a href=\"%(group_url)s\">'%(group_title)s'</a> has been saved."
+msgstr ""
+"Votre groupe <a href=\"%(group_url)s\">'%(group_title)s'</a> a été "
+"sauvegardé."
+
+msgid ""
+"These articles were already linked to a group and were not linked to this "
+"one:"
+msgstr ""
+"Les articles suivants sont déjà associés à un groupe et n’ont pas été liés à "
+"ce groupe :"
+
+msgid ""
+"These articles were correctly linked to the group but their content couldn’t "
+"be fetched:"
+msgstr ""
+"Les articles suivants ont été correctement liés au groupe, mais leur contenu "
+"est vide :"
+
+msgid "Add a simple article"
+msgstr "Ajouter un unique article"
+
+msgid "Add a new group of articles"
+msgstr "Ajouter un nouveau groupe d’articles"
+
+msgid ""
+"Existing articles already linked to another group will be flagged as warning "
+"on save. Existing articles not linked to a group will be added to this group "
+"and their tags won’t be changed. To add an article to an existing group, use "
+"the form above or use the article details page."
+msgstr ""
+"Les articles existants qui sont déjà liés à un groupe seront signalés lors "
+"de la sauvegarde. Les articles existants non liés à un groupe seront ajoutés "
+"à ce groupe. Les étiquettes de l’article ne seront pas changées. Pour "
+"ajouter un article à un groupe existant, utilisez le formulaire ci-dessus ou "
+"passer par le détail de l’article."
+
+msgid ""
+"At least one URL must be supplied. You can add more URLs by clicking on the "
+"\"Add more URL\" button. Rows that are empty won’t be taken into account."
+msgstr ""
+"Au moins une URL doit être entrée. Vous pouvez ajouter des URLs "
+"supplémentaires avec le bouton \"Ajouter plus d’URLs\". Les lignes vident "
+"seront ignorées."
+
+msgid "Add more URLs"
+msgstr "Ajouter plus d’URLs"
+
+msgid "Add articles in group"
+msgstr "Ajouter des articles au groupe"
 
 msgid "Update article"
 msgstr "Mettre l’article à jour"
@@ -1211,8 +1303,78 @@ msgstr "Rafraichir le contenu"
 msgid "Comments"
 msgstr "Commentaires"
 
-msgid "This article has no content."
-msgstr "Cet article n’a pas de contenu."
+msgid "Previous article of group"
+msgstr "Article précédent du groupe"
+
+msgid "Read and go to next"
+msgstr "Lire et passer au suivant"
+
+msgid "Next article of group"
+msgstr "Article suivant du groupe"
+
+msgid "Update group"
+msgstr "Mettre à jour le groupe"
+
+msgid "Confirm group deletion"
+msgstr "Confirmez la suppression du groupe"
+
+#, python-format
+msgid "Are you sure you want to delete the group '%(group_title)s'?"
+msgstr "Voulez-vous vraiment supprimer le groupe '%(group_title)s' ?"
+
+msgid "Confirm deletion of group and all its articles"
+msgstr "Confirmez la suppression du groupe et de tous ses articles"
+
+#, python-format
+msgid ""
+"Are you sure you want to delete the group '%(group_title)s' and its "
+"%(articles_count)s articles?"
+msgstr ""
+"Voulez-vous vraiment supprimer le groupe '%(group_title)s' et ses "
+"%(articles_count)s articles ?"
+
+msgid "Update articles group"
+msgstr "Mettre à jour le groupe d’articles"
+
+msgid "Delete group and all its articles"
+msgstr "Supprimer le groupe et tous ses articles"
+
+msgid "Delete group"
+msgstr "Supprimer le groupe"
+
+msgid "Read all articles on one page"
+msgstr "Lire tous les articles sur une seule page"
+
+msgid "Mark all articles as read"
+msgstr "Marquer tous les articles comme lus"
+
+msgid "View article details"
+msgstr "Détails de l’article"
+
+msgid "Artiles in a group can be reordered with drag & drop."
+msgstr "Les articles d’un groupe peuvent être réordonnées par glisser/déposer."
+
+msgid "Failed to reorder"
+msgstr "Erreur lors de la réorganisation"
+
+msgid "Save new order"
+msgstr "Sauvegarder le nouvel ordre"
+
+msgid "Mark all as read"
+msgstr "Tout marquer comme lu"
+
+#, python-format
+msgid "Reading all articles of group '%(group_title)s'"
+msgstr "Lecture de tous les articles du groupe '%(group_title)s'"
+
+msgid "Filter groups"
+msgstr "Filtrer les groupes"
+
+msgid "View group details"
+msgstr "Voir le détail du groupe"
+
+msgid "Navigation between articles groups"
+msgstr "Navigation entre les groupes d’articles"
 
 #, python-format
 msgid "Editing reading list '%(reading_list_title)s'"
@@ -1278,17 +1440,14 @@ msgstr "Aucun article à afficher."
 msgid "Navigation between articles"
 msgstr "Navigation entre les articles"
 
-msgid "Previous"
-msgstr "Précédent"
-
-msgid "Next"
-msgstr "Suivant"
-
 msgid "Refresh current reading list"
 msgstr "Rafraichir la liste de lecture courante"
 
 msgid "Open details"
 msgstr "Ouvrir le détail"
+
+msgid "This article has no content."
+msgstr "Cet article n’a pas de contenu."
 
 msgid "Confirm article deletion"
 msgstr "Confirmez la suppression de l’article"
@@ -1302,6 +1461,12 @@ msgid "%(reading_time)s minute"
 msgid_plural "%(reading_time)s minutes"
 msgstr[0] "%(reading_time)s minute"
 msgstr[1] "%(reading_time)s minutes"
+
+#, python-format
+msgid "%(nb_articles)s article in group"
+msgid_plural "%(nb_articles)s articles in group"
+msgstr[0] "%(nb_articles)s article dans le groupe"
+msgstr[1] "%(nb_articles)s articles dans le groupe"
 
 msgid "Comment"
 msgstr "Commentaire"
@@ -1331,17 +1496,21 @@ msgstr "Modifier/Supprimer la liste de lecture"
 msgid "Reading lists can be reordered with drag & drop."
 msgstr "Les listes de lecture peuvent être réordonnées par glisser/déposer."
 
-msgid "Failed to reorder"
-msgstr "Erreur lors de la réorganisation"
-
-msgid "Save new order"
-msgstr "Sauvegarder le nouvel ordre"
-
 msgid "Searching articles..."
 msgstr "Recherche d’articles…"
 
 msgid "View advanced search fields"
 msgstr "Voir les champs de recherche avancée"
+
+#, python-format
+msgid "%(formatted_nb_articles)s article in total."
+msgid_plural "%(formatted_nb_articles)s articles in total."
+msgstr[0] "%(formatted_nb_articles)s article au total."
+msgstr[1] "%(formatted_nb_articles)s articles au total."
+
+#, python-format
+msgid "Only %(displayed_nb_articles)s displayed."
+msgstr "Seul %(displayed_nb_articles)s sont affichés."
 
 msgid "No results were found 😞 Try another search 🔍"
 msgstr "Aucun résultat trouvé 😞 Essayez avec une autre recherche 🔍"
@@ -1411,9 +1580,6 @@ msgstr "Créer un nouveau jeton"
 
 msgid "Notifications"
 msgstr "Notifications"
-
-msgid "Mark all as read"
-msgstr "Tout marquer comme lu"
 
 #, python-format
 msgid "User: %(email)s"
@@ -1632,6 +1798,15 @@ msgstr "Paramètres correctement mis à jour"
 
 msgid "Failed to update settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
+
+#~ msgid "Added manually"
+#~ msgstr "Ajouté manuellement"
+
+#~ msgid "From feed"
+#~ msgstr "Depuis un flux"
+
+#~ msgid "Deleted"
+#~ msgstr "Supprimé"
 
 #~ msgid "Failed to create the feed"
 #~ msgstr "Échec de la création du flux"

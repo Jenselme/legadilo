@@ -41,7 +41,7 @@ class EditArticleForm(forms.Form):
         widget=SelectAutocompleteWidget(allow_new=False),
         help_text=_(
             "Group to associate this article with. If you need to create a new group, create it "
-            "from the groups list page."
+            "from the add article page."
         ),
     )
     reading_time = forms.IntegerField(required=True, min_value=0)
