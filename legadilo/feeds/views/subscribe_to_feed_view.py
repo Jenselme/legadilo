@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 
 class SubscribeToFeedForm(forms.Form):
     url = forms.URLField(
+        label=_("Feed URL"),
+        required=True,
         max_length=2048,
         assume_scheme="https",
         help_text=_(
@@ -47,6 +49,7 @@ class SubscribeToFeedForm(forms.Form):
         ),
     )
     feed_choices = forms.ChoiceField(
+        label=_("Feed choices"),
         choices=[],
         required=False,
         widget=forms.HiddenInput(),
@@ -54,15 +57,18 @@ class SubscribeToFeedForm(forms.Form):
     # Filled automatically when adding a page from a site in which multiple feeds are found. This
     # allows for the user to select the correct feed.
     proposed_feed_choices = forms.CharField(
+        label=_("Proposed feed choices"),
         required=False,
         widget=forms.HiddenInput(),
     )
     refresh_delay = forms.ChoiceField(
+        label=_("Refresh delay"),
         required=True,
         choices=constants.FeedRefreshDelays.choices,
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
     article_retention_time = forms.IntegerField(
+        label=_("Article retention period"),
         required=True,
         initial=365,
         min_value=0,
@@ -72,17 +78,21 @@ class SubscribeToFeedForm(forms.Form):
         ),
     )
     category = forms.ChoiceField(
+        label=_("Category"),
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
     )
     tags = MultipleTagsField(
+        label=_("Tags"),
         required=False,
         choices=[],
         help_text=_(
             "Tags to associate to articles of this feed. To create a new tag, type and press enter."
         ),
     )
-    open_original_url_by_default = forms.BooleanField(required=False)
+    open_original_url_by_default = forms.BooleanField(
+        label=_("Open original by default"), required=False
+    )
 
     def __init__(
         self,

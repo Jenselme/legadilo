@@ -40,14 +40,16 @@ def feeds_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
 
 class EditFeedForm(forms.ModelForm):
-    feed_url = forms.URLField(assume_scheme="https", disabled=True)
-    site_url = forms.URLField(assume_scheme="https", disabled=True)
+    feed_url = forms.URLField(label=_("Feed URL"), assume_scheme="https", disabled=True)
+    site_url = forms.URLField(label=_("Site URL"), assume_scheme="https", disabled=True)
     refresh_delay = forms.ChoiceField(
+        label=_("Refresh delay"),
         required=True,
         choices=constants.FeedRefreshDelays.choices,
         initial=constants.FeedRefreshDelays.DAILY_AT_NOON,
     )
     article_retention_time = forms.IntegerField(
+        label=_("Article retention period"),
         required=True,
         min_value=0,
         help_text=_(
@@ -55,12 +57,16 @@ class EditFeedForm(forms.ModelForm):
             "always keep the articles."
         ),
     )
-    open_original_url_by_default = forms.BooleanField(required=False)
+    open_original_url_by_default = forms.BooleanField(
+        label=_("Open original by default"), required=False
+    )
     category = forms.ChoiceField(
+        label=_("Category"),
         required=False,
         help_text=_("The category of the feed to help you keep them organized."),
     )
     tags = MultipleTagsField(
+        label=_("Tags"),
         required=False,
         choices=[],
         help_text=_(

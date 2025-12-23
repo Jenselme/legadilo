@@ -34,11 +34,13 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 
 class FetchArticleForm(forms.Form):
     url = forms.URLField(
+        label=_("Article URL"),
         max_length=2048,
         assume_scheme="https",
         help_text=_("URL of the article to add."),
     )
     tags = MultipleTagsField(
+        label=_("Tags"),
         required=False,
         choices=[],
         help_text=_(
@@ -47,6 +49,7 @@ class FetchArticleForm(forms.Form):
     )
     group = forms.ModelChoiceField(
         ArticlesGroup.objects.none(),
+        label=_("Group"),
         required=False,
         widget=SelectAutocompleteWidget(allow_new=False),
         help_text=_(
@@ -72,11 +75,13 @@ class FetchArticleForm(forms.Form):
 
 class ArticleGroupForm(forms.Form):
     title = forms.CharField(
+        label=_("Group title"),
         required=True,
         max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH,
         help_text=_("Title of the group."),
     )
     description = forms.CharField(
+        label=_("Description"),
         required=False,
         widget=forms.Textarea(
             attrs={
@@ -86,6 +91,7 @@ class ArticleGroupForm(forms.Form):
         help_text=_("Description of the group."),
     )
     tags = MultipleTagsField(
+        label=_("Tags"),
         required=False,
         choices=[],
         help_text=_(
@@ -104,6 +110,7 @@ class ArticleGroupForm(forms.Form):
 
 class ArticleGroupLinkForm(forms.Form):
     url = forms.URLField(
+        label=_("Articles URLs"),
         required=True,
         max_length=2048,
         assume_scheme="https",

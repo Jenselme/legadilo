@@ -27,8 +27,11 @@ from .comment_views import CommentArticleForm
 
 
 class EditArticleForm(forms.Form):
-    title = forms.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH, required=True)
+    title = forms.CharField(
+        label=_("Title"), max_length=constants.ARTICLE_TITLE_MAX_LENGTH, required=True
+    )
     tags = MultipleTagsField(
+        label=_("Tags"),
         required=False,
         choices=[],
         help_text=_(
@@ -39,6 +42,7 @@ class EditArticleForm(forms.Form):
         ArticlesGroup.objects.none(),
         required=False,
         widget=SelectAutocompleteWidget(allow_new=False),
+        label=_("Group"),
         help_text=_(
             "Group to associate this article with. If you need to create a new group, create it "
             "from the add article page."

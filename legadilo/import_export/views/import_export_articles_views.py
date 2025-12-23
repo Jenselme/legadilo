@@ -27,13 +27,17 @@ from ..services.wallabag import import_wallabag_file
 
 class ImportCustomCsvForm(forms.Form):
     csv_file = forms.FileField(
-        required=True, widget=forms.ClearableFileInput(attrs={"accept": ".csv"})
+        label=_("CSV file"),
+        required=True,
+        widget=forms.ClearableFileInput(attrs={"accept": ".csv"}),
     )
 
 
 class ImportWallabagForm(forms.Form):
     wallabag_file = forms.FileField(
-        required=True, widget=forms.ClearableFileInput(attrs={"accept": ".json"})
+        label=_("Wallabag export file"),
+        required=True,
+        widget=forms.ClearableFileInput(attrs={"accept": ".json"}),
     )
 
     def clean_wallabag_file(self):

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 19:12+0000\n"
+"POT-Creation-Date: 2025-12-23 21:36+0000\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -102,11 +102,35 @@ msgstr ""
 msgid "Articles of feed '%(feed_title)s'"
 msgstr ""
 
+msgid "Title"
+msgstr ""
+
 #, python-format
 msgid "A category with title '%s' already exists."
 msgstr ""
 
+msgid "Feed URL"
+msgstr ""
+
+msgid "Site URL"
+msgstr ""
+
+msgid "Refresh delay"
+msgstr ""
+
+msgid "Article retention period"
+msgstr ""
+
+msgid "Open original by default"
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
 msgid "The category of the feed to help you keep them organized."
+msgstr ""
+
+msgid "Tags"
 msgstr ""
 
 msgid ""
@@ -121,6 +145,12 @@ msgstr ""
 msgid ""
 "Enter the URL to the feed you want to subscribe to. If you don't know it, "
 "enter the URL of the site and the server will try to find the feed for you."
+msgstr ""
+
+msgid "Feed choices"
+msgstr ""
+
+msgid "Proposed feed choices"
 msgstr ""
 
 msgid ""
@@ -142,6 +172,12 @@ msgid ""
 "Multiple feeds were found at this location, please select the proper one."
 msgstr ""
 
+msgid "CSV file"
+msgstr ""
+
+msgid "Wallabag export file"
+msgstr ""
+
 msgid "The supplied file is too big to be imported."
 msgstr ""
 
@@ -160,6 +196,9 @@ msgstr ""
 
 #, python-format
 msgid "Successfully imported %s articles"
+msgstr ""
+
+msgid "OPML file"
 msgstr ""
 
 #, python-format
@@ -384,12 +423,30 @@ msgid ""
 "Tags to associate to this article. To create a new tag, type and press enter."
 msgstr ""
 
+msgid "Group"
+msgstr ""
+
 msgid ""
 "Group to associate this article with. If you need to create a new group, "
 "create it from the add article page."
 msgstr ""
 
+msgid "Description"
+msgstr ""
+
+msgid "Search text"
+msgstr ""
+
+msgid "Find groups containing all these tags"
+msgstr ""
+
+msgid "Comment text"
+msgstr ""
+
 msgid "Type your comment here. Markdown syntax is supported."
+msgstr ""
+
+msgid "Article URL"
 msgstr ""
 
 msgid "URL of the article to add."
@@ -398,6 +455,9 @@ msgstr ""
 msgid ""
 "Group to add the article to. If you need to create a new group, use the form "
 "below."
+msgstr ""
+
+msgid "Group title"
 msgstr ""
 
 msgid "Title of the group."
@@ -409,6 +469,9 @@ msgstr ""
 msgid ""
 "Tags to associate to this group and all articles in it. To create a new tag, "
 "type and press enter."
+msgstr ""
+
+msgid "Articles URLs"
 msgstr ""
 
 msgid "URL of an article to add to the group."
@@ -444,10 +507,52 @@ msgstr ""
 msgid "'%s' is not a known tag."
 msgstr ""
 
+msgid "Tags to include"
+msgstr ""
+
 msgid "Articles with these tags will be included in the reading list."
 msgstr ""
 
+msgid "Tags to exclude"
+msgstr ""
+
 msgid "Articles with these tags will be excluded from the reading list."
+msgstr ""
+
+msgid "Enable reading on scroll"
+msgstr ""
+
+msgid "Auto refresh interval"
+msgstr ""
+
+msgid "Read status"
+msgstr ""
+
+msgid "Favorite status"
+msgstr ""
+
+msgid "For later status"
+msgstr ""
+
+msgid "Articles max age value"
+msgstr ""
+
+msgid "Articles max age unit"
+msgstr ""
+
+msgid "Articles reading time"
+msgstr ""
+
+msgid "Articles reading time operator"
+msgstr ""
+
+msgid "Include tag operator"
+msgstr ""
+
+msgid "Exclude tag operator"
+msgstr ""
+
+msgid "Order direction"
 msgstr ""
 
 #, python-format
@@ -493,6 +598,9 @@ msgid "You must supply a reading time operator when searching by reading time."
 msgstr ""
 
 msgid "Editing the title will change the slug of the tag too!"
+msgstr ""
+
+msgid "Sub-tags"
 msgstr ""
 
 msgid ""
@@ -777,9 +885,7 @@ msgid "Admin"
 msgstr ""
 
 #, python-format
-msgid ""
-"Legadilo <a class=\"text-reset\" href=\"https://github.com/Jenselme/legadilo/"
-"blob/main/CHANGELOG.md\"> version %(version)s </a>"
+msgid "Legadilo %(changelog_link)sversion %(version)s%(end_link)s"
 msgstr ""
 
 msgid "About"
@@ -1311,6 +1417,7 @@ msgid_plural "%(nb_articles)s articles in group"
 msgstr[0] ""
 msgstr[1] ""
 
+msgctxt "action"
 msgid "Comment"
 msgstr ""
 
@@ -1480,45 +1587,46 @@ msgstr ""
 msgid "About the software"
 msgstr ""
 
+#, python-format
 msgid ""
-"It’s written with the <a href=\"https://www.djangoproject.com/\">Django web "
-"framework</a>, <a href=\"https://getbootstrap.com/\">the bootstrap 5 "
-"frontend toolkit</a> and with enhancements given by <a href=\"https://"
-"htmx.org/\">htmx</a>."
+"It’s written with the %(django_url)sDjango web framework%(end_link)s, "
+"%(bootstrap_url)sthe bootstrap 5 frontend toolkit%(end_link)s and with "
+"enhancements given by %(htmx_url)shtmx%(end_link)s."
 msgstr ""
 
+#, python-format
 msgid ""
-"It’s opensource under the <a href=\"https://www.gnu.org/licenses/"
-"agpl-3.0.html#license-text\">GNU AGPLv3</a> license and is designed to be "
-"self-hostable, so you can run your own instance. The code source is "
-"available <a href=\"https://github.com/Jenselme/legadilo\">on GitHub</a>. "
-"Your <a href=\"https://github.com/Jenselme/legadilo/issues/new\">ideas</a>, "
-"<a href=\"https://github.com/Jenselme/legadilo/pulls\">contributions</a> and "
-"<a href=\"https://github.com/Jenselme/legadilo/discussions\">feedback</a> "
-"are welcomed! You can also check the <a href=\"https://www.legadilo.eu/"
-"\">official instance</a> to start using it more easily (you will be able to "
-"export and import your data in any instance)!"
+"It’s opensource under the %(agpl_url)sGNU AGPLv3%(end_link)s license and is "
+"designed to be self-hostable, so you can run your own instance. The code "
+"source is available %(github_url)son GitHub%(end_link)s. Your "
+"%(issues_url)sideas%(end_link)s, %(pulls_url)scontributions%(end_link)s and "
+"%(feedback_url)sfeedback%(end_link)s are welcomed! You can also check the "
+"%(official_instance_url)sofficial instance%(end_link)s to start using it "
+"more easily (you will be able to export and import your data in any "
+"instance)!"
 msgstr ""
 
+#, python-format
 msgid ""
-"Legadilo is an open source project released under the <a href=\"https://"
-"www.gnu.org/licenses/agpl-3.0.html#license-text\">GNU AGPLv3</a> license. "
-"You don’t have to take our word for what we say here, you can check <a "
-"href=\"https://github.com/Jenselme/legadilo\">the source code</a>. You can "
-"also host it yourself to have even more power over your data!"
+"Legadilo is an open source project released under the %(agpl_url)sGNU "
+"AGPLv3%(end_link)s license. You don’t have to take our word for what we say "
+"here, you can check %(github_url)sthe source code%(end_link)s. You can also "
+"host it yourself to have even more power over your data!"
 msgstr ""
 
+#, python-format
 msgid ""
-"Our servers are provided by <a href=\"https://www.scaleway.com/en/"
-"\">Scaleway</a> a French hosting provider. They are located near/in the city "
-"of Paris, France (European Union)."
+"Our servers are provided by %(scaleway_url)sScaleway%(end_link)s a French "
+"hosting provider. They are located near/in the city of Paris, France "
+"(European Union)."
 msgstr ""
 
+#, python-format
 msgid ""
 "We don’t read nor sell your data and <em>never</em> will. We track visits "
-"with <a href=\"https://plausible.io\">Plausible.io</a>. It is <em>GDPR "
-"compatible</em>, and collects so little we won’t even need to bother you "
-"with a cookie banner."
+"with %(plausible_url)sPlausible.io%(end_link)s. It is <em>GDPR compatible</"
+"em>, and collects so little we won’t even need to bother you with a cookie "
+"banner."
 msgstr ""
 
 msgid ""
@@ -1546,6 +1654,12 @@ msgid "This email has already been taken."
 msgstr ""
 
 msgid "Used to display times and updated feeds at a convenient time."
+msgstr ""
+
+msgid "Timezone"
+msgstr ""
+
+msgid "Default reading time"
 msgstr ""
 
 msgid "Give the token a nice name to identify its usage more easily."

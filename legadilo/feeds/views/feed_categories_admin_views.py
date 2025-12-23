@@ -32,7 +32,7 @@ def feed_category_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespo
 
 
 class FeedCategoryForm(forms.ModelForm):
-    title = forms.CharField(required=True)
+    title = forms.CharField(label=_("Title"), required=True)
 
     class Meta:
         model = FeedCategory

@@ -20,6 +20,7 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 class CommentArticleForm(forms.ModelForm):
     article_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     text = forms.CharField(
+        label=_("Comment text"),
         required=True,
         widget=forms.Textarea(
             attrs={

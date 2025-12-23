@@ -35,7 +35,7 @@ update-po:
 compile-po:
     python manage.py compilemessages
 
-[working-directory: 'browser-extension']
+[working-directory('browser-extension')]
 build-browser-extension:
     npm run build
 

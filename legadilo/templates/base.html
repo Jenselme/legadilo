@@ -279,12 +279,8 @@
 </div>
 <footer class="content-footer d-flex flex-column justify-content-center py-4 text-white">
     <p class="ps-4 pe-4 text-center">
-        {% blocktranslate trimmed with version=VERSION %}
-            Legadilo
-            <a class="text-reset"
-               href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">
-                version {{ version }}
-            </a>
+        {% blocktranslate trimmed with version=VERSION changelog_link='<a class="text-reset" href="https://github.com/Jenselme/legadilo/blob/main/CHANGELOG.md">'|safe end_link='</a>' %}
+            Legadilo {{ changelog_link }}version {{ version }}{{ end_link }}
         {% endblocktranslate %}
     </p>
     <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
