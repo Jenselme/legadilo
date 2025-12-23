@@ -780,7 +780,7 @@ class ArticleManager(models.Manager["Article"]):
         """Link supplied articles to the given group.
 
         If any of the supplied articles are already linked to another group, they are not linked
-        again and remain in their original group. The ids of these articles are returned.
+        again and remain in their original group. These articles are returned.
 
         The newly linked articles have a group_order higher than the highest group_order of the
         articles in the group.

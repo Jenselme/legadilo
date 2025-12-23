@@ -351,6 +351,10 @@ class ArticlesGroupTagManager(models.Manager["ArticlesGroupTag"]):
 
     @transaction.atomic()
     def associate_group_with_tags(self, articles_group: ArticlesGroup, tags: list[Tag]):
+        """Associate the given group with the given tags.
+
+        Any existing tags associated with the group will be deleted.
+        """
         articles_group.articles_group_tags.all().delete()
         group_tags = [self.model(articles_group=articles_group, tag=tag) for tag in tags]
         self.bulk_create(group_tags)

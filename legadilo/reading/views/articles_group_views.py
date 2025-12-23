@@ -68,6 +68,10 @@ def articles_group_details_view(
         group = _get_group(request.user, group_id, group_slug)
     elif request.method == "POST" and "reorder" in request.POST:
         status, article_order_form, group = _handle_articles_group_reorder(request, group)
+    elif request.method == "POST" and request.POST.get("action") == "update_articles_group":
+        status, edit_articles_group_form, group = _handle_articles_group_update(
+            request, group, tag_choices
+        )
     elif request.method == "POST" and request.POST.get("action") == "delete_group":
         group.delete()
         return HttpResponseRedirect(reverse("reading:articles_groups_list"))
@@ -75,10 +79,6 @@ def articles_group_details_view(
         group.articles.all().delete()
         group.delete()
         return HttpResponseRedirect(reverse("reading:articles_groups_list"))
-    elif request.method == "POST" and request.POST.get("action") == "update_articles_group":
-        status, edit_articles_group_form, group = _handle_articles_group_update(
-            request, group, tag_choices
-        )
 
     return TemplateResponse(
         request,
