@@ -155,6 +155,20 @@ repos:
         types: [python]
         pass_filenames: false
 
+      - id: check-po
+        name: check-po
+        entry: env
+        args:
+          - uv
+          - run
+          - python
+          - manage.py
+          - makemessages
+          - --all
+          - --no-location
+        language: system
+        pass_filenames: false
+
       - id: pytest
         name: pytest
         entry: env
