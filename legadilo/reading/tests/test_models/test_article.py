@@ -1443,6 +1443,41 @@ class TestArticleManager:
         assert article.group == group
         assert article.group_order == 2
 
+    def test_reorder_in_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user, group=group, group_order=1)
+        article2 = ArticleFactory(user=user, group=group, group_order=2)
+        other_group = ArticlesGroupFactory(user=user)
+        article_other_group = ArticleFactory(user=user, group=other_group, group_order=1)
+        independent_article = ArticleFactory(user=user)
+        other_independent_article = ArticleFactory(user=user)
+
+        Article.objects.reorder_in_group(
+            group,
+            {
+                article2.id: 1,
+                article.id: 2,
+                article_other_group.id: 3,
+                other_independent_article.id: 4,
+            },
+        )
+
+        article.refresh_from_db()
+        assert article.group == group
+        assert article.group_order == 2
+        article2.refresh_from_db()
+        assert article2.group == group
+        assert article2.group_order == 1
+        article_other_group.refresh_from_db()
+        assert article_other_group.group == other_group
+        assert article_other_group.group_order == 1
+        independent_article.refresh_from_db()
+        assert independent_article.group is None
+        assert independent_article.group_order == 0
+        other_independent_article.refresh_from_db()
+        assert other_independent_article.group is None
+        assert other_independent_article.group_order == 0
+
 
 @pytest.mark.django_db
 class TestArticleModel:

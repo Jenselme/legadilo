@@ -22,8 +22,10 @@ class TestArticlesGroupDetailsView:
             "reading:articles_group_details",
             kwargs={"group_id": self.group.id, "group_slug": self.group.slug},
         )
-        other_group = ArticlesGroupFactory(user=user)
-        ArticleFactory(user=user, group=other_group, read_at=None)
+        self.other_group = ArticlesGroupFactory(user=user)
+        self.article_other_group = ArticleFactory(
+            user=user, group=self.other_group, group_order=1, read_at=None
+        )
 
     def test_not_logged_in(self, client):
         response = client.get(self.url)
@@ -123,6 +125,47 @@ class TestArticlesGroupDetailsView:
         assert response.context_data["edit_articles_group_form"].errors == {
             "title": ["This field is required."],
         }
+
+    def test_reorder_invalid_data(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url, data={"reorder": "", "article_order": ["a", "b"]}
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["article_order_form"].errors == {
+            "article_order": ["Enter a whole number."]
+        }
+
+    def test_reorder(self, user, logged_in_sync_client, django_assert_num_queries):
+        other_article = ArticleFactory(user=user, group=self.group, group_order=2)
+        independent_article = ArticleFactory(user=user)
+
+        with django_assert_num_queries(20):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "reorder": "",
+                    "article_order": [
+                        other_article.id,
+                        self.article.id,
+                        self.article_other_group.id,
+                    ],
+                },
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article_other_group.refresh_from_db()
+        assert self.article_other_group.group_order == 1
+        assert self.article_other_group.group == self.other_group
+        independent_article.refresh_from_db()
+        assert independent_article.group_order == 0
+        assert independent_article.group is None
+        self.article.refresh_from_db()
+        other_article.refresh_from_db()
+        assert self.article.group == self.group
+        assert self.article.group_order == 2
+        assert other_article.group == self.group
+        assert other_article.group_order == 1
 
 
 @pytest.mark.django_db

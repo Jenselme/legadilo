@@ -814,6 +814,24 @@ class ArticleManager(models.Manager["Article"]):
 
         return articles_already_linked_to_other_group
 
+    @transaction.atomic()
+    def reorder_in_group(self, group: ArticlesGroup, new_order: dict[int, int]):
+        articles = group.articles.all()
+        max_new_order_value = max(new_order.values())
+        group_order_articles_not_in_mapping = max_new_order_value + 1
+
+        # Change order to prevent unicity conflicts on (group, group_order)
+        group.articles.all().update(group_order=models.F("id"))
+
+        for article in articles:
+            if article.id in new_order:
+                article.group_order = new_order[article.id]
+            else:
+                article.group_order = group_order_articles_not_in_mapping
+                group_order_articles_not_in_mapping += 1
+
+        self.bulk_update(articles, fields=["group_order"])
+
 
 class Article(models.Model):
     title = models.CharField(max_length=constants.ARTICLE_TITLE_MAX_LENGTH)

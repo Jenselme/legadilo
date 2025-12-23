@@ -17,7 +17,7 @@ from django.urls import reverse
 from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_GET, require_http_methods
 
-from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.fields import ListField, MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.core.utils.pagination import get_requested_page
 from legadilo.core.utils.types import FormChoices
@@ -47,6 +47,10 @@ class EditArticlesGroupForm(forms.Form):
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
 
 
+class ReorderArticlesForm(forms.Form):
+    article_order = ListField(field=forms.IntegerField())
+
+
 @require_http_methods(["GET", "POST"])
 @login_required
 def articles_group_details_view(
@@ -56,11 +60,14 @@ def articles_group_details_view(
     tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
     status = HTTPStatus.OK
     edit_articles_group_form = _build_edit_articles_group_form_from_instance(tag_choices, group)
+    article_order_form = ReorderArticlesForm()
 
     if request.method == "POST" and "mark_all_as_read" in request.POST:
         articles_qs = Article.objects.filter(group=group)
         articles_qs.update_articles_from_action(constants.UpdateArticleActions.MARK_AS_READ)  # type: ignore[attr-defined]
         group = _get_group(request.user, group_id, group_slug)
+    elif request.method == "POST" and "reorder" in request.POST:
+        status, article_order_form, group = _handle_articles_group_reorder(request, group)
     elif request.method == "POST" and request.POST.get("action") == "delete_group":
         group.delete()
         return HttpResponseRedirect(reverse("reading:articles_groups_list"))
@@ -81,6 +88,7 @@ def articles_group_details_view(
             "from_url": articles_group_details_url(group),
             "tags_hierarchy": hierarchy,
             "edit_articles_group_form": edit_articles_group_form,
+            "article_order_form": article_order_form,
         },
         status=status,
     )
@@ -104,6 +112,21 @@ def _build_edit_articles_group_form_from_instance(
         },
         tag_choices=tag_choices,
     )
+
+
+def _handle_articles_group_reorder(request: AuthenticatedHttpRequest, group: ArticlesGroup):
+    form = ReorderArticlesForm(request.POST)
+    status = HTTPStatus.BAD_REQUEST
+    if form.is_valid():
+        status = HTTPStatus.OK
+        new_order = {
+            article_id: index
+            for index, article_id in enumerate(form.cleaned_data["article_order"], start=1)
+        }
+        Article.objects.reorder_in_group(group, new_order)
+        group = _get_group(request.user, group.id, group.slug)
+
+    return status, form, group
 
 
 @transaction.atomic()

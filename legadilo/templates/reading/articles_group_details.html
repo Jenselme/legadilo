@@ -6,8 +6,15 @@
     <script src="{% static 'js/tag_edition.js' %}"
             nonce="{{ csp_nonce }}"
             type="module"></script>
+    <script src="{% static 'js/draggable.js' %}" nonce="{{ csp_nonce }}" defer></script>
     {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
+
+{% block page_css %}
+    <link rel="stylesheet"
+          href="{% static 'css/draggable.css' %}"
+          nonce="{{ csp_nonce }}" />
+{% endblock page_css %}
 
 {% block title %}
     {{ group.title }}
@@ -123,9 +130,11 @@
         </button>
     </div>
 
-    <div>
+    <form method="post">
+        {% csrf_token %}
         {% for article in group.sorted_articles %}
-            <div class="card mb-2 {% if article.is_read %}opacity-50{% endif %}">
+            <div class="card mb-2 {% if article.is_read %}opacity-50{% endif %}" draggable="true">
+                <input type="hidden" name="article_order" value="{{ article.id }}" />
                 <div class="card-body">
                     <h2 class="card-title">{{ article.title }}</h2>
                     {% include "reading/partials/article_metadata.html" %}
@@ -140,5 +149,11 @@
                 </div>
             </div>
         {% endfor %}
-    </div>
+
+        <p class="mt-3 form-text">{% translate "Artiles in a group can be reordered with drag & drop." %}</p>
+        {% if article_order_form.errors or article_order_form.article_order.errors %}
+            <div class="invalid-feedback d-block">{% translate "Failed to reorder" %}</div>
+        {% endif %}
+        <button class="btn btn-outline-secondary" type="submit" name="reorder">{% translate "Save new order" %}</button>
+    </form>
 {% endblock content %}
