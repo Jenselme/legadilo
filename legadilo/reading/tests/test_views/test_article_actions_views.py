@@ -9,7 +9,11 @@ from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.reading import constants
-from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory
+from legadilo.reading.tests.factories import (
+    ArticleFactory,
+    ArticlesGroupFactory,
+    ReadingListFactory,
+)
 
 
 @pytest.mark.django_db
@@ -168,6 +172,43 @@ class TestUpdateArticleView:
 
         assert response.status_code == HTTPStatus.OK
         assert response["HX-Redirect"] == reverse("reading:default_reading_list")
+        assert response["HX-Push-Url"] == "true"
+
+    def test_update_article_view_for_article_details_read_and_go_next_status_action_no_next(
+        self, logged_in_sync_client, django_assert_num_queries
+    ):
+        with django_assert_num_queries(11):
+            response = logged_in_sync_client.post(
+                self.mark_as_read_url,
+                data={"for_article_details": "True", "read_and_go_to_next": ""},
+                HTTP_REFERER="http://example.com/reading/",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Redirect"] == reverse("reading:default_reading_list")
+        assert response["HX-Push-Url"] == "true"
+
+    def test_update_article_view_for_article_details_read_and_go_next_status_action(
+        self, user, logged_in_sync_client, django_assert_num_queries
+    ):
+        group = ArticlesGroupFactory(user=user)
+        self.article.group = group
+        self.article.save()
+        next_article = ArticleFactory(user=user, group=group, group_order=2)
+
+        with django_assert_num_queries(12):
+            response = logged_in_sync_client.post(
+                self.mark_as_read_url,
+                data={"for_article_details": "True", "read_and_go_to_next": ""},
+                HTTP_REFERER="http://example.com/reading/",
+            )
+
+        next_article_url = reverse(
+            "reading:article_details",
+            kwargs={"article_id": next_article.id, "article_slug": next_article.slug},
+        )
+        assert response.status_code == HTTPStatus.OK
+        assert response["HX-Redirect"] == f"{next_article_url}?from_url=%2Freading%2F"
         assert response["HX-Push-Url"] == "true"
 
     def test_update_article_view_for_article_details_favorite_status_action(

@@ -4,6 +4,7 @@
 
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -14,7 +15,7 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
-from legadilo.reading.templatetags import article_card_id
+from legadilo.reading.templatetags import article_card_id, article_details_url
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
 from ._utils import (
@@ -42,7 +43,7 @@ def update_article_view(
 
     if for_article_details:
         if is_read_status_update:
-            return redirect_to_reading_list(request)
+            return _handle_read_status_update(request, article)
         return TemplateResponse(
             request,
             "reading/update_article_details_actions.html",
@@ -70,6 +71,21 @@ def update_article_view(
         {**ctx, "articles": [article]},
         headers=headers,
     )
+
+
+def _handle_read_status_update(request: AuthenticatedHttpRequest, article: Article) -> HttpResponse:
+    if "read_and_go_to_next" in request.POST and article.next_article_of_group:
+        from_url = get_from_url_for_article_details(request, request.POST)
+        next_article_url = article_details_url(article.next_article_of_group)
+        qs = urlencode({"from_url": from_url})
+        return HttpResponse(
+            headers={
+                "HX-Redirect": f"{next_article_url}?{qs}",
+                "HX-Push-Url": "true",
+            }
+        )
+
+    return redirect_to_reading_list(request)
 
 
 def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse:
