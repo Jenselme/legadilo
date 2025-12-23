@@ -65,6 +65,11 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
       - name: Install the project
         run: uv sync --dev --locked
 
