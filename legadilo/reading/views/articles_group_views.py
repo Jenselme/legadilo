@@ -14,6 +14,7 @@ from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_GET, require_http_methods
 
@@ -31,9 +32,14 @@ from legadilo.users.user_types import AuthenticatedHttpRequest
 
 
 class EditArticlesGroupForm(forms.Form):
-    title = forms.CharField(max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH, required=True)
-    description = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 5}))
+    title = forms.CharField(
+        label=_("Title"), max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH, required=True
+    )
+    description = forms.CharField(
+        label=_("Description"), required=False, widget=forms.Textarea(attrs={"rows": 5})
+    )
     tags = MultipleTagsField(
+        label=_("Tags"),
         required=False,
         choices=[],
         help_text="Tags to associate to this group. To create a new tag, type and press enter.",
@@ -175,12 +181,13 @@ def article_groups_read_all_articles_view(
 
 
 class SearchArticlesGroupsForm(forms.Form):
-    q = forms.CharField(required=False, min_length=3, label="Search text")
+    q = forms.CharField(required=False, min_length=3, label=_("Search text"))
     tags = forms.MultipleChoiceField(
         required=False,
         choices=[],
-        help_text="Find groups containing all these tags",
-        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label="Choose tags"),
+        label=_("Tags"),
+        help_text=_("Find groups containing all these tags"),
+        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
     )
 
     def __init__(self, data: QueryDict, *, tag_choices: FormChoices):

@@ -53,13 +53,15 @@ def reading_list_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespon
 
 
 class ReadingListForm(forms.ModelForm):
-    title = SlugifiableCharField(required=True)
+    title = SlugifiableCharField(label=_("Title"), required=True)
     tags_to_include = MultipleTagsField(
+        label=_("Tags to include"),
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be included in the reading list."),
     )
     tags_to_exclude = MultipleTagsField(
+        label=_("Tags to exclude"),
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be excluded from the reading list."),
@@ -96,6 +98,20 @@ class ReadingListForm(forms.ModelForm):
             "exclude_tag_operator",
             "order_direction",
         )
+        labels = {
+            "enable_reading_on_scroll": _("Enable reading on scroll"),
+            "auto_refresh_interval": _("Auto refresh interval"),
+            "read_status": _("Read status"),
+            "favorite_status": _("Favorite status"),
+            "for_later_status": _("For later status"),
+            "articles_max_age_value": _("Articles max age value"),
+            "articles_max_age_unit": _("Articles max age unit"),
+            "articles_reading_time": _("Articles reading time"),
+            "articles_reading_time_operator": _("Articles reading time operator"),
+            "include_tag_operator": _("Include tag operator"),
+            "exclude_tag_operator": _("Exclude tag operator"),
+            "order_direction": _("Order direction"),
+        }
 
     @transaction.atomic()
     def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition

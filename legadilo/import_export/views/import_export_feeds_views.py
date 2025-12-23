@@ -33,7 +33,9 @@ def export_feeds_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
 class ImportFeedsForm(forms.Form):
     opml_file = forms.FileField(
-        required=True, widget=forms.ClearableFileInput(attrs={"accept": ".xml,.opml"})
+        label=_("OPML file"),
+        required=True,
+        widget=forms.ClearableFileInput(attrs={"accept": ".xml,.opml"}),
     )
 
     def clean_opml_file(self):

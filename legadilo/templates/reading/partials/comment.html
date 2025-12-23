@@ -9,7 +9,7 @@
         {% csrf_token %}
         <input type="hidden" name="article_id" value="{{ article_id }}" />
         {{ comment_article_form.text|as_crispy_field }}
-        <button class="btn btn-primary" type="submit" name="comment">{% translate "Comment" %}</button>
+        <button class="btn btn-primary" type="submit" name="comment">{% translate "Comment" context "action" %}</button>
     </form>
 {% endpartialdef %}
 {% partialdef comment-card %}

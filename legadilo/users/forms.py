@@ -67,6 +67,7 @@ class UserSocialSignupForm(SocialSignupForm):
 class UserSettingsForm(ModelForm):
     timezone = ModelChoiceField(
         Timezone.objects.all(),
+        label=_("Timezone"),
         required=True,
         widget=SelectAutocompleteWidget(allow_new=False),
         help_text=_("Used to display times and updated feeds at a convenient time."),
@@ -75,3 +76,4 @@ class UserSettingsForm(ModelForm):
     class Meta:
         model = UserSettings
         fields = ("default_reading_time", "timezone")
+        labels = {"default_reading_time": _("Default reading time")}

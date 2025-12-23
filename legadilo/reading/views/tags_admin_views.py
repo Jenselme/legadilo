@@ -40,9 +40,10 @@ def tags_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
 class TagForm(forms.ModelForm):
     title = SlugifiableCharField(
-        help_text=_("Editing the title will change the slug of the tag too!")
+        label=_("Title"), help_text=_("Editing the title will change the slug of the tag too!")
     )
     sub_tags = MultipleTagsField(
+        label=_("Sub-tags"),
         required=False,
         choices=[],
         help_text=_(

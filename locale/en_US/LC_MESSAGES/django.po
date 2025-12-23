@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 20:43+0000\n"
+"POT-Creation-Date: 2025-12-23 21:36+0000\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -102,11 +102,35 @@ msgstr ""
 msgid "Articles of feed '%(feed_title)s'"
 msgstr ""
 
+msgid "Title"
+msgstr ""
+
 #, python-format
 msgid "A category with title '%s' already exists."
 msgstr ""
 
+msgid "Feed URL"
+msgstr ""
+
+msgid "Site URL"
+msgstr ""
+
+msgid "Refresh delay"
+msgstr ""
+
+msgid "Article retention period"
+msgstr ""
+
+msgid "Open original by default"
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
 msgid "The category of the feed to help you keep them organized."
+msgstr ""
+
+msgid "Tags"
 msgstr ""
 
 msgid ""
@@ -121,6 +145,12 @@ msgstr ""
 msgid ""
 "Enter the URL to the feed you want to subscribe to. If you don't know it, "
 "enter the URL of the site and the server will try to find the feed for you."
+msgstr ""
+
+msgid "Feed choices"
+msgstr ""
+
+msgid "Proposed feed choices"
 msgstr ""
 
 msgid ""
@@ -142,6 +172,12 @@ msgid ""
 "Multiple feeds were found at this location, please select the proper one."
 msgstr ""
 
+msgid "CSV file"
+msgstr ""
+
+msgid "Wallabag export file"
+msgstr ""
+
 msgid "The supplied file is too big to be imported."
 msgstr ""
 
@@ -160,6 +196,9 @@ msgstr ""
 
 #, python-format
 msgid "Successfully imported %s articles"
+msgstr ""
+
+msgid "OPML file"
 msgstr ""
 
 #, python-format
@@ -384,12 +423,30 @@ msgid ""
 "Tags to associate to this article. To create a new tag, type and press enter."
 msgstr ""
 
+msgid "Group"
+msgstr ""
+
 msgid ""
 "Group to associate this article with. If you need to create a new group, "
 "create it from the add article page."
 msgstr ""
 
+msgid "Description"
+msgstr ""
+
+msgid "Search text"
+msgstr ""
+
+msgid "Find groups containing all these tags"
+msgstr ""
+
+msgid "Comment text"
+msgstr ""
+
 msgid "Type your comment here. Markdown syntax is supported."
+msgstr ""
+
+msgid "Article URL"
 msgstr ""
 
 msgid "URL of the article to add."
@@ -398,6 +455,9 @@ msgstr ""
 msgid ""
 "Group to add the article to. If you need to create a new group, use the form "
 "below."
+msgstr ""
+
+msgid "Group title"
 msgstr ""
 
 msgid "Title of the group."
@@ -409,6 +469,9 @@ msgstr ""
 msgid ""
 "Tags to associate to this group and all articles in it. To create a new tag, "
 "type and press enter."
+msgstr ""
+
+msgid "Articles URLs"
 msgstr ""
 
 msgid "URL of an article to add to the group."
@@ -444,10 +507,52 @@ msgstr ""
 msgid "'%s' is not a known tag."
 msgstr ""
 
+msgid "Tags to include"
+msgstr ""
+
 msgid "Articles with these tags will be included in the reading list."
 msgstr ""
 
+msgid "Tags to exclude"
+msgstr ""
+
 msgid "Articles with these tags will be excluded from the reading list."
+msgstr ""
+
+msgid "Enable reading on scroll"
+msgstr ""
+
+msgid "Auto refresh interval"
+msgstr ""
+
+msgid "Read status"
+msgstr ""
+
+msgid "Favorite status"
+msgstr ""
+
+msgid "For later status"
+msgstr ""
+
+msgid "Articles max age value"
+msgstr ""
+
+msgid "Articles max age unit"
+msgstr ""
+
+msgid "Articles reading time"
+msgstr ""
+
+msgid "Articles reading time operator"
+msgstr ""
+
+msgid "Include tag operator"
+msgstr ""
+
+msgid "Exclude tag operator"
+msgstr ""
+
+msgid "Order direction"
 msgstr ""
 
 #, python-format
@@ -493,6 +598,9 @@ msgid "You must supply a reading time operator when searching by reading time."
 msgstr ""
 
 msgid "Editing the title will change the slug of the tag too!"
+msgstr ""
+
+msgid "Sub-tags"
 msgstr ""
 
 msgid ""
@@ -1309,6 +1417,7 @@ msgid_plural "%(nb_articles)s articles in group"
 msgstr[0] ""
 msgstr[1] ""
 
+msgctxt "action"
 msgid "Comment"
 msgstr ""
 
@@ -1545,6 +1654,12 @@ msgid "This email has already been taken."
 msgstr ""
 
 msgid "Used to display times and updated feeds at a convenient time."
+msgstr ""
+
+msgid "Timezone"
+msgstr ""
+
+msgid "Default reading time"
 msgstr ""
 
 msgid "Give the token a nice name to identify its usage more easily."

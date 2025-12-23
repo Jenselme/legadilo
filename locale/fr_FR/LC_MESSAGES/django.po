@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 20:43+0000\n"
+"POT-Creation-Date: 2025-12-23 21:36+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -110,12 +110,36 @@ msgstr "Aucun"
 msgid "Articles of feed '%(feed_title)s'"
 msgstr "Articles du flux '%(feed_title)s'"
 
+msgid "Title"
+msgstr "Titre"
+
 #, python-format
 msgid "A category with title '%s' already exists."
 msgstr "Une catégorie avec le titre '%s' existe déjà."
 
+msgid "Feed URL"
+msgstr "URL du flux"
+
+msgid "Site URL"
+msgstr "URL du site"
+
+msgid "Refresh delay"
+msgstr "Délai d’actualisation"
+
+msgid "Article retention period"
+msgstr "Durée de rétention de l’article"
+
+msgid "Open original by default"
+msgstr "Ouvrir l’original par défaut"
+
+msgid "Category"
+msgstr "Catégorie"
+
 msgid "The category of the feed to help you keep them organized."
 msgstr "La catégorie du flux vous permez de les garder organiser."
+
+msgid "Tags"
+msgstr "Étiquettes"
 
 msgid ""
 "Tags to associate to articles of this feed. To create a new tag, type and "
@@ -136,6 +160,12 @@ msgstr ""
 "Entrez l’URL du flux auquel vous voulez vous abonner. Si vous ne la "
 "connaissez pas, entrez l’URL du site et le serveur essaiera de trouver le "
 "flux pour vous."
+
+msgid "Feed choices"
+msgstr "Choix des flux"
+
+msgid "Proposed feed choices"
+msgstr "Propositions de flux à choisir"
 
 msgid ""
 "Tags to associate to articles of this feed. To create a new tag, type and "
@@ -161,6 +191,12 @@ msgid ""
 "Multiple feeds were found at this location, please select the proper one."
 msgstr "Plusieurs flux ont été trouvés, merci de sélectionner le bon."
 
+msgid "CSV file"
+msgstr "Fichier CSV"
+
+msgid "Wallabag export file"
+msgstr "Fichier d’export de Wallabag"
+
 msgid "The supplied file is too big to be imported."
 msgstr "Le fichier fourni est trop gros pour être importé."
 
@@ -182,6 +218,9 @@ msgstr ""
 #, python-format
 msgid "Successfully imported %s articles"
 msgstr "%s articles importés avec succès"
+
+msgid "OPML file"
+msgstr "Fichier OPML"
 
 #, python-format
 msgid ""
@@ -430,6 +469,9 @@ msgstr ""
 "Étiquettes à associer à cet article. Pour créer une nouvelle étiquette, "
 "taper et appuyer sur entrée."
 
+msgid "Group"
+msgstr "Groupe"
+
 msgid ""
 "Group to associate this article with. If you need to create a new group, "
 "create it from the add article page."
@@ -437,8 +479,23 @@ msgstr ""
 "Groupe à associer à cet article. Pour créer un nouveau groupe, passez par la "
 "page d’ajout d’articles."
 
+msgid "Description"
+msgstr "Description"
+
+msgid "Search text"
+msgstr "Recherche"
+
+msgid "Find groups containing all these tags"
+msgstr "Trouver tous les groupes liés à ces étiquettes"
+
+msgid "Comment text"
+msgstr "Commentaire"
+
 msgid "Type your comment here. Markdown syntax is supported."
 msgstr "Entrer votre commentaire ici. La syntaxe Markdown est supportée."
+
+msgid "Article URL"
+msgstr "URL de l’article"
 
 msgid "URL of the article to add."
 msgstr "URL de l’article à ajouter."
@@ -449,6 +506,9 @@ msgid ""
 msgstr ""
 "Groupe à associer à cet article. Si vous voulez créer un nouveau groupe, "
 "faites le depuis la page d’ajout d’articles."
+
+msgid "Group title"
+msgstr "Titre du groupe"
 
 msgid "Title of the group."
 msgstr "Titre du groupe."
@@ -462,6 +522,9 @@ msgid ""
 msgstr ""
 "Étiquettes à associer à ce groupe et à tous ses articles. Pour créer une "
 "nouvelle étiquette, taper et appuyer sur entrée."
+
+msgid "Articles URLs"
+msgstr "URLs des articles"
 
 msgid "URL of an article to add to the group."
 msgstr "URL de d’un article à ajouter au groupe."
@@ -503,12 +566,54 @@ msgstr ""
 msgid "'%s' is not a known tag."
 msgstr "'%s' n’est pas une étiquette connue."
 
+msgid "Tags to include"
+msgstr "Étiquettes à inclure"
+
 msgid "Articles with these tags will be included in the reading list."
 msgstr ""
 "Les articles avec ces étiquettes seront inclus dans la liste de lecture."
 
+msgid "Tags to exclude"
+msgstr "Étiquettes à exclure"
+
 msgid "Articles with these tags will be excluded from the reading list."
 msgstr "Les articles avec ces étiquettes seront exclus de la liste de lecture."
+
+msgid "Enable reading on scroll"
+msgstr "Activer la lecture au défilement"
+
+msgid "Auto refresh interval"
+msgstr "Intervalle de mise à jour"
+
+msgid "Read status"
+msgstr "Statut lu"
+
+msgid "Favorite status"
+msgstr "Statut favori"
+
+msgid "For later status"
+msgstr "Statut pour plus tard"
+
+msgid "Articles max age value"
+msgstr "Âge maximum des articles"
+
+msgid "Articles max age unit"
+msgstr "Unité pour l’âge maximum des articles"
+
+msgid "Articles reading time"
+msgstr "Temps de lecture des articles"
+
+msgid "Articles reading time operator"
+msgstr "Opérateur pour le temps de lecture des articles"
+
+msgid "Include tag operator"
+msgstr "Opérateur des étiquettes à inclure"
+
+msgid "Exclude tag operator"
+msgstr "Opérateur des étiquettes à exclure"
+
+msgid "Order direction"
+msgstr "Direction du tri"
 
 #, python-format
 msgid "A reading list with title '%s' already exists."
@@ -563,6 +668,9 @@ msgstr ""
 
 msgid "Editing the title will change the slug of the tag too!"
 msgstr "Modifier le titre va également changer le slug de l’étiquette !"
+
+msgid "Sub-tags"
+msgstr "Sous-étiquettes"
 
 msgid ""
 "These tags will be automatically added to the article when this tag is "
@@ -1464,8 +1572,9 @@ msgid_plural "%(nb_articles)s articles in group"
 msgstr[0] "%(nb_articles)s article dans le groupe"
 msgstr[1] "%(nb_articles)s articles dans le groupe"
 
+msgctxt "action"
 msgid "Comment"
-msgstr "Commentaire"
+msgstr "Commenter"
 
 #, python-format
 msgid "You commented on %(comment_date)s"
@@ -1745,6 +1854,12 @@ msgid "Used to display times and updated feeds at a convenient time."
 msgstr ""
 "Utilisé pour afficher les heures et pour mettre à jour les flux à une heure "
 "pertinente."
+
+msgid "Timezone"
+msgstr "Fuseau horaire"
+
+msgid "Default reading time"
+msgstr "Temps de lecture par défaut"
 
 msgid "Give the token a nice name to identify its usage more easily."
 msgstr "Donnez au jeton un nom pour identifier ses usages plus facilement."
