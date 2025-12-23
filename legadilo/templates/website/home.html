@@ -44,15 +44,15 @@
     </p>
     <h2 class="display-2">{% translate "About the software" %}</h2>
     <p>
-        {% blocktranslate trimmed %}
-            It’s written with the <a href="https://www.djangoproject.com/">Django web framework</a>, <a href="https://getbootstrap.com/">the bootstrap 5 frontend toolkit</a> and with enhancements given by <a href="https://htmx.org/">htmx</a>.
+        {% blocktranslate trimmed with django_url='<a href="https://www.djangoproject.com/">'|safe bootstrap_url='<a href="https://getbootstrap.com/">'|safe htmx_url='<a href="https://htmx.org/">'|safe end_link='</a>'|safe %}
+            It’s written with the {{ django_url }}Django web framework{{ end_link }}, {{ bootstrap_url }}the bootstrap 5 frontend toolkit{{ end_link }} and with enhancements given by {{ htmx_url }}htmx{{ end_link }}.
         {% endblocktranslate %}
     </p>
     <p>
-        {% blocktranslate trimmed %}
-            It’s opensource under the <a href="https://www.gnu.org/licenses/agpl-3.0.html#license-text">GNU AGPLv3</a> license and is designed to be self-hostable, so you can run your own instance.
-            The code source is available <a href="https://github.com/Jenselme/legadilo">on GitHub</a>.
-            Your <a href="https://github.com/Jenselme/legadilo/issues/new">ideas</a>, <a href="https://github.com/Jenselme/legadilo/pulls">contributions</a> and <a href="https://github.com/Jenselme/legadilo/discussions">feedback</a> are welcomed! You can also check the <a href="https://www.legadilo.eu/">official instance</a> to start using it more easily (you will be able to export and import your data in any instance)!
+        {% blocktranslate trimmed with agpl_url='<a href="https://www.gnu.org/licenses/agpl-3.0.html#license-text">'|safe github_url='<a href="https://github.com/Jenselme/legadilo">'|safe issues_url='<a href="https://github.com/Jenselme/legadilo/issues/new">'|safe pulls_url='<a href="https://github.com/Jenselme/legadilo/pulls">'|safe feedback_url='<a href="https://github.com/Jenselme/legadilo/discussions">'|safe official_instance_url='<a href="https://www.legadilo.eu/">'|safe end_link='</a>'|safe %}
+            It’s opensource under the {{ agpl_url }}GNU AGPLv3{{ end_link }} license and is designed to be self-hostable, so you can run your own instance.
+            The code source is available {{ github_url }}on GitHub{{ end_link }}.
+            Your {{ issues_url }}ideas{{ end_link }}, {{ pulls_url }}contributions{{ end_link }} and {{ feedback_url }}feedback{{ end_link }} are welcomed! You can also check the {{ official_instance_url }}official instance{{ end_link }} to start using it more easily (you will be able to export and import your data in any instance)!
         {% endblocktranslate %}
     </p>
 {% endblock content %}
