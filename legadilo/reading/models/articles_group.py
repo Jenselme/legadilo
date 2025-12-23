@@ -97,9 +97,9 @@ class ArticlesGroup(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    title = models.CharField(max_length=constants.ARTICLES_GROUP_MAX_LENGTH)
+    title = models.CharField(max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH)
     description = models.TextField(blank=True)
-    slug = models.SlugField(max_length=constants.ARTICLES_GROUP_MAX_LENGTH, blank=True)
+    slug = models.SlugField(max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH, blank=True)
 
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="article_groups")
 
@@ -114,3 +114,7 @@ class ArticlesGroup(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         return super().save(*args, **kwargs)
+
+    def update_from_details(self, title: str, description: str):
+        self.title = title
+        self.description = description

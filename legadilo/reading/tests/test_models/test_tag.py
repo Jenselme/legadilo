@@ -317,15 +317,24 @@ class TestReadingListTagManager:
 
 
 class TestArticlesGroupTagManager:
-    def test_associate_group_with_tags(self, user):
-        group = ArticlesGroupFactory(user=user)
-        tag = TagFactory(user=user)
-        already_associated_tag = TagFactory(user=user)
-        ArticlesGroupTag.objects.create(articles_group=group, tag=already_associated_tag)
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.group = ArticlesGroupFactory(user=user)
+        self.tag = TagFactory(user=user)
+        self.already_associated_tag = TagFactory(user=user)
+        ArticlesGroupTag.objects.create(articles_group=self.group, tag=self.already_associated_tag)
 
-        ArticlesGroupTag.objects.associate_group_with_tags(group, [tag, already_associated_tag])
+    def test_associate_group_with_tags(self, user):
+        ArticlesGroupTag.objects.associate_group_with_tags(
+            self.group, [self.tag, self.already_associated_tag]
+        )
 
         assert set(ArticlesGroupTag.objects.values_list("tag__slug", flat=True)) == {
-            tag.slug,
-            already_associated_tag.slug,
+            self.tag.slug,
+            self.already_associated_tag.slug,
         }
+
+    def test_get_selected_values(self):
+        choices = list(self.group.articles_group_tags.get_selected_values())
+
+        assert choices == [self.already_associated_tag.slug]

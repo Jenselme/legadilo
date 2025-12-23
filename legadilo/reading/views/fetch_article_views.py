@@ -19,6 +19,7 @@ from django.views.decorators.http import require_http_methods
 from legadilo.core.forms import BaseInlineTableFormSet
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import SelectAutocompleteWidget
+from legadilo.core.utils.types import FormChoices
 from legadilo.core.utils.urls import add_query_params, pop_query_param, validate_referer_url
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticlesGroup, Tag
@@ -71,7 +72,8 @@ class FetchArticleForm(forms.Form):
 
 class ArticleGroupForm(forms.Form):
     title = forms.CharField(
-        max_length=constants.ARTICLES_GROUP_MAX_LENGTH,
+        required=True,
+        max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH,
         help_text=_("Title of the group."),
     )
     description = forms.CharField(
@@ -95,7 +97,7 @@ class ArticleGroupForm(forms.Form):
     class Meta:
         fields = ("title", "description", "tags")
 
-    def __init__(self, *args, tag_choices: list[tuple[str, str]], **kwargs):
+    def __init__(self, *args, tag_choices: FormChoices, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
 

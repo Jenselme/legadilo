@@ -37,7 +37,7 @@ class TestArticlesGroupDetailsView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_get_details(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -53,7 +53,7 @@ class TestArticlesGroupDetailsView:
         )
         ArticleFactory(user=user, read_at=None)
 
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(self.url, {"mark_all_as_read": ""})
 
         assert response.status_code == HTTPStatus.OK
@@ -64,7 +64,7 @@ class TestArticlesGroupDetailsView:
         assert self.group.articles.all().filter(read_at__isnull=True).count() == 0
 
     def test_delete_group(self, user, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(self.url, {"action": "delete_group"})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -77,7 +77,7 @@ class TestArticlesGroupDetailsView:
     def test_delete_group_and_all_its_articles(
         self, user, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(16):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(
                 self.url, {"action": "delete_group_and_all_articles"}
             )
@@ -87,6 +87,42 @@ class TestArticlesGroupDetailsView:
         assert ArticlesGroup.objects.filter(id=self.group.id).count() == 0
         assert Article.objects.count() == 1
         assert Article.objects.get().id != self.article.id
+
+    def test_update_group(self, user, logged_in_sync_client, django_assert_num_queries):
+        tag_to_unlink = TagFactory(user=user, title="Tag to unlink")
+        self.group.tags.add(tag_to_unlink)
+        existing_tag = TagFactory(user=user, title="Tag to link")
+
+        with django_assert_num_queries(30):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "title": "Updated title",
+                    "description": "New description",
+                    "tags": [existing_tag.slug, "New tag"],
+                    "action": "update_articles_group",
+                },
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.group.refresh_from_db()
+        assert self.group.title == "Updated title"
+        assert self.group.description == "New description"
+        assert set(self.group.articles_group_tags.get_selected_values()) == {
+            existing_tag.slug,
+            "new-tag",
+        }
+
+    def test_update_group_invalid_form(self, user, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {"title": "", "description": "", "tags": [], "action": "update_articles_group"},
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["edit_articles_group_form"].errors == {
+            "title": ["This field is required."],
+        }
 
 
 @pytest.mark.django_db

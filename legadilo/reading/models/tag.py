@@ -355,6 +355,9 @@ class ArticlesGroupTagManager(models.Manager["ArticlesGroupTag"]):
         group_tags = [self.model(articles_group=articles_group, tag=tag) for tag in tags]
         self.bulk_create(group_tags)
 
+    def get_selected_values(self) -> list[str]:
+        return list(self.get_queryset().values_list("tag__slug", flat=True))
+
 
 class ArticlesGroupTag(models.Model):
     articles_group = models.ForeignKey(

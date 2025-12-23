@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load crispy_forms_tags i18n static %}
+
+{% block page_js %}
+    <script src="{% static 'js/tag_edition.js' %}"
+            nonce="{{ csp_nonce }}"
+            type="module"></script>
+    {{ tags_hierarchy|json_script:"tags-hierarchy" }}
+{% endblock page_js %}
 
 {% block title %}
     {{ group.title }}
@@ -11,68 +18,109 @@
 
     {% include "reading/partials/articles_groups_metadata.html" %}
 
+    <p>{{ group.description|markdown|safe }}</p>
+
+    <div id="articles-group-edit-accordion" class="accordion mb-2">
+        <div class="accordion-item">
+            <div class="accordion-header">
+                <button
+                    class="accordion-button {% if not edit_articles_group_form.errors %}collapsed{% endif %} p-2"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#articles-group-edit"
+                    aria-expanded="{% if edit_articles_group_form.errors %}true{% else %}false{% endif %}"
+                    aria-controls="articles-group-edit">{% translate "Update group" %}</button>
+            </div>
+            <div id="articles-group-edit"
+                 class="accordion-collapse collapse {% if edit_articles_group_form.errors %}show{% endif %}"
+                 data-bs-parent="#articles-group-edit-accordion">
+                <div class="accordion-body p-2 px-3">
+                    <form id="edit-articles-group-form"
+                          method="post"
+                          hx-indicator=".icon-indicator"
+                          hx-boost="true"
+                          hx-push-url="false">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_articles_group"/>
+                        {{ edit_articles_group_form|crispy }}
+                    </form>
+                    <form
+                        id="delete-group"
+                        class="visually-hidden"
+                        aria-hidden="true"
+                        method="post"
+                        data-modal-id="danger-modal"
+                        data-modal-title="{% translate 'Confirm group deletion' %}"
+                        data-modal-body="{% blocktranslate trimmed with group_title=group.title %}Are you sure you want to delete the group '{{ group_title }}'?{% endblocktranslate %}"
+                        hx-indicator=".icon-indicator"
+                        hx-boost="true"
+                        hx-push-url="true"
+                        hx-confirm="Delete?">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_group"/>
+                    </form>
+                    <form
+                        id="delete-group-and-all-articles"
+                        class="visually-hidden"
+                        aria-hidden="true"
+                        method="post"
+                        data-modal-id="danger-modal"
+                        data-modal-title="{% translate 'Confirm deletion of group and all its articles' %}"
+                        data-modal-body="{% blocktranslate trimmed with group_title=group.title articles_count=group.annot_nb_articles_in_group %}Are you sure you want to delete the group '{{ group_title }}' and its {{ articles_count }} articles?{% endblocktranslate %}"
+                        hx-indicator=".icon-indicator"
+                        hx-boost="true"
+                        hx-push-url="true"
+                        hx-confirm="Delete?">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_group_and_all_articles"/>
+                    </form>
+                    <div class="d-flex justify-content-between mb-4">
+                        <div>
+                            <button class="btn btn-outline-primary w-100 mt-1"
+                                    type="submit"
+                                    form="edit-articles-group-form">
+                                <span class="icon-indicator">
+                                    {% include "core/partials/button_loading_indicator.html" %}
+                                </span>
+                                {% translate "Update articles group" %}
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-outline-danger"
+                                    form="delete-group-and-all-articles">
+                                <span class="icon-indicator">
+                                    {% include "core/partials/button_loading_indicator.html" %}
+                                    {% include "core/partials/bs-icons/delete.html" %}
+                                </span>
+                                {% translate "Delete group and all its articles" %}
+                            </button>
+                            <button class="btn btn-danger"
+                                    form="delete-group">
+                                <span class="icon-indicator">
+                                    {% include "core/partials/button_loading_indicator.html" %}
+                                    {% include "core/partials/bs-icons/delete.html" %}
+                                </span>
+                                {% translate "Delete group" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form id="mark-all-articles-as-read" class="visually-hidden" aria-hidden="true" method="post">
         {% csrf_token %}
     </form>
-    <form
-        id="delete-group"
-        class="visually-hidden"
-        aria-hidden="true"
-        method="post"
-        data-modal-id="danger-modal"
-        data-modal-title="{% translate 'Confirm group deletion' %}"
-        data-modal-body="{% blocktranslate trimmed with group_title=group.title %}Are you sure you want to delete the group '{{ group_title }}'?{% endblocktranslate %}"
-        hx-indicator=".icon-indicator"
-        hx-boost="true"
-        hx-push-url="true"
-        hx-confirm="Delete?">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="delete_group"/>
-    </form>
-    <form
-        id="delete-group-and-all-articles"
-        class="visually-hidden"
-        aria-hidden="true"
-        method="post"
-        data-modal-id="danger-modal"
-        data-modal-title="{% translate 'Confirm deletion of group and all its articles' %}"
-        data-modal-body="{% blocktranslate trimmed with group_title=group.title articles_count=group.annot_nb_articles_in_group %}Are you sure you want to delete the group '{{ group_title }}' and its {{ articles_count }} articles?{% endblocktranslate %}"
-        hx-indicator=".icon-indicator"
-        hx-boost="true"
-        hx-push-url="true"
-        hx-confirm="Delete?">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="delete_group_and_all_articles"/>
-    </form>
-    <div class="d-flex justify-content-between mb-4">
-        <div class="btn-group">
-            <a class="btn btn-outline-primary" role="button"
-               href="{% url 'reading:article_groups_read_all_articles' group_id=group.id group_slug=group.slug %}">
-                {% translate "Read all articles on one page" %}
-            </a>
-            <button type="submit" class="btn btn-outline-secondary" name="mark_all_as_read"
-                    form="mark-all-articles-as-read">
-                {% translate "Mark all articles as read" %}
-            </button>
-        </div>
-        <div class="btn-group">
-            <button type="submit" class="btn btn-outline-danger"
-                    form="delete-group-and-all-articles">
-                <span class="icon-indicator">
-                    {% include "core/partials/button_loading_indicator.html" %}
-                    {% include "core/partials/bs-icons/delete.html" %}
-                </span>
-                {% translate "Delete group and all its articles" %}
-            </button>
-            <button class="btn btn-danger"
-                    form="delete-group">
-                <span class="icon-indicator">
-                    {% include "core/partials/button_loading_indicator.html" %}
-                    {% include "core/partials/bs-icons/delete.html" %}
-                </span>
-                {% translate "Delete group" %}
-            </button>
-        </div>
+    <div class="btn-group mb-4">
+        <a class="btn btn-outline-primary" role="button"
+           href="{% url 'reading:article_groups_read_all_articles' group_id=group.id group_slug=group.slug %}">
+            {% translate "Read all articles on one page" %}
+        </a>
+        <button type="submit" class="btn btn-outline-secondary" name="mark_all_as_read"
+                form="mark-all-articles-as-read">
+            {% translate "Mark all articles as read" %}
+        </button>
     </div>
 
     <div>

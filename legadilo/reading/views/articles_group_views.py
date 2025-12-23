@@ -9,6 +9,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -16,16 +17,34 @@ from django.urls import reverse
 from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_GET, require_http_methods
 
+from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.core.utils.pagination import get_requested_page
 from legadilo.core.utils.types import FormChoices
 from legadilo.core.utils.validators import get_page_number_from_request
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ArticlesGroup, Tag
+from legadilo.reading.models import Article, ArticlesGroup, ArticlesGroupTag, Tag
 from legadilo.reading.models.articles_group import ArticlesGroupQuerySet
 from legadilo.reading.templatetags import articles_group_details_url
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
+
+
+class EditArticlesGroupForm(forms.Form):
+    title = forms.CharField(max_length=constants.ARTICLES_GROUP_TITLE_MAX_LENGTH, required=True)
+    description = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 5}))
+    tags = MultipleTagsField(
+        required=False,
+        choices=[],
+        help_text="Tags to associate to this group. To create a new tag, type and press enter.",
+    )
+
+    class Meta:
+        fields = ("title", "description", "tags")
+
+    def __init__(self, *args, tag_choices: FormChoices, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
 
 
 @require_http_methods(["GET", "POST"])
@@ -34,6 +53,9 @@ def articles_group_details_view(
     request: AuthenticatedHttpRequest, group_id: int, group_slug: str
 ) -> TemplateResponse | HttpResponseRedirect:
     group = _get_group(request.user, group_id, group_slug)
+    tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
+    status = HTTPStatus.OK
+    edit_articles_group_form = _build_edit_articles_group_form_from_instance(tag_choices, group)
 
     if request.method == "POST" and "mark_all_as_read" in request.POST:
         articles_qs = Article.objects.filter(group=group)
@@ -46,6 +68,10 @@ def articles_group_details_view(
         group.articles.all().delete()
         group.delete()
         return HttpResponseRedirect(reverse("reading:articles_groups_list"))
+    elif request.method == "POST" and request.POST.get("action") == "update_articles_group":
+        status, edit_articles_group_form, group = _handle_articles_group_update(
+            request, group, tag_choices
+        )
 
     return TemplateResponse(
         request,
@@ -53,7 +79,10 @@ def articles_group_details_view(
         {
             "group": group,
             "from_url": articles_group_details_url(group),
+            "tags_hierarchy": hierarchy,
+            "edit_articles_group_form": edit_articles_group_form,
         },
+        status=status,
     )
 
 
@@ -61,6 +90,40 @@ def _get_group(user: User, group_id: int, group_slug: str) -> ArticlesGroup:
     return get_object_or_404(
         ArticlesGroup.objects.get_queryset().for_details(user), id=group_id, slug=group_slug
     )
+
+
+def _build_edit_articles_group_form_from_instance(
+    tag_choices: FormChoices, group: ArticlesGroup, data=None
+) -> EditArticlesGroupForm:
+    return EditArticlesGroupForm(
+        data,
+        initial={
+            "tags": group.articles_group_tags.get_selected_values(),
+            "title": group.title,
+            "description": group.description,
+        },
+        tag_choices=tag_choices,
+    )
+
+
+@transaction.atomic()
+def _handle_articles_group_update(
+    request: AuthenticatedHttpRequest, group: ArticlesGroup, tag_choices: FormChoices
+) -> tuple[HTTPStatus, EditArticlesGroupForm, ArticlesGroup]:
+    form = _build_edit_articles_group_form_from_instance(tag_choices, group, request.POST)
+    status = HTTPStatus.BAD_REQUEST
+    if form.is_valid():
+        status = HTTPStatus.OK
+        tags = Tag.objects.get_or_create_from_list(request.user, form.cleaned_data.pop("tags"))
+        ArticlesGroupTag.objects.associate_group_with_tags(group, tags)
+        group.update_from_details(**form.cleaned_data)
+        group.save()
+        # Update the list of tag choices. We may have created some new one.
+        tag_choices = Tag.objects.get_all_choices(request.user)
+        form = _build_edit_articles_group_form_from_instance(tag_choices, group)
+
+    # Refresh the many-to-many relationship of tags to display the latest value.
+    return status, form, _get_group(request.user, group.id, group.slug)
 
 
 @require_http_methods(["GET", "POST"])
