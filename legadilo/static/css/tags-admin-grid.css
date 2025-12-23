@@ -1,0 +1,30 @@
+/*
+ * SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 24%);
+  grid-gap: 1rem;
+  grid-auto-rows: 1fr;
+}
+
+@media (width <= 1400px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, 32%);
+  }
+}
+
+@media (width <= 1000px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, 47%);
+  }
+}
+
+@media (width <= 450px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, 100%);
+  }
+}

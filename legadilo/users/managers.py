@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from datetime import timedelta
 from importlib import import_module
@@ -117,7 +116,8 @@ class UserManager(DjangoUserManager[User]):
 
     def list_admin_emails(self) -> list[str]:
         return list(
-            self.get_queryset()
+            self
+            .get_queryset()
             .filter(is_superuser=True, is_staff=True, is_active=True)
             .values_list("email", flat=True)
         )

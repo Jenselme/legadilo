@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 import secrets
 from datetime import datetime
@@ -55,7 +54,8 @@ class ApplicationTokenManager(models.Manager["ApplicationToken"]):
         self, user_email: str, token_uuid: UUID, token_secret: str
     ) -> ApplicationToken | None:
         qs = (
-            self.get_queryset()
+            self
+            .get_queryset()
             .only_valid()
             .defer(None)
             .filter(user__email=user_email, user__is_active=True, uuid=token_uuid)

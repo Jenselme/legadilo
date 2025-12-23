@@ -9,7 +9,7 @@ from markdown import Markdown
 
 from legadilo.core.utils.security import sanitize_keep_safe_tags
 from legadilo.reading import constants
-from legadilo.reading.models import Article, ReadingList
+from legadilo.reading.models import Article, ArticlesGroup, ReadingList
 
 
 @register.filter
@@ -68,6 +68,13 @@ def article_details_url(article: Article) -> str:
 
 
 @register.filter
+def articles_group_details_url(group: ArticlesGroup) -> str:
+    return reverse(
+        "reading:articles_group_details", kwargs={"group_id": group.id, "group_slug": group.slug}
+    )
+
+
+@register.filter
 def reading_list_url(reading_list: ReadingList) -> str:
     if reading_list.is_default:
         return reverse("reading:default_reading_list")
@@ -109,3 +116,25 @@ def open_original_with_link(article: Article) -> bool:
     return not article.content or bool(
         article.main_feed and article.main_feed.open_original_url_by_default
     )
+
+
+@register.filter
+def article_title_anchor_id(article: Article) -> str:
+    return f"legadilo-article-{article.id}"
+
+
+@register.filter
+def article_title_anchor(article: Article) -> str:
+    anchor_id = article_title_anchor_id(article)
+    return f"#{anchor_id}"
+
+
+@register.simple_tag(name="append_qs_params", takes_context=True)
+def append_qs_params(context, **kwargs):
+    params = context.request.GET.copy()
+    for key, value in kwargs.items():
+        existing_values = params.getlist(key)
+        params.setlist(key, list({*existing_values, value}))
+
+    qs = params.urlencode()
+    return f"?{qs}"

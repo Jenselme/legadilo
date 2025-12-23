@@ -127,7 +127,7 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
                 category,
                 open_original_url_by_default=payload.open_original_url_by_default,
             )
-    except (NoFeedUrlFoundError, MultipleFeedFoundError):
+    except NoFeedUrlFoundError, MultipleFeedFoundError:
         return HTTPStatus.NOT_ACCEPTABLE, {
             "detail": "We failed to find a feed at the supplied URL."
         }

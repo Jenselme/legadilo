@@ -5,6 +5,10 @@
 MAX_SIZE_OPML_FILE = 1024 * 1024  # 1MiB in bytes.
 MAX_ARTICLES_FILE = 10 * 1024 * 1024  # 10MiB in bytes.
 CSV_HEADER_FIELDS = (
+    "group_id",
+    "group_title",
+    "group_description",
+    "group_tags",
     "category_id",
     "category_title",
     "feed_id",

@@ -103,7 +103,7 @@ def language_code_validator_or_default(value: Any) -> str:
     try:
         language_code_validator(value)
         return value
-    except (ValidationError, TypeError):
+    except ValidationError, TypeError:
         return ""
 
 
@@ -115,7 +115,7 @@ def get_page_number_from_request(request: HttpRequest) -> int:
 
     try:
         return int(raw_page)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return 1
 
 

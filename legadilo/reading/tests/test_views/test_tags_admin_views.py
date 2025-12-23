@@ -113,7 +113,7 @@ class TestEditTagView:
         assert response.context_data["tag"] == self.tag
 
     def test_delete_tag(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(self.url, {"delete": "true"})
 
         assert response.status_code == HTTPStatus.OK
@@ -125,7 +125,7 @@ class TestEditTagView:
         sub_tag = TagFactory(title="Sub tag", user=user)
         SubTagMapping.objects.create(base_tag=self.tag, sub_tag=sub_tag)
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(self.url, {"delete": "true"})
 
         assert response.status_code == HTTPStatus.OK
@@ -139,7 +139,7 @@ class TestEditTagView:
         SubTagMapping.objects.create(base_tag=top_tag, sub_tag=self.tag)
         url = reverse("reading:edit_tag", kwargs={"pk": top_tag.id})
 
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(url, {"delete": "true"})
 
         assert response.status_code == HTTPStatus.OK

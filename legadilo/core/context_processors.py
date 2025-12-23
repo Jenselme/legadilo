@@ -9,4 +9,5 @@ def provide_global_context(request):
     return {
         "VERSION": settings.VERSION,
         "CONTACT_EMAIL": settings.CONTACT_EMAIL,
+        "ACTIVE_VIEW_NAME": request.resolver_match.view_name,
     }

@@ -8,6 +8,21 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Correct tags admin display on mobile.
+- Display active nav item it top bar.
+- Show the number of displayed articles on search if not all articles are displayed.
+- Adds articles groups:
+    - Can create articles groups on the new articles page.
+        - Can link multiple articles to a group at group creation.
+    - Can list groups and view their details.
+        - View articles of a group.
+        - Read all articles of a group.
+        - Reorder articles in a group.
+        - Can search groups.
+        - Can export/import groups.
+        - Can reorder the articles of a group.
+    - Can import and export articles groups.
+
 ## 25.12.4
 
 - Fix how to open articles by default.

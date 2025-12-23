@@ -11,9 +11,10 @@ from django.urls import reverse
 from legadilo.conftest import assert_redirected_to_login_page
 from legadilo.core.utils.testing import AnyOfType
 from legadilo.core.utils.time_utils import utcdt, utcnow
-from legadilo.reading.models import Article
+from legadilo.reading.models import Article, ArticlesGroup
 from legadilo.reading.models.article import SaveArticleResult
-from legadilo.reading.tests.factories import ArticleFactory, TagFactory
+from legadilo.reading.services.articles_groups import SaveArticlesGroupResult
+from legadilo.reading.tests.factories import ArticleFactory, ArticlesGroupFactory, TagFactory
 from legadilo.reading.tests.fixtures import get_article_fixture_content
 
 
@@ -25,8 +26,9 @@ class TestAddArticle:
         self.article_url = "https://www.example.com/posts/en/1-super-article/"
         self.article_content = get_article_fixture_content("sample_blog_article.html")
         self.existing_tag = TagFactory(title="Existing tag", user=user)
-        self.sample_payload = {"url": self.article_url}
+        self.sample_payload = {"add_article": "", "url": self.article_url}
         self.payload_with_tags = {
+            "add_article": "",
             "url": self.article_url,
             "tags": [self.existing_tag.slug, "New", "Tag with spaces"],
         }
@@ -45,7 +47,7 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -61,13 +63,14 @@ class TestAddArticle:
         assert Article.objects.count() == 1
         article = Article.objects.get()
         assert list(article.tags.all()) == []
+        assert article.group_id is None
 
     def test_add_article_with_tags(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
     ):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(24):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -121,10 +124,11 @@ class TestAddArticle:
         )
 
     def test_invalid_form(self, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, {"url": "Some trash"})
+        response = logged_in_sync_client.post(self.url, {"add_article": "", "url": "Some trash"})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "reading/add_article.html"
+        assert Article.objects.count() == 0
 
     def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
@@ -210,6 +214,136 @@ class TestAddArticle:
             is_from_invalid_data=True,
         )
 
+    def test_add_article_linked_to_group(
+        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        group = ArticlesGroupFactory(user=user)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        payload = {
+            **self.sample_payload,
+            "group": group.id,
+        }
+
+        with django_assert_num_queries(24):
+            response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group == group
+
+    def test_add_article_linked_to_group_article_already_exists(
+        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        ArticleFactory(user=user, url=self.article_url)
+        group = ArticlesGroupFactory(user=user)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        payload = {
+            **self.sample_payload,
+            "group": group.id,
+        }
+
+        with django_assert_num_queries(21):
+            response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.OK
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group_id is None
+
+    def test_add_article_linked_to_group_article_already_exists_and_linked_to_other_group(
+        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+    ):
+        some_group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user, url=self.article_url, group=some_group)
+        group = ArticlesGroupFactory(user=user)
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        payload = {
+            **self.sample_payload,
+            "group": group.id,
+        }
+
+        with django_assert_num_queries(21):
+            response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.OK
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group == some_group
+
+    def test_add_article_linked_to_group_other_user(self, user, other_user, logged_in_sync_client):
+        group_other_user = ArticlesGroupFactory(user=other_user)
+        payload = {
+            **self.sample_payload,
+            "group": group_other_user.id,
+        }
+
+        response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["add_article_form"].errors == {
+            "group": ["Select a valid choice. That choice is not one of the available choices."],
+        }
+        assert Article.objects.count() == 0
+
+
+@pytest.mark.django_db
+class TestAddArticlesGroup:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.url = reverse("reading:add_article")
+        self.article_url = "https://www.example.com/posts/en/1-super-article/"
+        self.no_content_article_url = "https://www.example.com/posts/en/2-other-article/"
+        self.existing_tag = TagFactory(title="Existing tag", user=user)
+        self.sample_payload = {
+            "add_articles_group": "",
+            "title": "New group",
+            "description": "My description",
+            "tags": ["Test tag"],
+            "form-TOTAL_FORMS": 2,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 1,
+            "form-MAX_NUM_FORMS": 1000,
+            "form-__prefix__-url": "",
+            "form-0-url": self.article_url,
+            "form-1-url": self.no_content_article_url,
+        }
+
+    def test_add_articles_group(self, logged_in_sync_client, httpx_mock, django_assert_num_queries):
+        httpx_mock.add_response(
+            html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
+        )
+        httpx_mock.add_response(html="", url=self.no_content_article_url)
+
+        with django_assert_num_queries(31):
+            response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.template_name == "reading/add_article.html"
+        assert Article.objects.count() == 2
+        assert ArticlesGroup.objects.count() == 1
+        group = ArticlesGroup.objects.get()
+        article_with_fetch_errors = group.articles.get(url=self.no_content_article_url)
+        assert set(article_with_fetch_errors.tags.values_list("slug", flat=True)) == {"test-tag"}
+        assert response.context_data["save_articles_group_result"] == SaveArticlesGroupResult(
+            group=group,
+            articles_with_fetch_errors=(article_with_fetch_errors,),
+            articles_linked_to_other_group=(),
+        )
+
+    def test_invalid_form(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(self.url, {"add_articles_group": ""})
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.template_name == "reading/add_article.html"
+        assert response.context_data["save_articles_group_result"] is None
+        assert response.context_data["articles_group_form"].errors == {
+            "title": ["This field is required."]
+        }
+        assert response.context_data["article_group_link_formset"].errors == []
+        assert Article.objects.count() == 0
+        assert ArticlesGroup.objects.count() == 0
+
 
 @pytest.mark.django_db
 class TestRefetchArticleView:
@@ -259,6 +393,8 @@ class TestRefetchArticleView:
         assert article.summary.startswith("I just wrote a new book")
         assert "Lorem ipsum" in article.content
         assert list(article.article_tags.values_list("tag__slug", flat=True)) == ["existing-tag"]
+        self.article.refresh_from_db()
+        assert self.article.group_id is None
 
     def test_refetch_article_with_from_url(
         self, django_assert_num_queries, logged_in_sync_client, httpx_mock
@@ -277,3 +413,19 @@ class TestRefetchArticleView:
             response["Location"]
             == f"/reading/articles/{self.article.id}-initial-slug/?from_url=%2Ftoto%2F"
         )
+
+    def test_refetch_article_with_group(
+        self, user, logged_in_sync_client, django_assert_num_queries, httpx_mock
+    ):
+        httpx_mock.add_response(html="", url=self.article_url)
+        group = ArticlesGroupFactory(user=user)
+        self.article.group = group
+        self.article.save()
+
+        with django_assert_num_queries(18):
+            response = logged_in_sync_client.post(self.url, self.sample_payload)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == f"/reading/articles/{self.article.id}-initial-slug/"
+        self.article.refresh_from_db()
+        assert self.article.group == group

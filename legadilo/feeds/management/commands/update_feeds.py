@@ -74,7 +74,8 @@ class Command(BaseCommand):
             # Some updates (like the every morning ones) must run in the user TZ. So, we look at
             # users with feed and find the feeds to update based on their TZ from settings.
             for user in (
-                User.objects.get_queryset()
+                User.objects
+                .get_queryset()
                 .with_feeds(options["user_ids"])
                 .select_related("settings", "settings__timezone")
             ):
@@ -100,7 +101,8 @@ class Command(BaseCommand):
 
     def _build_feed_qs(self, user: User, options: dict[str, Any]) -> FeedQuerySet:
         feeds_qs = (
-            Feed.objects.get_queryset()
+            Feed.objects
+            .get_queryset()
             .select_related("user", "user__settings", "category")
             .filter(user=user)
         )

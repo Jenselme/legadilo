@@ -10,12 +10,15 @@ from legadilo.core.utils.pagination import paginate_qs
 def set_main_feed(apps, schema_editor):
     Article = apps.get_model("reading", "Article")
     for article in paginate_qs(
-        Article.objects.annotate(
+        Article.objects
+        .annotate(
             feed_ids=ArrayAgg(
                 "feed_articles__feed_id",
                 order_by=("feed_articles__created_at", "feed_articles__feed_id"),
             )
-        ).all()
+        )
+        .order_by("id")
+        .all()
     ):
         article.main_feed_id = article.feed_ids[0]
         article.save(update_fields=["main_feed_id"])

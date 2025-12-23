@@ -9,7 +9,7 @@ from factory.django import DjangoModelFactory
 
 from legadilo.users.tests.factories import UserFactory
 
-from ..models import Article, ArticleFetchError, Comment, ReadingList, Tag
+from ..models import Article, ArticleFetchError, ArticlesGroup, Comment, ReadingList, Tag
 from ..services.article_fetching import ArticleData, FetchArticleResult
 
 
@@ -65,6 +65,15 @@ class CommentFactory(DjangoModelFactory):
 
     class Meta:
         model = Comment
+
+
+class ArticlesGroupFactory(DjangoModelFactory):
+    title = factory.Sequence(lambda n: f"Articles group {n}")
+    slug = factory.Sequence(lambda n: f"articles-group-{n}")
+    user = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = ArticlesGroup
 
 
 class ArticleDataFactory(factory.DictFactory):

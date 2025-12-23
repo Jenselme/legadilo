@@ -48,6 +48,17 @@ urlpatterns = [
     ),
     path("articles/add/", views.add_article_view, name="add_article"),
     path("articles/refetch/", views.refetch_article_view, name="refetch_article"),
+    path("articles-groups/", views.articles_groups_list_view, name="articles_groups_list"),
+    path(
+        "articles-groups/<int:group_id>-<slug:group_slug>/",
+        views.articles_group_details_view,
+        name="articles_group_details",
+    ),
+    path(
+        "articles-groups/<int:group_id>-<slug:group_slug>/all/",
+        views.article_groups_read_all_articles_view,
+        name="article_groups_read_all_articles",
+    ),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     # To clearly differentiate from the view that list articles in list/<slug>.
     path("lists/edit/create/", views.reading_list_create_view, name="create_reading_list"),

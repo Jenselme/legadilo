@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from typing import TYPE_CHECKING, assert_never
 
@@ -38,7 +37,8 @@ class FeedUpdateQuerySet(models.QuerySet["FeedUpdate"]):
     def most_recent_for_each_feed(self):
         return (
             # Force a group by on feed_id with .values("feed_id")
-            self.values("feed_id")
+            self
+            .values("feed_id")
             .annotate(latest=models.Max("id"))
             .values_list("latest", flat=True)
         )
@@ -59,7 +59,8 @@ class FeedUpdateManager(models.Manager["FeedUpdate"]):
     ) -> bool:
         time_window = self._get_feed_deactivation_error_time_window(feed)
         aggregation = (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_feed(feed)
             .filter(created_at__gt=utcnow() - time_window)
             .aggregate(

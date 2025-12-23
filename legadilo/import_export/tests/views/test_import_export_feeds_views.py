@@ -102,10 +102,7 @@ class TestImportFeeds:
             size=0,
             charset="utf-8",
         )
-        with (
-            Path(temp_file.file.name).open("w", encoding="utf-8") as out,  # type: ignore[union-attr]
-        ):
-            out.write("stuff" * 2048 * 2048)
+        Path(temp_file.file.name).write_text("stuff" * 2048 * 2048, encoding="utf-8")
 
         response = logged_in_sync_client.post(
             self.url,
@@ -204,12 +201,10 @@ class TestImportFeeds:
             size=100,
             charset="utf-8",
         )
-        with (
-            Path(settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml").open(
-                "r", encoding="utf-8"
-            ) as in_,
-        ):
-            Path(temp_file.file.name).write_text(in_.read(), encoding="utf-8")  # type: ignore[union-attr]
+        input_csv = Path(
+            settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
+        ).read_text(encoding="utf-8")
+        Path(temp_file.file.name).write_text(input_csv, encoding="utf-8")
 
         response = logged_in_sync_client.post(
             self.url,

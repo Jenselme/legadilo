@@ -30,6 +30,7 @@ from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
+    ArticlesGroupFactory,
     CommentFactory,
     FetchArticleResultFactory,
     ReadingListFactory,
@@ -686,7 +687,8 @@ class TestArticleQuerySet:
         search_in_summary = ArticleFactory(title="Search in summary", user=user, summary="Claudius")
 
         searched_articles = list(
-            Article.objects.get_queryset()
+            Article.objects
+            .get_queryset()
             .for_search(
                 ArticleFullTextSearchQuery(
                     q="Claudius", search_type=constants.ArticleSearchType.PLAIN
@@ -870,9 +872,8 @@ class TestArticleManager:
             }
         ]
         tag_slugs = list(
-            Article.objects.annotate(
-                tag_slugs=models.StringAgg("tags__slug", delimiter=models.Value("|"))
-            )
+            Article.objects
+            .annotate(tag_slugs=models.StringAgg("tags__slug", delimiter=models.Value("|")))
             .values_list("url", "tag_slugs")
             .order_by("url")
         )
@@ -1216,19 +1217,47 @@ class TestArticleManager:
             updated_at=utcdt(2024, 6, 23, 12, 0, 0),
         )
         CommentFactory(id=1, article=article_from_feed, text="A comment")
+        group = ArticlesGroupFactory(id=1, user=user, title="Group", description="A group")
+        second_article_of_group = ArticleFactory(
+            id=4,
+            user=user,
+            group=group,
+            group_order=2,
+            title="2nd article in group",
+            content="Content",
+            content_type="text/plain",
+            url="https://example.com/article/in-group2/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
+        first_article_of_group = ArticleFactory(
+            id=5,
+            user=user,
+            group=group,
+            group_order=1,
+            title="1st article in group",
+            content="Content",
+            content_type="text/plain",
+            url="https://example.com/article/in-group/",
+            published_at=utcdt(2024, 6, 23, 12, 0, 0),
+            updated_at=utcdt(2024, 6, 23, 12, 0, 0),
+        )
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(12):
             articles = self._export_all_articles(user)
 
-        assert len(articles) == 2
+        assert len(articles) == 3
         assert len(articles[0]) == 2
-        assert len(articles[1]) == 1
+        assert len(articles[1]) == 2
+        assert len(articles[2]) == 1
         assert articles[0][0]["article_id"] == article_from_feed.id
         assert articles[0][0]["feed_id"] == feed_without_category.id
         assert articles[0][1]["article_id"] == article_two_feeds.id
         assert articles[0][1]["feed_id"] == feed_with_category.id
         assert articles[0][1]["category_id"] == feed_category.id
         assert articles[1][0]["article_id"] == article_no_feed.id
+        assert articles[1][1]["article_id"] == first_article_of_group.id
+        assert articles[2][0]["article_id"] == second_article_of_group.id
         snapshot.assert_match(serialize_for_snapshot(articles), "articles.json")
 
     @patch.object(constants, "MAX_EXPORT_ARTICLES_PER_PAGE", 2)
@@ -1380,7 +1409,77 @@ class TestArticleManager:
         assert feed_article_to_deleted.article is None
         assert Article.objects.count() == 2
 
+    def test_link_articles_to_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user)
+        article_already_linked_to_group = ArticleFactory(user=user, group=group, group_order=1)
+        other_group = ArticlesGroupFactory(user=user)
+        article_already_linked_to_other_group = ArticleFactory(user=user, group=other_group)
+        other_group.articles.add(article_already_linked_to_other_group)
 
+        articles_already_linked = Article.objects.link_articles_to_group(
+            group,
+            [article, article_already_linked_to_group, article_already_linked_to_other_group],
+        )
+
+        assert articles_already_linked == (article_already_linked_to_other_group,)
+        assert list(Article.objects.filter(group=group).values_list("id", "group_order")) == [
+            (article.id, 2),
+            (article_already_linked_to_group.id, 3),
+        ]
+        assert list(Article.objects.filter(group=other_group).values_list("id", flat=True)) == [
+            article_already_linked_to_other_group.id
+        ]
+
+    def test_link_new_article_to_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user, group=group, group_order=1)
+        article = ArticleFactory(user=user)
+
+        articles_already_linked = Article.objects.link_articles_to_group(group, [article])
+
+        assert articles_already_linked == ()
+        article.refresh_from_db()
+        assert article.group == group
+        assert article.group_order == 2
+
+    def test_reorder_in_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user, group=group, group_order=1)
+        article2 = ArticleFactory(user=user, group=group, group_order=2)
+        other_group = ArticlesGroupFactory(user=user)
+        article_other_group = ArticleFactory(user=user, group=other_group, group_order=1)
+        independent_article = ArticleFactory(user=user)
+        other_independent_article = ArticleFactory(user=user)
+
+        Article.objects.reorder_in_group(
+            group,
+            {
+                article2.id: 1,
+                article.id: 2,
+                article_other_group.id: 3,
+                other_independent_article.id: 4,
+            },
+        )
+
+        article.refresh_from_db()
+        assert article.group == group
+        assert article.group_order == 2
+        article2.refresh_from_db()
+        assert article2.group == group
+        assert article2.group_order == 1
+        article_other_group.refresh_from_db()
+        assert article_other_group.group == other_group
+        assert article_other_group.group_order == 1
+        independent_article.refresh_from_db()
+        assert independent_article.group is None
+        assert independent_article.group_order == 0
+        other_independent_article.refresh_from_db()
+        assert other_independent_article.group is None
+        assert other_independent_article.group_order == 0
+
+
+@pytest.mark.django_db
 class TestArticleModel:
     @pytest.mark.django_db
     def test_generated_fields(self):
@@ -1566,3 +1665,49 @@ class TestArticleModel:
 
         assert was_updated
         assert article.content_type == "text/html"
+
+    def test_adjoining_articles_of_group_no_group(self, django_assert_num_queries):
+        article = ArticleFactory(group=None)
+
+        with django_assert_num_queries(0):
+            assert article.next_article_of_group is None
+            assert article.previous_article_of_group is None
+
+    def test_adjoining_articles_of_group_with_group_no_other_article(
+        self, django_assert_num_queries
+    ):
+        article = ArticleFactory.build(group=ArticlesGroupFactory())
+
+        with django_assert_num_queries(2):
+            assert article.next_article_of_group is None
+            assert article.previous_article_of_group is None
+
+    def test_adjoining_articles_of_group(self):
+        group = ArticlesGroupFactory()
+        article_1 = ArticleFactory(group=group, group_order=1)
+        article_3 = ArticleFactory(group=group, group_order=3)
+        article_2 = ArticleFactory(group=group, group_order=2)
+
+        assert article_1.next_article_of_group == article_2
+        assert article_1.previous_article_of_group is None
+        assert article_2.next_article_of_group == article_3
+        assert article_2.previous_article_of_group == article_1
+        assert article_3.next_article_of_group is None
+        assert article_3.previous_article_of_group == article_2
+
+    def test_update_from_details_link_to_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user, group=None)
+
+        article.update_from_details(title="Test title", reading_time=10, group=group)
+
+        assert article.group == group
+        assert article.group_order == 1
+
+    def test_update_from_details_unlink_from_group(self, user):
+        group = ArticlesGroupFactory(user=user)
+        article = ArticleFactory(user=user, group=group)
+
+        article.update_from_details(title="Test title", reading_time=10, group=None)
+
+        assert article.group_id is None

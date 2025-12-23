@@ -1,0 +1,11 @@
+<a class="lead" href="{{ article_title_anchor }}">{{ article.title }}</a>
+{% for toc_entry in article.table_of_content %}
+    <a href="#{{ toc_entry.id }}">{{ toc_entry.text }}</a>
+    {% if toc_entry.children %}
+        <nav class="article-toc article-nested-toc">
+            {% for child in toc_entry.children %}
+                <a href="#{{ child.id }}">{{ child.text }}</a>
+            {% endfor %}
+        </nav>
+    {% endif %}
+{% endfor %}

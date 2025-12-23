@@ -6,8 +6,13 @@ import pytest
 
 from legadilo.reading import constants
 from legadilo.reading.models import ArticleTag, ReadingListTag, Tag
-from legadilo.reading.models.tag import SubTagMapping
-from legadilo.reading.tests.factories import ArticleFactory, ReadingListFactory, TagFactory
+from legadilo.reading.models.tag import ArticlesGroupTag, SubTagMapping
+from legadilo.reading.tests.factories import (
+    ArticleFactory,
+    ArticlesGroupFactory,
+    ReadingListFactory,
+    TagFactory,
+)
 
 
 @pytest.mark.django_db
@@ -309,3 +314,27 @@ class TestReadingListTagManager:
             (tag4.slug, constants.ReadingListTagFilterType.EXCLUDE),
         ]
         assert Tag.objects.count() == 4
+
+
+class TestArticlesGroupTagManager:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.group = ArticlesGroupFactory(user=user)
+        self.tag = TagFactory(user=user)
+        self.already_associated_tag = TagFactory(user=user)
+        ArticlesGroupTag.objects.create(articles_group=self.group, tag=self.already_associated_tag)
+
+    def test_associate_group_with_tags(self, user):
+        ArticlesGroupTag.objects.associate_group_with_tags(
+            self.group, [self.tag, self.already_associated_tag]
+        )
+
+        assert set(ArticlesGroupTag.objects.values_list("tag__slug", flat=True)) == {
+            self.tag.slug,
+            self.already_associated_tag.slug,
+        }
+
+    def test_get_selected_values(self):
+        choices = list(self.group.articles_group_tags.get_selected_values())
+
+        assert choices == [self.already_associated_tag.slug]

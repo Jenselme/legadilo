@@ -72,8 +72,9 @@ USE_TZ = True
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 ASGI_APPLICATION = "config.asgi.application"
 VERSION = _project_metadata["project"]["version"]
-# Would be triggered in CI.
-SILENCED_SYSTEM_CHECKS = ["staticfiles.W004"]
+# staticfiles.W004 Would be triggered in CI.
+# axes.W006 requires a config that is not GDPR compatible: https://django-axes.readthedocs.io/en/latest/3_usage.html#data-privacy-and-gdpr
+SILENCED_SYSTEM_CHECKS = ["staticfiles.W004", "axes.W006"]
 
 
 # DATABASES

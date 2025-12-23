@@ -2,13 +2,13 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 import json
 import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
+from functools import cached_property
 from itertools import chain
 from typing import TYPE_CHECKING, Literal, Self, assert_never
 
@@ -48,6 +48,8 @@ if TYPE_CHECKING:
         FetchArticleResult,
     )
     from legadilo.users.models import User
+
+    from .articles_group import ArticlesGroup
 else:
     TypedModelMeta = object
 
@@ -258,7 +260,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
-            self.for_user(reading_list.user)
+            self
+            .for_user(reading_list.user)
             .for_current_tag_filtering()
             .filter(
                 _build_filters_from_reading_list(ArticleSearchQuery.from_reading_list(reading_list))
@@ -270,7 +273,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_tag(self, tag: Tag) -> Self:
         return (
-            self.for_current_tag_filtering()
+            self
+            .for_current_tag_filtering()
             .filter(alias_tag_ids_for_article__contains=[tag.id])
             .select_related("main_feed")
             .prefetch_related("tags")
@@ -279,7 +283,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_external_tag(self, tag: str) -> Self:
         return (
-            self.filter(external_tags__icontains=tag)
+            self
+            .filter(external_tags__icontains=tag)
             .prefetch_related("tags")
             .select_related("main_feed")
             .default_order_by()
@@ -296,14 +301,15 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.prefetch_related("tags").select_related("main_feed").default_order_by()
 
     def for_details(self) -> Self:
-        return self.prefetch_related("tags", "comments").select_related("main_feed")
+        return self.prefetch_related("tags", "comments").select_related("main_feed", "group")
 
     def for_export(self, user: User, *, updated_since: datetime | None = None) -> Self:
         qs = (
-            self.for_user(user)
-            .select_related("main_feed", "main_feed__category")
-            .prefetch_related("tags", "comments")
-            .order_by("id")
+            self
+            .for_user(user)
+            .select_related("main_feed", "main_feed__category", "group")
+            .prefetch_related("tags", "comments", "group__tags")
+            .order_by("group_order", "id")
         )
         if updated_since:
             qs = qs.filter(
@@ -360,7 +366,8 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def for_cleanup(self) -> Self:
         return (
-            self.for_deletion()
+            self
+            .for_deletion()
             .alias(
                 min_feed_retention_time=models.Min("feeds__article_retention_time"),
                 # Let's keep the article until the last feed says it's time to collect.
@@ -400,14 +407,16 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             config="english",
         )
         return (
-            self.alias(search=SEARCH_VECTOR)
+            self
+            .alias(search=SEARCH_VECTOR)
             .annotate(rank=SearchRank(SEARCH_VECTOR, full_text_search_query))
             .filter(search=full_text_search_query)
         )
 
     def for_tags_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
         return (
-            self.alias(lower_tags_title=Lower("tags__title"))
+            self
+            .alias(lower_tags_title=Lower("tags__title"))
             .annotate(rank=models.Value(0))
             .filter(lower_tags_title=search_query.q.lower())
         )
@@ -450,7 +459,8 @@ class ArticleManager(models.Manager["Article"]):
 
         existing_urls_to_articles = {
             article.url: article
-            for article in self.get_queryset()
+            for article in self
+            .get_queryset()
             .filter(user=user, url__in=[article_data.url for article_data in articles_data])
             .select_related("user", "user__settings")
         }
@@ -674,7 +684,8 @@ class ArticleManager(models.Manager["Article"]):
         # We only count unread articles in the reading list. Not all articles. I think it's more
         # relevant.
         return (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_user(user)
             .only_unread()
             .for_current_tag_filtering()
@@ -695,6 +706,12 @@ class ArticleManager(models.Manager["Article"]):
             articles = []
             for article in page.object_list:
                 articles.append({
+                    "group_id": article.group.id if article.group else "",
+                    "group_title": article.group.title if article.group else "",
+                    "group_description": article.group.description if article.group else "",
+                    "group_tags": json.dumps([tag.title for tag in article.group.tags.all()])
+                    if article.group
+                    else "[]",
                     "category_id": article.main_feed.category_id if article.main_feed else "",
                     "category_title": article.main_feed.category.title
                     if article.main_feed and article.main_feed.category
@@ -728,7 +745,8 @@ class ArticleManager(models.Manager["Article"]):
 
     def search(self, user: User, search_query: ArticleFullTextSearchQuery) -> ArticleQuerySet:
         articles_qs = (
-            self.get_queryset()
+            self
+            .get_queryset()
             .for_user(user)
             .for_current_tag_filtering()
             .select_related("main_feed")
@@ -755,6 +773,64 @@ class ArticleManager(models.Manager["Article"]):
 
     def cleanup_articles(self):
         return self.get_queryset().for_cleanup().delete()
+
+    def link_articles_to_group(
+        self, group: ArticlesGroup, articles: Iterable[Article]
+    ) -> tuple[Article, ...]:
+        """Link supplied articles to the given group.
+
+        If any of the supplied articles are already linked to another group, they are not linked
+        again and remain in their original group. These articles are returned.
+
+        The newly linked articles have a group_order higher than the highest group_order of the
+        articles in the group.
+        """
+        articles_already_linked_to_other_group = tuple(
+            article
+            for article in self
+            .get_queryset()
+            .filter(id__in=[article.id for article in articles], group__isnull=False)
+            .exclude(group=group)
+        )
+        max_group_order = group.articles.aggregate(
+            max_group_order=Coalesce(models.Max("group_order"), 0)
+        )["max_group_order"]
+        articles_to_update = []
+        for order, article in enumerate(articles, start=max_group_order + 1):
+            if article in articles_already_linked_to_other_group:
+                continue
+
+            article.group = group
+            article.group_order = order
+            articles_to_update.append(article)
+
+        self.bulk_update(
+            articles_to_update,
+            fields=(
+                "group",
+                "group_order",
+            ),
+        )
+
+        return articles_already_linked_to_other_group
+
+    @transaction.atomic()
+    def reorder_in_group(self, group: ArticlesGroup, new_order: dict[int, int]):
+        articles = group.articles.all()
+        max_new_order_value = max(new_order.values())
+        group_order_articles_not_in_mapping = max_new_order_value + 1
+
+        # Change order to prevent unicity conflicts on (group, group_order)
+        group.articles.all().update(group_order=models.F("id"))
+
+        for article in articles:
+            if article.id in new_order:
+                article.group_order = new_order[article.id]
+            else:
+                article.group_order = group_order_articles_not_in_mapping
+                group_order_articles_not_in_mapping += 1
+
+        self.bulk_update(articles, fields=["group_order"])
 
 
 class Article(models.Model):
@@ -850,6 +926,11 @@ class Article(models.Model):
         "feeds.Feed", related_name="articles_main_feed", on_delete=models.SET_NULL, null=True
     )
 
+    group = models.ForeignKey(
+        "reading.ArticlesGroup", related_name="articles", on_delete=models.SET_NULL, null=True
+    )
+    group_order = models.PositiveIntegerField(default=0, help_text=_("Order in the group"))
+
     published_at = models.DateTimeField(
         null=True, blank=True, help_text=_("The date of publication of the article.")
     )
@@ -884,6 +965,9 @@ class Article(models.Model):
                 condition=models.Q(
                     content_type__in=["application/xhtml+xml", "text/html", "text/plain"]
                 ),
+            ),
+            models.UniqueConstraint(
+                "group", "group_order", name="%(app_label)s_%(class)s_group_order_unique"
             ),
         ]
         indexes = [
@@ -950,6 +1034,32 @@ class Article(models.Model):
 
         return True
 
-    def update_from_details(self, *, title: str, reading_time: int):
+    def update_from_details(self, *, title: str, reading_time: int, group: ArticlesGroup | None):
+        if group:
+            self.__class__.objects.link_articles_to_group(group, [self])
+        else:
+            self.group = None
         self.title = title
         self.reading_time = reading_time
+
+    @cached_property
+    def next_article_of_group(self) -> Article | None:
+        if self.group_id is None:
+            return None
+        return (
+            self.group.articles  # type: ignore[union-attr]
+            .filter(group_order__gt=self.group_order)
+            .order_by("group_order")
+            .first()
+        )
+
+    @cached_property
+    def previous_article_of_group(self) -> Article | None:
+        if self.group_id is None:
+            return None
+        return (
+            self.group.articles  # type: ignore[union-attr]
+            .filter(group_order__lt=self.group_order)
+            .order_by("group_order")
+            .last()
+        )

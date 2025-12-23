@@ -158,7 +158,7 @@ def _process_feed(user, client, outline, category=None):
         nb_imported_feeds += 1
     except IntegrityError:
         logger.info(f"You are already subscribed to {outline.feed_url}")
-    except (FeedFileTooBigError, InvalidFeedFileError, PydanticValidationError):
+    except FeedFileTooBigError, InvalidFeedFileError, PydanticValidationError:
         logger.exception("Failed to import the feed")
 
     return nb_imported_feeds

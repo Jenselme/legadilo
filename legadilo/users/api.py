@@ -67,7 +67,7 @@ def _get_user_from_access_token(access_token: AccessToken) -> User | None:
             is_active=True,
             application_tokens__uuid=access_token.application_token_uuid,
         )
-    except (User.DoesNotExist, User.MultipleObjectsReturned):
+    except User.DoesNotExist, User.MultipleObjectsReturned:
         return None
 
 

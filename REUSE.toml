@@ -25,6 +25,14 @@ path = [
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
 
+# Migrations
+[[annotations]]
+path = [
+    "legadilo/*/migrations/*.py"
+]
+SPDX-FileCopyrightText = "Legadilo contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
 # Test fixtures
 [[annotations]]
 path = [

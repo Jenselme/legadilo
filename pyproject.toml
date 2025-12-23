@@ -8,36 +8,36 @@ version = "25.12.4"
 requires-python = ">=3.14"
 dependencies = [
     # General
-    "argon2-cffi >= 23.1.0",  # https://github.com/hynek/argon2_cffi
-    "whitenoise[brotli] >= 6.8.2",  # https://github.com/evansd/whitenoise
-    "psycopg[binary,pool] >= 3.2.3",  # https://github.com/psycopg/psycopg
-    "rich >= 13.9.4",  # https://rich.readthedocs.io/en/stable/
+    "argon2-cffi >= 23.1.0", # https://github.com/hynek/argon2_cffi
+    "whitenoise[brotli] >= 6.8.2", # https://github.com/evansd/whitenoise
+    "psycopg[binary,pool] >= 3.2.3", # https://github.com/psycopg/psycopg
+    "rich >= 13.9.4", # https://rich.readthedocs.io/en/stable/
     # Django
-    "django >= 5.1.3",  # https://www.djangoproject.com/
-    "django-environ >= 0.11.2",  # https://github.com/joke2k/django-environ
-    "django-allauth[mfa] >= 65.2.0",  # https://github.com/pennersr/django-allauth
-    "django-crispy-forms >= 2.3",  # https://github.com/django-crispy-forms/django-crispy-forms
-    "crispy-bootstrap5 >= 2024.10",  # https://github.com/django-crispy-forms/crispy-bootstrap5
-    "django-version-checks >= 1.13.0",  # https://github.com/adamchainz/django-version-checks
-    "django-extra-checks >= 0.15.1",  # https://github.com/kalekseev/django-extra-checks
-    "django-axes >= 7.0.0",  # https://github.com/jazzband/django-axes
-    "django-htmx >= 1.21.0",  # https://django-htmx.readthedocs.io/en/latest/
-    "django-ninja >= 1.3.0",  # https://django-ninja.dev
-    "django-cors-headers >= 4.6.0",  # https://github.com/adamchainz/django-cors-headers#readme
+    "django >= 5.1.3", # https://www.djangoproject.com/
+    "django-environ >= 0.11.2", # https://github.com/joke2k/django-environ
+    "django-allauth[mfa] >= 65.2.0", # https://github.com/pennersr/django-allauth
+    "django-crispy-forms >= 2.3", # https://github.com/django-crispy-forms/django-crispy-forms
+    "crispy-bootstrap5 >= 2024.10", # https://github.com/django-crispy-forms/crispy-bootstrap5
+    "django-version-checks >= 1.13.0", # https://github.com/adamchainz/django-version-checks
+    "django-extra-checks >= 0.15.1", # https://github.com/kalekseev/django-extra-checks
+    "django-axes >= 7.0.0", # https://github.com/jazzband/django-axes
+    "django-htmx >= 1.21.0", # https://django-htmx.readthedocs.io/en/latest/
+    "django-ninja >= 1.3.0", # https://django-ninja.dev
+    "django-cors-headers >= 4.6.0", # https://github.com/adamchainz/django-cors-headers#readme
     # Project
     #feedparser = "^6.0.11"  # https://feedparser.readthedocs.io/en/latest/
     # We must use git because the released version has a bug around media parsing.
     # See https://github.com/kurtmckee/feedparser/pull/441
     "feedparser",
-    "python-slugify >= 8.0.4",  # https://github.com/un33k/python-slugify
-    "httpx >= 0.28.0",  # https://www.python-httpx.org/
-    "beautifulsoup4 >= 4.12.3",  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-    "nh3 >= 0.2.17",  # https://nh3.readthedocs.io/en/latest/
+    "python-slugify >= 8.0.4", # https://github.com/un33k/python-slugify
+    "httpx >= 0.28.0", # https://www.python-httpx.org/
+    "beautifulsoup4 >= 4.12.3", # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+    "nh3 >= 0.2.17", # https://nh3.readthedocs.io/en/latest/
     "python-dateutil >= 2.9.0.post0", # https://github.com/dateutil/dateutil
-    "defusedxml >= 0.7.1",  # https://github.com/tiran/defusedxml
-    "markdown >= 3.7",  # https://python-markdown.github.io
-    "pydantic >= 2.10.2",  # https://docs.pydantic.dev/latest/
-    "pyjwt >= 2.10.1",  # https://pyjwt.readthedocs.io/en/stable/
+    "defusedxml >= 0.7.1", # https://github.com/tiran/defusedxml
+    "markdown >= 3.7", # https://python-markdown.github.io
+    "pydantic >= 2.10.2", # https://docs.pydantic.dev/latest/
+    "pyjwt >= 2.10.1", # https://pyjwt.readthedocs.io/en/stable/
 ]
 
 [dependency-groups]
@@ -57,6 +57,7 @@ dev = [
     "time-machine >= 2.16.0", #  https://github.com/adamchainz/time-machine
     # Code quality
     "pre-commit >= 4.0.1", # https://github.com/pre-commit/pre-commit
+    "import-linter >= 2.9", # https://github.com/seddonym/import-linter/tree/main
     # Django
     "factory-boy >= 3.3.1", # https://github.com/FactoryBoy/factory_boy
     "django-debug-toolbar >= 4.4.6", # https://github.com/jazzband/django-debug-toolbar
@@ -72,16 +73,16 @@ dev = [
     "django-stubs[compatible-mypy] >= 5.1.1", # https://github.com/typeddjango/django-stubs
     "types-beautifulsoup4 >= 4.12",
     "ruff>=0.12.0",
-    "reuse>=5.0.2",  # To enforce license conformity: https://reuse.software/
+    "reuse>=5.0.2", # To enforce license conformity: https://reuse.software/
 ]
 prod = [
     "gunicorn>=23.0.0",
     "sentry-sdk[django] >= 2.18.0",
 ]
 doc = [
-    "sphinx >= 8.1.3",  # https://github.com/sphinx-doc/sphinx
+    "sphinx >= 8.1.3", # https://github.com/sphinx-doc/sphinx
     "sphinx-autobuild >= 2024.10.3", # https://github.com/GaretJax/sphinx-autobuild
-    "myst-parser >= 4.0.0",  # https://myst-parser.readthedocs.io/en/stable/intro.html
+    "myst-parser >= 4.0.0", # https://myst-parser.readthedocs.io/en/stable/intro.html
 ]
 
 [tool.uv]
@@ -104,7 +105,7 @@ filterwarnings = [
     "ignore:To avoid breaking existing software while fixing issue 310",
 ]
 env = [
-    "LOGGING_RICH_TRACEBACK=False",  # This slows downs test and we don’t need it.
+    "LOGGING_RICH_TRACEBACK=False", # This slows downs test and we don’t need it.
 ]
 
 # ==== Coverage ====
@@ -117,7 +118,7 @@ plugins = ["django_coverage_plugin"]
 # ==== Ruf ====
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 exclude = [
     "docs/**",
 ]
@@ -151,13 +152,14 @@ ignore = [
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    "PLR0904", # Too many public methods.
     "PLR2004", # Magic value used in comparison, ...
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
     "S106", # Possible hardcoded password
 ]
 "legadilo/feeds/tests/test_utils/test_article_fetching.py" = [
     "E501",
-    "RUF001",  # String contains ambiguous `’`
+    "RUF001", # String contains ambiguous `’`
 ]
 "legadilo/**/factories.py" = [
     "FBT001", # Boolean-typed positional argument in function definition

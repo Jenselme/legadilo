@@ -17,7 +17,8 @@ else:
 class FeedArticleManager(models.Manager):
     def list_deleted_feed_article_ids(self, feed_id: int) -> set[str]:
         return set(
-            self.get_queryset()
+            self
+            .get_queryset()
             .filter(feed_id=feed_id, article__isnull=True)
             .values_list("feed_article_id", flat=True)
         )

@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<main class="mt-3 article-content">
+    {% if article.content and article.content_type == "text/plain" %}
+        <pre class="raw-content">{{ article.content }}</pre>
+    {% elif article.content %}
+        {{ article.content|safe }}
+    {% else %}
+        <p class="fs-6 fw-light fst-italic">{% translate "This article has no content." %}</p>
+    {% endif %}
+</main>

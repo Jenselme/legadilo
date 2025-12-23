@@ -25,7 +25,7 @@ class CreateTokenForm(forms.ModelForm):
     timezone = forms.ModelChoiceField(
         Timezone.objects.all(),
         required=False,
-        widget=SelectAutocompleteWidget(),
+        widget=SelectAutocompleteWidget(allow_new=False),
         help_text=_("The timezone in which the validity end date should be understood."),
     )
 

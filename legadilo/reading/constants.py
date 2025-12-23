@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from __future__ import annotations
 
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
@@ -96,10 +95,11 @@ class ArticleSearchOrderBy(TextChoices):
 
 
 MAX_ARTICLE_FILE_SIZE = 5 * 1024 * 1024  # 5MiB in bytes.
-MAX_ARTICLES_PER_PAGE = 100
-MAX_ARTICLES_PER_PAGE_WITH_READ_ON_SCROLL = 5 * MAX_ARTICLES_PER_PAGE
-ARTICLES_ORPHANS_PERCENTAGE = 0.1  # 10%
+MAX_OBJECTS_PER_PAGE = 100
+MAX_ARTICLES_PER_PAGE_WITH_READ_ON_SCROLL = 5 * MAX_OBJECTS_PER_PAGE
+PAGINATION_ORPHANS_PERCENTAGE = 0.1  # 10%
 ARTICLE_TITLE_MAX_LENGTH = 300
+ARTICLES_GROUP_TITLE_MAX_LENGTH = 300
 ARTICLE_SOURCE_TITLE_MAX_LENGTH = 300
 MAX_SUMMARY_LENGTH = 255  # In words
 EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY = frozenset({"img", "pre"})

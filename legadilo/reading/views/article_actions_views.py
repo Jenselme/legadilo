@@ -4,6 +4,7 @@
 
 from http import HTTPStatus
 from typing import Any
+from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -14,7 +15,7 @@ from django.views.decorators.http import require_POST
 
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ReadingList
-from legadilo.reading.templatetags import article_card_id
+from legadilo.reading.templatetags import article_card_id, article_details_url
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
 from ._utils import (
@@ -42,7 +43,7 @@ def update_article_view(
 
     if for_article_details:
         if is_read_status_update:
-            return redirect_to_reading_list(request)
+            return _handle_read_status_update(request, article)
         return TemplateResponse(
             request,
             "reading/update_article_details_actions.html",
@@ -70,6 +71,21 @@ def update_article_view(
         {**ctx, "articles": [article]},
         headers=headers,
     )
+
+
+def _handle_read_status_update(request: AuthenticatedHttpRequest, article: Article) -> HttpResponse:
+    if "read_and_go_to_next" in request.POST and article.next_article_of_group:
+        from_url = get_from_url_for_article_details(request, request.POST)
+        next_article_url = article_details_url(article.next_article_of_group)
+        qs = urlencode({"from_url": from_url})
+        return HttpResponse(
+            headers={
+                "HX-Redirect": f"{next_article_url}?{qs}",
+                "HX-Push-Url": "true",
+            }
+        )
+
+    return redirect_to_reading_list(request)
 
 
 def redirect_to_reading_list(request: AuthenticatedHttpRequest) -> HttpResponse:
@@ -107,7 +123,7 @@ def get_common_template_context(
             or for_later_but_excluded_from_list
             or not_for_later_but_excluded_from_list
         )
-    except (ValueError, TypeError, ReadingList.DoesNotExist):
+    except ValueError, TypeError, ReadingList.DoesNotExist:
         displayed_reading_list = None
         count_articles_of_current_reading_list = None
         js_cfg = {}
@@ -137,7 +153,7 @@ def mark_articles_as_read_in_bulk_view(request: AuthenticatedHttpRequest) -> Htt
     # at once.
     try:
         article_ids = [int(id_) for id_ in request.POST["article_ids"].split(",") if id_]
-    except (TypeError, ValueError, KeyError, IndexError):
+    except TypeError, ValueError, KeyError, IndexError:
         article_ids = []
 
     if len(article_ids) == 0:
@@ -148,7 +164,8 @@ def mark_articles_as_read_in_bulk_view(request: AuthenticatedHttpRequest) -> Htt
         )
 
     articles_qs = (
-        Article.objects.get_queryset()
+        Article.objects
+        .get_queryset()
         .for_details()
         .filter(user=request.user, id__in=article_ids)
         .order_by("id")
