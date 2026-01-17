@@ -19,7 +19,7 @@
             </h2>
             <div class="card-subtitle">{% include 'reading/partials/article_metadata.html' %}</div>
         </header>
-        <main class="card-text mt-3 row">
+        <main class="article-summary card-text mt-3 row">
             <div class="mb-0 text-break">{{ article.summary|truncatewords_html:100|safe }}</div>
         </main>
     </div>

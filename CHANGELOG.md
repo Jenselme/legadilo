@@ -9,6 +9,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## Unreleased
 
 - Add a `.well-known/security.txt` view to ease reporting vulnerabilities.
+- List all articles of a group in the list. Some could be hidden due to a max-height applying to all cards’ main contents.
 
 ## 25.12.5
 
