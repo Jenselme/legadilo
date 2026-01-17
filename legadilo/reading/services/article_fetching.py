@@ -8,7 +8,7 @@ import re
 import sys
 from datetime import datetime
 from typing import Annotated, Any, Literal
-from urllib.parse import urlparse
+from urllib.parse import urldefrag, urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -99,6 +99,7 @@ class ArticleData(BaseSchema):
         # Consider link optional here to please mypy. It's mandatory anyway so validation will fail
         # later if needed.
         if url:
+            url = urldefrag(url).url
             summary = _resolve_relative_urls(url, summary)
             content = _resolve_relative_urls(url, content)
 
@@ -109,14 +110,15 @@ class ArticleData(BaseSchema):
         if not summary and content:
             summary = _get_fallback_summary_from_content(content)
 
-        if not title:
-            title = urlparse(values.get("url")).netloc
+        if not title and url:
+            title = urlparse(url).netloc
 
-        if not source_title:
-            source_title = urlparse(values.get("url")).netloc
+        if not source_title and url:
+            source_title = urlparse(url).netloc
 
         return {
             **values,
+            "url": url,
             "summary": summary,
             "content": content,
             "title": title,
