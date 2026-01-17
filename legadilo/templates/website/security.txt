@@ -1,0 +1,3 @@
+Contact: mailto:security@legadilo.eu
+Expires: {{ expires }}
+Preferred-Languages: en, fr

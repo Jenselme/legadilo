@@ -47,6 +47,7 @@ SPDX-License-Identifier = "CC0-1.0"
 # Computer-generated files.
 [[annotations]]
 path = [
+    "legadilo/templates/website/security.txt",
     "uv.lock",
     "package-lock.json",
     "browser-extension/package-lock.json",

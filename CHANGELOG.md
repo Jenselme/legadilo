@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Add a `.well-known/security.txt` view to ease reporting vulnerabilities.
+
 ## 25.12.5
 
 - Correct tags admin display on mobile.
