@@ -13,6 +13,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Remove the fragment from the URL. They are almost never used for navigation in SPAs these days and could lead to duplicated URLs.
 - Use lang attribute where possible.
 - Improve the display of reading lists selector.
+- Cleanup navigation in user settings.
 
 ## 25.12.5
 

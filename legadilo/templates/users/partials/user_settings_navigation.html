@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<div class="col col-md-3">
+    <div class="list-group sticky-md-top">
+        {% for view_name, title in USER_SETTINGS_PAGES.items %}
+            <a class="list-group-item list-group-item-action {% if ACTIVE_VIEW_NAME == view_name %}active{% endif %}"
+               {% if ACTIVE_VIEW_NAME == view_name %}aria-current="true"{% endif %}
+               href="{% url view_name %}"
+               >{{ title }}</a>
+        {% endfor %}
+    </div>
+</div>

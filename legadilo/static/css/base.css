@@ -113,6 +113,10 @@ html {
   display: block;
 }
 
+.sticky-md-top {
+  top: calc(var(--content-header-height) + 0.5rem);
+}
+
 @media (width >= 768px) {
   .article-card-container {
     max-height: 500px;

@@ -7,63 +7,68 @@
 {% endblock title %}
 
 {% block content %}
-    <h1>{% translate "Two-Factor Authentication" %}</h1>
-    {% if "totp" in MFA_SUPPORTED_TYPES %}
-        <h2>{% translate "Authenticator App" %}</h2>
-        {% if authenticators.totp %}
-            <p>{% translate "Authentication using an authenticator app is active." %}</p>
-        {% else %}
-            <p>{% translate "An authenticator app is not active." %}</p>
-        {% endif %}
-        {% if authenticators.totp %}
-            <p>
-                <a class="btn btn-danger"
-                   role="button"
-                   href="{% url 'mfa_deactivate_totp' %}">{% translate "Deactivate" %}</a>
-            </p>
-        {% else %}
-            <p>
-                <a class="btn btn-primary"
-                   role="button"
-                   href="{% url 'mfa_activate_totp' %}">{% translate "Activate" %}</a>
-            </p>
-        {% endif %}
-    {% endif %}
-    {% if "recovery_codes" in MFA_SUPPORTED_TYPES %}
-        <h2>{% translate "Recovery Codes" %}</h2>
-        {% with total_count=authenticators.recovery_codes.generate_codes|length unused_count=authenticators.recovery_codes.get_unused_codes|length %}
-            {% if authenticators.recovery_codes %}
-                <p>
-                    {% blocktranslate trimmed count unused_count=unused_count %}
-                        There is {{ unused_count }} out of {{ total_count }} recovery codes available.
-                    {% plural %}
-                        There are {{ unused_count }} out of {{ total_count }} recovery codes available.
-                    {% endblocktranslate %}
-                </p>
-            {% else %}
-                <p>{% translate "No recovery codes set up." %}</p>
+    <div class="row">
+        {% include "users/partials/user_settings_navigation.html" %}
+        <div class="col col-md-9">
+            <h1>{% translate "Two-Factor Authentication" %}</h1>
+            {% if "totp" in MFA_SUPPORTED_TYPES %}
+                <h2>{% translate "Authenticator App" %}</h2>
+                {% if authenticators.totp %}
+                    <p>{% translate "Authentication using an authenticator app is active." %}</p>
+                {% else %}
+                    <p>{% translate "An authenticator app is not active." %}</p>
+                {% endif %}
+                {% if authenticators.totp %}
+                    <p>
+                        <a class="btn btn-danger"
+                           role="button"
+                           href="{% url 'mfa_deactivate_totp' %}">{% translate "Deactivate" %}</a>
+                    </p>
+                {% else %}
+                    <p>
+                        <a class="btn btn-primary"
+                           role="button"
+                           href="{% url 'mfa_activate_totp' %}">{% translate "Activate" %}</a>
+                    </p>
+                {% endif %}
             {% endif %}
-            {% if is_mfa_enabled %}
-                {% if authenticators.recovery_codes %}
-                    {% if unused_count > 0 %}
+            {% if "recovery_codes" in MFA_SUPPORTED_TYPES %}
+                <h2>{% translate "Recovery Codes" %}</h2>
+                {% with total_count=authenticators.recovery_codes.generate_codes|length unused_count=authenticators.recovery_codes.get_unused_codes|length %}
+                    {% if authenticators.recovery_codes %}
                         <p>
-                            <a class="btn btn-primary"
-                               role="button"
-                               href="{% url 'mfa_view_recovery_codes' %}">{% translate "View" %}</a>
+                            {% blocktranslate trimmed count unused_count=unused_count %}
+                                There is {{ unused_count }} out of {{ total_count }} recovery codes available.
+                            {% plural %}
+                                There are {{ unused_count }} out of {{ total_count }} recovery codes available.
+                            {% endblocktranslate %}
                         </p>
+                    {% else %}
+                        <p>{% translate "No recovery codes set up." %}</p>
+                    {% endif %}
+                    {% if is_mfa_enabled %}
+                        {% if authenticators.recovery_codes %}
+                            {% if unused_count > 0 %}
+                                <p>
+                                    <a class="btn btn-primary"
+                                       role="button"
+                                       href="{% url 'mfa_view_recovery_codes' %}">{% translate "View" %}</a>
+                                </p>
+                                <p>
+                                    <a class="btn btn-primary"
+                                       role="button"
+                                       href="{% url 'mfa_download_recovery_codes' %}">{% translate "Download" %}</a>
+                                </p>
+                            {% endif %}
+                        {% endif %}
                         <p>
-                            <a class="btn btn-primary"
+                            <a class="btn btn-warning"
                                role="button"
-                               href="{% url 'mfa_download_recovery_codes' %}">{% translate "Download" %}</a>
+                               href="{% url 'mfa_generate_recovery_codes' %}">{% translate "Generate" %}</a>
                         </p>
                     {% endif %}
-                {% endif %}
-                <p>
-                    <a class="btn btn-warning"
-                       role="button"
-                       href="{% url 'mfa_generate_recovery_codes' %}">{% translate "Generate" %}</a>
-                </p>
+                {% endwith %}
             {% endif %}
-        {% endwith %}
-    {% endif %}
+        </div>
+    </div>
 {% endblock content %}

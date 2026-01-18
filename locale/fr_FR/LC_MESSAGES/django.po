@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 21:36+0000\n"
+"POT-Creation-Date: 2026-01-18 18:20+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -987,8 +987,8 @@ msgstr "Administration des catégories des flux"
 msgid "Reading lists admin"
 msgstr "Administration des listes de lecture"
 
-msgid "My Profile"
-msgstr "Mon Profil"
+msgid "User settings"
+msgstr "Mes paramètres"
 
 msgid "Admin"
 msgstr "Admin"
@@ -1686,22 +1686,6 @@ msgstr "Créer un nouveau jeton"
 msgid "Notifications"
 msgstr "Notifications"
 
-#, python-format
-msgid "User: %(email)s"
-msgstr "Utilisateur : %(email)s"
-
-msgid "My Info"
-msgstr "Mes informations"
-
-msgid "E-Mail"
-msgstr "Email"
-
-msgid "My settings"
-msgstr "Mes paramètres"
-
-msgid "Change password"
-msgstr "Changer le mot de passe"
-
 msgid "Edit your settings"
 msgstr "Changer vos paramètres"
 
@@ -1847,6 +1831,21 @@ msgstr "Dates importantes"
 msgid "Users"
 msgstr "Utilisateurs"
 
+msgid "My Infos"
+msgstr "Mes informations"
+
+msgid "E-Mail"
+msgstr "Email"
+
+msgid "Change password"
+msgstr "Changer le mot de passe"
+
+msgid "My settings"
+msgstr "Mes paramètres"
+
+msgid "Import/Export Articles"
+msgstr "Importer/Exporter des articles"
+
 msgid "This email has already been taken."
 msgstr "Ce nom d'utilisateur est déjà pris."
 
@@ -1875,8 +1874,8 @@ msgstr ""
 "Quand ce jeton a été utilisé pour la dernière fois pour créer un jeton "
 "d’accès."
 
-msgid "Name of User"
-msgstr "Nom de l'utilisateur"
+msgid "Username"
+msgstr "Nom d’utilisateur"
 
 msgid "email address"
 msgstr "adresse e-mail"
@@ -1904,6 +1903,16 @@ msgstr "Paramètres correctement mis à jour"
 
 msgid "Failed to update settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
+
+#~ msgid "My Profile"
+#~ msgstr "Mon Profil"
+
+#, python-format
+#~ msgid "User: %(email)s"
+#~ msgstr "Utilisateur : %(email)s"
+
+#~ msgid "Name of User"
+#~ msgstr "Nom de l'utilisateur"
 
 #, python-format
 #~ msgid ""
