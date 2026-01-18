@@ -131,17 +131,18 @@
                     </button>
                     {% block center_navbar %}
                     {% endblock center_navbar %}
-                    <a class="navbar-brand"
-                       href="{% url 'reading:default_reading_list' %}">Legadilo</a>
+                    <span class="navbar-brand">Legadilo</span>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto">
                             {% if request.user.is_authenticated %}
                                 <li class="nav-item">
                                     <a class="nav-link {% if ACTIVE_VIEW_NAME == 'reading:default_reading_list' %}active{% endif %}"
+                                       {% if ACTIVE_VIEW_NAME == 'reading:default_reading_list' %}aria-current="page"{% endif %}
                                        href="{% url 'reading:default_reading_list' %}">{% translate "Default reading list" %}</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {% if ACTIVE_VIEW_NAME == 'reading:articles_groups_list' %}active{% endif %}"
+                                       {% if ACTIVE_VIEW_NAME == 'reading:articles_groups_list' %}aria-current="page"{% endif %}
                                        href="{% url 'reading:articles_groups_list' %}">{% translate "Articles groups" %}</a>
                                 </li>
                             {% endif %}
@@ -168,6 +169,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {% if ACTIVE_VIEW_NAME == 'reading:add_article' %}active{% endif %}"
+                                       {% if ACTIVE_VIEW_NAME == 'reading:add_article' %}aria-current="page"{% endif %}
                                        href="{% url 'reading:add_article' %}">
                                         {% include "core/partials/bs-icons/add_article.html" %}
                                         {% translate "Add an article" %}
@@ -175,6 +177,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {% if ACTIVE_VIEW_NAME == 'users:list_notifications' %}active{% endif %}"
+                                       {% if ACTIVE_VIEW_NAME == 'reading:list_notifications' %}aria-current="page"{% endif %}
                                        href="{% url 'users:list_notifications' %}">
                                                 <span class="position-relative">
                                                     {% if user.count_unread_notifications > 0 %}
