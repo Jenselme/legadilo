@@ -44,7 +44,8 @@
                     {% endpartialdef %}
                 </div>
             </aside>
-            <article class="col col-12 col-md-7 article-container">
+            <article {% if article.language %}lang="{{ article.language }}"{% endif %}
+                     class="col col-12 col-md-7 article-container">
                 <header>
                     <h1 id="legadilo-article-title">{{ article.title }}</h1>
                     <div
@@ -140,9 +141,7 @@
                         <div class="d-flex justify-content-between mt-1">
                             <div>
                                 {% if article.previous_article_of_group %}
-                                    <a href="
-
-                                        {{ article.previous_article_of_group|article_details_url }}{% querystring %}">
+                                    <a href="{{ article.previous_article_of_group|article_details_url }}{% querystring %}">
                                         {% translate "Previous article of group" %}
                                     </a>
                                 {% endif %}
@@ -160,9 +159,7 @@
                             </div>
                             <div>
                                 {% if article.next_article_of_group %}
-                                    <a href="
-
-                                        {{ article.next_article_of_group|article_details_url }}{% querystring %}">
+                                    <a href="{{ article.next_article_of_group|article_details_url }}{% querystring %}">
                                         {% translate "Next article of group" %}
                                     </a>
                                 {% endif %}
