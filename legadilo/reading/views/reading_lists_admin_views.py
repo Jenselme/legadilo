@@ -47,7 +47,13 @@ def reading_list_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespon
     return TemplateResponse(
         request,
         "reading/reading_lists_admin.html",
-        {"reading_lists": ReadingList.objects.get_all_for_user(request.user), "form": form},
+        {
+            "reading_lists": ReadingList.objects.get_all_for_user(request.user),
+            "form": form,
+            "breadcrumbs": [
+                (reverse("reading:reading_lists_admin"), _("Reading lists admin")),
+            ],
+        },
         status=status,
     )
 
@@ -170,7 +176,16 @@ def reading_list_create_view(
             )
 
     return TemplateResponse(
-        request, "reading/edit_reading_list.html", {"form": form}, status=status
+        request,
+        "reading/edit_reading_list.html",
+        {
+            "form": form,
+            "breadcrumbs": [
+                (reverse("reading:reading_lists_admin"), _("Reading lists admin")),
+                (reverse("reading:create_reading_list"), _("Create reading list")),
+            ],
+        },
+        status=status,
     )
 
 
@@ -229,7 +244,19 @@ def reading_list_edit_view(
     return TemplateResponse(
         request,
         "reading/edit_reading_list.html",
-        {"reading_list": reading_list, "form": form},
+        {
+            "reading_list": reading_list,
+            "form": form,
+            "breadcrumbs": [
+                (reverse("reading:reading_lists_admin"), _("Reading lists admin")),
+                (
+                    reverse(
+                        "reading:edit_reading_list", kwargs={"reading_list_id": reading_list.id}
+                    ),
+                    _("Edit reading list"),
+                ),
+            ],
+        },
         status=status,
     )
 

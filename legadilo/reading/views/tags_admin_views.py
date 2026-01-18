@@ -34,6 +34,7 @@ def tags_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
         {
             "tags": Tag.objects.list_for_admin(request.user, searched_text=searched_text),
             "searched_text": searched_text,
+            "breadcrumbs": [(reverse("reading:tags_admin"), _("Tags admin"))],
         },
     )
 
@@ -99,7 +100,18 @@ def create_tag_view(request: AuthenticatedHttpRequest) -> TemplateResponse | Htt
         if tag:
             return HttpResponseRedirect(reverse("reading:edit_tag", kwargs={"pk": tag.id}))
 
-    return TemplateResponse(request, "reading/edit_tag.html", {"form": form}, status=status)
+    return TemplateResponse(
+        request,
+        "reading/edit_tag.html",
+        {
+            "form": form,
+            "breadcrumbs": [
+                (reverse("reading:tags_admin"), _("Tags admin")),
+                (reverse("reading:create_tag"), _("Create tag")),
+            ],
+        },
+        status=status,
+    )
 
 
 def _create_tag(
@@ -149,4 +161,15 @@ def edit_tag_view(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
         if form.is_valid():
             form.save()
 
-    return TemplateResponse(request, "reading/edit_tag.html", {"form": form, "tag": tag})
+    return TemplateResponse(
+        request,
+        "reading/edit_tag.html",
+        {
+            "form": form,
+            "tag": tag,
+            "breadcrumbs": [
+                (reverse("reading:tags_admin"), _("Tags admin")),
+                (reverse("reading:edit_tag", kwargs={"pk": tag.id}), _("Edit tag")),
+            ],
+        },
+    )

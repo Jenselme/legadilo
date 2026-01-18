@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-18 18:20+0000\n"
+"POT-Creation-Date: 2026-01-18 19:55+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -110,12 +110,24 @@ msgstr "Aucun"
 msgid "Articles of feed '%(feed_title)s'"
 msgstr "Articles du flux '%(feed_title)s'"
 
+msgid "Feed categories admin"
+msgstr "Administration des catégories des flux"
+
 msgid "Title"
 msgstr "Titre"
+
+msgid "Create feed category"
+msgstr "Créer une catégorie de flux"
 
 #, python-format
 msgid "A category with title '%s' already exists."
 msgstr "Une catégorie avec le titre '%s' existe déjà."
+
+msgid "Edit feed category"
+msgstr "Modifier une catégorie"
+
+msgid "Feeds admin"
+msgstr "Administration des flux"
 
 msgid "Feed URL"
 msgstr "URL du flux"
@@ -173,6 +185,9 @@ msgid ""
 msgstr ""
 "Étiquettes à associer à ce flux. Pour créer une nouvelle étiquette, tapez "
 "son titre et appuyez sur entrée."
+
+msgid "Subscribe to a feed"
+msgstr "S’abonner à un flux"
 
 #, python-format
 msgid ""
@@ -566,6 +581,9 @@ msgstr ""
 msgid "'%s' is not a known tag."
 msgstr "'%s' n’est pas une étiquette connue."
 
+msgid "Reading lists admin"
+msgstr "Administration des listes de lecture"
+
 msgid "Tags to include"
 msgstr "Étiquettes à inclure"
 
@@ -615,9 +633,15 @@ msgstr "Opérateur des étiquettes à exclure"
 msgid "Order direction"
 msgstr "Direction du tri"
 
+msgid "Create reading list"
+msgstr "Créer une liste de lecture"
+
 #, python-format
 msgid "A reading list with title '%s' already exists."
 msgstr "Une liste de lecture avec le titre '%s' existe déjà."
+
+msgid "Edit reading list"
+msgstr "Modifier une liste de lecture"
 
 msgid "Search query"
 msgstr "Requête de recherche"
@@ -666,6 +690,9 @@ msgstr ""
 "Vous devez sélectionner un opérateur pour le temps de lecture en cherchant "
 "par temps de lecture."
 
+msgid "Tags admin"
+msgstr "Administration des étiquettes"
+
 msgid "Editing the title will change the slug of the tag too!"
 msgstr "Modifier le titre va également changer le slug de l’étiquette !"
 
@@ -679,9 +706,15 @@ msgstr ""
 "Ces étiquettes seront ajoutées automatiquement à l’article quand cette "
 "étiquette est sélectionnée."
 
+msgid "Create tag"
+msgstr "Créer une étiquette"
+
 #, python-format
 msgid "A tag with title '%s' already exists."
 msgstr "Une étiquette avec le titre '%s' existe déjà."
+
+msgid "Edit tag"
+msgstr "Éditer une étiquette"
 
 msgid "Forbidden (403)"
 msgstr "Accès interdit (403)"
@@ -975,18 +1008,6 @@ msgstr[1] "%(nb_unread_notifications)s notifications non lues"
 msgid "Profile menu"
 msgstr "Mon Profil"
 
-msgid "Tags admin"
-msgstr "Administration des étiquettes"
-
-msgid "Feeds admin"
-msgstr "Administration des flux"
-
-msgid "Feed categories admin"
-msgstr "Administration des catégories des flux"
-
-msgid "Reading lists admin"
-msgstr "Administration des listes de lecture"
-
 msgid "User settings"
 msgstr "Mes paramètres"
 
@@ -1148,9 +1169,6 @@ msgstr "Créer une nouvelle catégorie"
 
 msgid "Edit/Delete category"
 msgstr "Modifier/Supprimer une catégorie"
-
-msgid "Subscribe to a feed"
-msgstr "S’abonner à un flux"
 
 msgid "feeds.opml"
 msgstr "feeds.opml"

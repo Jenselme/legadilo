@@ -35,6 +35,9 @@ def feeds_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
             "feeds_by_categories": Feed.objects.get_by_categories(
                 request.user, searched_text=searched_text
             ),
+            "breadcrumbs": [
+                (reverse("feeds:feeds_admin"), _("Feeds admin")),
+            ],
         },
     )
 
@@ -163,6 +166,10 @@ def edit_feed_view(
         {
             "feed": feed,
             "form": form,
+            "breadcrumbs": [
+                (reverse("feeds:feeds_admin"), _("Feeds admin")),
+                (reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}), _("Edit feed")),
+            ],
         },
         status=status,
     )

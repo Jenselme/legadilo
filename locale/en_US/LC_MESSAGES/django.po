@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-18 18:20+0000\n"
+"POT-Creation-Date: 2026-01-18 19:55+0100\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -102,11 +102,23 @@ msgstr ""
 msgid "Articles of feed '%(feed_title)s'"
 msgstr ""
 
+msgid "Feed categories admin"
+msgstr ""
+
 msgid "Title"
+msgstr ""
+
+msgid "Create feed category"
 msgstr ""
 
 #, python-format
 msgid "A category with title '%s' already exists."
+msgstr ""
+
+msgid "Edit feed category"
+msgstr ""
+
+msgid "Feeds admin"
 msgstr ""
 
 msgid "Feed URL"
@@ -156,6 +168,9 @@ msgstr ""
 msgid ""
 "Tags to associate to articles of this feed. To create a new tag, type and "
 "press enter."
+msgstr ""
+
+msgid "Subscribe to a feed"
 msgstr ""
 
 #, python-format
@@ -507,6 +522,9 @@ msgstr ""
 msgid "'%s' is not a known tag."
 msgstr ""
 
+msgid "Reading lists admin"
+msgstr ""
+
 msgid "Tags to include"
 msgstr ""
 
@@ -555,8 +573,14 @@ msgstr ""
 msgid "Order direction"
 msgstr ""
 
+msgid "Create reading list"
+msgstr ""
+
 #, python-format
 msgid "A reading list with title '%s' already exists."
+msgstr ""
+
+msgid "Edit reading list"
 msgstr ""
 
 msgid "Search query"
@@ -597,6 +621,9 @@ msgstr ""
 msgid "You must supply a reading time operator when searching by reading time."
 msgstr ""
 
+msgid "Tags admin"
+msgstr ""
+
 msgid "Editing the title will change the slug of the tag too!"
 msgstr ""
 
@@ -608,8 +635,14 @@ msgid ""
 "selected."
 msgstr ""
 
+msgid "Create tag"
+msgstr ""
+
 #, python-format
 msgid "A tag with title '%s' already exists."
+msgstr ""
+
+msgid "Edit tag"
 msgstr ""
 
 msgid "Forbidden (403)"
@@ -866,18 +899,6 @@ msgstr[1] ""
 msgid "Profile menu"
 msgstr ""
 
-msgid "Tags admin"
-msgstr ""
-
-msgid "Feeds admin"
-msgstr ""
-
-msgid "Feed categories admin"
-msgstr ""
-
-msgid "Reading lists admin"
-msgstr ""
-
 msgid "User settings"
 msgstr ""
 
@@ -1036,9 +1057,6 @@ msgid "Create a new category"
 msgstr ""
 
 msgid "Edit/Delete category"
-msgstr ""
-
-msgid "Subscribe to a feed"
 msgstr ""
 
 msgid "feeds.opml"

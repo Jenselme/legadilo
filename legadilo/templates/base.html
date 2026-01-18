@@ -276,6 +276,19 @@
                 {% endfor %}
             </div>
         {% endif %}
+        {% if breadcrumbs %}
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {% for url, text in breadcrumbs %}
+                        {% if forloop.last %}
+                            <li class="breadcrumb-item active" aria-current="page">{{ text }}</li>
+                        {% else %}
+                            <li class="breadcrumb-item"><a href="{{ url }}">{{ text }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+            </nav>
+        {% endif %}
         {% block content %}
         {% endblock content %}
     </div>

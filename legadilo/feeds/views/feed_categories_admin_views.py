@@ -27,6 +27,9 @@ def feed_category_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespo
         "feeds/feed_categories_admin.html",
         {
             "categories": FeedCategory.objects.get_queryset().for_user(request.user),
+            "breadcrumbs": [
+                (reverse("feeds:feed_category_admin"), _("Feed categories admin")),
+            ],
         },
     )
 
@@ -54,7 +57,18 @@ def create_feed_category_view(
                 reverse("feeds:edit_feed_category", kwargs={"category_id": feed_category.id})
             )
 
-    return TemplateResponse(request, "feeds/edit_feed_category.html", {"form": form}, status=status)
+    return TemplateResponse(
+        request,
+        "feeds/edit_feed_category.html",
+        {
+            "form": form,
+            "breadcrumbs": [
+                (reverse("feeds:feed_category_admin"), _("Feed categories admin")),
+                (reverse("feeds:create_feed_category"), _("Create feed category")),
+            ],
+        },
+        status=status,
+    )
 
 
 def _create_feed_category(
@@ -92,5 +106,17 @@ def edit_feed_category_view(
             form.save()
 
     return TemplateResponse(
-        request, "feeds/edit_feed_category.html", {"form": form, "category": category}
+        request,
+        "feeds/edit_feed_category.html",
+        {
+            "form": form,
+            "category": category,
+            "breadcrumbs": [
+                (reverse("feeds:feed_category_admin"), _("Feed categories admin")),
+                (
+                    reverse("feeds:edit_feed_category", kwargs={"category_id": category_id}),
+                    _("Edit feed category"),
+                ),
+            ],
+        },
     )

@@ -13,6 +13,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 from pydantic import ValidationError as PydanticValidationError
@@ -157,7 +158,14 @@ def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
     return TemplateResponse(
         request,
         "feeds/subscribe_to_feed.html",
-        {"form": form, "subscription_result": subscription_result},
+        {
+            "form": form,
+            "subscription_result": subscription_result,
+            "breadcrumbs": [
+                (reverse("feeds:feeds_admin"), _("Feeds admin")),
+                (reverse("feeds:subscribe_to_feed"), _("Subscribe to a feed")),
+            ],
+        },
         status=status,
     )
 
