@@ -16,22 +16,22 @@
             type="module"></script>
 {% endblock page_js %}
 {% partialdef reading-list-group %}
-    <ul class="list-group">
+    <div class="list-group">
         {% for reading_list in reading_lists %}
-            <li class="p-0 list-group-item {% if displayed_reading_list.id == reading_list.id %}active{% endif %}">
-                <a href="{{ reading_list|reading_list_url }}"
-                   class="d-flex p-2 justify-content-between link-underline link-underline-opacity-0 text-reset">
-                    <span>{{ reading_list.title }}</span>
-                    {% if count_unread_articles_of_reading_lists|get_item:reading_list.slug > 0 %}
-                        <span>
-                            <span
-                                class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
-                        </span>
-                    {% endif %}
-                </a>
-            </li>
+            <a href="{{ reading_list|reading_list_url }}"
+               class="list-group-item list-group-item-action d-flex justify-content-between {% if displayed_reading_list.id == reading_list.id %}active{% endif %}"
+               {% if displayed_reading_list.id == reading_list.id %}aria-current="true"{% endif %}
+            >
+                <span>{{ reading_list.title }}</span>
+                {% if count_unread_articles_of_reading_lists|get_item:reading_list.slug > 0 %}
+                    <span>
+                        <span
+                            class="badge text-bg-info">{{ count_unread_articles_of_reading_lists|get_item:reading_list.slug }}</span>
+                    </span>
+                {% endif %}
+            </a>
         {% endfor %}
-    </ul>
+    </div>
 {% endpartialdef %}
 {% block center_navbar %}
     <div id="reading-list-dropdown-menu"

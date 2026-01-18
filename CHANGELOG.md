@@ -11,7 +11,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Add a `.well-known/security.txt` view to ease reporting vulnerabilities.
 - List all articles of a group in the list. Some could be hidden due to a max-height applying to all cards’ main contents.
 - Remove the fragment from the URL. They are almost never used for navigation in SPAs these days and could lead to duplicated URLs.
-- Use lang attribute where possible
+- Use lang attribute where possible.
+- Improve the display of reading lists selector.
 
 ## 25.12.5
 
