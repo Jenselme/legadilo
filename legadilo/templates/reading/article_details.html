@@ -35,7 +35,7 @@
     <div class="container-fluid px-0">
         <div class="mt-1 mt-md-2 row px-0 mx-0 justify-content-center">
             <aside class="col col-2 d-none d-md-block article-aside">
-                <div id="article-side-actions">
+                <div id="article-side-actions" class="sticky-md-top">
                     {% partialdef article-side-actions inline %}
                         <div>{% include "reading/partials/article_actions.html" with for_article_details=True vertical_group=True %}</div>
                         <div class="mt-5">
@@ -179,7 +179,7 @@
                 </footer>
             </article>
             <aside class="col col-2 d-none d-md-block article-aside">
-                <div id="article-side-toc">
+                <div id="article-side-toc" class="sticky-md-top">
                     {% partialdef article-side-toc inline %}
                         <nav id="article-toc" class="article-toc mt-3 mb-0 fs-6 fw-normal">
                             {% include "reading/partials/article_toc.html" with article_title_anchor="#legadilo-article-title" %}

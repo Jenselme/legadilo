@@ -38,13 +38,6 @@ html {
   grid-area: footer;
 }
 
-#reading-list-group,
-#article-side-actions,
-#article-side-toc {
-  position: fixed;
-  width: 15.5%;
-}
-
 .bi {
   display: inline-block;
   vertical-align: -0.125em;
