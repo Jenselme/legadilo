@@ -1616,6 +1616,9 @@ msgstr "Administration des listes de lecture"
 msgid "Edit/Delete reading list"
 msgstr "Modifier/Supprimer la liste de lecture"
 
+msgid "* highlights the default reading list."
+msgstr "* marque la liste de lecture par défaut."
+
 msgid "Reading lists can be reordered with drag & drop."
 msgstr "Les listes de lecture peuvent être réordonnées par glisser/déposer."
 
