@@ -136,17 +136,23 @@
                         {% include 'reading/partials/article_actions.html' with for_article_details=True %}
                     {% endpartialdef %}
                 </div>
-                {% partialdef article-group-navigation inline %}
+                {% include "reading/partials/article_content.html" %}
+                <footer>
+                    <div id="article-bottom-actions" class="d-flex justify-content-center mt-2 mb-4">
+                        {% partialdef article-bottom-actions inline %}
+                            {% include 'reading/partials/article_actions.html' with for_article_details=True %}
+                        {% endpartialdef %}
+                    </div>
                     {% if article.group %}
-                        <div class="d-flex justify-content-between mt-1">
-                            <div>
+                        <div class="row d-flex justify-content-md-between mt-1">
+                            <div class="col col-12 col-md-4 d-flex justify-content-center justify-content-md-start align-items-center">
                                 {% if article.previous_article_of_group %}
                                     <a href="{{ article.previous_article_of_group|article_details_url }}{% querystring %}">
                                         {% translate "Previous article of group" %}
                                     </a>
                                 {% endif %}
                             </div>
-                            <div>
+                            <div class="col col-12 col-md-4 d-flex justify-content-center align-items-center">
                                 {% if article.next_article_of_group %}
                                     <button class="btn btn-outline-primary"
                                             name="read_and_go_to_next"
@@ -157,7 +163,7 @@
                                     </button>
                                 {% endif %}
                             </div>
-                            <div>
+                            <div class="col col-12 col-md-4 d-flex justify-content-center justify-content-md-end align-items-center">
                                 {% if article.next_article_of_group %}
                                     <a href="{{ article.next_article_of_group|article_details_url }}{% querystring %}">
                                         {% translate "Next article of group" %}
@@ -166,16 +172,6 @@
                             </div>
                         </div>
                     {% endif %}
-                {% endpartialdef %}
-                {% include "reading/partials/article_content.html" %}
-                <footer>
-                    {% partial article-group-navigation %}
-                    <div id="article-bottom-actions"
-                         class="d-flex justify-content-center mt-2 mb-4">
-                        {% partialdef article-bottom-actions inline %}
-                            {% include 'reading/partials/article_actions.html' with for_article_details=True %}
-                        {% endpartialdef %}
-                    </div>
                 </footer>
             </article>
             <aside class="col col-2 d-none d-md-block article-aside">
