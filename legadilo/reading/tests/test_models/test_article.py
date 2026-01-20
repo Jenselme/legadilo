@@ -1699,7 +1699,9 @@ class TestArticleModel:
         group = ArticlesGroupFactory(user=user)
         article = ArticleFactory(user=user, group=None)
 
-        article.update_from_details(title="Test title", reading_time=10, group=group)
+        article.update_from_details(
+            title="Test title", summary="Test summary", reading_time=10, group=group
+        )
 
         assert article.group == group
         assert article.group_order == 1
@@ -1708,6 +1710,8 @@ class TestArticleModel:
         group = ArticlesGroupFactory(user=user)
         article = ArticleFactory(user=user, group=group)
 
-        article.update_from_details(title="Test title", reading_time=10, group=None)
+        article.update_from_details(
+            title="Test title", summary="Test summary", reading_time=10, group=None
+        )
 
         assert article.group_id is None

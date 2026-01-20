@@ -95,6 +95,7 @@ class TestUpdateArticleDetailsView:
                 "Some tag",
             ],
             "title": self.article.title,
+            "summary": self.article.summary,
             "reading_time": self.article.reading_time,
         }
 
@@ -143,12 +144,19 @@ class TestUpdateArticleDetailsView:
 
         with django_assert_num_queries(30):
             response = logged_in_sync_client.post(
-                self.url, {**self.sample_payload, "title": "Updated title", "reading_time": 666}
+                self.url,
+                {
+                    **self.sample_payload,
+                    "title": "Updated title",
+                    "summary": "<p>Updated <script>summary</script></p>",
+                    "reading_time": 666,
+                },
             )
 
         assert response.status_code == HTTPStatus.OK
         self.article.refresh_from_db()
         assert self.article.title == "Updated title"
+        assert self.article.summary == "<p>Updated </p>"
         assert self.article.slug == initial_slug
         assert self.article.reading_time == 666
 
