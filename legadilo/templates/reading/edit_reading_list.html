@@ -46,20 +46,22 @@
         {{ form|crispy }}
         <div class="d-flex justify-content-between">
             <div>
-                {% if reading_list %}
-                    <button form="delete-reading-list-form"
-                            class="btn btn-danger"
-                            type="submit"
-                            name="delete">{% translate "Delete" %}</button>
-                    <button class="btn btn-primary" type="submit">{% translate "Update" %}</button>
-                {% else %}
-                    <button class="btn btn-primary" type="submit">{% translate "Create" %}</button>
+                <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
+                <button class="btn btn-outline-primary" type="submit" name="save-add-new">{% translate "Save and add new" %}</button>
+                <button class="btn btn-outline-primary" type="submit" name="save-continue-edition">{% translate "Save and continue edition" %}</button>
+                {% if reading_list and not reading_list.is_default %}
+                    <button class="btn btn-outline-secondary" type="submit" name="make-default">{% translate "Make default" %}</button>
                 {% endif %}
             </div>
-            {% if reading_list and not reading_list.is_default %}
-                <button class="btn btn-outline-secondary" type="submit" name="make-default">{% translate "Make default" %}</button>
-            {% endif %}
+
+            <div>
+                {% if reading_list and not reading_list.is_default %}
+                    <button form="delete-reading-list-form"
+                                class="btn btn-danger"
+                                type="submit"
+                                name="delete">{% translate "Delete" %}</button>
+                {% endif %}
+            </div>
         </div>
     </form>
-    <div class="mb-4"></div>
 {% endblock content %}

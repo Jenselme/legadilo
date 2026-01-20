@@ -13,6 +13,7 @@ from legadilo.feeds.models import FeedCategory
 from legadilo.feeds.tests.factories import FeedCategoryFactory
 
 
+@pytest.mark.django_db
 class TestCategoryFeedAdminView:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
@@ -35,6 +36,7 @@ class TestCategoryFeedAdminView:
         assert list(response.context_data["categories"]) == [feed_category]
 
 
+@pytest.mark.django_db
 class TestCreateFeedCategoryView:
     @pytest.fixture(autouse=True)
     def _setup_data(self):
@@ -58,10 +60,13 @@ class TestCreateFeedCategoryView:
         assert feed_category.user == user
         assert feed_category.title == "My category"
 
-    def test_create_duplicated_category(self, logged_in_sync_client, user):
+    def test_create_duplicated_category(
+        self, logged_in_sync_client, user, django_assert_num_queries
+    ):
         category = FeedCategoryFactory(title="My category", slug="my-category", user=user)
 
-        response = logged_in_sync_client.post(self.url, data={"title": category.title})
+        with django_assert_num_queries(10):
+            response = logged_in_sync_client.post(self.url, data={"title": category.title})
 
         assert response.status_code == HTTPStatus.CONFLICT
         assert FeedCategory.objects.count() == 1
@@ -82,6 +87,7 @@ class TestCreateFeedCategoryView:
         assert response.context_data["form"].errors == {"title": ["This field is required."]}
 
 
+@pytest.mark.django_db
 class TestEditFeedCategoryView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
@@ -102,11 +108,28 @@ class TestEditFeedCategoryView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_edit_category(self, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, data={"title": "New title"})
+        response = logged_in_sync_client.post(self.url, data={"title": "New title", "save": ""})
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("feeds:feed_category_admin")
         self.feed_category.refresh_from_db()
         assert self.feed_category.title == "New title"
+
+    def test_edit_category_add_new(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url, data={"title": "New title", "save-add-new": ""}
+        )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("feeds:create_feed_category")
+
+    def test_edit_category_continue_edition(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url, data={"title": "New title", "save-continue-edition": ""}
+        )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == self.url
 
     def test_delete_category(self, logged_in_sync_client):
         response = logged_in_sync_client.post(self.url, data={"title": "New title", "delete": ""})

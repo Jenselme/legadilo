@@ -143,12 +143,14 @@ def edit_feed_view(
     if request.method == "POST" and "disable" in request.POST:
         feed.disable(reason=_("Manually disabled"))
         feed.save()
-        form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
-    elif request.method == "POST" and "enable" in request.POST:
+        return HttpResponseRedirect(reverse("feeds:feeds_admin"))
+
+    if request.method == "POST" and "enable" in request.POST:
         feed.enable()
         feed.save()
-        form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
-    elif request.method == "POST":
+        return HttpResponseRedirect(reverse("feeds:feeds_admin"))
+
+    if request.method == "POST":
         form = _build_form_from_feed_instance(
             feed, tag_choices, category_choices, data=request.POST
         )
@@ -159,6 +161,9 @@ def edit_feed_view(
             # Update the list of tag choices. We may have created some new one.
             tag_choices = Tag.objects.get_all_choices(request.user)
             form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
+
+        if status == HTTPStatus.OK and "save" in request.POST:
+            return HttpResponseRedirect(reverse("feeds:feeds_admin"))
 
     return TemplateResponse(
         request,

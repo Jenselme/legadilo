@@ -29,14 +29,21 @@
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        {% if category %}
-            <button form="delete-category-form"
-                    class="btn btn-danger"
-                    type="submit"
-                    name="delete">{% translate "Delete" %}</button>
-            <button class="btn btn-primary" type="submit">{% translate "Update" %}</button>
-        {% else %}
-            <button class="btn btn-primary" type="submit">{% translate "Create" %}</button>
-        {% endif %}
+        <div class="d-flex justify-content-between">
+            <div>
+                <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
+                <button class="btn btn-outline-primary" type="submit" name="save-add-new">{% translate "Save and add new" %}</button>
+                <button class="btn btn-outline-primary" type="submit" name="save-continue-edition">{% translate "Save and continue edition" %}</button>
+            </div>
+
+            <div>
+                {% if category %}
+                    <button form="delete-category-form"
+                        class="btn btn-danger"
+                        type="submit"
+                        name="delete">{% translate "Delete" %}</button>
+                {% endif %}
+            </div>
+        </div>
     </form>
 {% endblock content %}

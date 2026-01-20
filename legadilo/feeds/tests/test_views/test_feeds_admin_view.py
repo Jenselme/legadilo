@@ -80,56 +80,78 @@ class TestEditFeedView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_delete_feed(self, user, logged_in_sync_client):
+    def test_delete_feed(self, user, logged_in_sync_client, django_assert_num_queries):
         article = ArticleFactory(user=user)
         FeedArticle.objects.create(feed=self.feed, article=article)
 
-        response = logged_in_sync_client.post(self.url, data={"delete": ""})
+        with django_assert_num_queries(15):
+            response = logged_in_sync_client.post(self.url, data={"delete": ""})
 
         assert response.status_code == HTTPStatus.FOUND
         assert response["Location"] == reverse("feeds:feeds_admin")
         assert Feed.objects.count() == 0
         assert Article.objects.count() > 0
 
-    def test_disable_feed(self, logged_in_sync_client):
-        response = logged_in_sync_client.post(self.url, data={"disable": ""})
+    def test_disable_feed(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(11):
+            response = logged_in_sync_client.post(self.url, data={"disable": ""})
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("feeds:feeds_admin")
         self.feed.refresh_from_db()
         assert not self.feed.enabled
         assert self.feed.disabled_reason == "Manually disabled"
 
-    def test_enable_feed(self, logged_in_sync_client):
+    def test_enable_feed(self, logged_in_sync_client, django_assert_num_queries):
         self.feed.disable()
         self.feed.save()
 
-        response = logged_in_sync_client.post(self.url, data={"enable": ""})
+        with django_assert_num_queries(11):
+            response = logged_in_sync_client.post(self.url, data={"enable": ""})
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("feeds:feeds_admin")
         self.feed.refresh_from_db()
         assert self.feed.enabled
         assert not self.feed.disabled_reason
 
-    def test_update_feed(self, user, logged_in_sync_client):
+    def test_update_feed(self, user, logged_in_sync_client, django_assert_num_queries):
         tag1 = TagFactory(user=user)
         self.feed.tags.add(tag1)
 
+        with django_assert_num_queries(25):
+            response = logged_in_sync_client.post(
+                self.url,
+                data={
+                    "category": self.feed_category.slug,
+                    "refresh_delay": constants.FeedRefreshDelays.ON_MONDAYS,
+                    "article_retention_time": 7,
+                    "tags": ["new-tag"],
+                    "save": "",
+                },
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("feeds:feeds_admin")
+        self.feed.refresh_from_db()
+        assert self.feed.category == self.feed_category
+        assert self.feed.refresh_delay == constants.FeedRefreshDelays.ON_MONDAYS
+        assert self.feed.article_retention_time == 7
+        assert list(self.feed.feed_tags.get_selected_values()) == ["new-tag"]
+
+    def test_update_feed_continue_edition(self, user, logged_in_sync_client):
         response = logged_in_sync_client.post(
             self.url,
             data={
                 "category": self.feed_category.slug,
                 "refresh_delay": constants.FeedRefreshDelays.ON_MONDAYS,
                 "article_retention_time": 7,
-                "tags": ["new-tag"],
+                "save-continue-edition": "",
             },
         )
 
         assert response.status_code == HTTPStatus.OK
-        self.feed.refresh_from_db()
-        assert self.feed.category == self.feed_category
-        assert self.feed.refresh_delay == constants.FeedRefreshDelays.ON_MONDAYS
-        assert self.feed.article_retention_time == 7
-        assert list(self.feed.feed_tags.get_selected_values()) == ["new-tag"]
+        assert response.template_name == "feeds/edit_feed.html"
 
     def test_remove_category(self, logged_in_sync_client):
         self.feed.category = self.feed_category

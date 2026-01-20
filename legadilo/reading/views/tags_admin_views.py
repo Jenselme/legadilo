@@ -53,9 +53,16 @@ class TagForm(forms.ModelForm):
     )
 
     def __init__(
-        self, data=None, *, instance: Tag | None = None, tag_choices: FormChoices, **kwargs
+        self,
+        data=None,
+        *,
+        instance: Tag | None = None,
+        tag_choices: FormChoices,
+        user: User,
+        **kwargs,
     ):
         super().__init__(data, instance=instance, **kwargs)
+        self._user = user
         self.fields["sub_tags"].choices = tag_choices  # type: ignore[attr-defined]
 
     class Meta:
@@ -63,14 +70,17 @@ class TagForm(forms.ModelForm):
         fields = ("title", "sub_tags")
 
     def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition
-        self._update_tags()
+        if self.instance.id is None:
+            return self._create()
 
+        self._update_tags()
+        self.instance.user = self._user
         return super().save(commit=commit)
 
-    def create(self, user: User):
+    def _create(self):
         tag = Tag.objects.create(
             title=self.cleaned_data["title"],
-            user=user,
+            user=self._user,
         )
         self.instance = tag
 
@@ -91,76 +101,45 @@ class TagForm(forms.ModelForm):
 @require_http_methods(["GET", "POST"])
 @login_required
 @transaction.atomic()
-def create_tag_view(request: AuthenticatedHttpRequest) -> TemplateResponse | HttpResponseRedirect:
-    tag_choices = Tag.objects.get_all_choices(request.user)
-    form = TagForm(tag_choices=tag_choices)
-    status = HTTPStatus.OK
-    if request.method == "POST":
-        status, form, tag = _create_tag(request, tag_choices)
-        if tag:
-            return HttpResponseRedirect(reverse("reading:edit_tag", kwargs={"pk": tag.id}))
+def edit_tag_view(request: AuthenticatedHttpRequest, tag_id: int | None = None) -> HttpResponse:
+    tag = None
+    if tag_id is not None:
+        tag = get_object_or_404(Tag, pk=tag_id, user=request.user)
 
-    return TemplateResponse(
-        request,
-        "reading/edit_tag.html",
-        {
-            "form": form,
-            "breadcrumbs": [
-                (reverse("reading:tags_admin"), _("Tags admin")),
-                (reverse("reading:create_tag"), _("Create tag")),
-            ],
-        },
-        status=status,
-    )
-
-
-def _create_tag(
-    request: AuthenticatedHttpRequest, tag_choices: FormChoices
-) -> tuple[HTTPStatus, TagForm, Tag | None]:
-    form = TagForm(request.POST, tag_choices=tag_choices)
-    if not form.is_valid():
-        return HTTPStatus.BAD_REQUEST, form, None
-
-    try:
-        tag = form.create(request.user)
-    except IntegrityError:
-        messages.error(
-            request, _("A tag with title '%s' already exists.") % form.cleaned_data["title"]
-        )
-        return HTTPStatus.CONFLICT, form, None
-
-    return HTTPStatus.CREATED, form, tag
-
-
-@require_http_methods(["GET", "POST"])
-@login_required
-@transaction.atomic()
-def edit_tag_view(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
-    tag = get_object_or_404(Tag, pk=pk, user=request.user)
-
-    if request.method == "POST" and "delete" in request.POST:
+    if tag and request.method == "POST" and "delete" in request.POST:
         tag.delete()
         target_url = reverse("reading:tags_admin")
         return HttpResponse(headers={"HX-Redirect": target_url, "HX-Push-Url": "true"})
 
     all_tag_choices = Tag.objects.get_all_choices(request.user)
-    tag_choices = [choice for choice in all_tag_choices if choice[0] != tag.slug]
-    initial_sub_tags = SubTagMapping.objects.get_selected_mappings(tag)
+    if tag is None:
+        tag_choices = all_tag_choices
+        initial_sub_tags = []
+    else:
+        tag_choices = [choice for choice in all_tag_choices if choice[0] != tag.slug]
+        initial_sub_tags = SubTagMapping.objects.get_selected_mappings(tag)
     form = TagForm(
         instance=tag,
         tag_choices=tag_choices,
+        user=request.user,
         initial={"sub_tags": initial_sub_tags},
     )
-    if request.method == "POST":
-        form = TagForm(
-            data=request.POST,
-            instance=tag,
-            tag_choices=tag_choices,
-            initial={"sub_tags": initial_sub_tags},
-        )
-        if form.is_valid():
-            form.save()
+    status = HTTPStatus.OK
 
+    if request.method == "POST":
+        status, form, tag = _handle_tag_edition(request, tag, tag_choices, initial_sub_tags)
+        if status == HTTPStatus.OK and "save" in request.POST:
+            return HttpResponseRedirect(reverse("reading:tags_admin"))
+        if status == HTTPStatus.OK and "save-add-new" in request.POST:
+            return HttpResponseRedirect(reverse("reading:create_tag"))
+        if tag and status == HTTPStatus.OK:
+            return HttpResponseRedirect(reverse("reading:edit_tag", kwargs={"tag_id": tag.id}))
+
+    last_crumb = (
+        (reverse("reading:edit_tag", kwargs={"tag_id": tag.id}), _("Edit tag"))
+        if tag
+        else (reverse("reading:create_tag"), _("Create tag"))
+    )
     return TemplateResponse(
         request,
         "reading/edit_tag.html",
@@ -169,7 +148,35 @@ def edit_tag_view(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
             "tag": tag,
             "breadcrumbs": [
                 (reverse("reading:tags_admin"), _("Tags admin")),
-                (reverse("reading:edit_tag", kwargs={"pk": tag.id}), _("Edit tag")),
+                last_crumb,
             ],
         },
+        status=status,
     )
+
+
+def _handle_tag_edition(
+    request: AuthenticatedHttpRequest,
+    tag: Tag | None,
+    tag_choices: FormChoices,
+    initial_sub_tags: FormChoices,
+) -> tuple[HTTPStatus, TagForm, Tag | None]:
+    form = TagForm(
+        data=request.POST,
+        instance=tag,
+        tag_choices=tag_choices,
+        user=request.user,
+        initial={"sub_tags": initial_sub_tags},
+    )
+    if not form.is_valid():
+        return HTTPStatus.BAD_REQUEST, form, tag
+
+    try:
+        tag = form.save()
+    except IntegrityError:
+        messages.error(
+            request, _("A tag with title '%s' already exists.") % form.cleaned_data["title"]
+        )
+        return HTTPStatus.CONFLICT, form, tag
+
+    return HTTPStatus.OK, form, tag

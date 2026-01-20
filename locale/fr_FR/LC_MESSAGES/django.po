@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-18 19:55+0100\n"
+"POT-Creation-Date: 2026-01-20 20:51+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -116,15 +116,15 @@ msgstr "Administration des catégories des flux"
 msgid "Title"
 msgstr "Titre"
 
+msgid "Edit feed category"
+msgstr "Modifier une catégorie"
+
 msgid "Create feed category"
 msgstr "Créer une catégorie de flux"
 
 #, python-format
 msgid "A category with title '%s' already exists."
 msgstr "Une catégorie avec le titre '%s' existe déjà."
-
-msgid "Edit feed category"
-msgstr "Modifier une catégorie"
 
 msgid "Feeds admin"
 msgstr "Administration des flux"
@@ -633,15 +633,15 @@ msgstr "Opérateur des étiquettes à exclure"
 msgid "Order direction"
 msgstr "Direction du tri"
 
+msgid "Edit reading list"
+msgstr "Modifier une liste de lecture"
+
 msgid "Create reading list"
 msgstr "Créer une liste de lecture"
 
 #, python-format
 msgid "A reading list with title '%s' already exists."
 msgstr "Une liste de lecture avec le titre '%s' existe déjà."
-
-msgid "Edit reading list"
-msgstr "Modifier une liste de lecture"
 
 msgid "Search query"
 msgstr "Requête de recherche"
@@ -706,15 +706,15 @@ msgstr ""
 "Ces étiquettes seront ajoutées automatiquement à l’article quand cette "
 "étiquette est sélectionnée."
 
+msgid "Edit tag"
+msgstr "Éditer une étiquette"
+
 msgid "Create tag"
 msgstr "Créer une étiquette"
 
 #, python-format
 msgid "A tag with title '%s' already exists."
 msgstr "Une étiquette avec le titre '%s' existe déjà."
-
-msgid "Edit tag"
-msgstr "Éditer une étiquette"
 
 msgid "Forbidden (403)"
 msgstr "Accès interdit (403)"
@@ -1126,6 +1126,9 @@ msgstr "Voulez-vous vraiment supprimer le flux '%(feed_title)s' ?"
 msgid "Save"
 msgstr "Sauvegarder"
 
+msgid "Save and continue edition"
+msgstr "Sauvegarder et continuer l’édition"
+
 msgid "Disable feed"
 msgstr "Désactiver le flux"
 
@@ -1158,11 +1161,8 @@ msgstr "Confirmez la suppression de la catégorie"
 msgid "Are you sure you want to delete the category '%(category_title)s'?"
 msgstr "Voulez-vous vraiment supprimer la catégorie '%(category_title)s' ?"
 
-msgid "Update"
-msgstr "Mettre à jour"
-
-msgid "Create"
-msgstr "Créer"
+msgid "Save and add new"
+msgstr "Sauvegarder et ajouter un nouveau"
 
 msgid "Create a new category"
 msgstr "Créer une nouvelle catégorie"
@@ -1701,8 +1701,14 @@ msgstr "Aucun jeton trouvé"
 msgid "Create new token"
 msgstr "Créer un nouveau jeton"
 
+msgid "Create"
+msgstr "Créer"
+
 msgid "Notifications"
 msgstr "Notifications"
+
+msgid "Update"
+msgstr "Mettre à jour"
 
 msgid "Edit your settings"
 msgstr "Changer vos paramètres"

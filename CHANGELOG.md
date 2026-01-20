@@ -14,6 +14,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Use lang attribute where possible.
 - Improve the display of reading lists selector.
 - Cleanup navigation in user settings.
+- Improve save actions in admin.
 
 ## 25.12.5
 
