@@ -5,12 +5,10 @@
 from http import HTTPStatus
 
 import pytest
-from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -18,10 +16,6 @@ from django.utils.translation import gettext_lazy as _
 from legadilo.core.models import Timezone
 from legadilo.users.forms import UserAdminChangeForm
 from legadilo.users.models import User
-from legadilo.users.tests.factories import UserFactory
-from legadilo.users.views import (
-    user_detail_view,
-)
 from legadilo.users.views.user_views import UserRedirectView, UserUpdateView
 
 
@@ -36,7 +30,7 @@ class TestUserUpdateView:
         request.user = user
 
         view.request = request
-        assert view.get_success_url() == f"/users/{user.pk}/"
+        assert view.get_success_url() == "/users/~update/"
 
     def test_get_object(self, user: User, rf: RequestFactory):
         view = UserUpdateView()
@@ -77,26 +71,6 @@ class TestUserRedirectView:
 
         view.request = request
         assert view.get_redirect_url() == "/reading/"
-
-
-@pytest.mark.django_db
-class TestUserDetailView:
-    def test_authenticated(self, user: User, rf: RequestFactory):
-        request = rf.get("/fake-url/")
-        request.user = UserFactory()
-        response = user_detail_view(request, pk=user.pk)
-
-        assert response.status_code == 200
-
-    def test_not_authenticated(self, user: User, rf: RequestFactory):
-        request = rf.get("/fake-url/")
-        request.user = AnonymousUser()
-        response = user_detail_view(request, pk=user.pk)
-        login_url = reverse(settings.LOGIN_URL)
-
-        assert isinstance(response, HttpResponseRedirect)
-        assert response.status_code == 302
-        assert response.url == f"{login_url}?next=/fake-url/"
 
 
 @pytest.mark.django_db

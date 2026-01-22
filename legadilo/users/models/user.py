@@ -21,7 +21,7 @@ class User(AbstractUser):
     """
 
     # First and last name do not cover name patterns around the globe
-    name = models.CharField(_("Name of User"), blank=True, max_length=255)
+    name = models.CharField(_("Username"), blank=True, max_length=255)
     first_name = None  # type: ignore[assignment]
     last_name = None  # type: ignore[assignment]
     email = models.EmailField(_("email address"), db_collation="case_insensitive", unique=True)
@@ -40,7 +40,7 @@ class User(AbstractUser):
             str: URL for user detail.
 
         """
-        return reverse("users:detail", kwargs={"pk": self.id})
+        return reverse("users:update")
 
     @cached_property
     def count_unread_notifications(self) -> int:

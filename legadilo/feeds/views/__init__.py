@@ -4,7 +4,6 @@
 
 from .feed_articles_view import feed_articles_view
 from .feed_categories_admin_views import (
-    create_feed_category_view,
     edit_feed_category_view,
     feed_category_admin_view,
 )
@@ -12,7 +11,6 @@ from .feeds_admin_view import edit_feed_view, feeds_admin_view
 from .subscribe_to_feed_view import subscribe_to_feed_view
 
 __all__ = [
-    "create_feed_category_view",
     "edit_feed_category_view",
     "edit_feed_view",
     "feed_articles_view",

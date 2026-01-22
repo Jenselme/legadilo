@@ -59,13 +59,15 @@ class TestCreateTagView:
         assert response.template_name == "reading/edit_tag.html"
 
     def test_create_tag(self, logged_in_sync_client, django_assert_num_queries, user):
-        with django_assert_num_queries(14):
+        with django_assert_num_queries(9):
             response = logged_in_sync_client.post(self.url, {"title": "Tag to create"})
 
         assert response.status_code == HTTPStatus.FOUND
         created_tag = Tag.objects.get(title="Tag to create")
         assert created_tag.user == user
-        assert response["Location"] == reverse("reading:edit_tag", kwargs={"pk": created_tag.id})
+        assert response["Location"] == reverse(
+            "reading:edit_tag", kwargs={"tag_id": created_tag.id}
+        )
 
     def test_create_tag_cannot_be_slugified(self, logged_in_sync_client, user):
         response = logged_in_sync_client.post(self.url, {"title": "&"})
@@ -75,9 +77,7 @@ class TestCreateTagView:
             "title": ["Cannot contain only spaces or special characters."],
         }
 
-    def test_create_tag_already_exists(
-        self, logged_in_sync_client, django_assert_num_queries, user
-    ):
+    def test_create_duplicated_tag(self, logged_in_sync_client, django_assert_num_queries, user):
         with django_assert_num_queries(11):
             response = logged_in_sync_client.post(self.url, {"title": self.tag.title})
 
@@ -97,7 +97,7 @@ class TestEditTagView:
     @pytest.fixture(autouse=True)
     def _setup_data(self, user):
         self.tag = TagFactory(title="The title", user=user)
-        self.url = reverse("reading:edit_tag", kwargs={"pk": self.tag.id})
+        self.url = reverse("reading:edit_tag", kwargs={"tag_id": self.tag.id})
 
     def test_not_logged_in(self, client):
         response = client.get(self.url)
@@ -137,7 +137,7 @@ class TestEditTagView:
     def test_delete_sub_tag(self, user, logged_in_sync_client, django_assert_num_queries):
         top_tag = TagFactory(title="Top tag", user=user)
         SubTagMapping.objects.create(base_tag=top_tag, sub_tag=self.tag)
-        url = reverse("reading:edit_tag", kwargs={"pk": top_tag.id})
+        url = reverse("reading:edit_tag", kwargs={"tag_id": top_tag.id})
 
         with django_assert_num_queries(14):
             response = logged_in_sync_client.post(url, {"delete": "true"})
@@ -149,23 +149,43 @@ class TestEditTagView:
         assert Tag.objects.get() == self.tag
 
     def test_update_tag(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(14):
-            response = logged_in_sync_client.post(self.url, {"title": "Updated title"})
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(self.url, {"title": "Updated title", "save": ""})
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("reading:tags_admin")
         self.tag.refresh_from_db()
         assert self.tag.title == "Updated title"
         assert self.tag.slug == "updated-title"
         assert self.tag.sub_tags.count() == 0
 
+    def test_update_tag_add_new(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                self.url, {"title": "Updated title", "save-add-new": ""}
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("reading:create_tag")
+
+    def test_update_tag_continue_edition(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.post(
+                self.url, {"title": "Updated title", "save-continue-edition": ""}
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == self.url
+
     def test_clear_sub_tags(self, user, logged_in_sync_client, django_assert_num_queries):
         sub_tag = TagFactory(title="Sub tag", user=user)
         SubTagMapping.objects.create(base_tag=self.tag, sub_tag=sub_tag)
 
-        with django_assert_num_queries(20):
-            response = logged_in_sync_client.post(self.url, {"title": "Updated title"})
+        with django_assert_num_queries(19):
+            response = logged_in_sync_client.post(self.url, {"title": "Updated title", "save": ""})
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("reading:tags_admin")
         self.tag.refresh_from_db()
         assert self.tag.sub_tags.count() == 0
 
@@ -174,13 +194,18 @@ class TestEditTagView:
         SubTagMapping.objects.create(base_tag=self.tag, sub_tag=sub_tag)
         existing_sub_tag = TagFactory(title="Existing tag", user=user)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(22):
             response = logged_in_sync_client.post(
                 self.url,
-                {"title": "Updated title", "sub_tags": [existing_sub_tag.slug, "Tag to create"]},
+                {
+                    "title": "Updated title",
+                    "sub_tags": [existing_sub_tag.slug, "Tag to create"],
+                    "save": "",
+                },
             )
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("reading:tags_admin")
         self.tag.refresh_from_db()
         assert set(self.tag.sub_tags.values_list("slug", flat=True)) == {
             existing_sub_tag.slug,

@@ -132,6 +132,7 @@ select = [
 ]
 ignore = [
     "RUF012", # RUF012 Mutable class attributes should be annotated with `typing.ClassVar`
+    "RUF067", # Non empty init module
     "COM812", # missing-trailing-comma (the formatter will do this)
     "ISC001", # single-line-implicit-string-concatenation (the formatter will do this)
     "PLR6301", # Method XXX could be a function, class method, or static method

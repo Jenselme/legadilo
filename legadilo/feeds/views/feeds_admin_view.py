@@ -35,6 +35,9 @@ def feeds_admin_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
             "feeds_by_categories": Feed.objects.get_by_categories(
                 request.user, searched_text=searched_text
             ),
+            "breadcrumbs": [
+                (reverse("feeds:feeds_admin"), _("Feeds admin")),
+            ],
         },
     )
 
@@ -140,12 +143,14 @@ def edit_feed_view(
     if request.method == "POST" and "disable" in request.POST:
         feed.disable(reason=_("Manually disabled"))
         feed.save()
-        form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
-    elif request.method == "POST" and "enable" in request.POST:
+        return HttpResponseRedirect(reverse("feeds:feeds_admin"))
+
+    if request.method == "POST" and "enable" in request.POST:
         feed.enable()
         feed.save()
-        form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
-    elif request.method == "POST":
+        return HttpResponseRedirect(reverse("feeds:feeds_admin"))
+
+    if request.method == "POST":
         form = _build_form_from_feed_instance(
             feed, tag_choices, category_choices, data=request.POST
         )
@@ -157,12 +162,19 @@ def edit_feed_view(
             tag_choices = Tag.objects.get_all_choices(request.user)
             form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
 
+        if status == HTTPStatus.OK and "save" in request.POST:
+            return HttpResponseRedirect(reverse("feeds:feeds_admin"))
+
     return TemplateResponse(
         request,
         "feeds/edit_feed.html",
         {
             "feed": feed,
             "form": form,
+            "breadcrumbs": [
+                (reverse("feeds:feeds_admin"), _("Feeds admin")),
+                (reverse("feeds:edit_feed", kwargs={"feed_id": feed.id}), _("Edit feed")),
+            ],
         },
         status=status,
     )

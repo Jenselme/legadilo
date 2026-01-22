@@ -11,21 +11,12 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import RedirectView, UpdateView
 
 from legadilo.users.forms import UserSettingsForm
 from legadilo.users.models import UserSettings
 
 User = get_user_model()
-
-
-class UserDetailView(LoginRequiredMixin, DetailView):
-    model = User
-    slug_field = "id"
-    slug_url_kwarg = "id"
-
-
-user_detail_view = UserDetailView.as_view()
 
 
 class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

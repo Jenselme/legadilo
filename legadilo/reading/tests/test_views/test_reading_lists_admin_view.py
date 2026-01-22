@@ -112,7 +112,7 @@ class TestCreateReadingListView:
         }
 
     def test_create_reading_list(self, logged_in_sync_client, user, django_assert_num_queries):
-        with django_assert_num_queries(51):
+        with django_assert_num_queries(52):
             response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         reading_list = ReadingList.objects.get()
@@ -142,7 +142,7 @@ class TestCreateReadingListView:
             **self.sample_data, slug=slugify(self.sample_data["title"]), user=user
         )
 
-        with django_assert_num_queries(37):
+        with django_assert_num_queries(39):
             response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         assert response.status_code == HTTPStatus.CONFLICT
@@ -211,10 +211,11 @@ class TestReadingListEditView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(82):
-            response = logged_in_sync_client.post(self.url, data=self.sample_data)
+        with django_assert_num_queries(55):
+            response = logged_in_sync_client.post(self.url, data={**self.sample_data, "save": ""})
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("reading:reading_lists_admin")
         assert list(
             self.reading_list.reading_list_tags.values_list("tag__slug", "filter_type")
         ) == [
@@ -228,3 +229,21 @@ class TestReadingListEditView:
                 continue
 
             assert getattr(self.reading_list, field) == value
+
+    def test_update_add_new(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(55):
+            response = logged_in_sync_client.post(
+                self.url, data={**self.sample_data, "save-add-new": ""}
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("reading:create_reading_list")
+
+    def test_update_add_continue_edition(self, logged_in_sync_client, django_assert_num_queries):
+        with django_assert_num_queries(55):
+            response = logged_in_sync_client.post(
+                self.url, data={**self.sample_data, "save-continue-edition": ""}
+            )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == self.url

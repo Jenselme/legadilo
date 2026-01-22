@@ -34,17 +34,21 @@
         {{ form|crispy }}
         <div class="d-flex justify-content-between">
             <div>
+                <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
+                <button class="btn btn-outline-primary" type="submit" name="save-continue-edition">{% translate "Save and continue edition" %}</button>
+                {% if feed.enabled %}
+                    <button class="btn btn-outline-secondary" type="submit" name="disable">{% translate "Disable feed" %}</button>
+                {% else %}
+                    <button class="btn btn-outline-secondary" type="submit" name="enable">{% translate "Reenable feed" %}</button>
+                {% endif %}
+            </div>
+            <div>
+                <button class="btn btn-outline-secondary" type="reset">{% translate "Reset" %}</button>
                 <button form="delete-feed-form"
                         class="btn btn-danger"
                         type="submit"
                         name="delete">{% translate "Delete" %}</button>
-                <button class="btn btn-primary" type="submit" name="save">{% translate "Save" %}</button>
             </div>
-            {% if feed.enabled %}
-                <button class="btn btn-outline-secondary" type="submit" name="disable">{% translate "Disable feed" %}</button>
-            {% else %}
-                <button class="btn btn-outline-secondary" type="submit" name="enable">{% translate "Reenable feed" %}</button>
-            {% endif %}
         </div>
     </form>
     <div id="feed-debug-container" class="accordion mt-5">

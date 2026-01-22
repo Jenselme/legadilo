@@ -274,6 +274,7 @@ TEMPLATES = [
                 "django.template.context_processors.csp",
                 "django.contrib.messages.context_processors.messages",
                 "legadilo.users.context_processors.allauth_settings",
+                "legadilo.users.context_processors.user_settings",
                 "legadilo.core.context_processors.provide_global_context",
             ],
             "libraries": {

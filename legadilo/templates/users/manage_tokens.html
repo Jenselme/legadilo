@@ -13,77 +13,82 @@
 {% endblock page_js %}
 
 {% block content %}
-    <h1>{% translate "Manage API tokens" %}</h1>
-    {% if new_application_token %}
-        <p class="alert-success">
-            {% blocktranslate trimmed with token_title=new_application_token.title %}
-                Successfully created token <em>{{ token_title }}</em>. Copy the token below, you
-                won’t be able to get it back.
-            {% endblocktranslate %}
-            <ul>
-                <li>
-                    Token id: <pre>{{ new_application_token.uuid }}</pre>
-                </li>
-                <li>
-                    Token secret: <pre>{{ new_application_token_secret }}</pre>
-                </li>
-            </ul>
-        </p>
-    {% endif %}
-    <h2 class="mt-4">{% translate "List of tokens" %}</h2>
-    {% for token in tokens %}
-        <div class="card {% if not token.is_valid %}opacity-50{% endif %} mb-2"
-             hx-target="this"
-             hx-swap="outerHTML">
-            <div class="card-body">
-                <h2 class="card-title">{{ token.title }}</h2>
-                {% if not token.is_valid %}
-                    <p class="subtitle">{% translate "Expired" %}</p>
-                {% endif %}
-                <div class="card-text">
-                    <p class="mb-1">
-                        {% translate "Token id" %}
-                        <pre>{{ token.uuid }}</pre>
-                    </p>
-                    <p class="mb-1">
-                        {% blocktranslate trimmed with created_at=token.created_at|date:"SHORT_DATETIME_FORMAT" %}
-                            Created on {{ created_at }}
-                        {% endblocktranslate %}
-                    </p>
-                    <p class="mb-1">
-                        {% blocktranslate trimmed with last_used_at=token.last_used_at|date:"SHORT_DATETIME_FORMAT" %}
-                            Last used {{ last_used_at }}
-                        {% endblocktranslate %}
-                    </p>
-                    <p class="mb-1">
-                        {% if token.validity_end is None %}
-                            {% translate "Valid forever" %}
-                        {% else %}
-                            {% blocktranslate trimmed with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
-                                Valid until {{ validity_end }}
-                            {% endblocktranslate %}
+    <div class="row">
+        {% include "users/partials/user_settings_navigation.html" %}
+        <div class="col col-md-9">
+            <h1>{% translate "Manage API tokens" %}</h1>
+            {% if new_application_token %}
+                <p class="alert-success">
+                    {% blocktranslate trimmed with token_title=new_application_token.title %}
+                        Successfully created token <em>{{ token_title }}</em>. Copy the token below, you
+                        won’t be able to get it back.
+                    {% endblocktranslate %}
+                    <ul>
+                        <li>
+                            Token id: <pre>{{ new_application_token.uuid }}</pre>
+                        </li>
+                        <li>
+                            Token secret: <pre>{{ new_application_token_secret }}</pre>
+                        </li>
+                    </ul>
+                </p>
+            {% endif %}
+            <h2 class="mt-4">{% translate "List of tokens" %}</h2>
+            {% for token in tokens %}
+                <div class="card {% if not token.is_valid %}opacity-50{% endif %} mb-2"
+                     hx-target="this"
+                     hx-swap="outerHTML">
+                    <div class="card-body">
+                        <h2 class="card-title">{{ token.title }}</h2>
+                        {% if not token.is_valid %}
+                            <p class="subtitle">{% translate "Expired" %}</p>
                         {% endif %}
-                    </p>
+                        <div class="card-text">
+                            <p class="mb-1">
+                                {% translate "Token id" %}
+                                <pre>{{ token.uuid }}</pre>
+                            </p>
+                            <p class="mb-1">
+                                {% blocktranslate trimmed with created_at=token.created_at|date:"SHORT_DATETIME_FORMAT" %}
+                                    Created on {{ created_at }}
+                                {% endblocktranslate %}
+                            </p>
+                            <p class="mb-1">
+                                {% blocktranslate trimmed with last_used_at=token.last_used_at|date:"SHORT_DATETIME_FORMAT" %}
+                                    Last used {{ last_used_at }}
+                                {% endblocktranslate %}
+                            </p>
+                            <p class="mb-1">
+                                {% if token.validity_end is None %}
+                                    {% translate "Valid forever" %}
+                                {% else %}
+                                    {% blocktranslate trimmed with validity_end=token.validity_end|date:"SHORT_DATETIME_FORMAT" %}
+                                        Valid until {{ validity_end }}
+                                    {% endblocktranslate %}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <form hx-post="{% url 'users:delete_token' token_id=token.id %}"
+                              data-modal-id="danger-modal"
+                              data-modal-title="{% translate 'Confirm token deletion' %}"
+                              data-modal-body="{% blocktranslate trimmed with token_title=token.title %}Are you sure you want to delete the token '{{ token_title }}'?{% endblocktranslate %}"
+                              hx-confirm="Delete?">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">{% translate "Delete" %}</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <div class="card-footer">
-                <form hx-post="{% url 'users:delete_token' token_id=token.id %}"
-                      data-modal-id="danger-modal"
-                      data-modal-title="{% translate 'Confirm token deletion' %}"
-                      data-modal-body="{% blocktranslate trimmed with token_title=token.title %}Are you sure you want to delete the token '{{ token_title }}'?{% endblocktranslate %}"
-                      hx-confirm="Delete?">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">{% translate "Delete" %}</button>
-                </form>
-            </div>
+            {% empty %}
+                <div class="list-group-item">{% translate "No token found" %}</div>
+            {% endfor %}
+            <h2 class="mt-4">{% translate "Create new token" %}</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button type="submit" class="btn btn-primary">{% translate "Create" %}</button>
+            </form>
         </div>
-    {% empty %}
-        <div class="list-group-item">{% translate "No token found" %}</div>
-    {% endfor %}
-    <h2 class="mt-4">{% translate "Create new token" %}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn btn-primary">{% translate "Create" %}</button>
-    </form>
+    </div>
 {% endblock content %}

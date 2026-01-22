@@ -21,6 +21,7 @@ from legadilo.reading.models import Article, ArticlesGroup, ArticleTag, Tag
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
 from ...core.forms.widgets import SelectAutocompleteWidget
+from ...core.utils.security import sanitize_keep_safe_tags
 from ..models.articles_group import ArticlesGroupQuerySet
 from ._utils import get_from_url_for_article_details
 from .comment_views import CommentArticleForm
@@ -49,9 +50,15 @@ class EditArticleForm(forms.Form):
         ),
     )
     reading_time = forms.IntegerField(required=True, min_value=0)
+    summary = forms.CharField(
+        label=_("Summary"),
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 6}),
+        help_text=_("Safe HTML tags are allowed. All other HTML tags will be removed."),
+    )
 
     class Meta:
-        fields = ("tags", "title", "reading_time")
+        fields = ("tags", "title", "reading_time", "summary", "group")
 
     def __init__(
         self,
@@ -64,6 +71,9 @@ class EditArticleForm(forms.Form):
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["group"].queryset = groups_qs  # type: ignore[attr-defined]
         self.fields["group"].label_from_instance = lambda obj: obj.title  # type: ignore[attr-defined]
+
+    def clean_summary(self):
+        return sanitize_keep_safe_tags(self.cleaned_data["summary"])
 
 
 @require_http_methods(["GET", "POST"])
@@ -130,6 +140,7 @@ def _build_edit_article_form_from_instance(tag_choices: FormChoices, article: Ar
         initial={
             "tags": article.article_tags.get_selected_values(),
             "title": article.title,
+            "summary": article.summary,
             "reading_time": article.reading_time,
             "group": article.group_id,
         },

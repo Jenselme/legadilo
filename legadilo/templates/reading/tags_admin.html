@@ -43,7 +43,7 @@
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'reading:tag_with_articles' tag_slug=tag.slug %}">{% translate "View articles" %}</a>
-                    <a href="{% url 'reading:edit_tag' pk=tag.id %}">{% translate "Edit" %}</a>
+                    <a href="{% url 'reading:edit_tag' tag_id=tag.id %}">{% translate "Edit" %}</a>
                 </div>
             </div>
         {% endfor %}

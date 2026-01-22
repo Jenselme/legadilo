@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 21:36+0000\n"
+"POT-Creation-Date: 2026-01-22 22:10+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -110,12 +110,24 @@ msgstr "Aucun"
 msgid "Articles of feed '%(feed_title)s'"
 msgstr "Articles du flux '%(feed_title)s'"
 
+msgid "Feed categories admin"
+msgstr "Administration des catégories des flux"
+
 msgid "Title"
 msgstr "Titre"
+
+msgid "Edit feed category"
+msgstr "Modifier une catégorie"
+
+msgid "Create feed category"
+msgstr "Créer une catégorie de flux"
 
 #, python-format
 msgid "A category with title '%s' already exists."
 msgstr "Une catégorie avec le titre '%s' existe déjà."
+
+msgid "Feeds admin"
+msgstr "Administration des flux"
 
 msgid "Feed URL"
 msgstr "URL du flux"
@@ -173,6 +185,9 @@ msgid ""
 msgstr ""
 "Étiquettes à associer à ce flux. Pour créer une nouvelle étiquette, tapez "
 "son titre et appuyez sur entrée."
+
+msgid "Subscribe to a feed"
+msgstr "S’abonner à un flux"
 
 #, python-format
 msgid ""
@@ -479,6 +494,13 @@ msgstr ""
 "Groupe à associer à cet article. Pour créer un nouveau groupe, passez par la "
 "page d’ajout d’articles."
 
+msgid "Summary"
+msgstr "Résumé"
+
+msgid "Safe HTML tags are allowed. All other HTML tags will be removed."
+msgstr ""
+"Les balises HTML sûres sont autorisées. Toutes les autres sont interdites."
+
 msgid "Description"
 msgstr "Description"
 
@@ -566,6 +588,9 @@ msgstr ""
 msgid "'%s' is not a known tag."
 msgstr "'%s' n’est pas une étiquette connue."
 
+msgid "Reading lists admin"
+msgstr "Administration des listes de lecture"
+
 msgid "Tags to include"
 msgstr "Étiquettes à inclure"
 
@@ -614,6 +639,12 @@ msgstr "Opérateur des étiquettes à exclure"
 
 msgid "Order direction"
 msgstr "Direction du tri"
+
+msgid "Edit reading list"
+msgstr "Modifier une liste de lecture"
+
+msgid "Create reading list"
+msgstr "Créer une liste de lecture"
 
 #, python-format
 msgid "A reading list with title '%s' already exists."
@@ -666,6 +697,9 @@ msgstr ""
 "Vous devez sélectionner un opérateur pour le temps de lecture en cherchant "
 "par temps de lecture."
 
+msgid "Tags admin"
+msgstr "Administration des étiquettes"
+
 msgid "Editing the title will change the slug of the tag too!"
 msgstr "Modifier le titre va également changer le slug de l’étiquette !"
 
@@ -678,6 +712,12 @@ msgid ""
 msgstr ""
 "Ces étiquettes seront ajoutées automatiquement à l’article quand cette "
 "étiquette est sélectionnée."
+
+msgid "Edit tag"
+msgstr "Éditer une étiquette"
+
+msgid "Create tag"
+msgstr "Créer une étiquette"
 
 #, python-format
 msgid "A tag with title '%s' already exists."
@@ -975,20 +1015,8 @@ msgstr[1] "%(nb_unread_notifications)s notifications non lues"
 msgid "Profile menu"
 msgstr "Mon Profil"
 
-msgid "Tags admin"
-msgstr "Administration des étiquettes"
-
-msgid "Feeds admin"
-msgstr "Administration des flux"
-
-msgid "Feed categories admin"
-msgstr "Administration des catégories des flux"
-
-msgid "Reading lists admin"
-msgstr "Administration des listes de lecture"
-
-msgid "My Profile"
-msgstr "Mon Profil"
+msgid "User settings"
+msgstr "Mes paramètres"
 
 msgid "Admin"
 msgstr "Admin"
@@ -1105,11 +1133,17 @@ msgstr "Voulez-vous vraiment supprimer le flux '%(feed_title)s' ?"
 msgid "Save"
 msgstr "Sauvegarder"
 
+msgid "Save and continue edition"
+msgstr "Sauvegarder et continuer l’édition"
+
 msgid "Disable feed"
 msgstr "Désactiver le flux"
 
 msgid "Reenable feed"
 msgstr "Réactiver le flux"
+
+msgid "Reset"
+msgstr "Réinitialiser"
 
 msgid "Feed update debug information"
 msgstr "Information de debuggage sur la mise à jour du flux"
@@ -1137,20 +1171,14 @@ msgstr "Confirmez la suppression de la catégorie"
 msgid "Are you sure you want to delete the category '%(category_title)s'?"
 msgstr "Voulez-vous vraiment supprimer la catégorie '%(category_title)s' ?"
 
-msgid "Update"
-msgstr "Mettre à jour"
-
-msgid "Create"
-msgstr "Créer"
+msgid "Save and add new"
+msgstr "Sauvegarder et ajouter un nouveau"
 
 msgid "Create a new category"
 msgstr "Créer une nouvelle catégorie"
 
 msgid "Edit/Delete category"
 msgstr "Modifier/Supprimer une catégorie"
-
-msgid "Subscribe to a feed"
-msgstr "S’abonner à un flux"
 
 msgid "feeds.opml"
 msgstr "feeds.opml"
@@ -1598,6 +1626,9 @@ msgstr "Administration des listes de lecture"
 msgid "Edit/Delete reading list"
 msgstr "Modifier/Supprimer la liste de lecture"
 
+msgid "* highlights the default reading list."
+msgstr "* marque la liste de lecture par défaut."
+
 msgid "Reading lists can be reordered with drag & drop."
 msgstr "Les listes de lecture peuvent être réordonnées par glisser/déposer."
 
@@ -1683,24 +1714,14 @@ msgstr "Aucun jeton trouvé"
 msgid "Create new token"
 msgstr "Créer un nouveau jeton"
 
+msgid "Create"
+msgstr "Créer"
+
 msgid "Notifications"
 msgstr "Notifications"
 
-#, python-format
-msgid "User: %(email)s"
-msgstr "Utilisateur : %(email)s"
-
-msgid "My Info"
-msgstr "Mes informations"
-
-msgid "E-Mail"
-msgstr "Email"
-
-msgid "My settings"
-msgstr "Mes paramètres"
-
-msgid "Change password"
-msgstr "Changer le mot de passe"
+msgid "Update"
+msgstr "Mettre à jour"
 
 msgid "Edit your settings"
 msgstr "Changer vos paramètres"
@@ -1847,6 +1868,21 @@ msgstr "Dates importantes"
 msgid "Users"
 msgstr "Utilisateurs"
 
+msgid "My Infos"
+msgstr "Mes informations"
+
+msgid "E-Mail"
+msgstr "Email"
+
+msgid "Change password"
+msgstr "Changer le mot de passe"
+
+msgid "My settings"
+msgstr "Mes paramètres"
+
+msgid "Import/Export Articles"
+msgstr "Importer/Exporter des articles"
+
 msgid "This email has already been taken."
 msgstr "Ce nom d'utilisateur est déjà pris."
 
@@ -1875,8 +1911,8 @@ msgstr ""
 "Quand ce jeton a été utilisé pour la dernière fois pour créer un jeton "
 "d’accès."
 
-msgid "Name of User"
-msgstr "Nom de l'utilisateur"
+msgid "Username"
+msgstr "Nom d’utilisateur"
 
 msgid "email address"
 msgstr "adresse e-mail"
@@ -1904,6 +1940,16 @@ msgstr "Paramètres correctement mis à jour"
 
 msgid "Failed to update settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
+
+#~ msgid "My Profile"
+#~ msgstr "Mon Profil"
+
+#, python-format
+#~ msgid "User: %(email)s"
+#~ msgstr "Utilisateur : %(email)s"
+
+#~ msgid "Name of User"
+#~ msgstr "Nom de l'utilisateur"
 
 #, python-format
 #~ msgid ""

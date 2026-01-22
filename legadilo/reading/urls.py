@@ -22,8 +22,8 @@ urlpatterns = [
         name="reading_list",
     ),
     path("tags/", views.tags_admin_view, name="tags_admin"),
-    path("tags/create/", views.create_tag_view, name="create_tag"),
-    path("tags/edit/<int:pk>/", views.edit_tag_view, name="edit_tag"),
+    path("tags/create/", views.edit_tag_view, name="create_tag"),
+    path("tags/edit/<int:tag_id>/", views.edit_tag_view, name="edit_tag"),
     path("tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
         "tags/externals/list/",
@@ -61,7 +61,7 @@ urlpatterns = [
     ),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     # To clearly differentiate from the view that list articles in list/<slug>.
-    path("lists/edit/create/", views.reading_list_create_view, name="create_reading_list"),
+    path("lists/edit/create/", views.reading_list_edit_view, name="create_reading_list"),
     path(
         "lists/edit/<int:reading_list_id>/", views.reading_list_edit_view, name="edit_reading_list"
     ),

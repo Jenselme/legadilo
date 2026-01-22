@@ -47,7 +47,13 @@ def reading_list_admin_view(request: AuthenticatedHttpRequest) -> TemplateRespon
     return TemplateResponse(
         request,
         "reading/reading_lists_admin.html",
-        {"reading_lists": ReadingList.objects.get_all_for_user(request.user), "form": form},
+        {
+            "reading_lists": ReadingList.objects.get_all_for_user(request.user),
+            "form": form,
+            "breadcrumbs": [
+                (reverse("reading:reading_lists_admin"), _("Reading lists admin")),
+            ],
+        },
         status=status,
     )
 
@@ -74,8 +80,10 @@ class ReadingListForm(forms.ModelForm):
         instance: ReadingList | None = None,
         initial: dict[str, Any],
         tag_choices: FormChoices,
+        user: User,
     ):
         super().__init__(data=data, instance=instance, initial=initial)
+        self._user = user
         self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
         self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
 
@@ -115,18 +123,21 @@ class ReadingListForm(forms.ModelForm):
 
     @transaction.atomic()
     def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition
-        self._update_tags()
+        if self.instance.id is None:
+            return self._create()
 
+        self._update_tags()
+        self.instance.user = self._user
         return super().save(commit=commit)
 
     @transaction.atomic()
-    def create(self, user: User):
+    def _create(self):
         create_data = self.cleaned_data.copy()
         # Tags are managed with a many-to-many relationship and thus must be created independently
         # and cannot be passed to .create
         create_data.pop("tags_to_include")
         create_data.pop("tags_to_exclude")
-        reading_list = ReadingList.objects.create(**create_data, user=user)
+        reading_list = ReadingList.objects.create(**create_data, user=self._user)
         self.instance = reading_list
 
         self._update_tags()
@@ -155,93 +166,76 @@ class ReadingListForm(forms.ModelForm):
 
 @require_http_methods(["GET", "POST"])
 @login_required
-@transaction.atomic()
-def reading_list_create_view(
-    request: AuthenticatedHttpRequest,
+def reading_list_edit_view(
+    request: AuthenticatedHttpRequest, reading_list_id: int | None = None
 ) -> TemplateResponse | HttpResponseRedirect:
+    reading_list = None
+    if reading_list_id is not None:
+        reading_list = get_object_or_404(ReadingList, id=reading_list_id, user=request.user)
+
     tag_choices = Tag.objects.get_all_choices(request.user)
-    form = _build_form_from_reading_list_instance(tag_choices)
+    form = _build_form_from_reading_list_instance(
+        tag_choices, request.user, reading_list=reading_list
+    )
     status = HTTPStatus.OK
+
+    if reading_list and request.method == "POST" and "delete" in request.POST:
+        reading_list.delete()
+        return HttpResponseRedirect(reverse("reading:reading_lists_admin"))
+
+    if reading_list and request.method == "POST" and "make-default" in request.POST:
+        ReadingList.objects.make_default(reading_list)
+        return HttpResponseRedirect(reverse("reading:reading_lists_admin"))
+
     if request.method == "POST":
-        status, form, reading_list = _create_reading_list(request, tag_choices)
-        if reading_list:
+        status, form, reading_list = _handle_reading_list_edition(
+            request, reading_list, tag_choices
+        )
+        # Update the list of tag choices. We may have created some new one.
+        tag_choices = Tag.objects.get_all_choices(request.user)
+        if status == HTTPStatus.OK and "save" in request.POST:
+            return HttpResponseRedirect(reverse("reading:reading_lists_admin"))
+        if status == HTTPStatus.OK and "save-add-new" in request.POST:
+            return HttpResponseRedirect(reverse("reading:create_reading_list"))
+        if reading_list and status == HTTPStatus.OK:
             return HttpResponseRedirect(
                 reverse("reading:edit_reading_list", kwargs={"reading_list_id": reading_list.id})
             )
 
-    return TemplateResponse(
-        request, "reading/edit_reading_list.html", {"form": form}, status=status
+    last_crumb = (
+        (
+            reverse("reading:edit_reading_list", kwargs={"reading_list_id": reading_list.id}),
+            _("Edit reading list"),
+        )
+        if reading_list
+        else (reverse("reading:create_reading_list"), _("Create reading list"))
     )
-
-
-def _create_reading_list(
-    request: AuthenticatedHttpRequest, tag_choices: FormChoices
-) -> tuple[HTTPStatus, ReadingListForm, ReadingList | None]:
-    form = _build_form_from_reading_list_instance(tag_choices, data=request.POST)
-    if not form.is_valid():
-        return HTTPStatus.BAD_REQUEST, form, None
-
-    try:
-        reading_list = form.create(request.user)
-    except IntegrityError:
-        messages.error(
-            request,
-            _("A reading list with title '%s' already exists.") % form.cleaned_data["title"],
-        )
-        return HTTPStatus.CONFLICT, form, None
-
-    return HTTPStatus.CREATED, form, reading_list
-
-
-@require_http_methods(["GET", "POST"])
-@login_required
-def reading_list_edit_view(
-    request: AuthenticatedHttpRequest, reading_list_id: int
-) -> TemplateResponse | HttpResponseRedirect:
-    reading_list = get_object_or_404(ReadingList, id=reading_list_id, user=request.user)
-    tag_choices = Tag.objects.get_all_choices(request.user)
-    form = _build_form_from_reading_list_instance(tag_choices, reading_list=reading_list)
-    status = HTTPStatus.OK
-
-    if request.method == "POST" and "delete" in request.POST:
-        reading_list.delete()
-        return HttpResponseRedirect(reverse("reading:reading_lists_admin"))
-
-    if request.method == "POST" and "make-default" in request.POST:
-        ReadingList.objects.make_default(reading_list)
-        reading_list.refresh_from_db()
-    elif request.method == "POST":
-        form = _build_form_from_reading_list_instance(
-            tag_choices, data=request.POST, reading_list=reading_list
-        )
-        status = HTTPStatus.BAD_REQUEST
-        if form.is_valid():
-            status = HTTPStatus.OK
-            form.save()
-            # Update the list of tag choices. We may have created some new one.
-            tag_choices = Tag.objects.get_all_choices(request.user)
-            form = _build_form_from_reading_list_instance(
-                tag_choices,
-                data=request.POST,
-                reading_list=reading_list,
-            )
-
     return TemplateResponse(
         request,
         "reading/edit_reading_list.html",
-        {"reading_list": reading_list, "form": form},
+        {
+            "reading_list": reading_list,
+            "form": form,
+            "breadcrumbs": [
+                (reverse("reading:reading_lists_admin"), _("Reading lists admin")),
+                last_crumb,
+            ],
+        },
         status=status,
     )
 
 
 def _build_form_from_reading_list_instance(
     tag_choices: FormChoices,
+    user: User,
     reading_list: ReadingList | None = None,
     data=None,
 ):
     return ReadingListForm(
         data=data,
         instance=reading_list,
+        tag_choices=tag_choices,
+        user=user,
         initial={
             "tags_to_include": reading_list.reading_list_tags.get_selected_values(
                 constants.ReadingListTagFilterType.INCLUDE
@@ -254,5 +248,25 @@ def _build_form_from_reading_list_instance(
             if reading_list
             else [],
         },
-        tag_choices=tag_choices,
     )
+
+
+def _handle_reading_list_edition(
+    request: AuthenticatedHttpRequest, reading_list: ReadingList | None, tag_choices: FormChoices
+) -> tuple[HTTPStatus, ReadingListForm, ReadingList | None]:
+    form = _build_form_from_reading_list_instance(
+        tag_choices, request.user, data=request.POST, reading_list=reading_list
+    )
+    if not form.is_valid():
+        return HTTPStatus.BAD_REQUEST, form, reading_list
+
+    try:
+        reading_list = form.save()
+    except IntegrityError:
+        messages.error(
+            request,
+            _("A reading list with title '%s' already exists.") % form.cleaned_data["title"],
+        )
+        return HTTPStatus.CONFLICT, form, reading_list
+
+    return HTTPStatus.OK, form, reading_list
