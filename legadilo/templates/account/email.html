@@ -6,6 +6,10 @@
     {% translate "Account" %}
 {% endblock head_title %}
 
+{% block navigation %}
+    {% include "users/partials/user_settings_navigation.html" %}
+{% endblock navigation %}
+
 {% block inner %}
     <h1>{% translate "E-mail Addresses" %}</h1>
     {% if user.emailaddress_set.all %}
