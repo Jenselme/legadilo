@@ -17,6 +17,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Improve save actions in admin.
 - Rework how user sessions are managed to link them to the user.
   - Sessions are now cleaned as part of the `clean_users` command. `clearsessions` cannot be used anymore.
+- Enable account deletion in the account parameters.
 
 ## 25.12.5
 

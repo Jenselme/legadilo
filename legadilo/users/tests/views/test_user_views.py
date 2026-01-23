@@ -14,8 +14,17 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.core.models import Timezone
+from legadilo.core.utils.time_utils import utcnow
+from legadilo.feeds.tests.factories import FeedCategoryFactory, FeedFactory
+from legadilo.reading.tests.factories import (
+    ArticleFactory,
+    ArticleFetchErrorFactory,
+    ArticlesGroupFactory,
+    ReadingListFactory,
+    TagFactory,
+)
 from legadilo.users.forms import UserAdminChangeForm
-from legadilo.users.models import User
+from legadilo.users.models import User, UserSession, UserSettings
 from legadilo.users.views.user_views import UserRedirectView, UserUpdateView
 
 
@@ -93,3 +102,33 @@ class TestUserUpdateSettingsView:
         user.settings.refresh_from_db()
         assert user.settings.default_reading_time == 0
         assert user.settings.timezone.id == self.new_tz.id
+
+
+@pytest.mark.django_db
+class TestDeleteAccountView:
+    def test_delete(self, user, logged_in_sync_client, utc_tz, reauthentication_bypass):
+        assert UserSettings.objects.filter(user=user).exists()
+        tag = TagFactory(user=user)
+        feed = FeedFactory(user=user)
+        feed.tags.add(tag)
+        FeedCategoryFactory(user=user)
+        article = ArticleFactory(user=user)
+        ArticleFetchErrorFactory(article=article)
+        article.tags.add(tag)
+        reading_list = ReadingListFactory(user=user)
+        reading_list.tags.add(tag)
+        ArticlesGroupFactory(user=user)
+        UserSession.objects.create(
+            session_key="expired_session",
+            user=user,
+            expire_date=utcnow(),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+
+        with reauthentication_bypass():
+            response = logged_in_sync_client.post(reverse("users:delete_account"))
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("website:home")
+        assert not User.objects.filter(id=user.id).exists()

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 22:10+0100\n"
+"POT-Creation-Date: 2026-01-23 21:14+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1723,6 +1723,28 @@ msgstr "Notifications"
 msgid "Update"
 msgstr "Mettre à jour"
 
+msgid "Account deletion"
+msgstr "Suppression du compte"
+
+msgid ""
+"Deleting your account is permanent and cannot be undone. All your data will "
+"be lost! Make sure to export your data before doing this!"
+msgstr ""
+"La suppression de votre compte est définitive et ne peut pas être annulée. "
+"Toutes vos données seront perdues ! Pensez à exporter vos données avant de "
+"valider !"
+
+msgid "Confirm account deletion"
+msgstr "Confirmez la suppression du compte"
+
+msgid "Are you sure you want to delete your account? This cannot be undone."
+msgstr ""
+"Voulez-vous vraiment supprimer votre compte ? Cette opération ne peut pas "
+"être annulée."
+
+msgid "Delete account"
+msgstr "Supprimer le compte"
+
 msgid "Edit your settings"
 msgstr "Changer vos paramètres"
 
@@ -1940,6 +1962,9 @@ msgstr "Paramètres correctement mis à jour"
 
 msgid "Failed to update settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
+
+msgid "Account deleted successfully"
+msgstr "Compte supprimé avec succès"
 
 #~ msgid "My Profile"
 #~ msgstr "Mon Profil"

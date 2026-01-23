@@ -1,12 +1,14 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+from allauth.account.decorators import reauthentication_required
+from allauth.account.internal.flows.logout import logout
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -67,3 +69,12 @@ def user_update_settings_view(request):
             "user": request.user,
         },
     )
+
+
+@require_http_methods(["POST"])
+@reauthentication_required
+def delete_account_view(request):
+    request.user.delete()
+    messages.success(request, _("Account deleted successfully"))
+    logout(request, show_message=False)
+    return redirect("website:home")

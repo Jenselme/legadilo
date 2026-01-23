@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 22:10+0100\n"
+"POT-Creation-Date: 2026-01-23 21:14+0000\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1565,6 +1565,23 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
+msgid "Account deletion"
+msgstr ""
+
+msgid ""
+"Deleting your account is permanent and cannot be undone. All your data will "
+"be lost! Make sure to export your data before doing this!"
+msgstr ""
+
+msgid "Confirm account deletion"
+msgstr ""
+
+msgid "Are you sure you want to delete your account? This cannot be undone."
+msgstr ""
+
+msgid "Delete account"
+msgstr ""
+
 msgid "Edit your settings"
 msgstr ""
 
@@ -1733,4 +1750,7 @@ msgid "Settings correctly updated"
 msgstr ""
 
 msgid "Failed to update settings"
+msgstr ""
+
+msgid "Account deleted successfully"
 msgstr ""
