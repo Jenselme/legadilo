@@ -148,5 +148,11 @@ svg.bi {
 /* For the honeypot field */
 input[name="email_address_confirmation"] {
   position: absolute;
-  right: -9999px;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
