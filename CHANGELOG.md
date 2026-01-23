@@ -18,6 +18,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Rework how user sessions are managed to link them to the user.
   - Sessions are now cleaned as part of the `clean_users` command. `clearsessions` cannot be used anymore.
 - Enable account deletion in the account parameters.
+- Inactive accounts are deleted after several notification emails. Both the deletion and the notification are done by the `clean_users` command.
 
 ## 25.12.5
 

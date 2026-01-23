@@ -6,11 +6,14 @@ from functools import cached_property
 from typing import Self
 from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
+from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import models
+from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -35,9 +38,26 @@ class UserQuerySet(models.QuerySet):
                 "emailaddress", filter=models.Q(emailaddress__verified=True)
             )
         ).filter(
-            date_joined__lt=utcnow() - timedelta(days=users_constants.INVALID_USERS_RETENTION_DAYS),
+            date_joined__lt=utcnow() - users_constants.INVALID_USERS_RETENTION_DAYS,
             nb_verified_emails=0,
         )
+
+    def inactive_accounts_to_delete(self):
+        return self.alias(nb_sessions=models.Count("sessions")).filter(
+            last_login__lte=utcnow() - users_constants.INACTIVE_USERS_RETENTION,
+            nb_sessions=0,
+        )
+
+    def inactive_accounts_to_notify(self):
+        filter_ = models.Q()
+        for notification_threshold in users_constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS:
+            filter_ |= models.Q(
+                last_login__date=(
+                    utcnow() - users_constants.INACTIVE_USERS_RETENTION + notification_threshold
+                ).date()
+            )
+
+        return self.alias(nb_sessions=models.Count("sessions")).filter(filter_, nb_sessions=0)
 
 
 class UserManager(DjangoUserManager["User"]):
@@ -111,6 +131,36 @@ class UserManager(DjangoUserManager["User"]):
             .filter(is_superuser=True, is_staff=True, is_active=True)
             .values_list("email", flat=True)
         )
+
+    def cleanup_inactive_users(self) -> DeletionResult:
+        return self.get_queryset().inactive_accounts_to_delete().delete()
+
+    def notify_inactive_accounts(self) -> int:
+        inactive_accounts = set(
+            self
+            .get_queryset()
+            .inactive_accounts_to_notify()
+            .order_by("last_login")
+            .values_list("email", "last_login")
+        )
+        template = get_template("users/inactive_account_notification.txt")
+        for email, last_login in inactive_accounts:
+            days_since_last_login = (utcnow() - last_login).days
+            message = template.render({
+                "email": email,
+                "days_since_last_login": days_since_last_login,
+                "days_until_deletion": (
+                    (last_login + users_constants.INACTIVE_USERS_RETENTION - utcnow()).days
+                ),
+            })
+            send_mail(
+                subject=_("Your Legadilo account is inactive and will be deleted soon"),
+                message=message.strip(),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+            )
+
+        return len(inactive_accounts)
 
 
 class User(AbstractUser):

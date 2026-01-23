@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-23 21:14+0000\n"
+"POT-Creation-Date: 2026-01-23 22:09+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1663,6 +1663,26 @@ msgid_plural "%(nb_articles)s&nbsp;articles"
 msgstr[0] "%(nb_articles)s&nbsp;article"
 msgstr[1] "%(nb_articles)s&nbsp;articles"
 
+#, python-format
+msgid "Hello %(email)s,"
+msgstr "Bonjour %(email)s,"
+
+#, python-format
+msgid ""
+"Your account has been inactive for %(days_since_last_login)s days and will "
+"be deleted automatically in %(days_until_deletion)s days. To prevent this, "
+"please log in to your account."
+msgstr ""
+"Votre compte est inactif depuis %(days_since_last_login)s jours et sera "
+"supprimé automatiquement dans %(days_until_deletion)s jours. Pour l’éviter, "
+"veuillez vous connecter."
+
+msgid "Regards,"
+msgstr "Cordialement,"
+
+msgid "The Legadilo Team"
+msgstr "L’équipe Legadilo"
+
 msgid "Manage application tokens"
 msgstr "Gérer les jetons d’application"
 
@@ -1933,6 +1953,9 @@ msgstr ""
 "Quand ce jeton a été utilisé pour la dernière fois pour créer un jeton "
 "d’accès."
 
+msgid "Your Legadilo account is inactive and will be deleted soon"
+msgstr "Votre compte sur Legadilo est inactif et sera bientôt supprimé"
+
 msgid "Username"
 msgstr "Nom d’utilisateur"
 
@@ -1968,10 +1991,6 @@ msgstr "Compte supprimé avec succès"
 
 #~ msgid "My Profile"
 #~ msgstr "Mon Profil"
-
-#, python-format
-#~ msgid "User: %(email)s"
-#~ msgstr "Utilisateur : %(email)s"
 
 #~ msgid "Name of User"
 #~ msgstr "Nom de l'utilisateur"

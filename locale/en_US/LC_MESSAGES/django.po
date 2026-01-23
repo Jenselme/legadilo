@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-23 21:14+0000\n"
+"POT-Creation-Date: 2026-01-23 22:09+0000\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1507,6 +1507,23 @@ msgid_plural "%(nb_articles)s&nbsp;articles"
 msgstr[0] ""
 msgstr[1] ""
 
+#, python-format
+msgid "Hello %(email)s,"
+msgstr ""
+
+#, python-format
+msgid ""
+"Your account has been inactive for %(days_since_last_login)s days and will "
+"be deleted automatically in %(days_until_deletion)s days. To prevent this, "
+"please log in to your account."
+msgstr ""
+
+msgid "Regards,"
+msgstr ""
+
+msgid "The Legadilo Team"
+msgstr ""
+
 msgid "Manage application tokens"
 msgstr ""
 
@@ -1724,6 +1741,9 @@ msgid "Leave empty to have a token that will last until deletion."
 msgstr ""
 
 msgid "When this token was last used to create an access token."
+msgstr ""
+
+msgid "Your Legadilo account is inactive and will be deleted soon"
 msgstr ""
 
 msgid "Username"

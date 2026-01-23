@@ -2,11 +2,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from datetime import timedelta
 from types import MappingProxyType
 
 from django.utils.translation import gettext_lazy as _
 
-INVALID_USERS_RETENTION_DAYS = 30
+INVALID_USERS_RETENTION_DAYS = timedelta(days=30)
+INACTIVE_USERS_RETENTION = timedelta(days=365 * 2)
+INACTIVE_USERS_NOTIFICATION_THRESHOLDS = (timedelta(days=30), timedelta(days=14), timedelta(days=7))
 USER_SETTINGS_PAGES = MappingProxyType({
     "users:update": _("My Infos"),
     "account_email": _("E-Mail"),
