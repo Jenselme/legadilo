@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+from datetime import timedelta
 from io import StringIO
 
 import pytest
@@ -13,7 +13,7 @@ from django.db import IntegrityError
 
 from legadilo.core.utils.time_utils import utcnow
 from legadilo.feeds.tests.factories import FeedFactory
-from legadilo.users.models import User
+from legadilo.users.models import User, UserSession
 from legadilo.users.tests.factories import UserFactory
 
 
@@ -175,6 +175,34 @@ class TestUserManager:
             email=active_user_who_logged_in.email,
             verified=True,
         )
+        UserSession.objects.create(
+            session_key="unverified_email_expired_session",
+            user=active_user_with_unverified_email,
+            expire_date=utcnow() - timedelta(days=100),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+        UserSession.objects.create(
+            session_key="unverified_email_valid_session",
+            user=active_user_with_unverified_email,
+            expire_date=utcnow() + timedelta(days=7),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+        UserSession.objects.create(
+            session_key="expired_session",
+            user=active_user_who_logged_in,
+            expire_date=utcnow() - timedelta(days=100),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+        UserSession.objects.create(
+            session_key="valid_session",
+            user=active_user_who_logged_in,
+            expire_date=utcnow() + timedelta(days=7),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
 
         stats = User.objects.compute_stats()
 
@@ -184,7 +212,7 @@ class TestUserManager:
             "total_nb_active_users_connected_last_week": 1,
             "total_nb_active_users_with_validated_emails": 2,
             "total_nb_users": 5,
-            "nb_users_with_active_session": 0,
+            "nb_users_with_active_session": 2,
         }
 
     def test_list_admin_emails(self):

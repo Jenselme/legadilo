@@ -15,6 +15,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 - Improve the display of reading lists selector.
 - Cleanup navigation in user settings.
 - Improve save actions in admin.
+- Rework how user sessions are managed to link them to the user.
+  - Sessions are now cleaned as part of the `clean_users` command. `clearsessions` cannot be used anymore.
 
 ## 25.12.5
 

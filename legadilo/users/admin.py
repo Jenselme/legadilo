@@ -12,7 +12,7 @@ from django.db.models.functions import Collate
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.users.forms import UserAdminChangeForm, UserAdminCreationForm
-from legadilo.users.models import ApplicationToken, Notification, UserSettings
+from legadilo.users.models import ApplicationToken, Notification, UserSession, UserSettings
 
 User = get_user_model()
 
@@ -103,3 +103,19 @@ class EmailAddressAdmin(DjangoAllAuthEmailAddress):
                 user_email_deterministic=Collate("user__email", "und-x-icu"),
             )
         )
+
+
+@admin.register(UserSession)
+class SessionAdmin(admin.ModelAdmin):
+    readonly_fields = (
+        "session_key",
+        "created_at",
+        "updated_at",
+        "expire_date",
+        "user",
+        "session_data",
+    )
+    list_display = ("session_key", "created_at", "updated_at", "expire_date", "user")
+
+    def has_add_permission(self, request):
+        return False

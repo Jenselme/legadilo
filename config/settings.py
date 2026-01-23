@@ -115,7 +115,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 DJANGO_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
-    "django.contrib.sessions",
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
@@ -306,6 +305,8 @@ FIXTURE_DIRS = (str(APPS_DIR / "fixtures"),)
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-httponly
 SESSION_COOKIE_HTTPONLY = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = IS_PRODUCTION
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-save-every-request
 # Refresh session at every request to prevent logout when we are using the software. This will
 # prevent disconnection while reading on scroll.
@@ -314,6 +315,8 @@ SESSION_SAVE_EVERY_REQUEST = True
 # Set default session lifetime to 2 weeks. If we are 2 weeks without usage (session is refreshed),
 # we are disconnected automatically.
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 days in seconds
+# https://docs.djangoproject.com/en/dev/ref/settings/#std-setting-SESSION_ENGINE
+SESSION_ENGINE = "legadilo.users.session_store"
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-httponly
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
@@ -322,8 +325,6 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-ssl-redirect
 SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=IS_PRODUCTION)
-# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
-SESSION_COOKIE_SECURE = IS_PRODUCTION
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-secure
 CSRF_COOKIE_SECURE = IS_PRODUCTION
 # https://docs.djangoproject.com/en/dev/topics/security/#ssl-https
