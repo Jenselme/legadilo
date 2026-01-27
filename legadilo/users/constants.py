@@ -5,6 +5,7 @@
 from datetime import timedelta
 from types import MappingProxyType
 
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 INVALID_USERS_RETENTION_DAYS = timedelta(days=30)
@@ -19,3 +20,4 @@ USER_SETTINGS_PAGES = MappingProxyType({
     "users:manage_tokens": _("Manage application tokens"),
     "import_export:import_export_articles": _("Import/Export Articles"),
 })
+LANGUAGE_CHOICES = (("", ""), *tuple(settings.LANGUAGES))

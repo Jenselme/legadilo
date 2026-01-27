@@ -25,7 +25,11 @@ class AccountAdapter(DefaultAccountAdapter):
     def save_user(self, request, user, form, commit=True):  # noqa: FBT002  boolean default positional argument in function definition
         user = super().save_user(request, user, form, commit)
 
-        UserSettings.objects.create(user=user, timezone=form.cleaned_data["timezone"])
+        UserSettings.objects.create(
+            user=user,
+            timezone=form.cleaned_data["timezone"],
+            language=form.cleaned_data["language"],
+        )
 
         return user
 

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .. import constants
 from .user import User
 
 if TYPE_CHECKING:
@@ -30,10 +31,19 @@ class UserSettings(models.Model):
         related_name="user_settings",
         help_text=_("Used to display times and updated feeds at a convenient time."),
     )
+    language = models.CharField(
+        max_length=10, default="", choices=constants.LANGUAGE_CHOICES, blank=True
+    )
 
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint("user", name="%(app_label)s_%(class)s_unique_per_user"),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_language_valid",
+                condition=models.Q(
+                    language__in=[lang_code for lang_code, _ in constants.LANGUAGE_CHOICES]
+                ),
+            ),
         ]
 
     def __str__(self):

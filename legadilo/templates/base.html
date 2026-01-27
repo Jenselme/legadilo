@@ -237,7 +237,7 @@
                                         {% endif %}
                                         {# URL provided by django-allauth/account/urls.py #}
                                         <a class="dropdown-item"
-                                           href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+                                           href="{% url 'users:logout' %}">{% translate "Sign Out" %}</a>
                                     </div>
                                 </li>
                             {% else %}

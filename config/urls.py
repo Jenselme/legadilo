@@ -28,6 +28,7 @@ urlpatterns = [  # noqa: RUF005 concatenation
     # User management
     path("users/", include("legadilo.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+    path("", include("legadilo.users.urls_override")),
     # Your stuff: custom urls includes go here
     path("feeds/", include("legadilo.feeds.urls", namespace="feeds")),
     path("reading/", include("legadilo.reading.urls", namespace="reading")),

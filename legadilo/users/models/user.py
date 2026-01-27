@@ -15,6 +15,7 @@ from django.core.validators import validate_email
 from django.db import models
 from django.template.loader import get_template
 from django.urls import reverse
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
 from legadilo.core.utils.time_utils import utcnow
@@ -140,25 +141,26 @@ class UserManager(DjangoUserManager["User"]):
             self
             .get_queryset()
             .inactive_accounts_to_notify()
+            .select_related("settings")
             .order_by("last_login")
-            .values_list("email", "last_login")
         )
         template = get_template("users/inactive_account_notification.txt")
-        for email, last_login in inactive_accounts:
-            days_since_last_login = (utcnow() - last_login).days
-            message = template.render({
-                "email": email,
-                "days_since_last_login": days_since_last_login,
-                "days_until_deletion": (
-                    (last_login + users_constants.INACTIVE_USERS_RETENTION - utcnow()).days
-                ),
-            })
-            send_mail(
-                subject=_("Your Legadilo account is inactive and will be deleted soon"),
-                message=message.strip(),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-            )
+        for user in inactive_accounts:
+            days_since_last_login = (utcnow() - user.last_login).days
+            with translation.override(user.settings.language):
+                message = template.render({
+                    "email": user.email,
+                    "days_since_last_login": days_since_last_login,
+                    "days_until_deletion": (
+                        (user.last_login + users_constants.INACTIVE_USERS_RETENTION - utcnow()).days
+                    ),
+                })
+                send_mail(
+                    subject=_("Your Legadilo account is inactive and will be deleted soon"),
+                    message=message.strip(),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                )
 
         return len(inactive_accounts)
 
