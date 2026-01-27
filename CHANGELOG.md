@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.01.2
+
 - Prevent errors on login when enforcing language.
 
 ## 26.01.1
