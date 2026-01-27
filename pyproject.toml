@@ -106,6 +106,7 @@ filterwarnings = [
 ]
 env = [
     "LOGGING_RICH_TRACEBACK=False", # This slows downs test and we don’t need it.
+    "ENABLE_DEBUG_TOOLBAR=False", # This messes up the test suite.
 ]
 
 # ==== Coverage ====

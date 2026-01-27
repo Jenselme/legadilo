@@ -575,16 +575,20 @@ AXES_CLIENT_IP_CALLABLE = lambda x: None  # noqa: E731
 # Set dev tooling
 # ---------------
 if DEBUG:
+    ENABLE_DEBUG_TOOLBAR = env.bool("ENABLE_DEBUG_TOOLBAR", default=False)
     # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
     INSTALLED_APPS = ["whitenoise.runserver_nostatic", *INSTALLED_APPS]
     # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#prerequisites
+    if ENABLE_DEBUG_TOOLBAR:
+        INSTALLED_APPS += ["debug_toolbar"]
+        MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+
     INSTALLED_APPS += ["django_watchfiles", "django_browser_reload"]
     MIDDLEWARE.insert(0, "django_browser_reload.middleware.BrowserReloadMiddleware")
     # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
     DEBUG_TOOLBAR_CONFIG = {
         "DISABLE_PANELS": [
             "debug_toolbar.panels.profiling.ProfilingPanel",
-            "debug_toolbar.panels.redirects.RedirectsPanel",
         ],
         "SHOW_TEMPLATE_CONTEXT": True,
     }
