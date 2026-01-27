@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 22:10+0100\n"
+"POT-Creation-Date: 2026-01-25 12:35+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1663,6 +1663,26 @@ msgid_plural "%(nb_articles)s&nbsp;articles"
 msgstr[0] "%(nb_articles)s&nbsp;article"
 msgstr[1] "%(nb_articles)s&nbsp;articles"
 
+#, python-format
+msgid "Hello %(email)s,"
+msgstr "Bonjour %(email)s,"
+
+#, python-format
+msgid ""
+"Your account has been inactive for %(days_since_last_login)s days and will "
+"be deleted automatically in %(days_until_deletion)s days. To prevent this, "
+"please log in to your account."
+msgstr ""
+"Votre compte est inactif depuis %(days_since_last_login)s jours et sera "
+"supprimé automatiquement dans %(days_until_deletion)s jours. Pour l’éviter, "
+"veuillez vous connecter."
+
+msgid "Regards,"
+msgstr "Cordialement,"
+
+msgid "The Legadilo Team"
+msgstr "L’équipe Legadilo"
+
 msgid "Manage application tokens"
 msgstr "Gérer les jetons d’application"
 
@@ -1722,6 +1742,28 @@ msgstr "Notifications"
 
 msgid "Update"
 msgstr "Mettre à jour"
+
+msgid "Account deletion"
+msgstr "Suppression du compte"
+
+msgid ""
+"Deleting your account is permanent and cannot be undone. All your data will "
+"be lost! Make sure to export your data before doing this!"
+msgstr ""
+"La suppression de votre compte est définitive et ne peut pas être annulée. "
+"Toutes vos données seront perdues ! Pensez à exporter vos données avant de "
+"valider !"
+
+msgid "Confirm account deletion"
+msgstr "Confirmez la suppression du compte"
+
+msgid "Are you sure you want to delete your account? This cannot be undone."
+msgstr ""
+"Voulez-vous vraiment supprimer votre compte ? Cette opération ne peut pas "
+"être annulée."
+
+msgid "Delete account"
+msgstr "Supprimer le compte"
 
 msgid "Edit your settings"
 msgstr "Changer vos paramètres"
@@ -1891,6 +1933,19 @@ msgstr ""
 "Utilisé pour afficher les heures et pour mettre à jour les flux à une heure "
 "pertinente."
 
+msgid "Language"
+msgstr "Langue"
+
+msgid ""
+"Set this to force the language of the app. By default, it will use your "
+"browser language. If the language is not supported, it will fallback to "
+"English. This will also enable you to receive emails in this language."
+msgstr ""
+"Utilisez cette option pour forcer la langue de l’application. Par défaut, "
+"elle utilise la langue de votre navigateur. Si cette langue n’est pas "
+"supportée, l’application sera en anglais. Ce paramètre permet aussi de "
+"recevoir les e-mails dans la langue choisie."
+
 msgid "Timezone"
 msgstr "Fuseau horaire"
 
@@ -1910,6 +1965,9 @@ msgid "When this token was last used to create an access token."
 msgstr ""
 "Quand ce jeton a été utilisé pour la dernière fois pour créer un jeton "
 "d’accès."
+
+msgid "Your Legadilo account is inactive and will be deleted soon"
+msgstr "Votre compte sur Legadilo est inactif et sera bientôt supprimé"
 
 msgid "Username"
 msgstr "Nom d’utilisateur"
@@ -1941,12 +1999,11 @@ msgstr "Paramètres correctement mis à jour"
 msgid "Failed to update settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
 
+msgid "Account deleted successfully"
+msgstr "Compte supprimé avec succès"
+
 #~ msgid "My Profile"
 #~ msgstr "Mon Profil"
-
-#, python-format
-#~ msgid "User: %(email)s"
-#~ msgstr "Utilisateur : %(email)s"
 
 #~ msgid "Name of User"
 #~ msgstr "Nom de l'utilisateur"

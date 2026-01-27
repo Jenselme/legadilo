@@ -22,6 +22,22 @@
                     </div>
                 </div>
             </form>
+
+            <h2 class="mt-4">{% translate "Account deletion" %}</h2>
+            <p class="bg-danger-subtle text-danger-emphasis rounded p-2">{% translate "Deleting your account is permanent and cannot be undone. All your data will be lost! Make sure to export your data before doing this!" %}</p>
+            <form
+                method="post"
+                action="{% url 'users:delete_account' %}"
+                hx-boost="true"
+                hx-push-url="true"
+                hx-confirm="Delete?"
+                data-modal-id="danger-modal"
+                data-modal-title="{% translate 'Confirm account deletion' %}"
+                data-modal-body="{% translate 'Are you sure you want to delete your account? This cannot be undone.' %}"
+            >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">{% translate "Delete account" %}</button>
+            </form>
         </div>
     </div>
 {% endblock content %}

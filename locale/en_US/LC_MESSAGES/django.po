@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 22:10+0100\n"
+"POT-Creation-Date: 2026-01-25 12:35+0000\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1507,6 +1507,23 @@ msgid_plural "%(nb_articles)s&nbsp;articles"
 msgstr[0] ""
 msgstr[1] ""
 
+#, python-format
+msgid "Hello %(email)s,"
+msgstr ""
+
+#, python-format
+msgid ""
+"Your account has been inactive for %(days_since_last_login)s days and will "
+"be deleted automatically in %(days_until_deletion)s days. To prevent this, "
+"please log in to your account."
+msgstr ""
+
+msgid "Regards,"
+msgstr ""
+
+msgid "The Legadilo Team"
+msgstr ""
+
 msgid "Manage application tokens"
 msgstr ""
 
@@ -1563,6 +1580,23 @@ msgid "Notifications"
 msgstr ""
 
 msgid "Update"
+msgstr ""
+
+msgid "Account deletion"
+msgstr ""
+
+msgid ""
+"Deleting your account is permanent and cannot be undone. All your data will "
+"be lost! Make sure to export your data before doing this!"
+msgstr ""
+
+msgid "Confirm account deletion"
+msgstr ""
+
+msgid "Are you sure you want to delete your account? This cannot be undone."
+msgstr ""
+
+msgid "Delete account"
 msgstr ""
 
 msgid "Edit your settings"
@@ -1691,6 +1725,15 @@ msgstr ""
 msgid "Used to display times and updated feeds at a convenient time."
 msgstr ""
 
+msgid "Language"
+msgstr ""
+
+msgid ""
+"Set this to force the language of the app. By default, it will use your "
+"browser language. If the language is not supported, it will fallback to "
+"English. This will also enable you to receive emails in this language."
+msgstr ""
+
 msgid "Timezone"
 msgstr ""
 
@@ -1707,6 +1750,9 @@ msgid "Leave empty to have a token that will last until deletion."
 msgstr ""
 
 msgid "When this token was last used to create an access token."
+msgstr ""
+
+msgid "Your Legadilo account is inactive and will be deleted soon"
 msgstr ""
 
 msgid "Username"
@@ -1733,4 +1779,7 @@ msgid "Settings correctly updated"
 msgstr ""
 
 msgid "Failed to update settings"
+msgstr ""
+
+msgid "Account deleted successfully"
 msgstr ""

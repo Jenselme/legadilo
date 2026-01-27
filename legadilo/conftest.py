@@ -58,7 +58,7 @@ def other_user(db) -> User:
 def utc_tz(db) -> Timezone:
     # The Timezone table will be filled when the db is created from migrations and deleted at the
     # end of the test suite. So we have to use get_or_create here.
-    return Timezone.objects.get_or_create(name="UTC")[0]
+    return Timezone.objects.get(name="UTC")
 
 
 @pytest.fixture

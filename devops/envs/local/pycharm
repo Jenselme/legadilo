@@ -6,3 +6,4 @@ USE_DOCKER=no
 EMAIL_HOST=localhost
 DATABASE_URL="postgres://django:django_passwd@localhost:5432/legadilo"
 IPYTHONDIR=~/.ipython
+ENABLE_DEBUG_TOOLBAR=true

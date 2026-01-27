@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+from datetime import timedelta
 from io import StringIO
 
 import pytest
@@ -10,10 +10,13 @@ from allauth.account.models import EmailAddress
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
+from slugify import slugify
 
+from legadilo.core.utils.testing import AnyOfType
 from legadilo.core.utils.time_utils import utcnow
 from legadilo.feeds.tests.factories import FeedFactory
-from legadilo.users.models import User
+from legadilo.users import constants
+from legadilo.users.models import User, UserSession
 from legadilo.users.tests.factories import UserFactory
 
 
@@ -88,6 +91,63 @@ class TestUserQuerySet:
             user_to_delete_inactive_and_no_verified_email,
             user_to_delete_active_and_no_verified_email,
         ]
+
+    def test_inactive_accounts_to_delete(self):
+        UserFactory(email="active@example.com", last_login=utcnow())
+        user_to_delete = UserFactory(
+            email="to_delete@example.com", last_login=utcnow() - constants.INACTIVE_USERS_RETENTION
+        )
+        UserFactory(
+            email="to_notify@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[0],
+        )
+
+        inactive_accounts = User.objects.get_queryset().inactive_accounts_to_delete()
+
+        assert list(inactive_accounts) == [user_to_delete]
+
+    def test_inactive_accounts_to_notify(self):
+        UserFactory(email="active@example.com", last_login=utcnow())
+        UserFactory(
+            email="to_delete@example.com", last_login=utcnow() - constants.INACTIVE_USERS_RETENTION
+        )
+        user_to_notify_30_days = UserFactory(
+            email="user_to_notify_30_days@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[0],
+        )
+        user_to_notify_14_days = UserFactory(
+            email="user_to_notify_14_days@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[1],
+        )
+        user_to_notify_7_days = UserFactory(
+            email="user_to_notify_7_days@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[2],
+        )
+        UserFactory(
+            email="almost_to_notify@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[0]
+            + timedelta(days=1),
+        )
+
+        inactive_account_ids = (
+            User.objects.get_queryset().inactive_accounts_to_notify().values_list("id", flat=True)
+        )
+
+        assert set(inactive_account_ids) == {
+            user_to_notify_30_days.id,
+            user_to_notify_14_days.id,
+            user_to_notify_7_days.id,
+        }
 
 
 @pytest.mark.django_db
@@ -175,6 +235,34 @@ class TestUserManager:
             email=active_user_who_logged_in.email,
             verified=True,
         )
+        UserSession.objects.create(
+            session_key="unverified_email_expired_session",
+            user=active_user_with_unverified_email,
+            expire_date=utcnow() - timedelta(days=100),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+        UserSession.objects.create(
+            session_key="unverified_email_valid_session",
+            user=active_user_with_unverified_email,
+            expire_date=utcnow() + timedelta(days=7),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+        UserSession.objects.create(
+            session_key="expired_session",
+            user=active_user_who_logged_in,
+            expire_date=utcnow() - timedelta(days=100),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
+        UserSession.objects.create(
+            session_key="valid_session",
+            user=active_user_who_logged_in,
+            expire_date=utcnow() + timedelta(days=7),
+            created_at=utcnow(),
+            updated_at=utcnow(),
+        )
 
         stats = User.objects.compute_stats()
 
@@ -184,7 +272,7 @@ class TestUserManager:
             "total_nb_active_users_connected_last_week": 1,
             "total_nb_active_users_with_validated_emails": 2,
             "total_nb_users": 5,
-            "nb_users_with_active_session": 0,
+            "nb_users_with_active_session": 2,
         }
 
     def test_list_admin_emails(self):
@@ -195,6 +283,70 @@ class TestUserManager:
         admin_emails = User.objects.list_admin_emails()
 
         assert admin_emails == [admin_user.email]
+
+    def test_notify_inactive_accounts(self, mocker, snapshot):
+        send_mail_mock = mocker.patch("legadilo.users.models.user.send_mail")
+        user_to_notify_14_days = UserFactory(
+            email="user_to_notify_14_days@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[1],
+        )
+        user_to_notify_7_days = UserFactory(
+            email="user_to_notify_7_days@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[2],
+        )
+        UserFactory(
+            email="almost_to_notify@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[0]
+            + timedelta(days=1),
+        )
+
+        nb_notified_accounts = User.objects.notify_inactive_accounts()
+
+        assert nb_notified_accounts == 2
+        send_mail_mock.assert_has_calls(
+            [
+                mocker.call(
+                    subject="Your Legadilo account is inactive and will be deleted soon",
+                    message=AnyOfType(str),
+                    from_email="Legadilo <noreply@legadilo.eu>",
+                    recipient_list=[user_to_notify_7_days.email],
+                ),
+                mocker.call(
+                    subject="Your Legadilo account is inactive and will be deleted soon",
+                    message=AnyOfType(str),
+                    from_email="Legadilo <noreply@legadilo.eu>",
+                    recipient_list=[user_to_notify_14_days.email],
+                ),
+            ],
+            any_order=True,
+        )
+        for call in send_mail_mock.call_args_list:
+            email = call.kwargs["recipient_list"][0]
+            snapshot.assert_match(call.kwargs["message"], f"message_body_{slugify(email)}.txt")
+
+    def test_cleanup_inactive_users(self):
+        user_active = UserFactory(email="active@example.com", last_login=utcnow())
+        UserFactory(
+            email="to_delete@example.com", last_login=utcnow() - constants.INACTIVE_USERS_RETENTION
+        )
+        user_to_notify_14_days = UserFactory(
+            email="user_to_notify_14_days@example.com",
+            last_login=utcnow()
+            - constants.INACTIVE_USERS_RETENTION
+            + constants.INACTIVE_USERS_NOTIFICATION_THRESHOLDS[1],
+        )
+
+        nb_deleted = User.objects.cleanup_inactive_users()
+
+        assert nb_deleted == (2, {"users.UserSettings": 1, "users.User": 1})
+        user_ids = set(User.objects.values_list("id", flat=True))
+        assert user_ids == {user_active.id, user_to_notify_14_days.id}
 
 
 @pytest.mark.django_db

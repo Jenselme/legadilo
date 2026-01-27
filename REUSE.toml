@@ -8,10 +8,11 @@ path = [
 SPDX-FileCopyrightText = "Legadilo contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
-# HTML templates
+# Templates
 [[annotations]]
 path = [
     "legadilo/templates/**/*.html",
+    "legadilo/templates/**/*.txt",
 ]
 SPDX-FileCopyrightText = "Legadilo contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
@@ -21,6 +22,7 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = [
     "legadilo/*/tests/**/snapshots/**/*.json",
     "legadilo/*/tests/**/snapshots/**/*.html",
+    "legadilo/*/tests/**/snapshots/**/*.txt",
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"

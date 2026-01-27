@@ -1,0 +1,11 @@
+{% load humanize i18n %}
+
+{% blocktranslate with email=email %}Hello {{ email }},{% endblocktranslate %}
+
+{% blocktranslate trimmed with days_since_last_login=days_since_last_login days_until_deletion=days_until_deletion %}
+    Your account has been inactive for {{ days_since_last_login }} days and will be deleted automatically in {{ days_until_deletion }} days.
+    To prevent this, please log in to your account.
+{% endblocktranslate %}
+
+{% translate "Regards," %}
+{% translate "The Legadilo Team" %}

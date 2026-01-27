@@ -53,7 +53,6 @@ You will need to configure these commands on the CRON of the host to update the 
 
 ```
 0 * * * * cd LEGADILO && docker compose -f production.yml exec django python manage.py update_feeds |& systemd-cat -t legadilo
-0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clearsessions |& systemd-cat -t legadilo
 0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_data |& systemd-cat -t legadilo
 0 0 * * 1 cd LEGADILO && docker compose -f production.yml exec django manage.py clean_users |& systemd-cat -t legadilo
 ```

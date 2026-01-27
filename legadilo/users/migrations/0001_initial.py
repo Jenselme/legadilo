@@ -7,7 +7,7 @@
 import django.utils.timezone
 from django.db import migrations, models
 
-import legadilo.users.managers
+import legadilo.users.models.user
 
 
 class Migration(migrations.Migration):
@@ -102,7 +102,7 @@ class Migration(migrations.Migration):
                 "abstract": False,
             },
             managers=[
-                ("objects", legadilo.users.managers.UserManager()),
+                ("objects", legadilo.users.models.user.UserManager()),
             ],
         ),
     ]

@@ -7,7 +7,8 @@
 
 {% block content %}
     <div class="row">
-        {% include "users/partials/user_settings_navigation.html" %}
+        {% block navigation %}
+        {% endblock navigation %}
         <div class="col-md-9">
             {% block inner %}
             {% endblock inner %}

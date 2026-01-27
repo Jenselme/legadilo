@@ -1,22 +1,38 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
+from allauth.account.decorators import reauthentication_required
+from allauth.account.internal.flows.logout import logout
+from allauth.account.views import LogoutView as AccountLogoutView
+from allauth.account.views import SignupView as AccountSignupView
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 from django.views.generic import RedirectView, UpdateView
 
+from legadilo.core.utils.locale import enforce_language_on_response, stop_enforcing_language
 from legadilo.users.forms import UserSettingsForm
 from legadilo.users.models import UserSettings
 
 User = get_user_model()
+
+
+class UserSignupView(AccountSignupView):
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        enforce_language_on_response(resp, form.cleaned_data.get("language"))
+        return resp
+
+
+signup_view = UserSignupView.as_view()
 
 
 class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -54,12 +70,13 @@ def user_update_settings_view(request):
     if request.method == "POST":
         form = UserSettingsForm(request.POST, instance=user_settings)
         if form.is_valid():
-            form.save()
+            user_settings = form.save()
+            translation.activate(user_settings.language)
             messages.success(request, _("Settings correctly updated"))
         else:
             messages.error(request, _("Failed to update settings"))
 
-    return TemplateResponse(
+    response = TemplateResponse(
         request,
         "users/user_settings.html",
         {
@@ -67,3 +84,24 @@ def user_update_settings_view(request):
             "user": request.user,
         },
     )
+    enforce_language_on_response(response, user_settings.language)
+    return response
+
+
+@require_http_methods(["POST"])
+@reauthentication_required
+def delete_account_view(request):
+    request.user.delete()
+    messages.success(request, _("Account deleted successfully"))
+    logout(request, show_message=False)
+    return redirect("website:home")
+
+
+class LogoutView(AccountLogoutView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        stop_enforcing_language(response)
+        return response
+
+
+logout_view = LogoutView.as_view()
