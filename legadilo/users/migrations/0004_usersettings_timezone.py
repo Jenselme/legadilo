@@ -8,14 +8,6 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
-def set_default_tz(apps, schema_editor):
-    UserSettings = apps.get_model("users", "UserSettings")
-    Timezone = apps.get_model("core", "Timezone")
-    utc_tz = Timezone.objects.get(name="UTC")
-
-    UserSettings.objects.filter(timezone__isnull=True).update(timezone=utc_tz)
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("core", "0002_initial"),
@@ -33,7 +25,6 @@ class Migration(migrations.Migration):
                 to="core.timezone",
             ),
         ),
-        migrations.RunPython(set_default_tz, migrations.RunPython.noop),
         migrations.AlterField(
             model_name="usersettings",
             name="timezone",

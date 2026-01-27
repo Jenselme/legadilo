@@ -128,7 +128,7 @@ class TestFeedQuerySet:
 
     @time_machine.travel("2024-05-08 10:00:00")
     def test_for_update_non_utc_user_nothing_to_update(self, user):
-        user.settings.timezone, _ = Timezone.objects.get_or_create(name="Europe/Paris")
+        user.settings.timezone = Timezone.objects.get(name="Europe/Paris")
         user.settings.save()
 
         feed_updated_more_than_one_hour_ago = FeedFactory(
@@ -155,7 +155,7 @@ class TestFeedQuerySet:
 
     @time_machine.travel("2024-05-08 08:00:00")
     def test_for_update_non_utc_user(self, user):
-        user.settings.timezone, _ = Timezone.objects.get_or_create(name="Europe/Paris")
+        user.settings.timezone = Timezone.objects.get(name="Europe/Paris")
         user.settings.save()
 
         feed_not_yet_updated_this_morning = FeedFactory(
