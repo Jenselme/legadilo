@@ -42,7 +42,8 @@ class UserAdminCreationForm(admin_forms.UserCreationForm):
 class UserLoginForm(LoginForm):
     def login(self, request, *args, **kwargs):
         response = super().login(request, *args, **kwargs)
-        enforce_language_on_response(response, request.user.settings.language)
+        if request.user.is_authenticated:
+            enforce_language_on_response(response, request.user.settings.language)
         return response
 
 

@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Prevent errors on login when enforcing language.
+
 ## 26.01.1
 
 - Add a `.well-known/security.txt` view to ease reporting vulnerabilities.
