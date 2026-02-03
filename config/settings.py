@@ -589,6 +589,7 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         "DISABLE_PANELS": [
             "debug_toolbar.panels.profiling.ProfilingPanel",
+            "debug_toolbar.panels.redirects.RedirectsPanel",
         ],
         "SHOW_TEMPLATE_CONTEXT": True,
     }
