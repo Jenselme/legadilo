@@ -27,7 +27,7 @@ class TestReadingListsAdminView:
         response = client.get(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/accounts/login/?next={self.url}"
+        assert response["Location"] == f"/~login/?next={self.url}"
 
     def test_get_page(self, logged_in_sync_client, other_user):
         ReadingListFactory(user=other_user)
@@ -89,7 +89,7 @@ class TestCreateReadingListView:
         response = client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/accounts/login/?next={self.url}"
+        assert response["Location"] == f"/~login/?next={self.url}"
 
     def test_invalid_form(self, logged_in_sync_client):
         response = logged_in_sync_client.post(self.url, data={})
@@ -198,7 +198,7 @@ class TestReadingListEditView:
         response = client.post(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/accounts/login/?next={self.url}"
+        assert response["Location"] == f"/~login/?next={self.url}"
 
     def test_edit_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.post(self.url, data=self.sample_data)

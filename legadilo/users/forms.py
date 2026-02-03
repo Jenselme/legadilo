@@ -11,7 +11,6 @@ from django.utils.translation import gettext_lazy as _
 
 from legadilo.core.forms.widgets import SelectAutocompleteWidget
 from legadilo.core.models import Timezone
-from legadilo.core.utils.locale import enforce_language_on_response
 from legadilo.users import constants
 from legadilo.users.models import UserSettings
 
@@ -39,12 +38,7 @@ class UserAdminCreationForm(admin_forms.UserCreationForm):
         }
 
 
-class UserLoginForm(LoginForm):
-    def login(self, request, *args, **kwargs):
-        response = super().login(request, *args, **kwargs)
-        if request.user.is_authenticated:
-            enforce_language_on_response(response, request.user.settings.language)
-        return response
+class UserLoginForm(LoginForm): ...
 
 
 class UserSignupForm(SignupForm):

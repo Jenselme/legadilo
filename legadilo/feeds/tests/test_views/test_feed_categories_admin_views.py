@@ -23,7 +23,7 @@ class TestCategoryFeedAdminView:
         response = client.get(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/accounts/login/?next={self.url}"
+        assert response["Location"] == f"/~login/?next={self.url}"
 
     def test_get_page(self, logged_in_sync_client, user, other_user):
         feed_category = FeedCategoryFactory(user=user)
@@ -46,7 +46,7 @@ class TestCreateFeedCategoryView:
         response = client.get(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/accounts/login/?next={self.url}"
+        assert response["Location"] == f"/~login/?next={self.url}"
 
     def test_create_category(
         self, logged_in_sync_client, user, other_user, django_assert_num_queries
@@ -100,7 +100,7 @@ class TestEditFeedCategoryView:
         response = client.get(self.url)
 
         assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == f"/accounts/login/?next={self.url}"
+        assert response["Location"] == f"/~login/?next={self.url}"
 
     def test_edit_as_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url)

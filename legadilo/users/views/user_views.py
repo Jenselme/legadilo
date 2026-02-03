@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 from allauth.account.decorators import reauthentication_required
 from allauth.account.internal.flows.logout import logout
+from allauth.account.views import LoginView as AccountLoginView
 from allauth.account.views import LogoutView as AccountLogoutView
 from allauth.account.views import SignupView as AccountSignupView
 from django.contrib import messages
@@ -33,6 +34,16 @@ class UserSignupView(AccountSignupView):
 
 
 signup_view = UserSignupView.as_view()
+
+
+class UserLoginView(AccountLoginView):
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        enforce_language_on_response(resp, self.request.user.settings.language)
+        return resp
+
+
+user_login_view = UserLoginView.as_view()
 
 
 class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

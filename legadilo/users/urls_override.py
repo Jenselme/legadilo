@@ -9,4 +9,6 @@ from legadilo.users import views
 
 urlpatterns = [
     path("~signup/", views.signup_view, name="account_signup"),
+    path("~logout/", views.logout_view, name="account_logout"),
+    path("~login/", views.user_login_view, name="account_login"),
 ]

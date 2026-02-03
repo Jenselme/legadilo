@@ -82,7 +82,7 @@ class TestUserRegistration:
 
     def _test_cannot_login_email_not_validated(self):
         response = self.client.post(
-            "/accounts/login/", {"email": self.user_email, "password": self.password}
+            "/~login/", {"email": self.user_email, "password": self.password}
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -103,15 +103,15 @@ class TestUserRegistration:
             "http://testserver/accounts/confirm-email/mockkey/"
         )
         assert submit_confirmation_response.status_code == HTTPStatus.FOUND
-        assert submit_confirmation_response["Location"] == "/accounts/login/"
+        assert submit_confirmation_response["Location"] == "/~login/"
 
     def _test_login(self):
-        response = self.client.get("/accounts/login/")
+        response = self.client.get("/~login/")
         assert response.status_code == HTTPStatus.OK
         self.snapshot.assert_match(response.content, "login_page.html")
 
         login_response = self.client.post(
-            "/accounts/login/", {"login": self.user_email, "password": self.password}
+            "/~login/", {"login": self.user_email, "password": self.password}
         )
         assert login_response.status_code == HTTPStatus.FOUND, login_response.content
         assert login_response["Location"] == reverse("users:redirect")

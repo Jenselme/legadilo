@@ -8,7 +8,6 @@ from . import views
 
 app_name = "users"
 urlpatterns = [
-    path("~logout/", view=views.logout_view, name="logout"),
     path("~redirect/", view=views.user_redirect_view, name="redirect"),
     path("~update/", view=views.user_update_view, name="update"),
     path("~settings/", view=views.user_update_settings_view, name="update_settings"),
