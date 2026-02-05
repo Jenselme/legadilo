@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.02.1
+
 - Update Django for security.
 - Clean up how language is forced on login based on user settings.
 
