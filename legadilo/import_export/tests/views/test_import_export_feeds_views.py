@@ -74,19 +74,18 @@ class TestImportFeeds:
         assert_redirected_to_login_page(response)
 
     def test_import_empty_file(self, logged_in_sync_client):
-        temp_file = TemporaryUploadedFile(
+        with TemporaryUploadedFile(
             settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml",  # type: ignore[arg-type]
             "application/xml",
             size=100,
             charset="utf-8",
-        )
-
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "opml_file": temp_file,
-            },
-        )
+        ) as temp_file:
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "opml_file": temp_file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_feeds.html"
@@ -96,20 +95,20 @@ class TestImportFeeds:
         assert Feed.objects.count() == 0
 
     def test_import_too_big(self, logged_in_sync_client):
-        temp_file = TemporaryUploadedFile(
+        with TemporaryUploadedFile(
             settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml",  # type: ignore[arg-type]
             "application/xml",
             size=0,
             charset="utf-8",
-        )
-        Path(temp_file.file.name).write_text("stuff" * 2048 * 2048, encoding="utf-8")
+        ) as temp_file:
+            Path(temp_file.file.name).write_text("stuff" * 2048 * 2048, encoding="utf-8")
 
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "opml_file": temp_file,
-            },
-        )
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "opml_file": temp_file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_feeds.html"
@@ -119,20 +118,20 @@ class TestImportFeeds:
         assert Feed.objects.count() == 0
 
     def test_import_invalid_file(self, logged_in_sync_client):
-        temp_file = TemporaryUploadedFile(
+        with TemporaryUploadedFile(
             settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml",  # type: ignore[arg-type]
             "application/xml",
             size=100,
             charset="utf-8",
-        )
-        Path(temp_file.file.name).write_text("stuff", encoding="utf-8")  # type: ignore[union-attr]
+        ) as temp_file:
+            Path(temp_file.file.name).write_text("stuff", encoding="utf-8")  # type: ignore[union-attr]
 
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "opml_file": temp_file,
-            },
-        )
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "opml_file": temp_file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_feeds.html"
@@ -156,20 +155,23 @@ class TestImportFeeds:
             content=get_feed_fixture_content("sample_atom.xml"),
         )
 
-        with Path(settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml").open(
-            "r", encoding="utf-8"
-        ) as f:
+        with (
+            Path(settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml").open(
+                "r", encoding="utf-8"
+            ) as f,
+            InMemoryUploadedFile(
+                f,
+                "opml_file",
+                "valid.opml",
+                content_type="application/xml",
+                size=100,
+                charset="utf-8",
+            ) as in_memory_file,
+        ):
             response = logged_in_sync_client.post(
                 self.url,
                 {
-                    "opml_file": InMemoryUploadedFile(
-                        f,
-                        "opml_file",
-                        "valid.opml",
-                        content_type="application/xml",
-                        size=100,
-                        charset="utf-8",
-                    )
+                    "opml_file": in_memory_file,
                 },
             )
 
@@ -195,23 +197,23 @@ class TestImportFeeds:
             url="https://www.example.eu/feeds/all.atom.xml",
             content=get_feed_fixture_content("sample_atom.xml"),
         )
-        temp_file = TemporaryUploadedFile(
+        with TemporaryUploadedFile(
             settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml",  # type: ignore[arg-type]
             "application/xml",
             size=100,
             charset="utf-8",
-        )
-        input_csv = Path(
-            settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
-        ).read_text(encoding="utf-8")
-        Path(temp_file.file.name).write_text(input_csv, encoding="utf-8")
+        ) as temp_file:
+            input_csv = Path(
+                settings.APPS_DIR / "import_export/tests/fixtures/opml/valid.opml"
+            ).read_text(encoding="utf-8")
+            Path(temp_file.file.name).write_text(input_csv, encoding="utf-8")
 
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "opml_file": temp_file,
-            },
-        )
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "opml_file": temp_file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_feeds.html"

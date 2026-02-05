@@ -43,11 +43,11 @@ class TestFeedUpdateQuerySet:
 class TestFeedUpdateManager:
     def test_get_latest_for_feed(self):
         feed = FeedFactory()
-        with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC)):
+        with time_machine.travel(datetime(2023, 12, 30, tzinfo=UTC), tick=False):
             FeedUpdateFactory(feed=feed)
-        with time_machine.travel(datetime(2023, 12, 31, 11, tzinfo=UTC)):
+        with time_machine.travel(datetime(2023, 12, 31, 11, tzinfo=UTC), tick=False):
             latest_feed_update = FeedUpdateFactory(feed=feed)
-        with time_machine.travel(datetime(2023, 12, 30, 12, tzinfo=UTC)):
+        with time_machine.travel(datetime(2023, 12, 30, 12, tzinfo=UTC), tick=False):
             FeedUpdateFactory()
             FeedUpdateFactory(feed=feed, status=constants.FeedUpdateStatus.FAILURE)
 

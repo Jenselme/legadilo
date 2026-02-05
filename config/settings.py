@@ -40,7 +40,7 @@ DEBUG = not IS_PRODUCTION
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
-    default=env.NOTSET if IS_PRODUCTION else "local-secret-key",
+    default=env.NOTSET if IS_PRODUCTION else "local-secret-key-a-bit-long-to-avoid-warnings",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list(

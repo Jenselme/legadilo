@@ -77,16 +77,15 @@ class TestImportExportArticlesView:
 
     def test_import_unsupported_file(self, logged_in_sync_client):
         buffer = BytesIO(b"stuff")
-        file = InMemoryUploadedFile(
+        with InMemoryUploadedFile(
             buffer,
             "some_file",
             "file.png",
             content_type="application/xml",
             size=100,
             charset="utf-8",
-        )
-
-        response = logged_in_sync_client.post(self.url, {"invalid_file": file})
+        ) as file:
+            response = logged_in_sync_client.post(self.url, {"invalid_file": file})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         messages = list(get_messages(response.wsgi_request))
@@ -105,21 +104,20 @@ class TestImportCustomCSV:
 
     def test_import_invalid_file(self, logged_in_sync_client):
         buffer = BytesIO(b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01")
-        file = InMemoryUploadedFile(
+        with InMemoryUploadedFile(
             buffer,
             "some_file",
             "file.png",
             content_type="application/xml",
             size=100,
             charset="utf-8",
-        )
-
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "csv_file": file,
-            },
-        )
+        ) as file:
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "csv_file": file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_export_articles.html"
@@ -146,20 +144,23 @@ class TestImportCustomCSV:
         httpx_mock.add_response(url="https://example.com/rss8.xml", content="")
         httpx_mock.add_response(url="https://example.com/existing.xml", content="")
 
-        with Path(
-            settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
-        ).open("r", encoding="utf-8") as f:
+        with (
+            Path(settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv").open(
+                "r", encoding="utf-8"
+            ) as f,
+            InMemoryUploadedFile(
+                f,
+                "some_file",
+                "file.png",
+                content_type="application/xml",
+                size=100,
+                charset="utf-8",
+            ) as file,
+        ):
             response = logged_in_sync_client.post(
                 self.url,
                 {
-                    "csv_file": InMemoryUploadedFile(
-                        f,
-                        "some_file",
-                        "file.png",
-                        content_type="application/xml",
-                        size=100,
-                        charset="utf-8",
-                    ),
+                    "csv_file": file,
                 },
             )
 
@@ -188,23 +189,23 @@ class TestImportCustomCSV:
         )
         httpx_mock.add_response(url="https://example.com/rss8.xml", content="")
         httpx_mock.add_response(url="https://example.com/existing.xml", content="")
-        temp_file = TemporaryUploadedFile(
+        with TemporaryUploadedFile(
             settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv",  # type: ignore[arg-type]
             "text/csv",
             size=100,
             charset="utf-8",
-        )
-        input_csv = Path(
-            settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
-        ).read_text(encoding="utf-8")
-        Path(temp_file.file.name).write_text(input_csv, encoding="utf-8")
+        ) as temp_file:
+            input_csv = Path(
+                settings.APPS_DIR / "import_export/tests/fixtures/custom_csv/custom_csv.csv"
+            ).read_text(encoding="utf-8")
+            Path(temp_file.file.name).write_text(input_csv, encoding="utf-8")
 
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "csv_file": temp_file,
-            },
-        )
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "csv_file": temp_file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "import_export/import_export_articles.html"
@@ -227,21 +228,20 @@ class TestImportWallabag:
 
     def test_import_invalid_data(self, logged_in_sync_client):
         buffer = BytesIO(b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01")
-        file = InMemoryUploadedFile(
+        with InMemoryUploadedFile(
             buffer,
             "some_file",
             "file.png",
             content_type="application/xml",
             size=100,
             charset="utf-8",
-        )
-
-        response = logged_in_sync_client.post(
-            self.url,
-            {
-                "wallabag_file": file,
-            },
-        )
+        ) as file:
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "wallabag_file": file,
+                },
+            )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "import_export/import_export_articles.html"
@@ -257,20 +257,23 @@ class TestImportWallabag:
         ]
 
     def test_import_invalid_file(self, logged_in_sync_client):
-        with Path(
-            settings.APPS_DIR / "import_export/tests/fixtures/wallabag/invalid_wallabag.json"
-        ).open("r", encoding="utf-8") as f:
+        with (
+            Path(
+                settings.APPS_DIR / "import_export/tests/fixtures/wallabag/invalid_wallabag.json"
+            ).open("r", encoding="utf-8") as f,
+            InMemoryUploadedFile(
+                f,
+                "some_file",
+                "file.png",
+                content_type="application/json",
+                size=100,
+                charset="utf-8",
+            ) as file,
+        ):
             response = logged_in_sync_client.post(
                 self.url,
                 {
-                    "wallabag_file": InMemoryUploadedFile(
-                        f,
-                        "some_file",
-                        "file.png",
-                        content_type="application/json",
-                        size=100,
-                        charset="utf-8",
-                    ),
+                    "wallabag_file": file,
                 },
             )
 
@@ -288,20 +291,23 @@ class TestImportWallabag:
         ]
 
     def test_import_valid_file(self, logged_in_sync_client, snapshot):
-        with Path(
-            settings.APPS_DIR / "import_export/tests/fixtures/wallabag/valid_wallabag.json"
-        ).open("r", encoding="utf-8") as f:
+        with (
+            Path(
+                settings.APPS_DIR / "import_export/tests/fixtures/wallabag/valid_wallabag.json"
+            ).open("r", encoding="utf-8") as f,
+            InMemoryUploadedFile(
+                f,
+                "some_file",
+                "file.png",
+                content_type="application/json",
+                size=100,
+                charset="utf-8",
+            ) as file,
+        ):
             response = logged_in_sync_client.post(
                 self.url,
                 {
-                    "wallabag_file": InMemoryUploadedFile(
-                        f,
-                        "some_file",
-                        "file.png",
-                        content_type="application/json",
-                        size=100,
-                        charset="utf-8",
-                    ),
+                    "wallabag_file": file,
                 },
             )
 
