@@ -411,15 +411,15 @@ mfa = [
 
 [[package]]
 name = "django-axes"
-version = "8.1.0"
+version = "8.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b5/60/82817a23327f4633e2015bb8e34a133d5fad3903ae384f7d7116759bd3a6/django_axes-8.1.0.tar.gz", hash = "sha256:92cae514b6270d4b76c7afa657d5988c28b7c6ac1ce367c368eea2dd976199e7", size = 253181, upload-time = "2025-12-19T19:44:12.27Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/d6/c59e2c0cdecfd1a23e563562c8ba17f3864e8ea8c0f358dc708eccbd0af4/django_axes-8.3.0.tar.gz", hash = "sha256:0bc2c4a748b11cd8e2fbfbfe6c9911b6b02e64c28605105e39cfd79d52d8027d", size = 254397, upload-time = "2026-02-09T09:33:21.057Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/34/c8/83620d6a281487dcd97cbe28b0a3684702b3c251159a46091e25501de46d/django_axes-8.1.0-py3-none-any.whl", hash = "sha256:50117de17d189497a01d0544a9977b5136764c513085cf15138084de9dd81993", size = 73731, upload-time = "2025-12-19T19:44:04.216Z" },
+    { url = "https://files.pythonhosted.org/packages/db/3d/9f16dc1f3d83a756398cd59597f2f1d5160be0f7604e5afaf3aae27155d2/django_axes-8.3.0-py3-none-any.whl", hash = "sha256:a516064ac30148bf3a61d7d781eb23e14f292cfc902573b7e60041ea23a3ec1d", size = 73920, upload-time = "2026-02-09T09:33:14.98Z" },
 ]
 
 [[package]]
