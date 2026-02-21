@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-25 12:35+0000\n"
+"POT-Creation-Date: 2026-02-21 15:59+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1041,66 +1041,6 @@ msgstr ""
 "Contacter nous à <a class=\"text-reset\" href=\"mailto:"
 "%(email)s\">%(email)s</a>"
 
-msgid "Add article"
-msgstr "Ajouter un article"
-
-msgid "Article source title"
-msgstr "Titre de la source de l’article"
-
-msgid "Authors"
-msgstr "Auteurs"
-
-msgid "Back"
-msgstr "Retour"
-
-msgid "Back to top"
-msgstr "Retour en haut"
-
-msgid "Delete"
-msgstr "Supprimer"
-
-msgid "Feed title"
-msgstr "Titre du flux"
-
-msgid "Group of the article"
-msgstr "Groupe de l’article"
-
-msgid "Info"
-msgstr "Information"
-
-msgid "Not for later"
-msgstr "Pas pour plus tard"
-
-msgid "Open in new tab"
-msgstr "Ouvrir dans un nouvel onglet"
-
-msgid "Unread notifications"
-msgstr "Notifications non lues"
-
-msgid "No unread notification"
-msgstr "Aucune notification non lue"
-
-msgid "Open article details"
-msgstr "Ouvrir le détail de l’article"
-
-msgid "Open original"
-msgstr "Ouvrir l’original"
-
-msgid "Parameters"
-msgstr "Paramètres"
-
-msgid "Published at"
-msgstr "Publié le"
-
-msgid "Reading time"
-msgstr "Temps de lecture"
-
-msgid "Refetch"
-msgstr "Rafraichir"
-
-msgid "Updated at"
-msgstr "Mis à jour le"
-
 msgid "Loading..."
 msgstr "Changement en cours…"
 
@@ -1144,6 +1084,9 @@ msgstr "Réactiver le flux"
 
 msgid "Reset"
 msgstr "Réinitialiser"
+
+msgid "Delete"
+msgstr "Supprimer"
 
 msgid "Feed update debug information"
 msgstr "Information de debuggage sur la mise à jour du flux"
@@ -1444,6 +1387,9 @@ msgstr "Lire et passer au suivant"
 msgid "Next article of group"
 msgstr "Article suivant du groupe"
 
+msgid "Back to top"
+msgstr "Retour en haut"
+
 msgid "Update group"
 msgstr "Mettre à jour le groupe"
 
@@ -1494,6 +1440,9 @@ msgstr "Sauvegarder le nouvel ordre"
 
 msgid "Mark all as read"
 msgstr "Tout marquer comme lu"
+
+msgid "Back"
+msgstr "Retour"
 
 #, python-format
 msgid "Reading all articles of group '%(group_title)s'"
@@ -1574,6 +1523,12 @@ msgstr "Navigation entre les articles"
 
 msgid "Refresh current reading list"
 msgstr "Rafraichir la liste de lecture courante"
+
+msgid "Not for later"
+msgstr "Pas pour plus tard"
+
+msgid "Open original"
+msgstr "Ouvrir l’original"
 
 msgid "Open details"
 msgstr "Ouvrir le détail"
@@ -2001,6 +1956,51 @@ msgstr "Erreur lors de la mise à jour des paramètres"
 
 msgid "Account deleted successfully"
 msgstr "Compte supprimé avec succès"
+
+#~ msgid "Add article"
+#~ msgstr "Ajouter un article"
+
+#~ msgid "Article source title"
+#~ msgstr "Titre de la source de l’article"
+
+#~ msgid "Authors"
+#~ msgstr "Auteurs"
+
+#~ msgid "Feed title"
+#~ msgstr "Titre du flux"
+
+#~ msgid "Group of the article"
+#~ msgstr "Groupe de l’article"
+
+#~ msgid "Info"
+#~ msgstr "Information"
+
+#~ msgid "Open in new tab"
+#~ msgstr "Ouvrir dans un nouvel onglet"
+
+#~ msgid "Unread notifications"
+#~ msgstr "Notifications non lues"
+
+#~ msgid "No unread notification"
+#~ msgstr "Aucune notification non lue"
+
+#~ msgid "Open article details"
+#~ msgstr "Ouvrir le détail de l’article"
+
+#~ msgid "Parameters"
+#~ msgstr "Paramètres"
+
+#~ msgid "Published at"
+#~ msgstr "Publié le"
+
+#~ msgid "Reading time"
+#~ msgstr "Temps de lecture"
+
+#~ msgid "Refetch"
+#~ msgstr "Rafraichir"
+
+#~ msgid "Updated at"
+#~ msgstr "Mis à jour le"
 
 #~ msgid "My Profile"
 #~ msgstr "Mon Profil"

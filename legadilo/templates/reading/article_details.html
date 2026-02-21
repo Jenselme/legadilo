@@ -98,7 +98,7 @@
                                             <span
                                                 class="icon-indicator {{ article|article_action_indicator }}">
                                                 {% include "core/partials/button_loading_indicator.html" %}
-                                                {% include "core/partials/bs-icons/refetch.html" %}
+                                                {% include "core/partials/bs-icon.html" with name="arrow-clockwise" %}
                                             </span>
                                             {% translate 'Re-fetch content' %}
                                         </button>
@@ -182,7 +182,7 @@
                         </nav>
                         <div class="text-center mt-2">
                             <a href="#legadilo-article-title">
-                                {% include "core/partials/bs-icons/back_to_top.html" %}
+                                {% include "core/partials/bs-icon.html" with name="arrow-up-circle" %}
                                 {% translate "Back to top" %}
                             </a>
                         </div>
