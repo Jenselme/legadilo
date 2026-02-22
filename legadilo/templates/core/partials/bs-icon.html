@@ -1,0 +1,5 @@
+{% load static %}
+
+<svg class="bi{% if class %} {{ class }}{% endif %}" aria-hidden="true">
+  <use href="{% static 'images/bs-sprite.svg' %}#{{ name }}"></use>
+</svg>

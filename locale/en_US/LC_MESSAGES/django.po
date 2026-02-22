@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-25 12:35+0000\n"
+"POT-Creation-Date: 2026-02-21 15:59+0100\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -929,66 +929,6 @@ msgid ""
 "Contact us at <a class=\"text-reset\" href=\"mailto:%(email)s\">%(email)s</a>"
 msgstr ""
 
-msgid "Add article"
-msgstr ""
-
-msgid "Article source title"
-msgstr ""
-
-msgid "Authors"
-msgstr ""
-
-msgid "Back"
-msgstr ""
-
-msgid "Back to top"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Feed title"
-msgstr ""
-
-msgid "Group of the article"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-msgid "Not for later"
-msgstr ""
-
-msgid "Open in new tab"
-msgstr ""
-
-msgid "Unread notifications"
-msgstr ""
-
-msgid "No unread notification"
-msgstr ""
-
-msgid "Open article details"
-msgstr ""
-
-msgid "Open original"
-msgstr ""
-
-msgid "Parameters"
-msgstr ""
-
-msgid "Published at"
-msgstr ""
-
-msgid "Reading time"
-msgstr ""
-
-msgid "Refetch"
-msgstr ""
-
-msgid "Updated at"
-msgstr ""
-
 msgid "Loading..."
 msgstr ""
 
@@ -1031,6 +971,9 @@ msgid "Reenable feed"
 msgstr ""
 
 msgid "Reset"
+msgstr ""
+
+msgid "Delete"
 msgstr ""
 
 msgid "Feed update debug information"
@@ -1293,6 +1236,9 @@ msgstr ""
 msgid "Next article of group"
 msgstr ""
 
+msgid "Back to top"
+msgstr ""
+
 msgid "Update group"
 msgstr ""
 
@@ -1340,6 +1286,9 @@ msgid "Save new order"
 msgstr ""
 
 msgid "Mark all as read"
+msgstr ""
+
+msgid "Back"
 msgstr ""
 
 #, python-format
@@ -1417,6 +1366,12 @@ msgid "Navigation between articles"
 msgstr ""
 
 msgid "Refresh current reading list"
+msgstr ""
+
+msgid "Not for later"
+msgstr ""
+
+msgid "Open original"
 msgstr ""
 
 msgid "Open details"
