@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.db.models import CharField, DateTimeField, EmailField
-from django.db.models.functions import Extract, Length
+from django.db.models import CharField, EmailField, Func, IntegerField
+from django.db.models.functions import Length
 
 from .timezone import Timezone
 
@@ -18,8 +18,23 @@ class CaseInsensitiveEmailField(EmailField):
         self.db_collation = "nocase"
 
 
-class ExtractTs(Extract):
-    lookup_name = "epoch"
+class ExtractEpoch(Func):
+    def as_postgresql(self, compiler, connection, **extra_context):
+        return self.as_sql(
+            compiler,
+            connection,
+            function="EXTRACT",
+            template="%(function)s(EPOCH FROM %(expressions)s)",
+            **extra_context,
+        )
 
-
-DateTimeField.register_lookup(ExtractTs)
+    def as_sqlite(self, compiler, connection, **extra_context):
+        extra_context.setdefault("output_field", IntegerField())
+        return self.as_sql(
+            compiler,
+            connection,
+            function="STRFTIME",
+            # The string will be formatted with % twice!
+            template=r"%(function)s('%%%%s', %(expressions)s)",
+            **extra_context,
+        )

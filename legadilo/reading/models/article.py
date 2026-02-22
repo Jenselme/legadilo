@@ -36,6 +36,7 @@ from legadilo.core.utils.validators import (
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
 
+from ...core.models import ExtractEpoch
 from .article_fetch_error import ArticleFetchError
 
 if TYPE_CHECKING:
@@ -373,7 +374,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                 # Let's keep the article until the last feed says it's time to collect.
                 feed_retention_time=models.Max("feeds__article_retention_time"),
                 article_cleanup_time=models.ExpressionWrapper(
-                    models.F("read_at__epoch")
+                    ExtractEpoch("read_at")
                     + (
                         # This time is stored in days in the database. Convert it to seconds to add
                         # it to the read at time stamp.
