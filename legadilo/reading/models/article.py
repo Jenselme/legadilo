@@ -36,7 +36,7 @@ from legadilo.core.utils.validators import (
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
 
-from ...core.models import ExtractEpoch
+from ...core.utils.db import ExtractEpoch
 from .article_fetch_error import ArticleFetchError
 
 if TYPE_CHECKING:

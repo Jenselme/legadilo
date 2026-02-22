@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
-from legadilo.core.models import CaseInsensitiveEmailField
+from legadilo.core.utils.db import CaseInsensitiveEmailField
 from legadilo.core.utils.time_utils import utcnow
 
 from ...core.utils.types import DeletionResult

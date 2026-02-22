@@ -6,6 +6,8 @@ from zoneinfo import available_timezones
 
 from django.apps import AppConfig
 from django.core import checks
+from django.db.models import CharField
+from django.db.models.functions import Length
 from django.db.models.signals import post_migrate
 
 
@@ -21,6 +23,8 @@ class CoreConfig(AppConfig):
 
         checks.register(check_model_names)
         checks.register(check_dev_mode)
+
+        CharField.register_lookup(Length)
 
         post_migrate.connect(self.fill_timezones, sender=self)
 
