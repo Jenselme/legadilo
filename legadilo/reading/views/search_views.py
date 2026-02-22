@@ -23,7 +23,7 @@ from legadilo.reading.models import Article, Tag
 from legadilo.reading.models.article import (
     ArticleFullTextSearchQuery,
     ArticleQuerySet,
-    ArticleTagSearch,
+    ArticlesTagsSearch,
 )
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
@@ -314,36 +314,34 @@ def _search(user: User, search_form: SearchForm) -> ArticleQuerySet:
     form_data = {
         key: value
         for key, value in search_form.cleaned_data.items()
-        if key not in {"tags_to_include", "tags_to_exclude"}
+        if key
+        not in {
+            "tags_to_include",
+            "tags_to_exclude",
+            "include_tag_operator",
+            "exclude_tag_operator",
+        }
     }
     form_data["linked_with_feeds"] = frozenset(feed.id for feed in form_data["linked_with_feeds"])
     form_data["articles_max_age_value"] = form_data["articles_max_age_value"] or 0
     form_data["articles_reading_time"] = form_data["articles_reading_time"] or 0
-    query = ArticleFullTextSearchQuery(
-        **form_data,
-        tags_search=_build_tags(tag_slugs_to_ids, tags_to_include, tags_to_exclude),
-    )
-    return Article.objects.search(user, query)
-
-
-def _build_tags(
-    tag_slugs_to_ids: dict[str, int], tags_to_include: list[str], tags_to_exclude: list[str]
-) -> list[ArticleTagSearch]:
-    return [
-        *(
-            ArticleTagSearch(
-                filter_type=constants.ReadingListTagFilterType.INCLUDE,
-                tag_id=tag_slugs_to_ids[tag_slug],
-            )
+    query = ArticleFullTextSearchQuery(**form_data)
+    articles_tags_search = ArticlesTagsSearch(
+        tag_ids_to_include=frozenset(
+            tag_slugs_to_ids[tag_slug]
             for tag_slug in tags_to_include
             if tag_slug in tag_slugs_to_ids
         ),
-        *(
-            ArticleTagSearch(
-                filter_type=constants.ReadingListTagFilterType.EXCLUDE,
-                tag_id=tag_slugs_to_ids[tag_slug],
-            )
+        include_tag_operator=search_form.cleaned_data.get(
+            "include_tag_operator", constants.ReadingListTagOperator.ALL
+        ),
+        tag_ids_to_exclude=frozenset(
+            tag_slugs_to_ids[tag_slug]
             for tag_slug in tags_to_exclude
             if tag_slug in tag_slugs_to_ids
         ),
-    ]
+        exclude_tag_operator=search_form.cleaned_data.get(
+            "exclude_tag_operator", constants.ReadingListTagOperator.ALL
+        ),
+    )
+    return Article.objects.search(user, query, articles_tags_search)
