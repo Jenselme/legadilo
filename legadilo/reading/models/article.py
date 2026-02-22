@@ -275,8 +275,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_tag(self, tag: Tag) -> Self:
         return (
             self
-            .for_current_tag_filtering()
-            .filter(alias_tag_ids_for_article__contains=[tag.id])
+            .filter(tags__id=tag.id)
             .select_related("main_feed")
             .prefetch_related("tags")
             .default_order_by()
