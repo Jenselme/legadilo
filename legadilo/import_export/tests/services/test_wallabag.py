@@ -101,10 +101,10 @@ def test_import_valid_data(user):
     assert article.main_source_title == "www.example.com"
     assert article.annotations == ["Some stuff"]
     assert article.language == "en"
-    assert list(article.tags.values_list("title", "slug")) == [
+    assert set(article.tags.values_list("title", "slug")) == {
         ("existing", "existing"),
         ("New tag", "new-tag"),
-    ]
+    }
     existing_article.refresh_from_db()
     assert existing_article.title == "Existing title"
     assert existing_article.content == "Existing content"
