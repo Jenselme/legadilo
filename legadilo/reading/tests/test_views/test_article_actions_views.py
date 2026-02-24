@@ -81,7 +81,7 @@ class TestUpdateArticleView:
             user=user, for_later_status=constants.ForLaterStatus.ONLY_NOT_FOR_LATER
         )
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",
@@ -111,7 +111,7 @@ class TestUpdateArticleView:
             user=user, for_later_status=constants.ForLaterStatus.ONLY_FOR_LATER
         )
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 reverse(
                     "reading:update_article",

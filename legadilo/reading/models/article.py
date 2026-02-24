@@ -79,6 +79,8 @@ class ArticlesTagsSearch:
     include_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
     tag_ids_to_exclude: frozenset[int] = frozenset()
     exclude_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
+    count_tags_to_include_alias: str = "count_tags_to_include"
+    count_tags_to_exclude_alias: str = "count_tags_to_exclude"
 
 
 class ArticleSearchQuery(Schema):
@@ -193,6 +195,66 @@ def _build_basic_filters_from_reading_list(search_query: ArticleSearchQuery) -> 
     return filters
 
 
+def _build_tag_search_from_reading_list(reading_list: ReadingList) -> ArticlesTagsSearch:
+    tag_ids_to_include = set()
+    tag_ids_to_exclude = set()
+    for reading_list_tag in reading_list.reading_list_tags.all():
+        filter_type = constants.ReadingListTagFilterType(reading_list_tag.filter_type)
+        match filter_type:
+            case constants.ReadingListTagFilterType.INCLUDE:
+                tag_ids_to_include.add(reading_list_tag.tag_id)
+            case constants.ReadingListTagFilterType.EXCLUDE:
+                tag_ids_to_exclude.add(reading_list_tag.tag_id)
+            case _:
+                assert_never(filter_type)
+
+    return ArticlesTagsSearch(
+        tag_ids_to_include=frozenset(tag_ids_to_include),
+        include_tag_operator=constants.ReadingListTagOperator(reading_list.include_tag_operator),
+        tag_ids_to_exclude=frozenset(tag_ids_to_exclude),
+        exclude_tag_operator=constants.ReadingListTagOperator(reading_list.exclude_tag_operator),
+        count_tags_to_include_alias=f"{reading_list.slug}_tag_count_include",
+        count_tags_to_exclude_alias=f"{reading_list.slug}_tag_count_exclude",
+    )
+
+
+def _build_filter_by_tag_ids(
+    qs: ArticleQuerySet, tags_search: ArticlesTagsSearch
+) -> tuple[ArticleQuerySet, models.Q]:
+    filters = models.Q()
+
+    if tags_search.tag_ids_to_include:
+        match tags_search.include_tag_operator:
+            case constants.ReadingListTagOperator.ALL:
+                filters &= models.Q(**{
+                    tags_search.count_tags_to_include_alias: len(tags_search.tag_ids_to_include)
+                })
+            case constants.ReadingListTagOperator.ANY:
+                filters &= models.Q(**{f"{tags_search.count_tags_to_include_alias}__gte": 1})
+            case _:
+                assert_never(tags_search.include_tag_operator)
+
+    if tags_search.tag_ids_to_exclude:
+        match tags_search.exclude_tag_operator:
+            case constants.ReadingListTagOperator.ALL:
+                filters &= ~models.Q(**{
+                    tags_search.count_tags_to_exclude_alias: len(tags_search.tag_ids_to_exclude)
+                })
+            case constants.ReadingListTagOperator.ANY:
+                filters &= models.Q(**{tags_search.count_tags_to_exclude_alias: 0})
+            case _:
+                assert_never(tags_search.exclude_tag_operator)
+
+    return qs.alias(**{
+        tags_search.count_tags_to_include_alias: models.Count(
+            "tags", filter=models.Q(tags__id__in=tags_search.tag_ids_to_include)
+        ),
+        tags_search.count_tags_to_exclude_alias: models.Count(
+            "tags", filter=models.Q(tags__id__in=tags_search.tag_ids_to_exclude)
+        ),
+    }), filters
+
+
 class ArticleQuerySet(models.QuerySet["Article"]):
     def for_user(self, user: User):
         return self.filter(user=user)
@@ -201,60 +263,12 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(is_read=False)
 
     def _filter_by_reading_list_tags(self, reading_list: ReadingList) -> Self:
-        tag_ids_to_include = set()
-        tag_ids_to_exclude = set()
-        for reading_list_tag in reading_list.reading_list_tags.all():
-            filter_type = constants.ReadingListTagFilterType(reading_list_tag.filter_type)
-            match filter_type:
-                case constants.ReadingListTagFilterType.INCLUDE:
-                    tag_ids_to_include.add(reading_list_tag.tag_id)
-                case constants.ReadingListTagFilterType.EXCLUDE:
-                    tag_ids_to_exclude.add(reading_list_tag.tag_id)
-                case _:
-                    assert_never(filter_type)
-
-        return self._filter_by_tag_ids(
-            ArticlesTagsSearch(
-                tag_ids_to_include=frozenset(tag_ids_to_include),
-                include_tag_operator=constants.ReadingListTagOperator(
-                    reading_list.include_tag_operator
-                ),
-                tag_ids_to_exclude=frozenset(tag_ids_to_exclude),
-                exclude_tag_operator=constants.ReadingListTagOperator(
-                    reading_list.exclude_tag_operator
-                ),
-            )
-        )
+        tags_search = _build_tag_search_from_reading_list(reading_list)
+        return self._filter_by_tag_ids(tags_search)
 
     def _filter_by_tag_ids(self, tags_search: ArticlesTagsSearch):
-        filters = models.Q()
-
-        if tags_search.tag_ids_to_include:
-            match tags_search.include_tag_operator:
-                case constants.ReadingListTagOperator.ALL:
-                    filters &= models.Q(count_tags_to_include=len(tags_search.tag_ids_to_include))
-                case constants.ReadingListTagOperator.ANY:
-                    filters &= models.Q(count_tags_to_include__gte=1)
-                case _:
-                    assert_never(tags_search.include_tag_operator)
-
-        if tags_search.tag_ids_to_exclude:
-            match tags_search.exclude_tag_operator:
-                case constants.ReadingListTagOperator.ALL:
-                    filters &= ~models.Q(count_tags_to_exclude=len(tags_search.tag_ids_to_exclude))
-                case constants.ReadingListTagOperator.ANY:
-                    filters &= models.Q(count_tags_to_exclude=0)
-                case _:
-                    assert_never(tags_search.exclude_tag_operator)
-
-        return self.alias(
-            count_tags_to_include=models.Count(
-                "tags", filter=models.Q(tags__id__in=tags_search.tag_ids_to_include)
-            ),
-            count_tags_to_exclude=models.Count(
-                "tags", filter=models.Q(tags__id__in=tags_search.tag_ids_to_exclude)
-            ),
-        ).filter(filters)
+        qs, filters = _build_filter_by_tag_ids(self, tags_search)
+        return qs.filter(filters)
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
@@ -673,20 +687,22 @@ class ArticleManager(models.Manager["Article"]):
     ) -> dict[str, int]:
         # We only count unread articles in the reading list. Not all articles. I think it's more
         # relevant.
-        return {
-            reading_list.slug: self
-            .get_queryset()
-            .for_user(user)
-            .only_unread()
-            .filter(
-                _build_basic_filters_from_reading_list(
+        aggregations = {}
+        qs = self.get_queryset().for_user(user).only_unread()
+
+        for reading_list in reading_lists:
+            tags_search = _build_tag_search_from_reading_list(reading_list)
+            qs, filters = _build_filter_by_tag_ids(qs, tags_search)
+
+            aggregations[reading_list.slug] = models.Count(
+                "id",
+                filter=_build_basic_filters_from_reading_list(
                     ArticleSearchQuery.from_reading_list(reading_list)
-                ),
+                )
+                & filters,
             )
-            ._filter_by_reading_list_tags(reading_list)
-            .count()
-            for reading_list in reading_lists
-        }
+
+        return qs.aggregate(**aggregations)
 
     def get_articles_of_tag(self, tag: Tag) -> ArticleQuerySet:
         return self.get_queryset().for_tag(tag)

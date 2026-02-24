@@ -1036,7 +1036,7 @@ class TestArticleManager:
         ArticleFactory(user=user, read_at=utcnow())
         reading_lists = ReadingList.objects.get_all_for_user(user)
 
-        with django_assert_num_queries(len(reading_lists)):
+        with django_assert_num_queries(1):
             counts = Article.objects.count_unread_articles_of_reading_lists(user, reading_lists)
 
         assert counts == {
