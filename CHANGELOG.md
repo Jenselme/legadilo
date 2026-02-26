@@ -8,9 +8,13 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.02.4
+
+- Correct migration reset.
+
 ## 26.02.3
 
-- Ends the preparation for sqlite.
+- Ends the preparation for sqlite by squashing existing migrations.
 
 ## 26.02.2
 
