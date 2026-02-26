@@ -8,6 +8,11 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.02.2
+
+- Prepare the arrival of sqlite as a supported database. This involves technical only changes.
+- Correct once again how language is enforced at login.
+
 ## 26.02.1
 
 - Update Django for security.
