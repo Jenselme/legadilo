@@ -8,6 +8,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.02.3
+
+- Ends the preparation for sqlite.
+
 ## 26.02.2
 
 - Prepare the arrival of sqlite as a supported database. This involves technical only changes.
