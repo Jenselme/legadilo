@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
+from legadilo.core.utils.db import CaseInsensitiveEmailField
 from legadilo.core.utils.time_utils import utcnow
 
 from ...core.utils.types import DeletionResult
@@ -176,7 +177,7 @@ class User(AbstractUser):
     name = models.CharField(_("Username"), blank=True, max_length=255)
     first_name = None  # type: ignore[assignment]
     last_name = None  # type: ignore[assignment]
-    email = models.EmailField(_("email address"), db_collation="case_insensitive", unique=True)
+    email = CaseInsensitiveEmailField(_("email address"), unique=True)
     username = None  # type: ignore[assignment]
 
     USERNAME_FIELD = "email"

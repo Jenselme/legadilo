@@ -24,7 +24,7 @@ from legadilo.reading.models import (
 )
 from legadilo.reading.models.article import (
     ArticleFullTextSearchQuery,
-    _build_filters_from_reading_list,
+    _build_basic_filters_from_reading_list,
 )
 from legadilo.reading.services.article_fetching import ArticleData
 from legadilo.reading.tests.factories import (
@@ -152,7 +152,7 @@ def test_build_filters_from_reading_list(
     search_query = ArticleFullTextSearchQuery(**search_query_kwargs)
 
     with time_machine.travel("2024-03-19 21:08:00"):
-        filters = _build_filters_from_reading_list(search_query)
+        filters = _build_basic_filters_from_reading_list(search_query)
 
     assert filters == expected_filter
 
@@ -212,10 +212,10 @@ class TestArticleQuerySet:
         )
         article_linked_only_to_other_tag.tags.add(other_tag)
 
-        with django_assert_num_queries(1):
-            articles = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert list(articles) == [
+        assert articles == [
             article_to_include_one_tag,
             article_to_include_linked_many_tags,
         ]
@@ -284,6 +284,7 @@ class TestArticleQuerySet:
             updated_at=None,
         )
         article_to_include_one_tag.tags.add(tag1)
+        ArticleFactory(user=user, title="Article linked to no tag")
 
         with django_assert_num_queries(3):
             articles = list(Article.objects.get_articles_of_reading_list(reading_list))
@@ -415,10 +416,10 @@ class TestArticleQuerySet:
             updated_at=None,
         )
 
-        with django_assert_num_queries(1):
-            articles = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert list(articles) == [article_linked_to_no_tag, article_linked_to_one_tag]
+        assert articles == [article_linked_to_no_tag, article_linked_to_one_tag]
 
     def test_for_reading_list_with_tags(self, user, django_assert_num_queries):
         reading_list = ReadingListFactory(
@@ -482,10 +483,10 @@ class TestArticleQuerySet:
         )
         article_cannot_be_included_linked_to_deleted_tag_to_include.tags.add(tag2_to_include)
 
-        with django_assert_num_queries(1):
-            articles = Article.objects.get_articles_of_reading_list(reading_list)
+        with django_assert_num_queries(3):
+            articles = list(Article.objects.get_articles_of_reading_list(reading_list))
 
-        assert list(articles) == [article_to_include_linked_to_all_tags]
+        assert articles == [article_to_include_linked_to_all_tags]
 
     @pytest.mark.parametrize(
         ("action", "attrs"),
@@ -1023,21 +1024,26 @@ class TestArticleManager:
         reading_list3 = ReadingListFactory(
             user=user, favorite_status=constants.FavoriteStatus.ONLY_FAVORITE
         )
-        reading_lists_with_tags = list(
-            ReadingList.objects.select_related("user").prefetch_related("reading_list_tags").all()
+        tag = TagFactory(user=user)
+        reading_list4 = ReadingListFactory(user=user)
+        ReadingListTag.objects.create(
+            reading_list=reading_list4,
+            tag=tag,
+            filter_type=constants.ReadingListTagFilterType.INCLUDE,
         )
-        ArticleFactory(user=user)
+        article = ArticleFactory(user=user)
+        article.tags.add(tag)
         ArticleFactory(user=user, read_at=utcnow())
+        reading_lists = ReadingList.objects.get_all_for_user(user)
 
         with django_assert_num_queries(1):
-            counts = Article.objects.count_unread_articles_of_reading_lists(
-                user, reading_lists_with_tags
-            )
+            counts = Article.objects.count_unread_articles_of_reading_lists(user, reading_lists)
 
         assert counts == {
             reading_list1.slug: 1,
             reading_list2.slug: 0,
             reading_list3.slug: 0,
+            reading_list4.slug: 1,
         }
 
     def test_get_articles_of_tag(self, user, django_assert_num_queries):

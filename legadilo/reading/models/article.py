@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-
 import json
 import logging
 from collections.abc import Iterable
@@ -10,10 +9,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from functools import cached_property
 from itertools import chain
-from typing import TYPE_CHECKING, Literal, Self, assert_never
+from typing import TYPE_CHECKING, Self, assert_never
 
 from dateutil.relativedelta import relativedelta
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
@@ -36,6 +34,7 @@ from legadilo.core.utils.validators import (
 from legadilo.reading import constants
 from legadilo.reading.models.tag import ArticleTag
 
+from ...core.utils.db import ExtractEpoch
 from .article_fetch_error import ArticleFetchError
 
 if TYPE_CHECKING:
@@ -75,9 +74,13 @@ class SaveArticleResult:
 
 
 @dataclass(frozen=True)
-class ArticleTagSearch:
-    filter_type: constants.ReadingListTagFilterType
-    tag_id: int
+class ArticlesTagsSearch:
+    tag_ids_to_include: frozenset[int] = frozenset()
+    include_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
+    tag_ids_to_exclude: frozenset[int] = frozenset()
+    exclude_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
+    count_tags_to_include_alias: str = "count_tags_to_include"
+    count_tags_to_exclude_alias: str = "count_tags_to_exclude"
 
 
 class ArticleSearchQuery(Schema):
@@ -92,9 +95,6 @@ class ArticleSearchQuery(Schema):
     articles_reading_time_operator: constants.ArticlesReadingTimeOperator = (
         constants.ArticlesReadingTimeOperator.UNSET
     )
-    include_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
-    exclude_tag_operator: constants.ReadingListTagOperator = constants.ReadingListTagOperator.ALL
-    tags_search: Iterable[ArticleTagSearch] = ()
 
     @classmethod
     def from_reading_list(cls, reading_list: ReadingList):
@@ -108,19 +108,6 @@ class ArticleSearchQuery(Schema):
                 reading_list.articles_reading_time_operator
             ),
             articles_reading_time=reading_list.articles_reading_time,
-            include_tag_operator=constants.ReadingListTagOperator(
-                reading_list.include_tag_operator
-            ),
-            exclude_tag_operator=constants.ReadingListTagOperator(
-                reading_list.exclude_tag_operator
-            ),
-            tags_search=[
-                ArticleTagSearch(
-                    filter_type=constants.ReadingListTagFilterType(reading_list_tag.filter_type),
-                    tag_id=reading_list_tag.tag_id,
-                )
-                for reading_list_tag in reading_list.reading_list_tags.all()
-            ],
         )
 
 
@@ -154,7 +141,7 @@ class ArticleFullTextSearchQuery(ArticleSearchQuery):
                 assert_never(self.order)
 
 
-def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901, PLR0912 too complex
+def _build_basic_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901, PLR0912 too complex
     filters = models.Q()
 
     match search_query.read_status:
@@ -205,45 +192,67 @@ def _build_filters_from_reading_list(search_query: ArticleSearchQuery) -> models
         case _:
             assert_never(search_query.articles_reading_time_operator)
 
-    filters &= _get_tags_filters(search_query)
-
     return filters
 
 
-def _get_tags_filters(search_query: ArticleSearchQuery) -> models.Q:
-    filters = models.Q()
-    tags_to_include = []
-    tags_to_exclude = []
-    for tag in search_query.tags_search:
-        match tag.filter_type:
+def _build_tag_search_from_reading_list(reading_list: ReadingList) -> ArticlesTagsSearch:
+    tag_ids_to_include = set()
+    tag_ids_to_exclude = set()
+    for reading_list_tag in reading_list.reading_list_tags.all():
+        filter_type = constants.ReadingListTagFilterType(reading_list_tag.filter_type)
+        match filter_type:
             case constants.ReadingListTagFilterType.INCLUDE:
-                tags_to_include.append(tag.tag_id)
+                tag_ids_to_include.add(reading_list_tag.tag_id)
             case constants.ReadingListTagFilterType.EXCLUDE:
-                tags_to_exclude.append(tag.tag_id)
+                tag_ids_to_exclude.add(reading_list_tag.tag_id)
             case _:
-                assert_never(tag.filter_type)
+                assert_never(filter_type)
 
-    if tags_to_include:
-        operator = _get_reading_list_tags_sql_operator(
-            constants.ReadingListTagOperator(search_query.include_tag_operator)
-        )
-        filters &= models.Q(**{f"alias_tag_ids_for_article__{operator}": tags_to_include})
-    if tags_to_exclude:
-        operator = _get_reading_list_tags_sql_operator(
-            constants.ReadingListTagOperator(search_query.exclude_tag_operator)
-        )
-        filters &= ~models.Q(**{f"alias_tag_ids_for_article__{operator}": tags_to_exclude})
-    return filters
+    return ArticlesTagsSearch(
+        tag_ids_to_include=frozenset(tag_ids_to_include),
+        include_tag_operator=constants.ReadingListTagOperator(reading_list.include_tag_operator),
+        tag_ids_to_exclude=frozenset(tag_ids_to_exclude),
+        exclude_tag_operator=constants.ReadingListTagOperator(reading_list.exclude_tag_operator),
+        count_tags_to_include_alias=f"{reading_list.slug}_tag_count_include",
+        count_tags_to_exclude_alias=f"{reading_list.slug}_tag_count_exclude",
+    )
 
 
-def _get_reading_list_tags_sql_operator(
-    reading_list_operator: constants.ReadingListTagOperator,
-) -> Literal["contains", "overlap"]:
-    match reading_list_operator:
-        case constants.ReadingListTagOperator.ALL:
-            return "contains"
-        case constants.ReadingListTagOperator.ANY:
-            return "overlap"
+def _build_filter_by_tag_ids(
+    qs: ArticleQuerySet, tags_search: ArticlesTagsSearch
+) -> tuple[ArticleQuerySet, models.Q]:
+    filters = models.Q()
+
+    if tags_search.tag_ids_to_include:
+        match tags_search.include_tag_operator:
+            case constants.ReadingListTagOperator.ALL:
+                filters &= models.Q(**{
+                    tags_search.count_tags_to_include_alias: len(tags_search.tag_ids_to_include)
+                })
+            case constants.ReadingListTagOperator.ANY:
+                filters &= models.Q(**{f"{tags_search.count_tags_to_include_alias}__gte": 1})
+            case _:
+                assert_never(tags_search.include_tag_operator)
+
+    if tags_search.tag_ids_to_exclude:
+        match tags_search.exclude_tag_operator:
+            case constants.ReadingListTagOperator.ALL:
+                filters &= ~models.Q(**{
+                    tags_search.count_tags_to_exclude_alias: len(tags_search.tag_ids_to_exclude)
+                })
+            case constants.ReadingListTagOperator.ANY:
+                filters &= models.Q(**{tags_search.count_tags_to_exclude_alias: 0})
+            case _:
+                assert_never(tags_search.exclude_tag_operator)
+
+    return qs.alias(**{
+        tags_search.count_tags_to_include_alias: models.Count(
+            "tags", filter=models.Q(tags__id__in=tags_search.tag_ids_to_include)
+        ),
+        tags_search.count_tags_to_exclude_alias: models.Count(
+            "tags", filter=models.Q(tags__id__in=tags_search.tag_ids_to_exclude)
+        ),
+    }), filters
 
 
 class ArticleQuerySet(models.QuerySet["Article"]):
@@ -253,19 +262,24 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def only_unread(self):
         return self.filter(is_read=False)
 
-    def for_current_tag_filtering(self) -> Self:
-        return self.alias(
-            alias_tag_ids_for_article=ArrayAgg("article_tags__tag_id", default=models.Value([])),
-        )
+    def _filter_by_reading_list_tags(self, reading_list: ReadingList) -> Self:
+        tags_search = _build_tag_search_from_reading_list(reading_list)
+        return self._filter_by_tag_ids(tags_search)
+
+    def _filter_by_tag_ids(self, tags_search: ArticlesTagsSearch):
+        qs, filters = _build_filter_by_tag_ids(self, tags_search)
+        return qs.filter(filters)
 
     def for_reading_list(self, reading_list: ReadingList) -> Self:
         return (
             self
             .for_user(reading_list.user)
-            .for_current_tag_filtering()
             .filter(
-                _build_filters_from_reading_list(ArticleSearchQuery.from_reading_list(reading_list))
+                _build_basic_filters_from_reading_list(
+                    ArticleSearchQuery.from_reading_list(reading_list)
+                )
             )
+            ._filter_by_reading_list_tags(reading_list)
             .select_related("main_feed")
             .prefetch_related("tags")
             .default_order_by(reading_list.order_direction)
@@ -274,8 +288,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_tag(self, tag: Tag) -> Self:
         return (
             self
-            .for_current_tag_filtering()
-            .filter(alias_tag_ids_for_article__contains=[tag.id])
+            .filter(tags__id=tag.id)
             .select_related("main_feed")
             .prefetch_related("tags")
             .default_order_by()
@@ -373,7 +386,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
                 # Let's keep the article until the last feed says it's time to collect.
                 feed_retention_time=models.Max("feeds__article_retention_time"),
                 article_cleanup_time=models.ExpressionWrapper(
-                    models.F("read_at__epoch")
+                    ExtractEpoch("read_at")
                     + (
                         # This time is stored in days in the database. Convert it to seconds to add
                         # it to the read at time stamp.
@@ -672,25 +685,24 @@ class ArticleManager(models.Manager["Article"]):
     def count_unread_articles_of_reading_lists(
         self, user: User, reading_lists: list[ReadingList]
     ) -> dict[str, int]:
-        aggregation = {
-            reading_list.slug: models.Count(
-                "id",
-                filter=_build_filters_from_reading_list(
-                    ArticleSearchQuery.from_reading_list(reading_list)
-                ),
-            )
-            for reading_list in reading_lists
-        }
         # We only count unread articles in the reading list. Not all articles. I think it's more
         # relevant.
-        return (
-            self
-            .get_queryset()
-            .for_user(user)
-            .only_unread()
-            .for_current_tag_filtering()
-            .aggregate(**aggregation)
-        )
+        aggregations = {}
+        qs = self.get_queryset().for_user(user).only_unread()
+
+        for reading_list in reading_lists:
+            tags_search = _build_tag_search_from_reading_list(reading_list)
+            qs, filters = _build_filter_by_tag_ids(qs, tags_search)
+
+            aggregations[reading_list.slug] = models.Count(
+                "id",
+                filter=_build_basic_filters_from_reading_list(
+                    ArticleSearchQuery.from_reading_list(reading_list)
+                )
+                & filters,
+            )
+
+        return qs.aggregate(**aggregations)
 
     def get_articles_of_tag(self, tag: Tag) -> ArticleQuerySet:
         return self.get_queryset().for_tag(tag)
@@ -743,16 +755,23 @@ class ArticleManager(models.Manager["Article"]):
 
             yield articles
 
-    def search(self, user: User, search_query: ArticleFullTextSearchQuery) -> ArticleQuerySet:
+    def search(
+        self,
+        user: User,
+        search_query: ArticleFullTextSearchQuery,
+        tags_search: ArticlesTagsSearch | None = None,
+    ) -> ArticleQuerySet:
         articles_qs = (
             self
             .get_queryset()
             .for_user(user)
-            .for_current_tag_filtering()
             .select_related("main_feed")
             .prefetch_related("tags")
-            .filter(_build_filters_from_reading_list(search_query))
+            .filter(_build_basic_filters_from_reading_list(search_query))
         )
+
+        if tags_search:
+            articles_qs = articles_qs._filter_by_tag_ids(tags_search)
 
         if search_query.linked_with_feeds:
             articles_qs = articles_qs.filter(feeds__id__in=search_query.linked_with_feeds)

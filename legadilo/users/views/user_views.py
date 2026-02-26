@@ -36,11 +36,7 @@ class UserSignupView(AccountSignupView):
 signup_view = UserSignupView.as_view()
 
 
-class UserLoginView(AccountLoginView):
-    def form_valid(self, form):
-        resp = super().form_valid(form)
-        enforce_language_on_response(resp, self.request.user.settings.language)
-        return resp
+class UserLoginView(AccountLoginView): ...
 
 
 user_login_view = UserLoginView.as_view()

@@ -10,6 +10,7 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.conf import settings
 from django.http import HttpRequest
 
+from ..core.utils.locale import enforce_language_on_response
 from .models import UserSettings
 
 if typing.TYPE_CHECKING:
@@ -32,6 +33,12 @@ class AccountAdapter(DefaultAccountAdapter):
         )
 
         return user
+
+    def post_login(self, request, user, **kwargs):
+        response = super().post_login(request, user, **kwargs)
+        if user.is_authenticated:
+            enforce_language_on_response(response, self.request.user.settings.language)
+        return response
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
