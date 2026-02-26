@@ -9,12 +9,14 @@ from django.db import connection, migrations
 
 
 class Migration(migrations.Migration):
+    initial = True
+
     dependencies = []
 
     if connection.vendor == "postgresql":
         operations = [
             CreateCollation(
-                "case_insensitive",
+                "nocase",
                 provider="icu",
                 locale="und-u-ks-level2",
                 deterministic=False,
