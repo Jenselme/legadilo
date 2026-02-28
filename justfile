@@ -17,6 +17,19 @@ update-js-deps:
 dev:
     docker compose -f local.yml up
 
+
+dev-local-python:
+    docker compose -f local.yml --profile mail up -d
+    python manage.py runserver
+
+
+dev-local-python-pg:
+    docker compose -f local.yml --profile postgres --profile mail up -d postgres mailpit
+    DATABASE_URL="postgres://django:django_passwd@localhost:5432/legadilo" python manage.py runserver
+
+update-feeds:
+    python manage.py update_feeds
+
 test:
     pytest
 
@@ -25,6 +38,9 @@ makemigrations:
 
 migrate:
     python manage.py migrate
+
+migrate-pg:
+    DATABASE_URL="postgres://django:django_passwd@localhost:5432/legadilo" python manage.py migrate
 
 clean-dev-container:
     docker compose -f local.yml down

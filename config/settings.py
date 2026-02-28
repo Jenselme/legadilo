@@ -82,8 +82,23 @@ SILENCED_SYSTEM_CHECKS = ["staticfiles.W004", "axes.W006"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["CONN_MAX_AGE"] = 0
-# https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
-DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    # https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
+    DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
+elif DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    # https://alldjango.com/articles/definitive-guide-to-using-django-sqlite-in-production
+    DATABASES["OPTIONS"] = {
+        "transaction_mode": "IMMEDIATE",
+        "timeout": 30,  # seconds
+        "init_command": """
+                PRAGMA journal_mode=WAL;
+                PRAGMA synchronous=NORMAL;
+                PRAGMA mmap_size=134217728;
+                PRAGMA journal_size_limit=27103364;
+                PRAGMA cache_size=2000;
+            """,
+    }
+
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

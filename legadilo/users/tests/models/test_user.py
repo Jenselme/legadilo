@@ -9,7 +9,7 @@ import time_machine
 from allauth.account.models import EmailAddress
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from slugify import slugify
 
 from legadilo.core.utils.testing import AnyOfType
@@ -191,7 +191,11 @@ class TestUserManager:
 
     def test_email_case_insensitive_unique(self):
         User.objects.create(email="Hacker@example.com")
-        msg = 'duplicate key value violates unique constraint "users_user_email_key"'
+        if connection.vendor == "postgresql":
+            msg = 'duplicate key value violates unique constraint "users_user_email_key"'
+        else:
+            msg = "UNIQUE constraint failed: users_user.email"
+
         with pytest.raises(IntegrityError, match=msg):
             User.objects.create(email="hacker@example.com")
 

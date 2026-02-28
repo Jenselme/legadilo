@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import pytest
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 
 from legadilo.reading.models.reading_list import ReadingList
 from legadilo.reading.tests.factories import ReadingListFactory
@@ -77,11 +77,12 @@ class TestReadingListManager:
 class TestReadingListModel:
     def test_cannot_create_multiple_default_lists_for_one_user(self, user):
         ReadingListFactory(user=user, is_default=True)
+        if connection.vendor == "postgresql":
+            message = 'duplicate key value violates unique constraint "reading_readinglist_enforce_one_default_reading_list"'  # noqa: E501
+        else:
+            message = "UNIQUE constraint failed: reading_readinglist.is_default, reading_readinglist.user_id"  # noqa: E501
 
-        with pytest.raises(
-            IntegrityError,
-            match='duplicate key value violates unique constraint "reading_readinglist_enforce_one_default_reading_list"',  # noqa: E501
-        ):
+        with pytest.raises(IntegrityError, match=message):
             ReadingListFactory(user=user, is_default=True)
 
     def test_can_create_multiple_default_lists_for_another_user(self):
@@ -92,11 +93,14 @@ class TestReadingListModel:
 
     def test_cannot_create_multiple_lists_with_same_slug_for_one_user(self, user):
         ReadingListFactory(user=user, title="Reading list")
+        if connection.vendor == "postgresql":
+            message = 'duplicate key value violates unique constraint "reading_readinglist_enforce_slug_unicity"'  # noqa: E501
+        else:
+            message = (
+                "UNIQUE constraint failed: reading_readinglist.slug, reading_readinglist.user_id"
+            )
 
-        with pytest.raises(
-            IntegrityError,
-            match='duplicate key value violates unique constraint "reading_readinglist_enforce_slug_unicity"',  # noqa: E501
-        ):
+        with pytest.raises(IntegrityError, match=message):
             ReadingListFactory(user=user, title="Reading list")
 
     def test_can_create_multiple_lists_with_same_slug_different_user(self):

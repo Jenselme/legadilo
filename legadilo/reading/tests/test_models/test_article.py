@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 import time_machine
-from django.db import models
+from django.db import connection, models
 
 from legadilo.core.utils.testing import serialize_for_snapshot
 from legadilo.core.utils.time_utils import utcdt, utcnow
@@ -698,13 +698,19 @@ class TestArticleQuerySet:
             .order_by("-rank")
         )
 
-        assert searched_articles == [
+        expected_searched_articles = [
             search_in_title,
             search_in_summary,
             search_in_authors,
             search_in_content,
             search_in_main_source_title,
         ]
+        if connection.vendor == "postgresql":
+            assert searched_articles == expected_searched_articles
+        else:
+            assert {article.id for article in searched_articles} == {
+                article.id for article in expected_searched_articles
+            }
 
     def test_for_tags_search(self, user):
         ArticleFactory(title="Claudius", user=user)
@@ -1071,7 +1077,7 @@ class TestArticleManager:
         ArticleFactory(user=user, external_tags=["Other tag"])
         properly_tagged_article = ArticleFactory(user=user)
         properly_tagged_article.tags.add(tag)
-        ArticleFactory(external_tags=["Test"])
+        ArticleFactory(external_tags=["Just", "Some", "Test"])
 
         with django_assert_num_queries(2):
             articles = list(Article.objects.get_articles_with_external_tag(user, "Test"))
@@ -1335,6 +1341,7 @@ class TestArticleManager:
 
         assert found_articles == [article]
 
+    @pytest.mark.skipif(connection.vendor != "postgresql", reason="PostgreSQL specific test")
     def test_search_with_tags_results(self, user, other_user):
         ArticleFactory(title="Claudius other user", user=other_user)
         search_in_title = ArticleFactory(user=user, title="Claudius")

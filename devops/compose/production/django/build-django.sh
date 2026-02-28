@@ -11,13 +11,13 @@ set -o nounset
 if [[ "${BUILD_ENV}" == "local" ]]; then
     echo "Nothing to do for local build"
 else
-    DATABASE_URL="" \
+    DATABASE_URL="sqlite://:memory:" \
       DJANGO_SETTINGS_MODULE="config.settings" \
       DJANGO_SECRET_KEY="test" \
       DJANGO_ADMIN_URL="/admin" \
       python manage.py compilemessages
 
-    DATABASE_URL="" \
+    DATABASE_URL="sqlite://:memory:" \
       DJANGO_SETTINGS_MODULE="config.settings" \
       DJANGO_SECRET_KEY="test" \
       DJANGO_ADMIN_URL="/admin" \

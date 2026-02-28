@@ -10,3 +10,4 @@ POSTGRES_DB=legadilo
 # Let’s make these simple for easier local use.
 POSTGRES_USER=django
 POSTGRES_PASSWORD=django_passwd
+DATABASE_URL="postgres://${POSTGRES_USER:-}:${POSTGRES_PASSWORD:-}@${POSTGRES_HOST:-}:${POSTGRES_PORT:-}/${POSTGRES_DB:-}"

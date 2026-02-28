@@ -15,7 +15,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 Some M2M relations are very complex and introduce a lot of unwanted complexity:
 
 * Articles can be linked to multiple feeds.
-  While this won’t change for technical reason, finding the main feed (ie the feed for which the article was first added) for which we want to display the feed title is harder and requires PG specific aggregation for display and for export.
+  While this won’t change for technical reasons, finding the main feed (ie the feed for which the article was first added) for which we want to display the feed title is harder and requires PG specific aggregation for display and for export.
 * Links between articles and tags keep the tagging reason to avoid retagging an article with a manually deleted link.
   This introduces lots of weirdness when querying for tags to exclude them.
 * An article can only be in one group, but the link is handled in a many-to-many to store the order within the group.

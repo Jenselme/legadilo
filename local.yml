@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 volumes:
+  legadilo_local_django_data: {}
   legadilo_local_postgres_data: {}
   legadilo_local_postgres_data_backups: {}
 
@@ -20,6 +21,7 @@ services:
       - mailpit
     volumes:
       - .:/app:z
+      - legadilo_local_django_data:/data:z
     env_file:
       - ./devops/envs/local/postgres
       - ./devops/envs/local/django
@@ -37,6 +39,9 @@ services:
     image: legadilo_production_postgres
     restart: unless-stopped
     container_name: legadilo_local_postgres
+    profiles:
+      - postgres
+      - all
     volumes:
       - legadilo_local_postgres_data:/var/lib/postgresql/data
       - legadilo_local_postgres_data_backups:/backups
@@ -53,6 +58,9 @@ services:
       dockerfile: ./devops/compose/local/docs/Dockerfile
     env_file:
       - ./devops/envs/local/django
+    profiles:
+      - docs
+      - all
     volumes:
       - ./docs:/app/docs:z
       - ./config:/app/config:z
@@ -67,6 +75,9 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     container_name: legadilo_local_mailpit
+    profiles:
+      - mail
+      - all
     ports:
       - "8025:8025"
       - "1025:1025"

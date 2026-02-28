@@ -330,6 +330,8 @@ dump.rdb
 
 ### Project template
 legadilo/media/
+/legadilo.sqlite3
+/legadilo.sqlite3-journal
 
 .pytest_cache/
 .ipython/

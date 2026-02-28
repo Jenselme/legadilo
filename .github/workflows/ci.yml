@@ -19,7 +19,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-test:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
+      - name: Install the project
+        run: uv sync --dev --locked
+
+      - name: Cache pre-commit
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-4-${{ env.pythonLocation }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Run pre-commit
+        run: uv run pre-commit run -a
+
+  test-pg:
+    needs: [lint]
     runs-on: ubuntu-latest
     services:
       # Label used to access the service container
@@ -65,22 +99,8 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gettext
-
       - name: Install the project
         run: uv sync --dev --locked
-
-      - name: Cache pre-commit
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-4-${{ env.pythonLocation }}-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - name: Run pre-commit
-        run: uv run pre-commit run -a
 
       - name: Create cache table
         run: uv run python manage.py createcachetable
@@ -91,13 +111,62 @@ jobs:
       - name: Run Django Tests
         run: uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
 
+  test-sqlite:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    env:
+      IS_PRODUCTION: "false"
+      PYTHONUNBUFFERED: "1"
+      PYTHONDEVMODE: "1"
+      USE_DOCKER: "no"
+      DATABASE_URL: "sqlite:///db.sqlite3"
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          # Install a specific version of uv.
+          version: "0.9.5"
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
+      - name: Install the project
+        run: uv sync --dev --locked
+
+      - name: Create cache table
+        run: uv run python manage.py createcachetable
+
+      - name: Run DB Migrations
+        run: uv run python manage.py migrate
+
+      - name: Run Django Tests
+        run: uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
+
+  test-production-images:
+    needs: [test-pg, test-sqlite]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v6
+
       - name: Test build production images
         run: |
           cp -a devops/envs/local devops/envs/production
           docker compose -f production.yml build
 
       - name: Test production images
-        run: docker compose -f production.yml run -e IS_PRODUCTION=true -e DJANGO_SECRET_KEY=ci -e DJANGO_ADMIN_URL=/admin/ django python manage.py check
+        run: docker compose -f production.yml run -e IS_PRODUCTION=true -e DJANGO_SECRET_KEY=ci -e DJANGO_ADMIN_URL=/admin/ legadilo python manage.py check
 
       - name: Teardown production stack
         run: docker compose -f production.yml down
