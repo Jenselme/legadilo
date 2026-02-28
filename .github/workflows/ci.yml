@@ -35,13 +35,11 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gettext
+      - name: Install just
+        uses: extractions/setup-just@v3
 
-      - name: Install the project
-        run: uv sync --dev --locked
+      - name: Setup project
+        run: just setup-ci
 
       - name: Cache pre-commit
         uses: actions/cache@v5
@@ -50,7 +48,7 @@ jobs:
           key: pre-commit-4-${{ env.pythonLocation }}-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Run pre-commit
-        run: uv run pre-commit run -a
+        run: just lint
 
   test-pg:
     needs: [lint]
@@ -91,25 +89,24 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          # Install a specific version of uv.
-          version: "0.9.5"
+          enable-cache: true
 
       - name: "Set up Python"
         uses: actions/setup-python@v6
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install the project
-        run: uv sync --dev --locked
+      - name: Install just
+        uses: extractions/setup-just@v3
 
-      - name: Create cache table
-        run: uv run python manage.py createcachetable
+      - name: Setup project
+        run: just setup-ci
 
       - name: Run DB Migrations
-        run: uv run python manage.py migrate
+        run: just migrate
 
       - name: Run Django Tests
-        run: uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
+        run: just test-coverage
 
   test-sqlite:
     needs: [lint]
@@ -128,30 +125,24 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          # Install a specific version of uv.
-          version: "0.9.5"
+          enable-cache: true
 
       - name: "Set up Python"
         uses: actions/setup-python@v6
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gettext
+      - name: Install just
+        uses: extractions/setup-just@v3
 
-      - name: Install the project
-        run: uv sync --dev --locked
-
-      - name: Create cache table
-        run: uv run python manage.py createcachetable
+      - name: Setup project
+        run: just setup-ci
 
       - name: Run DB Migrations
-        run: uv run python manage.py migrate
+        run: just migrate
 
       - name: Run Django Tests
-        run: uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
+        run: just test-coverage
 
   test-production-images:
     needs: [test-pg, test-sqlite]
