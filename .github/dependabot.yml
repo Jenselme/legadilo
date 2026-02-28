@@ -53,13 +53,6 @@ updates:
           - "version-update:semver-major"
           - "version-update:semver-minor"
 
-  - package-ecosystem: "docker"
-    # Look for a `Dockerfile` in the `devops/compose/production/postgres` directory
-    directory: "devops/compose/production/postgres/"
-    # Every weekday
-    schedule:
-      interval: "weekly"
-
   # Enable version updates for Python/Pip - Production
   - package-ecosystem: "uv"
     directory: "/"

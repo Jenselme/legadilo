@@ -30,6 +30,10 @@ else
     addgroup --system django
     adduser --system --ingroup django django
     apt-get upgrade -y
+
+    mkdir /data
+    chmod u=rwX,g=rX,o= /data
+    chown -R django:django /data
 fi
 
 # cleaning up unused files

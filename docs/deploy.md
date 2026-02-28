@@ -15,19 +15,30 @@ No matter how you deploy the project, we currently expect you to have a reverse 
 
 ## Easiest way
 
-Currently, the easiest way to run the project is to use docker and docker compose. To do so, clone the project and run:
+Currently, the easiest way to run the project is to use docker and docker compose. To do so:
 
-    docker compose -f production.yml up -d
+1. Clone the project.
+2. Create a file in `./devops/envs/production` named `django` with this content:
+
+```
+DJANGO_SECRET_KEY="<REPLACE_WITH_A_LONG_RANDOM_STRING>"
+# To change the default admin URL for security purpose.
+DJANGO_ADMIN_URL=<REPLACE_WITH_A_SHORT_RANDOM_STRNIG>-admin
+```
+
+3. Run:
+
+    docker compose -f production.yml up -d --build
 
 This will:
-1. Build the most up-to-date image and start it. The data will be in the `production_postgres_data` volume.
+1. Build the most up-to-date image and start it. The database will be a sqlite database stored in the `production_db_data` volume.
 2. The service will be exposed on port 8000.
 3. It will also spin a `cron` container running feed updates and various cleanup every hour.
 
-You can also add this line to the host cron tab to automatically back up the database (backups will be placed in the `production_postgres_data_backups` volume):
+You can also add this line to the host cron tab to automatically back up the database:
 
 ```
-0 1 * * * cd LEGADILO && docker compose -f production.yml exec postgres /usr/local/bin/backup
+0 1 * * * cd <LEGADILO> && podman cp legadilo_django_1:/data/legadilo.sqlite3 <BACKUP_PATH>
 ```
 
 You can then use the `/usr/local/bin/restore` script to restore them.
@@ -88,7 +99,7 @@ If you use something else, provide them the way you like.
 If you want more details on those, open `settings.py` and look for them. You will see a link to the Django documentation just above their definition.
 ```
 
-### For the postgresql container
+### For PostgreSQL
 
 These variables are required for the container to start and create the proper database with the correct user and password.
 

@@ -29,13 +29,22 @@ def _update_or_create_site_with_sequence(site_model, connection, domain, name):
         # greater than the maximum value.
         max_id = site_model.objects.order_by("-id").first().id
         with connection.cursor() as cursor:
-            cursor.execute("SELECT last_value from django_site_id_seq")
-            (current_id,) = cursor.fetchone()
-            if current_id <= max_id:
-                cursor.execute(
-                    "alter sequence django_site_id_seq restart with %s",
-                    [max_id + 1],
-                )
+            if connection.vendor == "postgresql":
+                cursor.execute("SELECT last_value from django_site_id_seq")
+                (current_id,) = cursor.fetchone()
+                if current_id <= max_id:
+                    cursor.execute(
+                        "alter sequence django_site_id_seq restart with %s",
+                        [max_id + 1],
+                    )
+            else:
+                cursor.execute("SELECT MAX(id) FROM django_site")
+                (current_id,) = cursor.fetchone()
+                if current_id <= max_id:
+                    cursor.execute(
+                        "UPDATE sqlite_sequence SET seq = %s WHERE name = 'django_site'",
+                        [max_id + 1],
+                    )
 
 
 def update_site_forward(apps, schema_editor):

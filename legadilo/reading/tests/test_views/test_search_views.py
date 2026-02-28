@@ -155,6 +155,18 @@ class TestSearchView:
         assert response.context_data["articles"] == [article]
         assert response.context_data["total_results"] == 1
 
+    def test_search_with_accents(self, user, logged_in_sync_client):
+        article = ArticleFactory(title="Poésie", user=user)
+        ArticleFactory(user=user)
+
+        response = logged_in_sync_client.get(self.url, data={"q": "Poésie"})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.template_name == "reading/search.html"
+        assert response.context_data["search_form"].is_valid()
+        assert response.context_data["articles"] == [article]
+        assert response.context_data["total_results"] == 1
+
     def test_search_with_url(self, user, logged_in_sync_client):
         article_url = "https://example.com/articles/1.html"
         article = ArticleFactory(title="Claudius", user=user, url=article_url)
@@ -195,10 +207,10 @@ class TestSearchView:
         assert response.context_data["total_results"] == 1
 
     def test_search_with_external_tags(self, user, logged_in_sync_client):
-        article = ArticleFactory(user=user, external_tags=["Poésie"])
+        article = ArticleFactory(user=user, external_tags=["poetry"])
 
         response = logged_in_sync_client.get(
-            self.url, data={"external_tags_to_include": ["Poésie"]}
+            self.url, data={"external_tags_to_include": ["Poetry"]}
         )
 
         assert response.status_code == HTTPStatus.OK

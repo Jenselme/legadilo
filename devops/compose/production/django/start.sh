@@ -14,7 +14,7 @@ readonly GUNICORN_NB_WORKERS=${GUNICORN_NB_WORKERS:-4}
 readonly GUNICORN_REQUEST_TIMEOUT=${GUNICORN_REQUEST_TIMEOUT:-60}
 
 python manage.py createcachetable
-python manage.py migrate --fake
+python manage.py migrate
 
 cmd="${1:-server}"
 

@@ -12,7 +12,7 @@ from ssl import SSLCertVerificationError
 from urllib.parse import urlparse
 
 import httpx
-from django.db import IntegrityError
+from django.db import IntegrityError, models
 
 from legadilo.core.utils.http_utils import get_rss_sync_client
 from legadilo.core.utils.time_utils import safe_datetime_parse
@@ -199,8 +199,18 @@ def _import_article(user, feed, group, row):
         initial_main_feed_id=feed.id if feed else None,
     )
 
-    if feed:
-        FeedArticle.objects.get_or_create(feed=feed, article=save_results[0].article)
+    if (
+        feed
+        and not FeedArticle.objects.filter(
+            models.Q(feed=feed, article=save_results[0].article)
+            | models.Q(feed=feed, feed_article_id=article_data.url)
+        ).exists()
+    ):
+        FeedArticle.objects.create(
+            feed=feed,
+            article=save_results[0].article,
+            feed_article_id=article_data.url,
+        )
 
     if group:
         Article.objects.link_articles_to_group(group, [save_results[0].article])

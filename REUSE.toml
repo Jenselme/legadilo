@@ -1,5 +1,14 @@
 version = 1
 
+# Documentation
+[[annotations]]
+path = [
+    "docs/**/*.md",
+    "docs/**/*.rst",
+]
+SPDX-FileCopyrightText = "Legadilo contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
 # Migrations
 [[annotations]]
 path = [

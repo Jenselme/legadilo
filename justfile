@@ -17,23 +17,56 @@ update-js-deps:
 dev:
     docker compose -f local.yml up
 
+
+dev-local-python:
+    docker compose -f local.yml --profile mail up -d
+    python manage.py runserver
+
+
+dev-local-python-pg:
+    docker compose -f local.yml --profile postgres --profile mail up -d postgres mailpit
+    DATABASE_URL="postgres://django:django_passwd@localhost:5432/legadilo" python manage.py runserver
+
+update-feeds:
+    uv run python manage.py update_feeds
+
+setup-dev-database:
+    uv run python manage.py migrate
+    uv run python manage.py setup_test_db
+
+
+setup-ci:
+    sudo apt-get update
+    sudo apt-get install -y gettext
+    uv sync --dev --locked
+
 test:
-    pytest
+    uv run pytest
+
+test-coverage:
+    uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
+
+lint:
+    uv run pre-commit run -a
 
 makemigrations:
-    python manage.py makemigrations
+    uv run python manage.py makemigrations
 
 migrate:
-    python manage.py migrate
+    uv run python manage.py createcachetable
+    uv run python manage.py migrate
+
+migrate-pg:
+    DATABASE_URL="postgres://django:django_passwd@localhost:5432/legadilo" uv run python manage.py migrate
 
 clean-dev-container:
     docker compose -f local.yml down
 
 update-po:
-    python manage.py makemessages --all --no-location
+    uv run python manage.py makemessages --all --no-location
 
 compile-po:
-    python manage.py compilemessages
+    uv run python manage.py compilemessages
 
 [working-directory('browser-extension')]
 build-browser-extension:

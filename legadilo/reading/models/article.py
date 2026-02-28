@@ -15,7 +15,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.db.models.functions import Coalesce, Lower
 from django.utils.translation import gettext_lazy as _
 from ninja.schema import Schema
@@ -62,6 +62,11 @@ SEARCH_VECTOR = (
     + SearchVector("authors", config="english", weight="C")
     + SearchVector("main_source_title", config="english", weight="D")
 )
+DEFAULT_INDEXES = [
+    models.Index(
+        fields=["user", "is_read", "is_favorite", "is_for_later"],
+    )
+]
 
 
 @dataclass(frozen=True)
@@ -303,7 +308,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
             .default_order_by()
         )
 
-    def for_external_tags(self, tags: list[str]) -> Self:
+    def for_external_tags_search(self, tags: Iterable[str]) -> Self:
         filters = models.Q()
         for tag in tags:
             filters |= models.Q(external_tags__icontains=tag)
@@ -414,16 +419,25 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         )
 
     def for_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
-        full_text_search_query = SearchQuery(
-            search_query.q,
-            search_type=search_query.search_type.value,
-            config="english",
-        )
-        return (
-            self
-            .alias(search=SEARCH_VECTOR)
-            .annotate(rank=SearchRank(SEARCH_VECTOR, full_text_search_query))
-            .filter(search=full_text_search_query)
+        if connection.vendor == "postgresql":
+            full_text_search_query = SearchQuery(
+                search_query.q,
+                search_type=search_query.search_type.value,
+                config="english",
+            )
+            return (
+                self
+                .alias(search=SEARCH_VECTOR)
+                .annotate(rank=SearchRank(SEARCH_VECTOR, full_text_search_query))
+                .filter(search=full_text_search_query)
+            )
+
+        return self.alias(rank=models.F("obj_updated_at")).filter(
+            models.Q(title__icontains=search_query.q)
+            | models.Q(summary__icontains=search_query.q)
+            | models.Q(content__icontains=search_query.q)
+            | models.Q(authors__icontains=search_query.q)
+            | models.Q(main_source_title__icontains=search_query.q)
         )
 
     def for_tags_search(self, search_query: ArticleFullTextSearchQuery) -> Self:
@@ -777,16 +791,21 @@ class ArticleManager(models.Manager["Article"]):
             articles_qs = articles_qs.filter(feeds__id__in=search_query.linked_with_feeds)
 
         if search_query.external_tags_to_include:
-            articles_qs = articles_qs.for_external_tags(search_query.external_tags_to_include)
+            articles_qs = articles_qs.for_external_tags_search(
+                search_query.external_tags_to_include
+            )
 
         if search_query.search_type == constants.ArticleSearchType.URL:
             articles_qs = articles_qs.for_url_search([search_query.q])
         elif search_query.q:
             full_text_articles_qs = articles_qs.for_search(search_query)
-            tags_articles_qs = articles_qs.for_tags_search(search_query)
-            articles_qs = tags_articles_qs.union(full_text_articles_qs).order_by(
-                search_query.order_by, "id"
-            )
+            if connection.vendor == "postgresql":
+                tags_articles_qs = articles_qs.for_tags_search(search_query)
+                articles_qs = tags_articles_qs.union(full_text_articles_qs)
+            else:
+                articles_qs = full_text_articles_qs
+
+            articles_qs = articles_qs.order_by(search_query.order_by, "id")
 
         return articles_qs
 
@@ -839,15 +858,19 @@ class ArticleManager(models.Manager["Article"]):
         max_new_order_value = max(new_order.values())
         group_order_articles_not_in_mapping = max_new_order_value + 1
 
-        # Change order to prevent unicity conflicts on (group, group_order)
-        group.articles.all().update(group_order=models.F("id"))
-
         for article in articles:
             if article.id in new_order:
                 article.group_order = new_order[article.id]
             else:
                 article.group_order = group_order_articles_not_in_mapping
                 group_order_articles_not_in_mapping += 1
+
+        # Change order to prevent unicity conflicts on (group, group_order)
+        # Just setting group_order to id can cause unicity conflicts on on sqlite because of how it
+        # handles bulk_update.
+        group.articles.all().update(
+            group_order=models.F("id") + group_order_articles_not_in_mapping
+        )
 
         self.bulk_update(articles, fields=["group_order"])
 
@@ -989,15 +1012,16 @@ class Article(models.Model):
                 "group", "group_order", name="%(app_label)s_%(class)s_group_order_unique"
             ),
         ]
-        indexes = [
-            models.Index(
-                fields=["user", "is_read", "is_favorite", "is_for_later"],
-            ),
-            GinIndex(
-                SEARCH_VECTOR,
-                name="%(app_label)s_%(class)s_search_vector",
-            ),
-        ]
+        if connection.vendor == "postgresql":
+            indexes = [
+                *DEFAULT_INDEXES,
+                GinIndex(
+                    SEARCH_VECTOR,
+                    name="%(app_label)s_%(class)s_search_vector",
+                ),
+            ]
+        else:
+            indexes = DEFAULT_INDEXES
 
     def __str__(self):
         return (
