@@ -36,7 +36,7 @@ services:
     volumes:
       - production_db_data:/data
     depends_on:
-      - legadilo
+      - django
     env_file:
       - ./devops/envs/production/django
     environment:
