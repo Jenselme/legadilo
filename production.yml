@@ -7,7 +7,7 @@ volumes:
   production_db_data: {}
 
 services:
-  legadilo:
+  django:
     build:
       pull: true
       context: .

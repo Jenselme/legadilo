@@ -157,7 +157,7 @@ jobs:
           docker compose -f production.yml build
 
       - name: Test production images
-        run: docker compose -f production.yml run -e IS_PRODUCTION=true -e DJANGO_SECRET_KEY=ci -e DJANGO_ADMIN_URL=/admin/ legadilo python manage.py check
+        run: docker compose -f production.yml run -e IS_PRODUCTION=true -e DJANGO_SECRET_KEY=ci -e DJANGO_ADMIN_URL=/admin/ django python manage.py check
 
       - name: Teardown production stack
         run: docker compose -f production.yml down

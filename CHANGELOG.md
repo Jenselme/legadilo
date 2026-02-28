@@ -8,6 +8,12 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.02.5
+
+- Add sqlite support and switch to sqlite for production and development.
+- Fix the `cron` command.
+- Fix import of CSV.
+
 ## 26.02.4
 
 - Correct migration reset.
