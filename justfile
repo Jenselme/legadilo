@@ -30,6 +30,10 @@ dev-local-python-pg:
 update-feeds:
     python manage.py update_feeds
 
+setup-dev-database:
+    python manage.py migrate
+    python manage.py setup_test_db
+
 test:
     pytest
 

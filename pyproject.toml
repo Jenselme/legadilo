@@ -303,4 +303,10 @@ ignore_imports = [
     "legadilo.reading.tests.test_views.test_search_views -> legadilo.feeds.tests.factories",
     "legadilo.users.tests.views.test_user_views -> legadilo.feeds.tests.factories",
     "legadilo.users.tests.views.test_user_views -> legadilo.reading.tests.factories",
+    "legadilo.core.management.commands.setup_test_db -> legadilo.users.models",
+    "legadilo.core.management.commands.setup_test_db -> legadilo.feeds.constants",
+    "legadilo.core.management.commands.setup_test_db -> legadilo.feeds.models",
+    "legadilo.core.management.commands.setup_test_db -> legadilo.feeds.services.feed_parsing",
+    "legadilo.core.management.commands.setup_test_db -> legadilo.reading.models",
+    "legadilo.core.management.commands.setup_test_db -> legadilo.reading.services.article_fetching",
 ]
