@@ -75,32 +75,6 @@ repos:
         exclude: ".envrc"
         args: [-e, SC1091]
 
-  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v16.26.1
-    hooks:
-      - id: stylelint
-        args: [--fix]
-        additional_dependencies:
-          - "stylelint@16.3.1"
-          - "stylelint-config-standard@36.0.0"
-
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: "v9.31.0"
-    hooks:
-      - id: eslint
-        args: [--fix]
-        additional_dependencies:
-          - "globals@15.11.0"
-          - "eslint@9.12.0"
-          - "@eslint/js@9.12.0"
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.1.0"
-    hooks:
-      - id: prettier
-        types_or: [yaml, css, javascript, json]
-        exclude: (\.vscode)
-
   - repo: https://github.com/crate-ci/typos
     rev: v1.40.0
     hooks:
@@ -108,6 +82,28 @@ repos:
 
   - repo: local
     hooks:
+      - id: stylelint
+        name: stylelint
+        entry: npx stylelint
+        args: [--fix]
+        language: system
+        types: [css]
+
+      - id: eslint
+        name: eslint
+        entry: npx eslint
+        args: [--fix]
+        language: system
+        types: [javascript]
+
+      - id: prettier
+        name: prettier
+        entry: npx prettier
+        args: [--write]
+        language: system
+        types_or: [yaml, css, javascript, json]
+        exclude: (\.vscode)
+
       - id: import-linter
         name: import-linter
         entry: env

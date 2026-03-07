@@ -39,6 +39,7 @@ setup-ci:
     sudo apt-get update
     sudo apt-get install -y gettext
     uv sync --dev --locked
+    npm ci
 
 test:
     uv run pytest
