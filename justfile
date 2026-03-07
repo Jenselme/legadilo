@@ -69,6 +69,14 @@ compile-po:
     uv run python manage.py compilemessages
 
 [working-directory('browser-extension')]
+test-browser-extension:
+    npm test
+
+[working-directory('browser-extension')]
+watch-test-browser-extension:
+    npm run test:watch
+
+[working-directory('browser-extension')]
 build-browser-extension:
     npm run build
 
