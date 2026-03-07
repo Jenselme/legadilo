@@ -2,11 +2,47 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+/** @typedef {import('./types.js').Tag} Tag */
+/** @typedef {import('./types.js').Category} Category */
+/** @typedef {import('./types.js').Article} Article */
+/** @typedef {import('./types.js').Feed} Feed */
+/** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
+/** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
+
 import Tags from "./vendor/tags.js";
 import { listArticles, listEnabledFeeds } from "./legadilo.js";
+import {
+  getDialogById,
+  getElementById,
+  getFormById,
+  getInputElementById,
+  getLinkElementById,
+  getSelectElementById,
+} from "./typing-utils.js";
 
+/**
+ * @typedef {Object} ResponseMessage
+ * @property {string} [error]
+ * @property {string} [name]
+ * @property {Article} [article]
+ * @property {Feed} [feed]
+ * @property {Tag[]} [tags]
+ * @property {Category[]} [categories]
+ */
+
+/**
+ * @typedef {Object} OutboundMessage
+ * @property {string} name
+ * @property {number} [articleId]
+ * @property {number} [feedId]
+ * @property {object} [payload]
+ */
+
+/** @type {chrome.runtime.Port | undefined} */
 let port;
+/** @type {ReturnType<typeof Tags.init> | null} */
 let articleTagsInstance = null;
+/** @type {ReturnType<typeof Tags.init> | null} */
 let feedTagsInstance = null;
 
 const isFirefox = typeof browser === "object";
@@ -23,15 +59,21 @@ document.addEventListener("DOMContentLoaded", () => {
   runDefaultAction();
 });
 
+/**
+ * @returns {void}
+ */
 const connectToPort = () => {
   if (!isFirefox) {
-    return null;
+    return;
   }
 
   port = chrome.runtime.connect({ name: "legadilo-popup" });
   port.onMessage.addListener(onMessage);
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const runDefaultAction = async () => {
   const tab = await getCurrentTab();
   const [pageContent, contentType] = await getPageContent(tab);
@@ -46,32 +88,53 @@ const runDefaultAction = async () => {
   await displayActionsSelector();
 };
 
+/**
+ * @param {string} pageContent
+ * @param {string} contentType
+ * @returns {Element[]}
+ */
 const getFeedNodes = (pageContent, contentType) => {
   if (contentType === "text/plain") return [];
 
   const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, contentType);
-  const feedNodes = [];
+  const htmlDoc = parser.parseFromString(
+    pageContent,
+    /** @type {DOMParserSupportedType} */ (contentType),
+  );
+  const feedNodes = /** @type {Element[]} */ ([]);
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
 
   return feedNodes;
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {string} pageContent
+ * @param {string} contentType
+ * @returns {string | null}
+ */
 const getCanonicalUrl = (tab, pageContent, contentType) => {
   if (contentType === "text/plain") return null;
 
   const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, contentType);
+  const htmlDoc = parser.parseFromString(
+    pageContent,
+    /** @type {DOMParserSupportedType} */ (contentType),
+  );
 
   const canonicalLink = htmlDoc.querySelector("link[rel='canonical']");
   if (!canonicalLink) {
     return null;
   }
 
-  return buildFullUrl(tab, canonicalLink.getAttribute("href"));
+  return buildFullUrl(tab, canonicalLink.getAttribute("href") ?? "");
 };
 
+/**
+ * @param {ResponseMessage} request
+ * @returns {void}
+ */
 const onMessage = (request) => {
   if (request.error) {
     hideLoader();
@@ -83,19 +146,33 @@ const onMessage = (request) => {
   hideLoader();
   switch (request.name) {
     case "saved-article":
-      savedArticleSuccess(request.article, request.tags);
+      savedArticleSuccess(
+        /** @type {Article} */ (request.article),
+        /** @type {Tag[]} */ (request.tags),
+      );
       break;
     case "updated-article":
-      updatedArticleSuccess(request.article, request.tags);
+      updatedArticleSuccess(
+        /** @type {Article} */ (request.article),
+        /** @type {Tag[]} */ (request.tags),
+      );
       break;
     case "deleted-article":
       displayActionsSelector();
       break;
     case "subscribed-to-feed":
-      feedSubscriptionSuccess(request.feed, request.tags, request.categories);
+      feedSubscriptionSuccess(
+        /** @type {Feed} */ (request.feed),
+        /** @type {Tag[]} */ (request.tags),
+        /** @type {Category[]} */ (request.categories),
+      );
       break;
     case "updated-feed":
-      updatedFeedSuccess(request.feed, request.tags, request.categories);
+      updatedFeedSuccess(
+        /** @type {Feed} */ (request.feed),
+        /** @type {Tag[]} */ (request.tags),
+        /** @type {Category[]} */ (request.categories),
+      );
       break;
     case "deleted-feed":
       displayActionsSelector();
@@ -105,6 +182,9 @@ const onMessage = (request) => {
   }
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const displayActionsSelector = async () => {
   displayLoader();
   const tab = await getCurrentTab();
@@ -117,13 +197,13 @@ const displayActionsSelector = async () => {
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
   }
-  let savedArticles = [];
+  let savedArticles = /** @type {Article[]} */ ([]);
   try {
     savedArticles = (await listArticles({ articleUrls })).items;
   } catch {
     console.error("Failed to list saved articles.");
   }
-  let subscribedFeedUrls = [];
+  let subscribedFeedUrls = /** @type {string[]} */ ([]);
   try {
     subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
   } catch {
@@ -131,16 +211,16 @@ const displayActionsSelector = async () => {
   }
   hideLoader();
 
-  const articleAlreadySaved = document.querySelector("#article-already-saved");
+  const articleAlreadySaved = getElementById("article-already-saved");
   if (savedArticles.length > 0) {
     articleAlreadySaved.style.display = "inline";
   } else {
     articleAlreadySaved.style.display = "none";
   }
 
-  document.querySelector("#action-selector-container").style.display = "block";
+  getElementById("action-selector-container").style.display = "block";
 
-  const chooseFeedsContainer = document.querySelector("#subscribe-to-feeds-container");
+  const chooseFeedsContainer = getElementById("subscribe-to-feeds-container");
   chooseFeedsContainer.replaceChildren();
 
   for (const feedNode of feedNodes) {
@@ -151,7 +231,7 @@ const displayActionsSelector = async () => {
     let feedTitle = feedNode.getAttribute("title");
     if (!feedTitle) {
       const hostname = new URL(pageUrl).hostname;
-      const type = feedNode.getAttribute("type");
+      const type = feedNode.getAttribute("type") ?? "";
       const feedType = type.replace("application/", "").replace("+xml", "");
       feedTitle = `${hostname} (${feedType})`;
     }
@@ -169,19 +249,27 @@ const displayActionsSelector = async () => {
     chooseFeedsContainer.appendChild(button);
   }
 
-  document.querySelector("#save-article-action-btn").addEventListener("click", async () => {
+  getElementById("save-article-action-btn").addEventListener("click", async () => {
     hideActionSelector();
     await saveArticle(tab, pageContent, contentType);
   });
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {Element} feedNode
+ * @returns {string}
+ */
 const getFeedHref = (tab, feedNode) => {
-  let feedHref = feedNode.getAttribute("href");
-  feedHref = buildFullUrl(tab, feedHref);
-
-  return feedHref;
+  const feedHref = feedNode.getAttribute("href") ?? "";
+  return buildFullUrl(tab, feedHref);
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {string} url
+ * @returns {string}
+ */
 const buildFullUrl = (tab, url) => {
   if (/^https?:\/\//.test(url)) {
     return url;
@@ -197,42 +285,71 @@ const buildFullUrl = (tab, url) => {
   return `${origin}${url}`;
 };
 
+/**
+ * @returns {void}
+ */
 const hideActionSelector = () => {
-  document.querySelector("#action-selector-container").style.display = "none";
+  getElementById("action-selector-container").style.display = "none";
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const errorNavBack = async () => {
   hideErrorMessage();
   await displayActionsSelector();
-  document.querySelector("#error-nav-back").removeEventListener("click", errorNavBack);
+  getElementById("error-nav-back").removeEventListener("click", errorNavBack);
 };
 
+/**
+ * @param {string} message
+ * @returns {void}
+ */
 const displayErrorMessage = (message) => {
-  document.querySelector("#error-message").innerText = message;
-  document.querySelector("#error-container").style.display = "block";
+  getElementById("error-message").innerText = message;
+  getElementById("error-container").style.display = "block";
 
-  document.querySelector("#error-nav-back").addEventListener("click", errorNavBack);
+  getElementById("error-nav-back").addEventListener("click", errorNavBack);
 };
 
+/**
+ * @returns {void}
+ */
 const hideErrorMessage = () => {
-  document.querySelector("#error-container").style.display = "none";
+  getElementById("error-container").style.display = "none";
 };
 
+/**
+ * @returns {void}
+ */
 const displayLoader = () => {
-  document.querySelector("#loading-indicator-container").style.display = "block";
+  getElementById("loading-indicator-container").style.display = "block";
 };
 
+/**
+ * @returns {void}
+ */
 const hideLoader = () => {
-  document.querySelector("#loading-indicator-container").style.display = "none";
+  getElementById("loading-indicator-container").style.display = "none";
 };
 
+/**
+ * @param {string} element
+ * @param {Tag[]} tags
+ * @param {Tag[]} selectedTags
+ * @returns {ReturnType<typeof Tags.init>}
+ */
 const createTagInstance = (element, tags, selectedTags) => {
+  /** @type {Record<string, Tag[]>} */
   const tagsHierarchy = tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.sub_tags }), {});
 
   return Tags.init(element, {
     allowNew: true,
     allowClear: true,
-    items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
+    items: tags.reduce(
+      (/** @type {Record<string, string>} */ acc, tag) => ({ ...acc, [tag.slug]: tag.title }),
+      {},
+    ),
     selected: selectedTags.map((tag) => tag.slug),
     onSelectItem(item, instance) {
       if (!Array.isArray(tagsHierarchy[item.value])) {
@@ -247,63 +364,77 @@ const createTagInstance = (element, tags, selectedTags) => {
   });
 };
 
+/**
+ * @param {Article} article
+ * @param {Tag[]} tags
+ * @returns {void}
+ */
 const displayArticle = (article, tags) => {
-  document.querySelector("#article-container").style.display = "block";
+  getElementById("article-container").style.display = "block";
 
-  document.querySelector("#saved-article-title").value = article.title;
-  document.querySelector("#saved-article-reading-time").value = article.reading_time;
+  getInputElementById("saved-article-title").value = article.title;
+  getInputElementById("saved-article-reading-time").value = String(article.reading_time);
 
   if (articleTagsInstance === null) {
     articleTagsInstance = createTagInstance("#saved-article-tags", tags, article.tags);
   }
 
   if (article.is_read) {
-    document.querySelector("#mark-article-as-read").style.display = "none";
-    document.querySelector("#mark-article-as-unread").style.display = "block";
+    getElementById("mark-article-as-read").style.display = "none";
+    getElementById("mark-article-as-unread").style.display = "block";
   } else {
-    document.querySelector("#mark-article-as-read").style.display = "block";
-    document.querySelector("#mark-article-as-unread").style.display = "none";
+    getElementById("mark-article-as-read").style.display = "block";
+    getElementById("mark-article-as-unread").style.display = "none";
   }
   if (article.is_favorite) {
-    document.querySelector("#mark-article-as-favorite").style.display = "none";
-    document.querySelector("#unmark-article-as-favorite").style.display = "block";
+    getElementById("mark-article-as-favorite").style.display = "none";
+    getElementById("unmark-article-as-favorite").style.display = "block";
   } else {
-    document.querySelector("#mark-article-as-favorite").style.display = "block";
-    document.querySelector("#unmark-article-as-favorite").style.display = "none";
+    getElementById("mark-article-as-favorite").style.display = "block";
+    getElementById("unmark-article-as-favorite").style.display = "none";
   }
   if (article.is_for_later) {
-    document.querySelector("#mark-article-as-for-later").style.display = "none";
-    document.querySelector("#unmark-article-as-for-later").style.display = "block";
+    getElementById("mark-article-as-for-later").style.display = "none";
+    getElementById("unmark-article-as-for-later").style.display = "block";
   } else {
-    document.querySelector("#mark-article-as-for-later").style.display = "block";
-    document.querySelector("#unmark-article-as-for-later").style.display = "none";
+    getElementById("mark-article-as-for-later").style.display = "block";
+    getElementById("unmark-article-as-for-later").style.display = "none";
   }
 
-  document.querySelector("#open-article-details").href = article.details_url;
+  getLinkElementById("open-article-details").href = article.details_url;
 };
 
+/**
+ * @returns {void}
+ */
 const hideArticle = () => {
-  document.querySelector("#article-container").style.display = "none";
+  getElementById("article-container").style.display = "none";
 };
 
+/**
+ * @param {Feed} feed
+ * @param {Tag[]} tags
+ * @param {Category[]} categories
+ * @returns {void}
+ */
 const displayFeed = (feed, tags, categories) => {
-  document.querySelector("#feed-container").style.display = "block";
-  document.querySelector("#feed-title").innerText = feed.title;
+  getElementById("feed-container").style.display = "block";
+  getElementById("feed-title").innerText = feed.title;
 
-  document.querySelector("#feed-refresh-delay").value = feed.refresh_delay;
-  document.querySelector("#feed-article-retention-time").value = feed.article_retention_time;
+  getInputElementById("feed-refresh-delay").value = String(feed.refresh_delay);
+  getInputElementById("feed-article-retention-time").value = String(feed.article_retention_time);
 
-  document.querySelector("#open-feed-details").href = feed.details_url;
+  getLinkElementById("open-feed-details").href = feed.details_url;
 
   if (feed.enabled) {
-    document.querySelector("#enable-feed").style.display = "none";
-    document.querySelector("#disable-feed").style.display = "block";
+    getElementById("enable-feed").style.display = "none";
+    getElementById("disable-feed").style.display = "block";
   } else {
-    document.querySelector("#enable-feed").style.display = "block";
-    document.querySelector("#disable-feed").style.display = "none";
+    getElementById("enable-feed").style.display = "block";
+    getElementById("disable-feed").style.display = "none";
   }
 
-  const categorySelector = document.querySelector("#feed-category");
+  const categorySelector = getSelectElementById("feed-category");
   // Clean all existing choices.
   categorySelector.innerHTML = "";
   const noCategoryOption = document.createElement("option");
@@ -312,18 +443,26 @@ const displayFeed = (feed, tags, categories) => {
   categorySelector.appendChild(noCategoryOption);
   for (const category of categories) {
     const option = document.createElement("option");
-    option.value = category.id;
+    option.value = String(category.id);
     option.innerText = category.title;
     categorySelector.appendChild(option);
   }
-  categorySelector.value = feed.category ? feed.category.id : "";
+  categorySelector.value = feed.category ? String(feed.category.id) : "";
 
   if (feedTagsInstance === null) {
     feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
   }
 };
 
+/**
+ * @param {number} feedId
+ * @returns {void}
+ */
 const setupFeedActions = (feedId) => {
+  /**
+   * @param {UpdateFeedPayload} payload
+   * @returns {void}
+   */
   const updateFeed = (payload) => {
     hideFeed();
     displayLoader();
@@ -343,28 +482,29 @@ const setupFeedActions = (feedId) => {
     });
   };
 
+  /** @type {Record<string, (event: Event) => void>} */
   const actions = {
-    "#update-feed": (event) => {
+    "update-feed": (event) => {
       event.preventDefault();
-      const data = new FormData(document.querySelector("#update-feed-form"));
+      const data = new FormData(getFormById("update-feed-form"));
       updateFeed({
-        categoryId: data.get("category") || null,
-        refreshDelay: data.get("refresh-delay"),
-        articleRetentionTime: data.get("retention-time"),
-        tags: data.getAll("tags"),
+        categoryId: Number(data.get("category")) || null,
+        refreshDelay: data.get("refresh-delay")?.toString() || "DAILY_AT_NOON",
+        articleRetentionTime: Number(data.get("retention-time")),
+        tags: /** @type {string[]} */ (data.getAll("tags")),
       });
     },
-    "#enable-feed": () => updateFeed({ disabledAt: null, disabledReason: null }),
-    "#disable-feed": () =>
+    "enable-feed": () => updateFeed({ disabledAt: null, disabledReason: null }),
+    "disable-feed": () =>
       updateFeed({
         disabledAt: new Date().toISOString(),
         disabledReason: "Disable manually in the browser extension",
       }),
-    "#delete-feed": () =>
+    "delete-feed": () =>
       askConfirmation("Are you sure you want to delete this feed?").then(deleteFeed),
-    "#feed-nav-back": async () => {
+    "feed-nav-back": async () => {
       Object.entries(actions).forEach(([selector, action]) => {
-        document.querySelector(selector).removeEventListener("click", action);
+        getElementById(selector).removeEventListener("click", action);
       });
 
       hideFeed();
@@ -373,71 +513,102 @@ const setupFeedActions = (feedId) => {
   };
 
   Object.entries(actions).forEach(([selector, action]) => {
-    document.querySelector(selector).addEventListener("click", action);
+    getElementById(selector).addEventListener("click", action);
   });
 };
 
+/**
+ * @returns {void}
+ */
 const hideFeed = () => {
-  document.querySelector("#feed-container").style.display = "none";
+  getElementById("feed-container").style.display = "none";
 };
 
 /**
- * @returns {Promise<tabs.Tab>}
+ * @returns {Promise<chrome.tabs.Tab>}
  */
 const getCurrentTab = () =>
   chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @returns {Promise<[string, string]>}
+ */
 const getPageContent = async (tab) => {
   try {
     const getcontentTypeScriptResult = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId: /** @type {number} */ (tab.id) },
       func: () => document.contentType,
     });
-    const contentType = getcontentTypeScriptResult[0].result;
+    const contentType = getcontentTypeScriptResult[0].result ?? "text/plain";
     const getPageContentScriptResult = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId: /** @type {number} */ (tab.id) },
       func: () =>
         document.contentType === "text/plain"
           ? document.documentElement.outerText
           : document.documentElement.outerHTML,
     });
-    const content = getPageContentScriptResult[0].result;
-    return [content, contentType];
+    const content = getPageContentScriptResult[0].result ?? "";
+    return /** @type {[string, string]} */ ([content, contentType]);
   } catch (error) {
     console.error(error);
-    return ["", "text/plain"];
+    return /** @type {[string, string]} */ (["", "text/plain"]);
   }
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {string} pageContent
+ * @param {string} contentType
+ * @returns {Promise<void>}
+ */
 const saveArticle = (tab, pageContent, contentType) => {
   displayLoader();
-  sendMessage({
+  return sendMessage({
     name: "save-article",
     payload: {
       url: getPageUrlFromTab(tab),
-      title: tab.title,
+      title: tab.title ?? "",
       content: pageContent,
       contentType,
     },
   });
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @returns {string}
+ */
 const getPageUrlFromTab = (tab) => {
-  if (tab.url.startsWith("about:")) {
-    const internalUrlLike = tab.url.replace("about:", "http://");
+  const url = tab.url ?? "";
+  if (url.startsWith("about:")) {
+    const internalUrlLike = url.replace("about:", "http://");
     const parsedInternalUrl = new URL(internalUrlLike);
-    return parsedInternalUrl.searchParams.get("url");
+    return parsedInternalUrl.searchParams.get("url") ?? "";
   }
 
-  return tab.url;
+  return url;
 };
 
+/**
+ * @param {Article} article
+ * @param {Tag[]} tags
+ * @returns {void}
+ */
 const savedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
   setupArticleActions(article.id);
 };
 
+/**
+ * @param {number} articleId
+ * @returns {void}
+ */
 const setupArticleActions = (articleId) => {
+  /**
+   * @param {Partial<UpdateArticlePayload>} payload
+   * @returns {void}
+   */
   const updateArticle = (payload) => {
     hideArticle();
     displayLoader();
@@ -457,43 +628,44 @@ const setupArticleActions = (articleId) => {
     });
   };
 
+  /** @type {Record<string, (event: Event) => void>} */
   const actions = {
-    "#update-saved-article": (event) => {
+    "update-saved-article": (event) => {
       event.preventDefault();
 
-      const data = new FormData(document.querySelector("#update-saved-article-form"));
+      const data = new FormData(getFormById("update-saved-article-form"));
 
       updateArticle({
-        title: data.get("title"),
-        tags: data.getAll("tags"),
-        readingTime: data.get("reading-time"),
+        title: /** @type {string} */ (data.get("title")),
+        tags: /** @type {string[]} */ (data.getAll("tags")),
+        readingTime: Number(data.get("reading-time")),
       });
     },
-    "#mark-article-as-read": () => {
+    "mark-article-as-read": () => {
       updateArticle({ readAt: new Date().toISOString() });
     },
-    "#mark-article-as-unread": () => {
+    "mark-article-as-unread": () => {
       updateArticle({ readAt: null });
     },
-    "#mark-article-as-favorite": () => {
+    "mark-article-as-favorite": () => {
       updateArticle({ isFavorite: true });
     },
-    "#unmark-article-as-favorite": () => {
+    "unmark-article-as-favorite": () => {
       updateArticle({ isFavorite: false });
     },
-    "#mark-article-as-for-later": () => {
+    "mark-article-as-for-later": () => {
       updateArticle({ isForLater: true });
     },
-    "#unmark-article-as-for-later": () => {
+    "unmark-article-as-for-later": () => {
       updateArticle({ isForLater: false });
     },
-    "#delete-article": () =>
+    "delete-article": () =>
       askConfirmation("Are you sure you want to delete this article?").then(deleteArticle),
-    "#article-nav-back": async () => {
+    "article-nav-back": async () => {
       hideArticle();
 
       Object.entries(actions).forEach(([selector, action]) => {
-        document.querySelector(selector).removeEventListener("click", action);
+        getElementById(selector).removeEventListener("click", action);
       });
 
       await displayActionsSelector();
@@ -501,14 +673,23 @@ const setupArticleActions = (articleId) => {
   };
 
   Object.entries(actions).forEach(([selector, action]) => {
-    document.querySelector(selector).addEventListener("click", action);
+    getElementById(selector).addEventListener("click", action);
   });
 };
 
+/**
+ * @param {Article} article
+ * @param {Tag[]} tags
+ * @returns {void}
+ */
 const updatedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
 };
 
+/**
+ * @param {string} link
+ * @returns {void}
+ */
 const subscribeToFeed = (link) => {
   displayLoader();
   sendMessage({
@@ -517,18 +698,34 @@ const subscribeToFeed = (link) => {
   });
 };
 
+/**
+ * @param {Feed} feed
+ * @param {Tag[]} tags
+ * @param {Category[]} categories
+ * @returns {void}
+ */
 const feedSubscriptionSuccess = (feed, tags, categories) => {
   displayFeed(feed, tags, categories);
   setupFeedActions(feed.id);
 };
 
+/**
+ * @param {Feed} feed
+ * @param {Tag[]} tags
+ * @param {Category[]} categories
+ * @returns {void}
+ */
 const updatedFeedSuccess = (feed, tags, categories) => {
   displayFeed(feed, tags, categories);
 };
 
+/**
+ * @param {OutboundMessage} message
+ * @returns {Promise<void>}
+ */
 const sendMessage = async (message) => {
   if (isFirefox) {
-    port.postMessage(message);
+    /** @type {chrome.runtime.Port} */ (port).postMessage(message);
     return;
   }
 
@@ -536,23 +733,25 @@ const sendMessage = async (message) => {
   onMessage(response);
 };
 
+/**
+ * @param {string} message
+ * @returns {Promise<void>}
+ */
 const askConfirmation = (message) => {
-  const confirmDialog = document.getElementById("confirm-dialog");
+  const confirmDialog = getDialogById("confirm-dialog");
 
-  const confirmDialogTitle = document.getElementById("confirm-dialog-title");
-  confirmDialogTitle.innerText = message;
+  getElementById("confirm-dialog-title").innerText = message;
 
+  /** @type {() => void} */
   let resolveDeferred;
-  let rejectDeferred;
-  const deferred = new Promise((resolve, reject) => {
-    resolveDeferred = resolve;
-    rejectDeferred = reject;
+  const deferred = new Promise((resolve) => {
+    resolveDeferred = /** @type {() => void} */ (resolve);
   });
-  const cancelBtn = document.getElementById("confirm-dialog-cancel-btn");
-  const confirmBtn = document.getElementById("confirm-dialog-confirm-btn");
+  const cancelBtn = getElementById("confirm-dialog-cancel-btn");
+  const confirmBtn = getElementById("confirm-dialog-confirm-btn");
   const cancel = () => {
     confirmDialog.close();
-    rejectDeferred();
+    resolveDeferred();
     cancelBtn.removeEventListener("click", cancel);
     confirmBtn.removeEventListener("click", confirm);
   };

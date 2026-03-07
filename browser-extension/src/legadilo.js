@@ -2,8 +2,16 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-const DEFAULT_LEGADILO_URL = "https://www.legadilo.eu";
+/** @typedef {import('./types.js').Tag} Tag */
+/** @typedef {import('./types.js').Category} Category */
+/** @typedef {import('./types.js').Article} Article */
+/** @typedef {import('./types.js').Feed} Feed */
+/** @typedef {import('./types.js').Options} Options */
+/** @typedef {import('./types.js').SaveArticlePayload} SaveArticlePayload */
+/** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
+/** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
 
+const DEFAULT_LEGADILO_URL = "https://www.legadilo.eu";
 export const DEFAULT_OPTIONS = {
   instanceUrl: DEFAULT_LEGADILO_URL,
   userEmail: "",
@@ -12,11 +20,15 @@ export const DEFAULT_OPTIONS = {
   accessToken: "",
 };
 
+/**
+ * @param {{instanceUrl: string, userEmail: string, tokenId: string, tokenSecret: string}} params
+ * @returns {Promise<boolean>}
+ */
 export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSecret }) => {
   try {
     const resp = await fetch(`${instanceUrl}/api/users/tokens/`, {
-      "Content-Type": "application/json",
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: userEmail,
         application_token_uuid: tokenId,
@@ -24,35 +36,39 @@ export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSe
       }),
     });
     await resp.json();
-
     return resp.status === 200;
   } catch (error) {
     console.error(error);
-
     return false;
   }
 };
 
+/**
+ * @param {SaveArticlePayload} params
+ * @returns {Promise<Article>}
+ */
 export const saveArticle = async ({ url, title, content, contentType }) => {
   if (!/^https?:\/\//.test(url)) {
     throw new Error("Invalid url");
   }
-
   // If content or title is empty, pass only the URL to avoid a 422 error.
   const data = !!title && !!content ? { url, title, content, content_type: contentType } : { url };
-
   try {
     return await post("/api/reading/articles/", data);
   } catch (error) {
-    if (error.message === "Response status: 400 (Bad Request)") {
+    if (error instanceof Error && error.message === "Response status: 400 (Bad Request)") {
       // Content might be too big (we don't have a clean way to catch this yet), let's try to save only the URL.
       return await post("/api/reading/articles/", { url });
     }
-
     throw error;
   }
 };
 
+/**
+ * @param {number} articleId
+ * @param {UpdateArticlePayload} params
+ * @returns {Promise<Article>}
+ */
 export const updateArticle = async (
   articleId,
   { title, tags, readAt, isFavorite, isForLater, readingTime },
@@ -66,15 +82,22 @@ export const updateArticle = async (
     is_for_later: isForLater,
   });
 
+/**
+ * @param {number} articleId
+ * @returns {Promise<{}>}
+ */
 export const deleteArticle = async (articleId) =>
   await httpDelete(`/api/reading/articles/${articleId}/`);
 
+/**
+ * @param {{articleUrls?: string[]}} params
+ * @returns {Promise<{count: number, items: Article[]}>}
+ */
 export const listArticles = async ({ articleUrls }) => {
   const isFilteringByUrls = articleUrls && articleUrls.length > 0;
   if (!isFilteringByUrls) {
     return await get("/api/reading/articles/");
   }
-
   const queries = articleUrls
     .map(
       (articleUrl) => `/api/reading/articles/?q=${encodeURIComponent(articleUrl)}&search_type=url`,
@@ -88,13 +111,21 @@ export const listArticles = async ({ articleUrls }) => {
     }),
     {
       count: 0,
-      items: [],
+      items: /** @type {Article[]} */ ([]),
     },
   );
 };
 
+/**
+ * @param {string} link
+ * @returns {Promise<Feed>}
+ */
 export const subscribeToFeed = async (link) => await post("/api/feeds/", { feed_url: link });
 
+/**
+ * @param {{feedUrls?: string[]}} params
+ * @returns {Promise<{items: Feed[]}>}
+ */
 export const listEnabledFeeds = async ({ feedUrls }) => {
   let qs = "";
   const isFilteringByUrls = feedUrls && feedUrls.length > 0;
@@ -102,12 +133,20 @@ export const listEnabledFeeds = async ({ feedUrls }) => {
     qs = feedUrls.map((feedUrl) => `feed_urls=${encodeURIComponent(feedUrl)}`).join("&");
     qs = `?${qs}&enabled=true`;
   }
-
   return await get(`/api/feeds/${qs}`);
 };
 
+/**
+ * @param {number} feedId
+ * @returns {Promise<{}>}
+ */
 export const deleteFeed = async (feedId) => await httpDelete(`/api/feeds/${feedId}/`);
 
+/**
+ * @param {number} feedId
+ * @param {UpdateFeedPayload} params
+ * @returns {Promise<Feed>}
+ */
 export const updateFeed = async (
   feedId,
   { categoryId, tags, refreshDelay, articleRetentionTime, disabledAt, disabledReason },
@@ -121,42 +160,52 @@ export const updateFeed = async (
     disabled_reason: disabledReason,
   });
 
+/**
+ * @returns {Promise<Tag[]>}
+ */
 export const listTags = async () => {
   const response = await get("/api/reading/tags/");
-
   return response.items;
 };
 
+/**
+ * @returns {Promise<Category[]>}
+ */
 export const listCategories = async () => {
   const response = await get("/api/feeds/categories/");
-
   return response.items;
 };
 
+/**
+ * @param {(...args: any[]) => Promise<any>} fetchFunc
+ * @returns {(...args: any[]) => Promise<any>}
+ */
 const handleAuth =
   (fetchFunc) =>
   async (...fetchArgs) => {
     const options = await loadOptions();
-    // If we don’t have a token yet, we create one.
+    // If we don't have a token yet, we create one.
     if (!options.accessToken) {
       await getNewAccessToken(options);
     }
-
     try {
       return await fetchFunc(...fetchArgs);
     } catch (error) {
-      // Error is unrelated to auth, let’s propagate immediately.
-      if (![401, 403].includes(error.cause)) {
+      // Error is unrelated to auth, let's propagate immediately.
+      if (!(error instanceof Error) || ![401, 403].includes(/** @type {any} */ (error).cause)) {
         throw error;
       }
     }
-
-    // The current token has probably expired. Let’s get a new one and retry. If it fails again,
+    // The current token has probably expired. Let's get a new one and retry. If it fails again,
     // let the error propagate.
     await getNewAccessToken(options);
     return await fetchFunc(...fetchArgs);
   };
 
+/**
+ * @param {Options} options
+ * @returns {Promise<string>}
+ */
 const getNewAccessToken = async (options) => {
   const data = await doFetch("/api/users/tokens/", {
     method: "POST",
@@ -166,54 +215,70 @@ const getNewAccessToken = async (options) => {
       application_token_secret: options.tokenSecret,
     }),
   });
-
   await chrome.storage.local.set({ accessToken: data.access_token });
-
   return data.access_token;
 };
 
 const post = handleAuth(
-  async (apiUrl, data) => await doFetch(apiUrl, { method: "POST", body: JSON.stringify(data) }),
+  async (apiUrl, data) =>
+    await doFetch(/** @type {string} */ (apiUrl), {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 );
 
+/**
+ * @param {string} url
+ * @param {RequestInit} fetchOptions
+ * @returns {Promise<any>}
+ */
 const doFetch = async (url, fetchOptions) => {
   const options = await loadOptions();
-
   if (!fetchOptions.headers) {
     fetchOptions.headers = {};
   }
-
   fetchOptions.headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${options.accessToken}`,
-    ...fetchOptions.headers,
+    .../** @type {Record<string, string>} */ (fetchOptions.headers),
   };
-
   const resp = await fetch(`${options.instanceUrl}${url}`, fetchOptions);
-
   if (!resp.ok) {
     throw new Error(`Response status: ${resp.status} (${resp.statusText})`, {
       cause: resp.status,
     });
   }
-
   if (fetchOptions.method === "DELETE") {
     return {};
   }
-
   return await resp.json();
 };
 
 const patch = handleAuth(
-  async (apiUrl, data) => await doFetch(apiUrl, { method: "PATCH", body: JSON.stringify(data) }),
+  async (apiUrl, data) =>
+    await doFetch(/** @type {string} */ (apiUrl), {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
 );
 
-const get = handleAuth(async (apiUrl) => await doFetch(apiUrl, { method: "GET" }));
+const get = handleAuth(
+  async (apiUrl) => await doFetch(/** @type {string} */ (apiUrl), { method: "GET" }),
+);
 
-const httpDelete = handleAuth(async (apiUrl) => await doFetch(apiUrl, { method: "DELETE" }));
+const httpDelete = handleAuth(
+  async (apiUrl) => await doFetch(/** @type {string} */ (apiUrl), { method: "DELETE" }),
+);
 
+/**
+ * @returns {Promise<Options>}
+ */
 export const loadOptions = async () => chrome.storage.local.get(DEFAULT_OPTIONS);
 
+/**
+ * @param {{instanceUrl: string, userEmail: string, tokenId: string, tokenSecret: string}} params
+ * @returns {Promise<void>}
+ */
 export const storeOptions = async ({ instanceUrl, userEmail, tokenId, tokenSecret }) =>
   // Reset access token when options change.
   chrome.storage.local.set({ instanceUrl, userEmail, tokenId, tokenSecret, accessToken: "" });

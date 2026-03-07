@@ -81,6 +81,16 @@ watch-test-browser-extension:
 build-browser-extension:
     npm run build
 
+[working-directory('browser-extension')]
+typecheck-browser-extension:
+    npm run typecheck
+
+check:
+    just lint
+    just test
+    just typecheck-browser-extension
+    just test-browser-extension
+
 release:
     #!/usr/bin/env bash
     set -eu

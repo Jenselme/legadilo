@@ -2,62 +2,83 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+/** @typedef {import('./types.js').Options} Options */
+
 import { DEFAULT_OPTIONS, loadOptions, storeOptions, testCredentials } from "./legadilo.js";
+import { getDialogById, getElementById, getFormById, getInputById } from "./typing-utils.js";
 
 /**
- * @param event {SubmitEvent}
+ * @param {SubmitEvent} event
+ * @returns {Promise<void>}
  */
 const saveOptions = async (event) => {
   event.preventDefault();
-  const data = new FormData(event.target);
+  const data = new FormData(/** @type {HTMLFormElement} */ (event.target));
 
   await storeOptions({
-    instanceUrl: data.get("instance-url"),
-    userEmail: data.get("user-email"),
-    tokenId: data.get("token-id"),
-    tokenSecret: data.get("token-secret"),
+    instanceUrl: /** @type {string} */ (data.get("instance-url")),
+    userEmail: /** @type {string} */ (data.get("user-email")),
+    tokenId: /** @type {string} */ (data.get("token-id")),
+    tokenSecret: /** @type {string} */ (data.get("token-secret")),
   });
 
   // Update status to let user know options were saved.
   displayMessage("Options saved.");
 };
 
+/**
+ * @param {string} text
+ * @returns {void}
+ */
 const displayMessage = (text) => {
-  const status = document.getElementById("status");
+  const status = getElementById("status");
   status.textContent = text;
   setTimeout(() => {
     status.textContent = "";
   }, 750);
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const restoreOptions = async () => {
   const options = await loadOptions();
 
   setOptions(options);
 };
 
+/**
+ * @param {Partial<Options>} options
+ * @returns {void}
+ */
 const setOptions = (options = {}) => {
-  document.getElementById("instance-url").value = options.instanceUrl;
-  document.getElementById("user-email").value = options.userEmail;
-  document.getElementById("token-id").value = options.tokenId;
-  document.getElementById("token-secret").value = options.tokenSecret;
+  getInputById("instance-url").value = options.instanceUrl ?? "";
+  getInputById("user-email").value = options.userEmail ?? "";
+  getInputById("token-id").value = options.tokenId ?? "";
+  getInputById("token-secret").value = options.tokenSecret ?? "";
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const resetOptions = async () => {
   if (await askConfirmation()) {
     setOptions(DEFAULT_OPTIONS);
   }
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const testOptions = async () => {
-  const data = new FormData(document.getElementById("options-form"));
+  const data = new FormData(getFormById("options-form"));
 
   if (
     await testCredentials({
-      instanceUrl: data.get("instance-url"),
-      userEmail: data.get("user-email"),
-      tokenId: data.get("token-id"),
-      tokenSecret: data.get("token-secret"),
+      instanceUrl: /** @type {string} */ (data.get("instance-url")),
+      userEmail: /** @type {string} */ (data.get("user-email")),
+      tokenId: /** @type {string} */ (data.get("token-id")),
+      tokenSecret: /** @type {string} */ (data.get("token-secret")),
     })
   ) {
     displayMessage("Instance URL and token are valid");
@@ -66,13 +87,21 @@ const testOptions = async () => {
   }
 };
 
+/**
+ * @returns {Promise<boolean>}
+ */
 const askConfirmation = () => {
-  const confirmDialog = document.getElementById("confirm-dialog");
+  const confirmDialog = getDialogById("confirm-dialog");
 
+  /** @type {(value: boolean) => void} */
   let resolveDeferred;
-  const deferred = new Promise((resolve) => (resolveDeferred = resolve));
-  const cancelBtn = document.getElementById("confirm-dialog-cancel-btn");
-  const confirmBtn = document.getElementById("confirm-dialog-confirm-btn");
+  const deferred = /** @type {Promise<boolean>} */ (
+    new Promise((resolve) => {
+      resolveDeferred = /** @type {(value: boolean) => void} */ (resolve);
+    })
+  );
+  const cancelBtn = getElementById("confirm-dialog-cancel-btn");
+  const confirmBtn = getElementById("confirm-dialog-confirm-btn");
   const cancel = () => {
     confirmDialog.close();
     resolveDeferred(false);
@@ -94,7 +123,7 @@ const askConfirmation = () => {
   return deferred;
 };
 
-document.addEventListener("DOMContentLoaded", restoreOptions);
-document.getElementById("options-form").addEventListener("submit", saveOptions);
-document.getElementById("reset-options").addEventListener("click", resetOptions);
-document.getElementById("test-options").addEventListener("click", testOptions);
+addEventListener("DOMContentLoaded", restoreOptions);
+getFormById("options-form").addEventListener("submit", saveOptions);
+getElementById("reset-options").addEventListener("click", resetOptions);
+getElementById("test-options").addEventListener("click", testOptions);

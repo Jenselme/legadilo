@@ -10,10 +10,13 @@
     "postinstall": "./copy-vendors.js",
     "build": "web-ext build --overwrite-dest --source-dir src",
     "test": "vitest --run",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc"
   },
   "devDependencies": {
+    "@types/chrome": "^0.1.37",
     "jsdom": "^28.1.0",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }

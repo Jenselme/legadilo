@@ -96,6 +96,7 @@ path = [
     "package.json",
     "pyproject.toml",
     "browser-extension/package.json",
+    "browser-extension/tsconfig.json",
     "browser-extension/src/manifest.json",
     "browser-extension/src/vendor/.gitignore",
 ]

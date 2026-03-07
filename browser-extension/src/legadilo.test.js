@@ -14,12 +14,15 @@ describe("legadilo.js", () => {
 
   it("testCredentials returns true on success", async () => {
     // Mock fetch response
-    fetch.mockResolvedValue({
-      status: 200,
-      ok: true,
-      json: () => Promise.resolve({}),
-    });
-
+    vi.mocked(fetch).mockResolvedValue(
+      /** @type {Response} */ (
+        /** @type {unknown} */ ({
+          status: 200,
+          ok: true,
+          json: () => Promise.resolve({}),
+        })
+      ),
+    );
     const result = await testCredentials({
       instanceUrl: "https://example.com",
       userEmail: "test@example.com",
@@ -35,7 +38,7 @@ describe("legadilo.js", () => {
   });
 
   it("testCredentials returns false on error", async () => {
-    fetch.mockRejectedValue(new Error("Network error"));
+    vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
 
     const result = await testCredentials({
       instanceUrl: "https://example.com",

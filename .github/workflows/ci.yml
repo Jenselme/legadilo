@@ -175,6 +175,9 @@ jobs:
       - name: Run tests
         run: just test-browser-extension
 
+      - name: Run typecheck
+        run: just typecheck-browser-extension
+
   test-production-images:
     needs: [test-pg, test-sqlite, test-browser-extension]
     runs-on: ubuntu-latest
