@@ -92,38 +92,54 @@ const testOptions = async () => {
  */
 const askConfirmation = () => {
   const confirmDialog = getDialogById("confirm-dialog");
+  const abortController = new AbortController();
 
-  /** @type {(value: boolean) => void} */
-  let resolveDeferred;
   const deferred = /** @type {Promise<boolean>} */ (
-    new Promise((resolve) => {
-      resolveDeferred = /** @type {(value: boolean) => void} */ (resolve);
+    new Promise((resolve, reject) => {
+      confirmDialog.addEventListener(
+        "click",
+        (event) => {
+          const target = /** @type {HTMLElement} */ (event.target);
+          switch (target.id) {
+            case "confirm-dialog-cancel-btn":
+              confirmDialog.close();
+              abortController.abort();
+              resolve(false);
+              break;
+            case "confirm-dialog-confirm-btn":
+              confirmDialog.close();
+              abortController.abort();
+              resolve(true);
+              break;
+            default:
+              reject(new Error(`Unexpected click target: ${target.id}`));
+          }
+        },
+        { signal: abortController.signal },
+      );
     })
   );
-  const cancelBtn = getElementById("confirm-dialog-cancel-btn");
-  const confirmBtn = getElementById("confirm-dialog-confirm-btn");
-  const cancel = () => {
-    confirmDialog.close();
-    resolveDeferred(false);
-    cancelBtn.removeEventListener("click", cancel);
-    confirmBtn.removeEventListener("click", confirm);
-  };
-  const confirm = () => {
-    confirmDialog.close();
-    resolveDeferred(true);
-    cancelBtn.removeEventListener("click", cancel);
-    confirmBtn.removeEventListener("click", confirm);
-  };
-
-  cancelBtn.addEventListener("click", cancel);
-  confirmBtn.addEventListener("click", confirm);
 
   confirmDialog.showModal();
 
   return deferred;
 };
 
-addEventListener("DOMContentLoaded", restoreOptions);
-getFormById("options-form").addEventListener("submit", saveOptions);
-getElementById("reset-options").addEventListener("click", resetOptions);
-getElementById("test-options").addEventListener("click", testOptions);
+addEventListener("DOMContentLoaded", () => {
+  restoreOptions();
+  const optionsForm = getFormById("options-form");
+  optionsForm.addEventListener("submit", saveOptions);
+  optionsForm.addEventListener("click", async (event) => {
+    const target = /** @type {HTMLButtonElement} */ (event.target);
+    switch (target.id) {
+      case "reset-options":
+        await resetOptions();
+        break;
+      case "test-options":
+        await testOptions();
+        break;
+      default:
+        if (target.type !== "submit") throw new Error(`Unexpected click target: ${target.id}`);
+    }
+  });
+});
