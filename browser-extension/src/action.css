@@ -35,3 +35,7 @@ body,
   min-height: 350px;
   min-width: 300px;
 }
+
+[data-bs-theme="dark"] img.bi {
+  filter: invert(0.715);
+}
