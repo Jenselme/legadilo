@@ -9,6 +9,9 @@
 /** @typedef {import('./types.js').Options} Options */
 /** @typedef {import('./types.js').SaveArticlePayload} SaveArticlePayload */
 /** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
+
+import { mustJwtBeRenewed } from "./utils.js";
+
 /** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
 
 const DEFAULT_LEGADILO_URL = "https://www.legadilo.eu";
@@ -177,34 +180,18 @@ export const listCategories = async () => {
 };
 
 /**
- * @param {(...args: any[]) => Promise<any>} fetchFunc
- * @returns {(...args: any[]) => Promise<any>}
+ * @returns {Promise<void>}
  */
-const handleAuth =
-  (fetchFunc) =>
-  async (...fetchArgs) => {
-    const options = await loadOptions();
-    // If we don't have a token yet, we create one.
-    if (!options.accessToken) {
-      await getNewAccessToken(options);
-    }
-    try {
-      return await fetchFunc(...fetchArgs);
-    } catch (error) {
-      // Error is unrelated to auth, let's propagate immediately.
-      if (!(error instanceof Error) || ![401, 403].includes(/** @type {any} */ (error).cause)) {
-        throw error;
-      }
-    }
-    // The current token has probably expired. Let's get a new one and retry. If it fails again,
-    // let the error propagate.
+export const ensureIsAuthenticated = async () => {
+  const options = await loadOptions();
+  if (mustJwtBeRenewed(options.accessToken)) {
     await getNewAccessToken(options);
-    return await fetchFunc(...fetchArgs);
-  };
+  }
+};
 
 /**
  * @param {Options} options
- * @returns {Promise<string>}
+ * @returns {Promise<void>}
  */
 const getNewAccessToken = async (options) => {
   const data = await doFetch("/api/users/tokens/", {
@@ -216,16 +203,18 @@ const getNewAccessToken = async (options) => {
     }),
   });
   await chrome.storage.local.set({ accessToken: data.access_token });
-  return data.access_token;
 };
 
-const post = handleAuth(
-  async (apiUrl, data) =>
-    await doFetch(/** @type {string} */ (apiUrl), {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-);
+/**
+ * @param {string} apiUrl
+ * @param {any} data
+ * @returns {Promise<any>}
+ */
+const post = async (apiUrl, data) =>
+  await doFetch(/** @type {string} */ (apiUrl), {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
 /**
  * @param {string} url
@@ -254,21 +243,29 @@ const doFetch = async (url, fetchOptions) => {
   return await resp.json();
 };
 
-const patch = handleAuth(
-  async (apiUrl, data) =>
-    await doFetch(/** @type {string} */ (apiUrl), {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }),
-);
+/**
+ * @param {string} apiUrl
+ * @param {any} data
+ * @returns {Promise<any>}
+ */
+const patch = async (apiUrl, data) =>
+  await doFetch(/** @type {string} */ (apiUrl), {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 
-const get = handleAuth(
-  async (apiUrl) => await doFetch(/** @type {string} */ (apiUrl), { method: "GET" }),
-);
+/**
+ * @param {string} apiUrl
+ * @returns {Promise<any>}
+ */
+const get = async (apiUrl) => await doFetch(/** @type {string} */ (apiUrl), { method: "GET" });
 
-const httpDelete = handleAuth(
-  async (apiUrl) => await doFetch(/** @type {string} */ (apiUrl), { method: "DELETE" }),
-);
+/**
+ * @param {string} apiUrl
+ * @returns {Promise<{any}>}
+ */
+const httpDelete = async (apiUrl) =>
+  await doFetch(/** @type {string} */ (apiUrl), { method: "DELETE" });
 
 /**
  * @returns {Promise<Options>}
@@ -280,5 +277,5 @@ export const loadOptions = async () => chrome.storage.local.get(DEFAULT_OPTIONS)
  * @returns {Promise<void>}
  */
 export const storeOptions = async ({ instanceUrl, userEmail, tokenId, tokenSecret }) =>
-  // Reset access token when options change.
+  // Reset the access token when credentials options change.
   chrome.storage.local.set({ instanceUrl, userEmail, tokenId, tokenSecret, accessToken: "" });

@@ -13,6 +13,7 @@
 import {
   deleteArticle,
   deleteFeed,
+  ensureIsAuthenticated,
   listCategories,
   listTags,
   saveArticle,
@@ -51,6 +52,8 @@ if (isFirefox) {
  * @returns {Promise<void>}
  */
 const onMessage = async (request, sendResponse) => {
+  await ensureIsAuthenticated();
+
   try {
     switch (request.name) {
       case "save-article":
