@@ -35,7 +35,7 @@ const displayMessage = (text) => {
   status.textContent = text;
   setTimeout(() => {
     status.textContent = "";
-  }, 750);
+  }, 5_000);
 };
 
 /**
