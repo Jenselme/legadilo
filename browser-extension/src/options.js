@@ -125,12 +125,12 @@ const askConfirmation = () => {
   return deferred;
 };
 
-addEventListener("DOMContentLoaded", () => {
-  restoreOptions();
+addEventListener("DOMContentLoaded", async () => {
+  await restoreOptions();
   const optionsForm = getFormById("options-form");
   optionsForm.addEventListener("submit", saveOptions);
   optionsForm.addEventListener("click", async (event) => {
-    const target = /** @type {HTMLButtonElement} */ (event.target);
+    const target = /** @type {HTMLElement} */ (event.target);
     switch (target.id) {
       case "reset-options":
         await resetOptions();
@@ -138,8 +138,6 @@ addEventListener("DOMContentLoaded", () => {
       case "test-options":
         await testOptions();
         break;
-      default:
-        if (target.type !== "submit") throw new Error(`Unexpected click target: ${target.id}`);
     }
   });
 });
