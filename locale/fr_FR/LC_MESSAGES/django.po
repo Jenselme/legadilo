@@ -1030,7 +1030,7 @@ msgstr "Rapporter un bug"
 msgid ""
 "Contact us at <a class=\"text-reset\" href=\"mailto:%(email)s\">%(email)s</a>"
 msgstr ""
-"Contacter nous à <a class=\"text-reset\" href=\"mailto:"
+"Contactez nous à <a class=\"text-reset\" href=\"mailto:"
 "%(email)s\">%(email)s</a>"
 
 msgid "Loading..."
@@ -1662,7 +1662,7 @@ msgid "Last used %(last_used_at)s"
 msgstr "Utilisé pour la dernière fois le %(last_used_at)s"
 
 msgid "Valid forever"
-msgstr "Toujours valid"
+msgstr "Toujours valide"
 
 #, python-format
 msgid "Valid until %(validity_end)s"
