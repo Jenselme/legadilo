@@ -237,18 +237,32 @@ const displayActionsSelector = async () => {
     .join("");
   chooseFeedsContainer.innerHTML = feedsButtons;
 
-  chooseFeedsContainer.addEventListener("click", (event) => {
-    if (!(event.target instanceof Element) || !event.target.hasAttribute("data-feed-index")) return;
+  const actionSelectorController = new AbortController();
+  const { signal: actionSelectorSignal } = actionSelectorController;
 
-    const index = Number(event.target.getAttribute("data-feed-index"));
-    hideActionSelector();
-    subscribeToFeed(feedHrefs[index]);
-  });
+  chooseFeedsContainer.addEventListener(
+    "click",
+    (event) => {
+      if (!(event.target instanceof Element) || !event.target.hasAttribute("data-feed-index"))
+        return;
 
-  getElementById("save-article-action-btn").addEventListener("click", async () => {
-    hideActionSelector();
-    await saveArticle(tab, data);
-  });
+      actionSelectorController.abort();
+      const index = Number(event.target.getAttribute("data-feed-index"));
+      hideActionSelector();
+      subscribeToFeed(feedHrefs[index]);
+    },
+    { signal: actionSelectorSignal },
+  );
+
+  getElementById("save-article-action-btn").addEventListener(
+    "click",
+    async () => {
+      actionSelectorController.abort();
+      hideActionSelector();
+      await saveArticle(tab, data);
+    },
+    { signal: actionSelectorSignal },
+  );
 };
 
 /**
@@ -383,6 +397,8 @@ const displayArticle = (article, tags) => {
   getElementById("unmark-article-as-for-later").hidden = !article.is_for_later;
 
   getLinkElementById("open-article-details").href = article.details_url;
+
+  setupArticleActions(article.id);
 };
 
 /**
@@ -423,6 +439,8 @@ const displayFeed = (feed, tags, categories) => {
   if (feedTagsInstance === null) {
     feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
   }
+
+  setupFeedActions(feed.id);
 };
 
 /**
@@ -430,11 +448,15 @@ const displayFeed = (feed, tags, categories) => {
  * @returns {void}
  */
 const setupFeedActions = (feedId) => {
+  const controller = new AbortController();
+  const { signal } = controller;
+
   /**
    * @param {UpdateFeedPayload} payload
    * @returns {void}
    */
   const updateFeed = (payload) => {
+    controller.abort();
     hideFeed();
     displayLoader();
     sendMessage({
@@ -445,6 +467,7 @@ const setupFeedActions = (feedId) => {
   };
 
   const deleteFeed = () => {
+    controller.abort();
     hideFeed();
     displayLoader();
     sendMessage({
@@ -453,9 +476,9 @@ const setupFeedActions = (feedId) => {
     });
   };
 
-  /** @type {Record<string, (event: Event) => void>} */
-  const actions = {
-    "update-feed": (event) => {
+  getElementById("update-feed").addEventListener(
+    "click",
+    (event) => {
       event.preventDefault();
       const data = new FormData(getFormById("update-feed-form"));
       updateFeed({
@@ -465,27 +488,39 @@ const setupFeedActions = (feedId) => {
         tags: /** @type {string[]} */ (data.getAll("tags")),
       });
     },
-    "enable-feed": () => updateFeed({ disabledAt: null, disabledReason: null }),
-    "disable-feed": () =>
+    { signal },
+  );
+  getElementById("enable-feed").addEventListener(
+    "click",
+    () => updateFeed({ disabledAt: null, disabledReason: null }),
+    { signal },
+  );
+  getElementById("disable-feed").addEventListener(
+    "click",
+    () =>
       updateFeed({
         disabledAt: new Date().toISOString(),
         disabledReason: "Disable manually in the browser extension",
       }),
-    "delete-feed": () =>
-      askConfirmation("Are you sure you want to delete this feed?").then(deleteFeed),
-    "feed-nav-back": async () => {
-      Object.entries(actions).forEach(([selector, action]) => {
-        getElementById(selector).removeEventListener("click", action);
-      });
-
+    { signal },
+  );
+  getElementById("delete-feed").addEventListener(
+    "click",
+    async () => {
+      const confirmed = await askConfirmation("Are you sure you want to delete this feed?");
+      if (confirmed) deleteFeed();
+    },
+    { signal },
+  );
+  getElementById("feed-nav-back").addEventListener(
+    "click",
+    async () => {
+      controller.abort();
       hideFeed();
       await displayActionsSelector();
     },
-  };
-
-  Object.entries(actions).forEach(([selector, action]) => {
-    getElementById(selector).addEventListener("click", action);
-  });
+    { signal },
+  );
 };
 
 /**
@@ -594,7 +629,6 @@ const getPageUrlFromTab = (tab) => {
  */
 const savedArticleSuccess = (article, tags) => {
   displayArticle(article, tags);
-  setupArticleActions(article.id);
 };
 
 /**
@@ -602,11 +636,15 @@ const savedArticleSuccess = (article, tags) => {
  * @returns {void}
  */
 const setupArticleActions = (articleId) => {
+  const controller = new AbortController();
+  const { signal } = controller;
+
   /**
    * @param {Partial<UpdateArticlePayload>} payload
    * @returns {void}
    */
   const updateArticle = (payload) => {
+    controller.abort();
     hideArticle();
     displayLoader();
     sendMessage({
@@ -617,6 +655,7 @@ const setupArticleActions = (articleId) => {
   };
 
   const deleteArticle = () => {
+    controller.abort();
     hideArticle();
     displayLoader();
     sendMessage({
@@ -625,9 +664,9 @@ const setupArticleActions = (articleId) => {
     });
   };
 
-  /** @type {Record<string, (event: Event) => void>} */
-  const actions = {
-    "update-saved-article": (event) => {
+  getElementById("update-saved-article").addEventListener(
+    "click",
+    (event) => {
       event.preventDefault();
 
       const data = new FormData(getFormById("update-saved-article-form"));
@@ -638,40 +677,55 @@ const setupArticleActions = (articleId) => {
         readingTime: Number(data.get("reading-time")),
       });
     },
-    "mark-article-as-read": () => {
-      updateArticle({ readAt: new Date().toISOString() });
+    { signal },
+  );
+  getElementById("mark-article-as-read").addEventListener(
+    "click",
+    () => updateArticle({ readAt: new Date().toISOString() }),
+    { signal },
+  );
+  getElementById("mark-article-as-unread").addEventListener(
+    "click",
+    () => updateArticle({ readAt: null }),
+    { signal },
+  );
+  getElementById("mark-article-as-favorite").addEventListener(
+    "click",
+    () => updateArticle({ isFavorite: true }),
+    { signal },
+  );
+  getElementById("unmark-article-as-favorite").addEventListener(
+    "click",
+    () => updateArticle({ isFavorite: false }),
+    { signal },
+  );
+  getElementById("mark-article-as-for-later").addEventListener(
+    "click",
+    () => updateArticle({ isForLater: true }),
+    { signal },
+  );
+  getElementById("unmark-article-as-for-later").addEventListener(
+    "click",
+    () => updateArticle({ isForLater: false }),
+    { signal },
+  );
+  getElementById("delete-article").addEventListener(
+    "click",
+    async () => {
+      const confirmed = await askConfirmation("Are you sure you want to delete this article?");
+      if (confirmed) deleteArticle();
     },
-    "mark-article-as-unread": () => {
-      updateArticle({ readAt: null });
-    },
-    "mark-article-as-favorite": () => {
-      updateArticle({ isFavorite: true });
-    },
-    "unmark-article-as-favorite": () => {
-      updateArticle({ isFavorite: false });
-    },
-    "mark-article-as-for-later": () => {
-      updateArticle({ isForLater: true });
-    },
-    "unmark-article-as-for-later": () => {
-      updateArticle({ isForLater: false });
-    },
-    "delete-article": () =>
-      askConfirmation("Are you sure you want to delete this article?").then(deleteArticle),
-    "article-nav-back": async () => {
+    { signal },
+  );
+  getElementById("article-nav-back").addEventListener(
+    "click",
+    async () => {
+      controller.abort();
       hideArticle();
-
-      Object.entries(actions).forEach(([selector, action]) => {
-        getElementById(selector).removeEventListener("click", action);
-      });
-
       await displayActionsSelector();
     },
-  };
-
-  Object.entries(actions).forEach(([selector, action]) => {
-    getElementById(selector).addEventListener("click", action);
-  });
+    { signal },
+  );
 };
 
 /**
@@ -703,7 +757,6 @@ const subscribeToFeed = (link) => {
  */
 const feedSubscriptionSuccess = (feed, tags, categories) => {
   displayFeed(feed, tags, categories);
-  setupFeedActions(feed.id);
 };
 
 /**
@@ -732,35 +785,45 @@ const sendMessage = async (message) => {
 
 /**
  * @param {string} message
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 const askConfirmation = (message) => {
   const confirmDialog = getDialogById("confirm-dialog");
 
   getElementById("confirm-dialog-title").innerText = message;
 
-  /** @type {() => void} */
+  /** @type {(value: boolean) => void} */
   let resolveDeferred;
-  const deferred = new Promise((resolve) => {
-    resolveDeferred = /** @type {() => void} */ (resolve);
-  });
+  const deferred = /** @type {Promise<boolean>} */ (
+    new Promise((resolve) => {
+      resolveDeferred = /** @type {(value: boolean) => void} */ (resolve);
+    })
+  );
+
+  const controller = new AbortController();
+  const { signal } = controller;
+
   const cancelBtn = getElementById("confirm-dialog-cancel-btn");
   const confirmBtn = getElementById("confirm-dialog-confirm-btn");
-  const cancel = () => {
-    confirmDialog.close();
-    resolveDeferred();
-    cancelBtn.removeEventListener("click", cancel);
-    confirmBtn.removeEventListener("click", confirm);
-  };
-  const confirm = () => {
-    confirmDialog.close();
-    resolveDeferred();
-    cancelBtn.removeEventListener("click", cancel);
-    confirmBtn.removeEventListener("click", confirm);
-  };
 
-  cancelBtn.addEventListener("click", cancel);
-  confirmBtn.addEventListener("click", confirm);
+  cancelBtn.addEventListener(
+    "click",
+    () => {
+      controller.abort();
+      confirmDialog.close();
+      resolveDeferred(false);
+    },
+    { signal },
+  );
+  confirmBtn.addEventListener(
+    "click",
+    () => {
+      controller.abort();
+      confirmDialog.close();
+      resolveDeferred(true);
+    },
+    { signal },
+  );
 
   confirmDialog.showModal();
 
