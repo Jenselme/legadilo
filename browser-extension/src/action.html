@@ -200,8 +200,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>
-                <div class="mb-3 d-flex justify-content-center">
+                <div class="mb-3 d-flex justify-content-around">
                     <button id="update-feed" class="btn btn-primary btn-sm" type="submit">Update</button>
+                    <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
+                        <svg class="bi" role="img" aria-label="Delete feed">
+                            <use href="./bs-sprite.svg#trash"></use>
+                        </svg>
+                        Delete
+                    </button>
                 </div>
             </form>
             <div class="mb-3 d-flex justify-content-evenly">
@@ -211,11 +217,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <button id="disable-feed"
                         class="btn btn-outline-secondary btn-sm"
                         type="button">Disable</button>
-                <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
-                    <svg class="bi" role="img" aria-label="Delete feed">
-                        <use href="./bs-sprite.svg#trash"></use>
-                    </svg>
-                </button>
                 <a id="open-feed-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
