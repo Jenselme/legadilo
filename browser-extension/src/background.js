@@ -32,6 +32,34 @@ import {
 
 const isFirefox = typeof browser === "object";
 
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: "save-link-as-article",
+    title: "Save link as article in Legadilo",
+    contexts: ["link"],
+  });
+});
+
+chrome.contextMenus.onClicked.addListener(async (info) => {
+  if (info.menuItemId !== "save-link-as-article" || !info.linkUrl) {
+    return;
+  }
+
+  await ensureIsAuthenticated();
+  try {
+    await saveArticle({
+      url: info.linkUrl,
+      title: "",
+      content: "",
+      contentType: "text/html",
+      language: "",
+      mustExtractContent: true,
+    });
+  } catch (err) {
+    console.error("Failed to save article from context menu:", err);
+  }
+});
+
 if (isFirefox) {
   browser.runtime.onConnect.addListener(function (port) {
     port.onMessage.addListener((/** @type {RequestMessage} */ request) =>
