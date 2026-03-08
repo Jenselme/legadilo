@@ -5,7 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mustJwtBeRenewed } from "./utils.js";
+import { html, mustJwtBeRenewed } from "./utils.js";
 
 /**
  * @param {{ exp?: number; sub?: string; }} payload
@@ -53,5 +53,65 @@ describe("isTokenExpiredOrExpiringSoon", () => {
     { token: makeJwt({ sub: "user" }), label: "missing exp claim" },
   ])("should return true for an invalid or missing token: $label", ({ token }) => {
     expect(mustJwtBeRenewed(token)).toBe(true);
+  });
+});
+
+describe("html", () => {
+  it("should return a string for a plain template with no interpolations", () => {
+    expect(html`<p>Hello</p>`.toString()).toBe("<p>Hello</p>");
+  });
+
+  it("should interpolate a plain string value unescaped when safe", () => {
+    const value = "World";
+    expect(html`<p>${value}</p>`.toString()).toBe("<p>World</p>");
+  });
+
+  it("should escape & in interpolated values", () => {
+    const value = "foo & bar";
+    expect(html`<p>${value}</p>`.toString()).toBe("<p>foo &amp; bar</p>");
+  });
+
+  it("should escape < and > in interpolated values", () => {
+    const value = "<script>";
+    expect(html`<p>${value}</p>`.toString()).toBe("<p>&lt;script&gt;</p>");
+  });
+
+  it("should escape double quotes in interpolated values", () => {
+    const value = 'say "hi"';
+    expect(html`<p>${value}</p>`.toString()).toBe("<p>say &quot;hi&quot;</p>");
+  });
+
+  it("should escape single quotes in interpolated values", () => {
+    const value = "it's";
+    expect(html`<p>${value}</p>`.toString()).toBe("<p>it&#x27;s</p>");
+  });
+
+  it("should not double-escape a nested html`` value", () => {
+    const inner = html`<strong>bold</strong>`;
+    expect(html`<p>${inner}</p>`.toString()).toBe("<p><strong>bold</strong></p>");
+  });
+
+  it("should coerce numbers to strings", () => {
+    expect(html`<span>${42}</span>`.toString()).toBe("<span>42</span>");
+  });
+
+  it("should coerce null to an empty string", () => {
+    expect(html`<span>${null}</span>`.toString()).toBe("<span></span>");
+  });
+
+  it("should coerce undefined to an empty string", () => {
+    expect(html`<span>${undefined}</span>`.toString()).toBe("<span></span>");
+  });
+
+  it("should handle multiple interpolations in one template", () => {
+    const text = "<item>";
+    expect(html`${text}${text}`.toString()).toBe("&lt;item&gt;&lt;item&gt;");
+  });
+
+  it("should produce a value that can be used as innerHTML", () => {
+    // @ts-ignore
+    document.body.innerHTML = html`<p id="test">${"<b>safe</b>"}</p>`;
+    const p = document.getElementById("test");
+    expect(p?.textContent).toBe("<b>safe</b>");
   });
 });

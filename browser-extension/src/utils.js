@@ -38,3 +38,42 @@ export function mustJwtBeRenewed(token) {
   }
   return expirationDate < new Date(Date.now() + TOKEN_EXPIRY_BUFFER_MS);
 }
+
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+
+/**
+ * Wrapper to avoid double-escaping HTML in templates.
+ */
+class SafeHtml {
+  /** @param {string} value */
+  constructor(value) {
+    this.value = value;
+  }
+  toString() {
+    return this.value;
+  }
+}
+
+/**
+ * @param {TemplateStringsArray} strings
+ * @param {...unknown} values
+ * @returns {SafeHtml}
+ */
+export const html = (strings, ...values) => {
+  let result = strings[0];
+  values.forEach((value, i) => {
+    result += value instanceof SafeHtml ? value.value : escapeHtml(value);
+    result += strings[i + 1];
+  });
+  return new SafeHtml(result);
+};

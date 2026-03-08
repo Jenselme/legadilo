@@ -10,6 +10,7 @@
 /** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
 
 import Tags from "./vendor/tags.js";
+import { html } from "./utils.js";
 import { listArticles, listEnabledFeeds } from "./legadilo.js";
 import {
   getDialogById,
@@ -226,33 +227,40 @@ const displayActionsSelector = async () => {
   getElementById("action-selector-container").hidden = false;
 
   const chooseFeedsContainer = getElementById("subscribe-to-feeds-container");
-  chooseFeedsContainer.replaceChildren();
 
-  for (const feedNode of feedNodes) {
-    let feedHref = getFeedHref(tab, feedNode);
+  const feedHrefs = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
+  const feedsButtons = feedNodes
+    .map((feedNode, i) => {
+      let feedTitle = feedNode.getAttribute("title");
+      if (!feedTitle) {
+        const hostname = new URL(pageUrl).hostname;
+        const type = feedNode.getAttribute("type") ?? "";
+        const feedType = type.replace("application/", "").replace("+xml", "");
+        feedTitle = `${hostname} (${feedType})`;
+      }
+      const subscribedIcon = subscribedFeedUrls.includes(feedHrefs[i])
+        ? html`<svg class="bi" role="img" aria-label="Already subscribed to this feed">
+            <use href="./bs-sprite.svg#rss-fill"></use>
+          </svg>`
+        : "";
+      return html`<button
+        class="btn btn-outline-primary mb-2 col"
+        type="button"
+        data-feed-index="${i}"
+      >
+        ${feedTitle} ${subscribedIcon}
+      </button>`;
+    })
+    .join("");
+  chooseFeedsContainer.innerHTML = feedsButtons;
 
-    const button = document.createElement("button");
-    button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
-    let feedTitle = feedNode.getAttribute("title");
-    if (!feedTitle) {
-      const hostname = new URL(pageUrl).hostname;
-      const type = feedNode.getAttribute("type") ?? "";
-      const feedType = type.replace("application/", "").replace("+xml", "");
-      feedTitle = `${hostname} (${feedType})`;
-    }
+  chooseFeedsContainer.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element) || !event.target.hasAttribute("data-feed-index")) return;
 
-    button.innerHTML = `${feedTitle} ${
-      subscribedFeedUrls.includes(feedHref)
-        ? '<svg class="bi" role="img" aria-label="Already subscribed to this feed"><use href="./bs-sprite.svg#rss-fill"></use></svg>'
-        : ""
-    }`;
-
-    button.addEventListener("click", () => {
-      hideActionSelector();
-      subscribeToFeed(feedHref);
-    });
-    chooseFeedsContainer.appendChild(button);
-  }
+    const index = Number(event.target.getAttribute("data-feed-index"));
+    hideActionSelector();
+    subscribeToFeed(feedHrefs[index]);
+  });
 
   getElementById("save-article-action-btn").addEventListener("click", async () => {
     hideActionSelector();
@@ -420,18 +428,13 @@ const displayFeed = (feed, tags, categories) => {
   getElementById("disable-feed").hidden = !feed.enabled;
 
   const categorySelector = getSelectElementById("feed-category");
-  // Clean all existing choices.
-  categorySelector.innerHTML = "";
-  const noCategoryOption = document.createElement("option");
-  noCategoryOption.value = "";
-  noCategoryOption.innerText = "No Category";
-  categorySelector.appendChild(noCategoryOption);
-  for (const category of categories) {
-    const option = document.createElement("option");
-    option.value = String(category.id);
-    option.innerText = category.title;
-    categorySelector.appendChild(option);
-  }
+  const categoriesOptions = [
+    html`<option value="">No Category</option>`,
+    ...categories.map(
+      (category) => html`<option value="${category.id}">${category.title}</option>`,
+    ),
+  ].join("");
+  categorySelector.innerHTML = categoriesOptions;
   categorySelector.value = feed.category ? String(feed.category.id) : "";
 
   if (feedTagsInstance === null) {
