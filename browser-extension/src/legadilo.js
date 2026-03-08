@@ -250,9 +250,17 @@ const doFetch = async (url, fetchOptions) => {
   };
   const resp = await fetch(`${options.instanceUrl}${url}`, fetchOptions);
   if (!resp.ok) {
-    throw new Error(`Response status: ${resp.status} (${resp.statusText})`, {
-      cause: resp.status,
-    });
+    let detail = "";
+    try {
+      const body = await resp.json();
+      detail = body.detail ?? body.message ?? JSON.stringify(body);
+    } catch {
+      // Response body is not JSON; ignore.
+    }
+    const message = detail
+      ? `Response status: ${resp.status} (${resp.statusText}) — ${detail}`
+      : `Response status: ${resp.status} (${resp.statusText})`;
+    throw new Error(message, { cause: resp.status });
   }
   if (fetchOptions.method === "DELETE") {
     return {};

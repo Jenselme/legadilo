@@ -65,6 +65,14 @@ class SafeHtml {
 }
 
 /**
+ * @param {unknown} err
+ * @param {string} [fallback]
+ * @returns {string}
+ */
+export const getErrorMessage = (err, fallback) =>
+  err instanceof Error ? err.message : (fallback ?? String(err));
+
+/**
  * @param {TemplateStringsArray} strings
  * @param {...unknown} values
  * @returns {SafeHtml}

@@ -22,6 +22,7 @@ import {
   updateArticle,
   updateFeed,
 } from "./legadilo.js";
+import { getErrorMessage } from "./utils.js";
 
 /**
  * @typedef {Object} RequestMessage
@@ -112,9 +113,9 @@ if (isFirefox) {
  * @returns {Promise<void>}
  */
 const onMessage = async (request, sendResponse) => {
-  await ensureIsAuthenticated();
-
   try {
+    await ensureIsAuthenticated();
+
     switch (request.name) {
       case "save-article":
         await processSaveArticleRequest(
@@ -153,7 +154,7 @@ const onMessage = async (request, sendResponse) => {
         break;
     }
   } catch (err) {
-    sendResponse({ error: err instanceof Error ? err.message : String(err) });
+    sendResponse({ error: getErrorMessage(err) });
   }
 };
 

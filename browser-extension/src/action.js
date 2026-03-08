@@ -10,7 +10,7 @@
 /** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
 
 import Tags from "./vendor/tags.js";
-import { html } from "./utils.js";
+import { html, getErrorMessage } from "./utils.js";
 import { listArticles, listEnabledFeeds } from "./legadilo.js";
 import {
   getDialogById,
@@ -191,17 +191,21 @@ const displayActionsSelector = async () => {
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
   }
-  let savedArticles = /** @type {Article[]} */ ([]);
+  /** @type {Article[]} */
+  let savedArticles;
   try {
     savedArticles = (await listArticles({ articleUrls })).items;
-  } catch {
-    console.error("Failed to list saved articles.");
+  } catch (err) {
+    displayErrorMessage(getErrorMessage(err, "Failed to list saved articles."));
+    return;
   }
-  let subscribedFeedUrls = /** @type {string[]} */ ([]);
+  /** @type {string[]} */
+  let subscribedFeedUrls;
   try {
     subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
-  } catch {
-    console.error("Failed to list enabled feeds.");
+  } catch (err) {
+    displayErrorMessage(getErrorMessage(err, "Failed to list enabled feeds."));
+    return;
   }
   hideLoader();
 
@@ -774,13 +778,18 @@ const updatedFeedSuccess = (feed, tags, categories) => {
  * @returns {Promise<void>}
  */
 const sendMessage = async (message) => {
-  if (isFirefox) {
-    /** @type {chrome.runtime.Port} */ (port).postMessage(message);
-    return;
-  }
+  try {
+    if (isFirefox) {
+      /** @type {chrome.runtime.Port} */ (port).postMessage(message);
+      return;
+    }
 
-  const response = await chrome.runtime.sendMessage(message);
-  onMessage(response);
+    const response = await chrome.runtime.sendMessage(message);
+    onMessage(response);
+  } catch (err) {
+    hideLoader();
+    displayErrorMessage(getErrorMessage(err, "An unexpected error occurred."));
+  }
 };
 
 /**
