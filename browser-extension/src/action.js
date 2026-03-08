@@ -59,7 +59,7 @@ let feedTagsInstance = null;
 
 const isFirefox = typeof browser === "object";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   connectToPort();
 
   hideLoader();
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   hideArticle();
   hideFeed();
 
-  runDefaultAction();
+  await displayActionsSelector();
 });
 
 /**
@@ -81,23 +81,6 @@ const connectToPort = () => {
 
   port = chrome.runtime.connect({ name: "legadilo-popup" });
   port.onMessage.addListener(onMessage);
-};
-
-/**
- * @returns {Promise<void>}
- */
-const runDefaultAction = async () => {
-  const tab = await getCurrentTab();
-  const data = await getPageContent(tab);
-  const feedNodes = getFeedNodes(data.pageContent, data.contentType);
-
-  // No feed links, let's save immediately.
-  if (feedNodes.length === 0) {
-    await saveArticle(tab, data);
-    return;
-  }
-
-  await displayActionsSelector();
 };
 
 /**
