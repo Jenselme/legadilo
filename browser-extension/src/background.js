@@ -16,6 +16,7 @@ import {
   ensureIsAuthenticated,
   listCategories,
   listTags,
+  loadOptions,
   saveArticle,
   subscribeToFeed,
   updateArticle,
@@ -38,6 +39,37 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Save link as article in Legadilo",
     contexts: ["link"],
   });
+});
+
+/**
+ * @param {number} tabId
+ * @returns {Promise<void>}
+ */
+const updateExtensionForTab = async (tabId) => {
+  const { url } = await chrome.tabs.get(tabId);
+  if (!url) return;
+
+  const { instanceUrl } = await loadOptions();
+  const isInstanceUrl = url.startsWith(instanceUrl);
+  const isBrowserInternalUrl =
+    url.startsWith("chrome://") || url.startsWith("moz-extension://") || url.startsWith("about:");
+  const mustDisable = isInstanceUrl || isBrowserInternalUrl;
+  if (mustDisable) {
+    await chrome.action.disable(tabId);
+  } else {
+    await chrome.action.enable(tabId);
+  }
+  await chrome.contextMenus.update("save-link-as-article", { visible: !mustDisable });
+};
+
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+  await updateExtensionForTab(tabId);
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+  if (changeInfo.status === "complete") {
+    await updateExtensionForTab(tabId);
+  }
 });
 
 chrome.contextMenus.onClicked.addListener(async (info) => {
