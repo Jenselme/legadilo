@@ -572,6 +572,7 @@ class ArticleManager(models.Manager["Article"]):
                 "slug",
                 "summary",
                 "content",
+                "content_type",
                 "table_of_content",
                 "reading_time",
                 "authors",
