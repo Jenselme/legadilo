@@ -57,6 +57,8 @@
  * @property {string} title
  * @property {string} content
  * @property {string} contentType
+ * @property {string} language
+ * @property {boolean} mustExtractContent
  */
 
 /**

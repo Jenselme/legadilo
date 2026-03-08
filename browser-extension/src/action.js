@@ -19,6 +19,17 @@ import {
   getLinkElementById,
   getSelectElementById,
 } from "./typing-utils.js";
+import Readability from "./vendor/Readability.js";
+
+/**
+ * @typedef {Object} ArticleData
+ * @property {string} content
+ * @property {string} pageContent
+ * @property {string} contentType
+ * @property {string} title
+ * @property {string} language
+ * @property {boolean} mustExtractContent
+ */
 
 /**
  * @typedef {Object} ResponseMessage
@@ -76,12 +87,12 @@ const connectToPort = () => {
  */
 const runDefaultAction = async () => {
   const tab = await getCurrentTab();
-  const [pageContent, contentType] = await getPageContent(tab);
-  const feedNodes = getFeedNodes(pageContent, contentType);
+  const data = await getPageContent(tab);
+  const feedNodes = getFeedNodes(data.pageContent, data.contentType);
 
   // No feed links, let's save immediately.
   if (feedNodes.length === 0) {
-    await saveArticle(tab, pageContent, contentType);
+    await saveArticle(tab, data);
     return;
   }
 
@@ -110,17 +121,16 @@ const getFeedNodes = (pageContent, contentType) => {
 
 /**
  * @param {chrome.tabs.Tab} tab
- * @param {string} pageContent
- * @param {string} contentType
+ * @param {ArticleData} data
  * @returns {string | null}
  */
-const getCanonicalUrl = (tab, pageContent, contentType) => {
-  if (contentType === "text/plain") return null;
+const getCanonicalUrl = (tab, data) => {
+  if (data.contentType === "text/plain") return null;
 
   const parser = new DOMParser();
   const htmlDoc = parser.parseFromString(
-    pageContent,
-    /** @type {DOMParserSupportedType} */ (contentType),
+    data.pageContent,
+    /** @type {DOMParserSupportedType} */ (data.contentType),
   );
 
   const canonicalLink = htmlDoc.querySelector("link[rel='canonical']");
@@ -188,12 +198,12 @@ const onMessage = (request) => {
 const displayActionsSelector = async () => {
   displayLoader();
   const tab = await getCurrentTab();
-  const [pageContent, contentType] = await getPageContent(tab);
-  const feedNodes = getFeedNodes(pageContent, contentType);
+  const data = await getPageContent(tab);
+  const feedNodes = getFeedNodes(data.pageContent, data.contentType);
   const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
   const pageUrl = getPageUrlFromTab(tab);
   const articleUrls = [pageUrl];
-  const articleCanonicalUrl = getCanonicalUrl(tab, pageContent, contentType);
+  const articleCanonicalUrl = getCanonicalUrl(tab, data);
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
   }
@@ -251,7 +261,7 @@ const displayActionsSelector = async () => {
 
   getElementById("save-article-action-btn").addEventListener("click", async () => {
     hideActionSelector();
-    await saveArticle(tab, pageContent, contentType);
+    await saveArticle(tab, data);
   });
 };
 
@@ -532,7 +542,7 @@ const getCurrentTab = () =>
 
 /**
  * @param {chrome.tabs.Tab} tab
- * @returns {Promise<[string, string]>}
+ * @returns {Promise<ArticleData>}
  */
 const getPageContent = async (tab) => {
   try {
@@ -549,28 +559,54 @@ const getPageContent = async (tab) => {
           : document.documentElement.outerHTML,
     });
     const content = getPageContentScriptResult[0].result ?? "";
-    return /** @type {[string, string]} */ ([content, contentType]);
+
+    let readabilityArticle = null;
+    if (contentType !== "text/plain") {
+      const parser = new DOMParser();
+      const htmlDoc = parser.parseFromString(
+        content,
+        /** @type {DOMParserSupportedType} */ (contentType),
+      );
+      readabilityArticle = new Readability(htmlDoc, {}).parse();
+    }
+
+    return {
+      title: readabilityArticle?.title || tab.title || "",
+      contentType,
+      content: readabilityArticle?.content || content,
+      pageContent: content,
+      language: readabilityArticle?.lang || "",
+      mustExtractContent: !readabilityArticle?.content,
+    };
   } catch (error) {
     console.error(error);
-    return /** @type {[string, string]} */ (["", "text/plain"]);
+    return {
+      title: tab.title || "",
+      contentType: "text/plain",
+      content: "",
+      pageContent: "",
+      language: "",
+      mustExtractContent: false,
+    };
   }
 };
 
 /**
  * @param {chrome.tabs.Tab} tab
- * @param {string} pageContent
- * @param {string} contentType
+ * @param {ArticleData} data
  * @returns {Promise<void>}
  */
-const saveArticle = (tab, pageContent, contentType) => {
+const saveArticle = (tab, { title, content, contentType, language, mustExtractContent }) => {
   displayLoader();
   return sendMessage({
     name: "save-article",
     payload: {
       url: getPageUrlFromTab(tab),
-      title: tab.title ?? "",
-      content: pageContent,
+      title,
+      content,
       contentType,
+      language: language,
+      mustExtractContent,
     },
   });
 };

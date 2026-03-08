@@ -2,6 +2,7 @@
   "name": "legadilo-browser-extension",
   "version": "26.03.1",
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "bootstrap": "^5.3.8",
     "bootstrap5-tags": "^1.7.16",
     "web-ext": "^9.4.0"

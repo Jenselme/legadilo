@@ -9,7 +9,7 @@ from typing import Annotated, Self
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Query, Router, Schema
+from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from pydantic import model_validator
 from pydantic.json_schema import SkipJsonSchema
@@ -25,6 +25,7 @@ from legadilo.reading.models import Article, ArticlesGroup, ArticleTag, Comment,
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     FetchArticleResult,
+    Language,
     build_article_data_from_content,
     fetch_article_data,
 )
@@ -70,8 +71,15 @@ class ArticleCreation(Schema):
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
     # content of the article.
     content: str = ""
+    language: Language = ""
     content_type: ContentType = "text/html"
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
+    must_extract_content: bool = Field(
+        default=True,
+        description="Whether to extract content. It must be true if content is the full HTML of "
+        "the page to let the backend extract the content of the article. It must be false if "
+        "content is the extracted content of the article and must be saved directly.",
+    )
 
     @model_validator(mode="after")
     def check_title_and_content(self) -> Self:
@@ -127,6 +135,8 @@ def _get_article_data(payload: ArticleCreation) -> FetchArticleResult:
             title=payload.title,
             content=payload.content,
             content_type=payload.content_type,
+            content_language=payload.language,
+            must_extract_content=payload.must_extract_content,
         )
         return FetchArticleResult(article_data=article_data)
     return fetch_article_data(payload.url)

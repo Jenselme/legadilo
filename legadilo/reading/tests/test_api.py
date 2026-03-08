@@ -177,6 +177,7 @@ class TestCreateArticleView:
                     "url": self.article_url,
                     "content": get_article_fixture_content("sample_blog_article.html"),
                     "title": "My article",
+                    "language": "en",
                 },
                 content_type="application/json",
             )
@@ -192,6 +193,51 @@ class TestCreateArticleView:
             serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
             "article.json",
         )
+
+    def test_create_article_from_data_without_content_extraction(
+        self, logged_in_sync_client, snapshot
+    ):
+        response = logged_in_sync_client.post(
+            self.url,
+            {
+                "url": self.article_url,
+                "content": "<p>My content</p>",
+                "title": "My article",
+                "must_extract_content": False,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == self.article_url
+        assert article.content_type == "text/html"
+        snapshot.assert_match(
+            serialize_for_snapshot(_prepare_article_for_serialization(response.json(), article)),
+            "article.json",
+        )
+
+    def test_create_article_from_data_with_content_extraction_and_partial_payload(
+        self, logged_in_sync_client
+    ):
+        response = logged_in_sync_client.post(
+            self.url,
+            {
+                "url": self.article_url,
+                "content": "<p>My content</p>",
+                "title": "My article",
+                "must_extract_content": True,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == self.article_url
+        assert article.content_type == "text/html"
+        assert not article.content
 
     def test_create_article_from_text_data(
         self, django_assert_num_queries, logged_in_sync_client, mocker, snapshot
