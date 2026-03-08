@@ -221,14 +221,9 @@ const displayActionsSelector = async () => {
   }
   hideLoader();
 
-  const articleAlreadySaved = getElementById("article-already-saved");
-  if (savedArticles.length > 0) {
-    articleAlreadySaved.style.display = "inline";
-  } else {
-    articleAlreadySaved.style.display = "none";
-  }
+  getElementById("article-already-saved").hidden = savedArticles.length === 0;
 
-  getElementById("action-selector-container").style.display = "block";
+  getElementById("action-selector-container").hidden = false;
 
   const chooseFeedsContainer = getElementById("subscribe-to-feeds-container");
   chooseFeedsContainer.replaceChildren();
@@ -299,7 +294,7 @@ const buildFullUrl = (tab, url) => {
  * @returns {void}
  */
 const hideActionSelector = () => {
-  getElementById("action-selector-container").style.display = "none";
+  getElementById("action-selector-container").hidden = true;
 };
 
 /**
@@ -317,7 +312,7 @@ const errorNavBack = async () => {
  */
 const displayErrorMessage = (message) => {
   getElementById("error-message").innerText = message;
-  getElementById("error-container").style.display = "block";
+  getElementById("error-container").hidden = false;
 
   getElementById("error-nav-back").addEventListener("click", errorNavBack);
 };
@@ -326,21 +321,21 @@ const displayErrorMessage = (message) => {
  * @returns {void}
  */
 const hideErrorMessage = () => {
-  getElementById("error-container").style.display = "none";
+  getElementById("error-container").hidden = true;
 };
 
 /**
  * @returns {void}
  */
 const displayLoader = () => {
-  getElementById("loading-indicator-container").style.display = "block";
+  getElementById("loading-indicator-container").hidden = false;
 };
 
 /**
  * @returns {void}
  */
 const hideLoader = () => {
-  getElementById("loading-indicator-container").style.display = "none";
+  getElementById("loading-indicator-container").hidden = true;
 };
 
 /**
@@ -380,7 +375,7 @@ const createTagInstance = (element, tags, selectedTags) => {
  * @returns {void}
  */
 const displayArticle = (article, tags) => {
-  getElementById("article-container").style.display = "block";
+  getElementById("article-container").hidden = false;
 
   getInputElementById("saved-article-title").value = article.title;
   getInputElementById("saved-article-reading-time").value = String(article.reading_time);
@@ -389,27 +384,12 @@ const displayArticle = (article, tags) => {
     articleTagsInstance = createTagInstance("#saved-article-tags", tags, article.tags);
   }
 
-  if (article.is_read) {
-    getElementById("mark-article-as-read").style.display = "none";
-    getElementById("mark-article-as-unread").style.display = "block";
-  } else {
-    getElementById("mark-article-as-read").style.display = "block";
-    getElementById("mark-article-as-unread").style.display = "none";
-  }
-  if (article.is_favorite) {
-    getElementById("mark-article-as-favorite").style.display = "none";
-    getElementById("unmark-article-as-favorite").style.display = "block";
-  } else {
-    getElementById("mark-article-as-favorite").style.display = "block";
-    getElementById("unmark-article-as-favorite").style.display = "none";
-  }
-  if (article.is_for_later) {
-    getElementById("mark-article-as-for-later").style.display = "none";
-    getElementById("unmark-article-as-for-later").style.display = "block";
-  } else {
-    getElementById("mark-article-as-for-later").style.display = "block";
-    getElementById("unmark-article-as-for-later").style.display = "none";
-  }
+  getElementById("mark-article-as-read").hidden = article.is_read;
+  getElementById("mark-article-as-unread").hidden = !article.is_read;
+  getElementById("mark-article-as-favorite").hidden = article.is_favorite;
+  getElementById("unmark-article-as-favorite").hidden = !article.is_favorite;
+  getElementById("mark-article-as-for-later").hidden = article.is_for_later;
+  getElementById("unmark-article-as-for-later").hidden = !article.is_for_later;
 
   getLinkElementById("open-article-details").href = article.details_url;
 };
@@ -418,7 +398,7 @@ const displayArticle = (article, tags) => {
  * @returns {void}
  */
 const hideArticle = () => {
-  getElementById("article-container").style.display = "none";
+  getElementById("article-container").hidden = true;
 };
 
 /**
@@ -428,7 +408,7 @@ const hideArticle = () => {
  * @returns {void}
  */
 const displayFeed = (feed, tags, categories) => {
-  getElementById("feed-container").style.display = "block";
+  getElementById("feed-container").hidden = false;
   getElementById("feed-title").innerText = feed.title;
 
   getInputElementById("feed-refresh-delay").value = String(feed.refresh_delay);
@@ -436,13 +416,8 @@ const displayFeed = (feed, tags, categories) => {
 
   getLinkElementById("open-feed-details").href = feed.details_url;
 
-  if (feed.enabled) {
-    getElementById("enable-feed").style.display = "none";
-    getElementById("disable-feed").style.display = "block";
-  } else {
-    getElementById("enable-feed").style.display = "block";
-    getElementById("disable-feed").style.display = "none";
-  }
+  getElementById("enable-feed").hidden = feed.enabled;
+  getElementById("disable-feed").hidden = !feed.enabled;
 
   const categorySelector = getSelectElementById("feed-category");
   // Clean all existing choices.
@@ -531,7 +506,7 @@ const setupFeedActions = (feedId) => {
  * @returns {void}
  */
 const hideFeed = () => {
-  getElementById("feed-container").style.display = "none";
+  getElementById("feed-container").hidden = true;
 };
 
 /**

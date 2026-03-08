@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <script src="./theme_chooser.js"></script>
     </head>
     <body>
-        <div id="loading-indicator-container">
+        <div id="loading-indicator-container" hidden>
             <div id="loading-indicator"
                  class="d-flex align-items-center justify-content-center">
                 <div class="spinner-border" role="status">
@@ -23,23 +23,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </div>
             </div>
         </div>
-        <div id="action-selector-container">
+        <div id="action-selector-container" hidden>
             <div id="choose-action-container" class="row row-cols-1 m-auto">
                 <button id="save-article-action-btn"
                         class="btn btn-primary mb-2 col"
                         type="button">
                     Save this article
-                    <svg id="article-already-saved"
-                         class="bi hidden"
-                         role="img"
-                         aria-label="Article already saved">
-                        <use href="./bs-sprite.svg#save-fill"></use>
-                    </svg>
+                    <span id="article-already-saved" hidden>
+                        <svg class="bi"
+                             role="img"
+                             aria-label="Article already saved">
+                            <use href="./bs-sprite.svg#save-fill"></use>
+                        </svg>
+                    </span>
                 </button>
             </div>
             <div id="subscribe-to-feeds-container" class="row row-cols-1 m-auto"></div>
         </div>
-        <div id="article-container">
+        <div id="article-container" hidden>
             <button id="article-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
@@ -146,7 +147,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </button>
             </div>
         </div>
-        <div id="feed-container">
+        <div id="feed-container" hidden>
             <button id="feed-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
@@ -224,7 +225,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </a>
             </div>
         </div>
-        <div id="error-container" class="alert alert-danger">
+        <div id="error-container" class="alert alert-danger" hidden>
             <button id="error-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
