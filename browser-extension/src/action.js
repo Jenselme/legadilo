@@ -248,7 +248,7 @@ const displayActionsSelector = async () => {
 
     button.innerHTML = `${feedTitle} ${
       subscribedFeedUrls.includes(feedHref)
-        ? '<img class="bi" src="./vendor/bs-icons/rss-fill.svg" alt="Already subscribed to this feed" />'
+        ? '<svg class="bi" role="img" aria-label="Already subscribed to this feed"><use href="./bs-sprite.svg#rss-fill"></use></svg>'
         : ""
     }`;
 

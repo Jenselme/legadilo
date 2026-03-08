@@ -29,10 +29,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         class="btn btn-primary mb-2 col"
                         type="button">
                     Save this article
-                    <img id="article-already-saved"
+                    <svg id="article-already-saved"
                          class="bi hidden"
-                         src="./vendor/bs-icons/save-fill.svg"
-                         alt="Article already saved" />
+                         role="img"
+                         aria-label="Article already saved">
+                        <use href="./bs-sprite.svg#save-fill"></use>
+                    </svg>
                 </button>
             </div>
             <div id="subscribe-to-feeds-container" class="row row-cols-1 m-auto"></div>
@@ -41,9 +43,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <button id="article-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
-                <img class="bi"
-                     src="./vendor/bs-icons/arrow-left.svg"
-                     alt="Go back button" />
+                <svg class="bi" role="img" aria-label="Go back button">
+                    <use href="./bs-sprite.svg#arrow-left"></use>
+                </svg>
                 Back
             </button>
             <form id="update-saved-article-form">
@@ -84,7 +86,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     <button class="btn btn-danger btn-sm"
                         type="button"
                         id="delete-article">
-                        <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete article" />
+                        <svg class="bi" role="img" aria-label="Delete article">
+                            <use href="./bs-sprite.svg#trash"></use>
+                        </svg>
                         Delete
                     </button>
                 </div>
@@ -93,44 +97,52 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-favorite">
-                    <img class="bi" src="./vendor/bs-icons/star.svg" alt="Mark as favorite" />
+                    <svg class="bi" role="img" aria-label="Mark as favorite">
+                        <use href="./bs-sprite.svg#star"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="unmark-article-as-favorite">
-                    <img class="bi"
-                         src="./vendor/bs-icons/star-fill.svg"
-                         alt="Unmark as favorite" />
+                    <svg class="bi" role="img" aria-label="Unmark as favorite">
+                        <use href="./bs-sprite.svg#star-fill"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-for-later">
-                    <img class="bi"
-                         src="./vendor/bs-icons/bookmark.svg"
-                         alt="Mark as for later" />
+                    <svg class="bi" role="img" aria-label="Mark as for later">
+                        <use href="./bs-sprite.svg#bookmark"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="unmark-article-as-for-later">
-                    <img class="bi"
-                         src="./vendor/bs-icons/bookmark-fill.svg"
-                         alt="Unmark as for later" />
+                    <svg class="bi" role="img" aria-label="Unmark as for later">
+                        <use href="./bs-sprite.svg#bookmark-fill"></use>
+                    </svg>
                 </button>
                  <a id="open-article-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
                    href="">
-                    <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open article details" />
+                    <svg class="bi" role="img" aria-label="Open article details">
+                        <use href="./bs-sprite.svg#eye"></use>
+                    </svg>
                 </a>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-read">
-                    <img class="bi" src="./vendor/bs-icons/book.svg" alt="Mark as read" />
+                    <svg class="bi" role="img" aria-label="Mark as read">
+                        <use href="./bs-sprite.svg#book"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-unread">
-                    <img class="bi" src="./vendor/bs-icons/book-fill.svg" alt="Mark as unread" />
+                    <svg class="bi" role="img" aria-label="Mark as unread">
+                        <use href="./bs-sprite.svg#book-fill"></use>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -138,9 +150,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <button id="feed-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
-                <img class="bi"
-                     src="./vendor/bs-icons/arrow-left.svg"
-                     alt="Go back button" />
+                <svg class="bi" role="img" aria-label="Go back button">
+                    <use href="./bs-sprite.svg#arrow-left"></use>
+                </svg>
                 Back
             </button>
             <h2 id="feed-title"></h2>
@@ -198,13 +210,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         class="btn btn-outline-secondary btn-sm"
                         type="button">Disable</button>
                 <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
-                    <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete feed" />
+                    <svg class="bi" role="img" aria-label="Delete feed">
+                        <use href="./bs-sprite.svg#trash"></use>
+                    </svg>
                 </button>
                 <a id="open-feed-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
                    href="">
-                    <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
+                    <svg class="bi" role="img" aria-label="Open feed">
+                        <use href="./bs-sprite.svg#eye"></use>
+                    </svg>
                 </a>
             </div>
         </div>
@@ -212,9 +228,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <button id="error-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
-                <img class="bi"
-                     src="./vendor/bs-icons/arrow-left.svg"
-                     alt="Go back button" />
+                <svg class="bi" role="img" aria-label="Go back button">
+                    <use href="./bs-sprite.svg#arrow-left"></use>
+                </svg>
                 Back
             </button>
             <p>An error occurred</p>
