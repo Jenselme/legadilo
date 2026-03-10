@@ -15,7 +15,7 @@ class TestSaveArticlesGroup:
         tag = TagFactory(title="existing-tag", user=user)
         httpx_mock.add_response(text="Data", url="https://example.com/article-with-content/")
 
-        with django_assert_num_queries(22):
+        with django_assert_num_queries(24):
             result = save_articles_group(
                 user,
                 "My new group",
@@ -54,7 +54,7 @@ class TestSaveArticlesGroup:
         httpx_mock.add_response(text="Data", url="https://example.com/article-with-content/")
         httpx_mock.add_response(text="", url="https://example.com/articles-without-content/")
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(25):
             result = save_articles_group(
                 user,
                 "My new group",

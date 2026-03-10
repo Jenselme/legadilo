@@ -6,7 +6,7 @@
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models.query import Prefetch
 from slugify import slugify
 
@@ -69,6 +69,7 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
     def get_queryset(self) -> ArticlesGroupQuerySet:
         return ArticlesGroupQuerySet(model=self.model, using=self._db, hints=self._hints)
 
+    @transaction.atomic()
     def create_with_tags(self, user: User, title: str, description: str, tags: list[Tag]):
         group = self.create(user=user, title=title, description=description, slug=slugify(title))
         ArticlesGroupTag.objects.associate_group_with_tags(group, tags)

@@ -71,7 +71,7 @@ class TestArticlesGroupManager:
     def test_create_with_tags(self, user, django_assert_num_queries):
         tag = TagFactory(title="existing-tag")
 
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(7):
             group = ArticlesGroup.objects.create_with_tags(
                 user, title="New group", description="Description", tags=[tag]
             )
