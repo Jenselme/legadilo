@@ -3,6 +3,9 @@
 <select name="{{ widget.name }}"
         {% include "bootstrap5/layout/attrs.html" %}
         class="visually-hidden">
+    {% if widget.empty_label %}
+        <option value="">{{ widget.empty_label }}</option>
+    {% endif %}
     {% for group_name, group_choices, group_index in widget.optgroups %}
         {% for choice in group_choices %}
             <option value="{{ choice.value }}"

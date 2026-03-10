@@ -37,12 +37,18 @@ class SelectMultipleAutocompleteWidget(widgets.SelectMultiple):
 class SelectAutocompleteWidget(widgets.Select):
     template_name = "core/widgets/select_autocomplete.html"
 
-    def __init__(self, attrs=None, choices=(), *, allow_new: bool = True):
+    def __init__(self, attrs=None, choices=(), *, allow_new: bool = True, empty_label=""):
         attrs = attrs or {}
         attrs["data-bs5-tags"] = "true"
         if allow_new:
             attrs["data-allow-new"] = "true"
         super().__init__(attrs, choices)
+        self._empty_label = empty_label
+
+    def get_context(self, name, value, attrs):
+        ctx = super().get_context(name, value, attrs)
+        ctx["widget"]["empty_label"] = self._empty_label
+        return ctx
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         attrs = super().build_attrs(base_attrs, extra_attrs)
