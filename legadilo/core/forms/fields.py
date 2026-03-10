@@ -27,6 +27,20 @@ class MultipleTagsField(forms.MultipleChoiceField):
             )
 
 
+class SlugifiableAutocompleteField(forms.ChoiceField):
+    widget = SelectMultipleAutocompleteWidget
+
+    def validate(self, value):
+        if self.required and not value:
+            raise ValidationError(self.error_messages["required"], code="required")
+
+        if value and not slugify(value):
+            raise ValidationError(
+                _("Cannot contain only spaces or special characters."),
+                code="cannot-be-slugified",
+            )
+
+
 class SlugifiableCharField(forms.CharField):
     def validate(self, value):
         if not slugify(value):
