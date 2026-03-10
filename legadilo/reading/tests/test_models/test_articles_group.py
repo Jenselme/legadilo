@@ -68,6 +68,34 @@ class TestArticlesGroupQuerySet:
 
 @pytest.mark.django_db
 class TestArticlesGroupManager:
+    def test_get_all_choices(self, user):
+        group1 = ArticlesGroupFactory(user=user, title="My group")
+        group2 = ArticlesGroupFactory(user=user, title="Other group")
+        ArticlesGroupFactory(title="Other user group")
+
+        choices = ArticlesGroup.objects.get_all_choices(user)
+        assert choices == [(group1.slug, group1.title), (group2.slug, group2.title)]
+
+    def test_get_or_create_from_slug(self, user, django_assert_num_queries):
+        group = ArticlesGroupFactory(user=user, title="My group")
+
+        with django_assert_num_queries(3):
+            group_from_slug = ArticlesGroup.objects.get_or_create_from_slug(user, group.slug)
+
+        assert group_from_slug == group
+
+    def test_get_or_create_from_slug_creates_new_group_if_not_found(
+        self, user, other_user, django_assert_num_queries
+    ):
+        ArticlesGroupFactory(user=other_user, title="New group")
+
+        with django_assert_num_queries(9):
+            group = ArticlesGroup.objects.get_or_create_from_slug(user, "New group")
+
+        assert group.title == "New group"
+        assert group.slug == "new-group"
+        assert group.user == user
+
     def test_create_with_tags(self, user, django_assert_num_queries):
         tag = TagFactory(title="existing-tag")
 

@@ -17,14 +17,13 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
 from legadilo.core.forms import BaseInlineTableFormSet
-from legadilo.core.forms.fields import MultipleTagsField
+from legadilo.core.forms.fields import MultipleTagsField, SlugifiableAutocompleteField
 from legadilo.core.forms.widgets import SelectAutocompleteWidget
 from legadilo.core.utils.types import FormChoices
 from legadilo.core.utils.urls import add_query_params, pop_query_param, validate_referer_url
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticlesGroup, Tag
 from legadilo.reading.models.article import SaveArticleResult
-from legadilo.reading.models.articles_group import ArticlesGroupQuerySet
 from legadilo.reading.services.article_fetching import (
     fetch_article_data,
 )
@@ -47,13 +46,15 @@ class FetchArticleForm(forms.Form):
             "Tags to associate to this article. To create a new tag, type and press enter."
         ),
     )
-    group = forms.ModelChoiceField(
-        ArticlesGroup.objects.none(),
+    group = SlugifiableAutocompleteField(
         label=_("Group"),
         required=False,
-        widget=SelectAutocompleteWidget(allow_new=False),
+        widget=SelectAutocompleteWidget(
+            empty_label=_("Choose the group"),
+            allow_new=True,
+        ),
         help_text=_(
-            "Group to add the article to. If you need to create a new group, use the form below."
+            "Group to add the article to. If you need to create a new group, type and press enter."
         ),
     )
 
@@ -63,14 +64,13 @@ class FetchArticleForm(forms.Form):
     def __init__(
         self,
         *args,
-        tag_choices: list[tuple[str, str]],
-        groups_qs: ArticlesGroupQuerySet,
+        tag_choices: FormChoices,
+        group_choices: FormChoices,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
-        self.fields["group"].queryset = groups_qs  # type: ignore[attr-defined]
-        self.fields["group"].label_from_instance = lambda obj: obj.title  # type: ignore[attr-defined]
+        self.fields["group"].choices = group_choices  # type: ignore[attr-defined]
 
 
 class ArticleGroupForm(forms.Form):
@@ -122,9 +122,10 @@ class ArticleGroupLinkForm(forms.Form):
 @login_required
 def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
+    group_choices = ArticlesGroup.objects.get_all_choices(request.user)
     add_article_form = FetchArticleForm(
         tag_choices=tag_choices,
-        groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+        group_choices=group_choices,
     )
     add_article_result = None
     articles_group_form = ArticleGroupForm(tag_choices=tag_choices)
@@ -134,7 +135,7 @@ def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
     if request.method == "POST" and "add_article" in request.POST:
         status, add_article_form, add_article_result = _handle_article_save(
-            request, tag_choices, force_update=False
+            request, tag_choices, group_choices, force_update=False
         )
     elif request.method == "POST":
         status, articles_group_form, article_group_link_formset, save_articles_group_result = (
@@ -203,6 +204,7 @@ def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedir
     _status, _form, save_result = _handle_article_save(
         request,
         [],
+        [],
         force_update=True,
     )
     _handle_refetch_article_save_result(request, save_result)
@@ -243,14 +245,15 @@ def _handle_refetch_article_save_result(
 
 def _handle_article_save(
     request: AuthenticatedHttpRequest,
-    tag_choices: list[tuple[str, str]],
+    tag_choices: FormChoices,
+    group_choices: FormChoices,
     *,
     force_update: bool,
 ) -> tuple[HTTPStatus, FetchArticleForm, SaveArticleResult | None]:
     form = FetchArticleForm(
         request.POST,
         tag_choices=tag_choices,
-        groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+        group_choices=group_choices,
     )
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
@@ -262,20 +265,21 @@ def _handle_article_save(
         save_result = Article.objects.save_from_fetch_results(
             request.user, [fetch_article_result], tags, force_update=force_update
         )[0]
-        # Group cannot be removed from here: we are either creating a new article of refetching the
-        # content of an existing article. Link between articles and groups are handled on article
-        # details.
-        if save_result.was_created and (group := form.cleaned_data.get("group")):
+        # Groups can only be linked to articles that have been created. For existing articles, user
+        # must change the group on the article details page.
+        if save_result.was_created and (group_slug := form.cleaned_data.get("group")):
+            group = ArticlesGroup.objects.get_or_create_from_slug(request.user, group_slug)
             Article.objects.link_articles_to_group(group, [save_result.article])
 
     new_tags = Tag.objects.get_all_choices(request.user)
+    new_groups = ArticlesGroup.objects.get_all_choices(request.user)
     if save_result.was_created:
-        # Refresh tags to get the newly created ones.
+        # Refresh linked models to get the newly created ones.
         return (
             HTTPStatus.CREATED,
             FetchArticleForm(
                 tag_choices=new_tags,
-                groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+                group_choices=new_groups,
             ),
             save_result,
         )
@@ -284,7 +288,7 @@ def _handle_article_save(
         HTTPStatus.OK,
         FetchArticleForm(
             tag_choices=new_tags,
-            groups_qs=ArticlesGroup.objects.get_queryset().for_user(request.user),
+            group_choices=new_groups,
         ),
         save_result,
     )

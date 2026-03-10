@@ -12,6 +12,7 @@ from slugify import slugify
 
 from legadilo.reading import constants
 
+from ...core.utils.types import FormChoices
 from ...users.models import User
 from .article import Article
 from .tag import ArticlesGroupTag, Tag
@@ -68,6 +69,18 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
 
     def get_queryset(self) -> ArticlesGroupQuerySet:
         return ArticlesGroupQuerySet(model=self.model, using=self._db, hints=self._hints)
+
+    @transaction.atomic()
+    def get_all_choices(self, user: User) -> FormChoices:
+        return list(self.get_queryset().for_user(user=user).distinct().values_list("slug", "title"))
+
+    @transaction.atomic()
+    def get_or_create_from_slug(self, user: User, slug: str) -> ArticlesGroup:
+        existing_group = self.get_queryset().for_user(user=user).filter(slug=slug).first()
+        if existing_group:
+            return existing_group
+
+        return self.create_with_tags(user, slug, description="", tags=[])
 
     @transaction.atomic()
     def create_with_tags(self, user: User, title: str, description: str, tags: list[Tag]):

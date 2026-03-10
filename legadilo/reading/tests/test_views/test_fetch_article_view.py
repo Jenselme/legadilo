@@ -47,7 +47,7 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(20):
+        with django_assert_num_queries(25):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -70,7 +70,7 @@ class TestAddArticle:
     ):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(24):
+        with django_assert_num_queries(29):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -221,10 +221,10 @@ class TestAddArticle:
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
         payload = {
             **self.sample_payload,
-            "group": group.id,
+            "group": group.slug,
         }
 
-        with django_assert_num_queries(24):
+        with django_assert_num_queries(31):
             response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -240,10 +240,10 @@ class TestAddArticle:
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
         payload = {
             **self.sample_payload,
-            "group": group.id,
+            "group": group.slug,
         }
 
-        with django_assert_num_queries(21):
+        with django_assert_num_queries(25):
             response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.OK
@@ -260,10 +260,10 @@ class TestAddArticle:
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
         payload = {
             **self.sample_payload,
-            "group": group.id,
+            "group": group.slug,
         }
 
-        with django_assert_num_queries(21):
+        with django_assert_num_queries(25):
             response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.OK
@@ -271,20 +271,43 @@ class TestAddArticle:
         article = Article.objects.get()
         assert article.group == some_group
 
-    def test_add_article_linked_to_group_other_user(self, user, other_user, logged_in_sync_client):
-        group_other_user = ArticlesGroupFactory(user=other_user)
+    def test_add_article_and_create_group(
+        self, user, other_user, logged_in_sync_client, httpx_mock
+    ):
         payload = {
             **self.sample_payload,
-            "group": group_other_user.id,
+            "group": "New group",
+        }
+        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+
+        response = logged_in_sync_client.post(self.url, payload)
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        assert ArticlesGroup.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group_id is not None
+        assert article.group.user == user
+        assert article.group.title == "New group"
+        assert not article.group.description
+        assert article.group.slug == "new-group"
+
+    def test_add_article_and_create_group_invalid_title(
+        self, user, other_user, logged_in_sync_client, httpx_mock
+    ):
+        payload = {
+            **self.sample_payload,
+            "group": " ",
         }
 
         response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.context_data["add_article_form"].errors == {
-            "group": ["Select a valid choice. That choice is not one of the available choices."],
-        }
         assert Article.objects.count() == 0
+        assert ArticlesGroup.objects.count() == 0
+        assert response.context_data["add_article_form"].errors == {
+            "group": ["Cannot contain only spaces or special characters."],
+        }
 
 
 @pytest.mark.django_db
@@ -315,7 +338,7 @@ class TestAddArticlesGroup:
         )
         httpx_mock.add_response(html="", url=self.no_content_article_url)
 
-        with django_assert_num_queries(33):
+        with django_assert_num_queries(35):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -381,7 +404,7 @@ class TestRefetchArticleView:
             html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
         )
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(21):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -401,7 +424,7 @@ class TestRefetchArticleView:
     ):
         httpx_mock.add_response(html="", url=self.article_url)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(21):
             response = logged_in_sync_client.post(
                 self.url,
                 self.sample_payload,
@@ -422,7 +445,7 @@ class TestRefetchArticleView:
         self.article.group = group
         self.article.save()
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(21):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
