@@ -16,6 +16,7 @@ from legadilo.reading.models import Article
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
+    ArticlesGroupFactory,
     CommentFactory,
     FetchArticleResultFactory,
     ReadingListFactory,
@@ -464,6 +465,30 @@ class TestListTagsView:
 
         assert response.status_code == HTTPStatus.OK
         snapshot.assert_match(serialize_for_snapshot(response.json()), "tags.json")
+
+
+@pytest.mark.django_db
+class TestListArticlesGroup:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.group = ArticlesGroupFactory(id=1, user=user, title="Some group", slug="some-group")
+        tag = TagFactory(user=user, title="Some tag")
+        self.group.tags.add(tag)
+        self.url = reverse("api-1.0.0:list_articles_groups")
+
+    def test_not_logged_in(self, client):
+        response = client.get(self.url, {}, content_type="application/json")
+
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_list(self, logged_in_sync_client, django_assert_num_queries, snapshot):
+        ArticlesGroupFactory()
+
+        with django_assert_num_queries(7):
+            response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        snapshot.assert_match(serialize_for_snapshot(response.json()), "articles_groups.json")
 
 
 @pytest.mark.django_db

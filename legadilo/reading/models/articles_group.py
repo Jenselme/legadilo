@@ -28,6 +28,9 @@ class ArticlesGroupQuerySet(models.QuerySet["ArticlesGroup"]):
     def for_user(self, user: User) -> Self:
         return self.filter(user=user)
 
+    def for_api(self):
+        return self.prefetch_related("tags")
+
     def for_search(self, searched_text: str) -> Self:
         return self.filter(
             models.Q(title__icontains=searched_text)

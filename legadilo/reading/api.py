@@ -21,7 +21,7 @@ from legadilo.core.utils.validators import (
     ValidUrlValidator,
     remove_falsy_items,
 )
-from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
+from legadilo.reading.models import Article, ArticlesGroup, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     FetchArticleResult,
@@ -221,6 +221,26 @@ def list_tags_view(request: AuthenticatedApiRequest):
         })
 
     return {"count": len(tags), "items": tags}
+
+
+class ArticlesGroupOut(ModelSchema):
+    tags: list[OutTagSchema]
+
+    class Meta:
+        model = ArticlesGroup
+        exclude = ("user", "created_at", "updated_at")
+
+
+@reading_api_router.get(
+    "/articles-groups/", url_name="list_articles_groups", summary="List articles groups"
+)
+def list_articles_groups_view(request: AuthenticatedApiRequest):
+    groups = [
+        ArticlesGroupOut.from_orm(group).model_dump(mode="json")
+        for group in ArticlesGroup.objects.get_queryset().for_user(request.auth).for_api()
+    ]
+
+    return {"count": len(groups), "items": groups}
 
 
 class ReadingListReorderPayload(Schema):
