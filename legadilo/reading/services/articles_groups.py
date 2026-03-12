@@ -59,3 +59,24 @@ def save_articles_group(
         ),
         articles_linked_to_other_group=articles_already_linked,
     )
+
+
+@transaction.atomic()
+def update_article_group(article: Article, group_slug: str | None):
+    # No group change, nothing to do.
+    if (article.group is None and group_slug is None) or (
+        article.group and article.group.slug == group_slug
+    ):
+        return
+
+    # Always reset the group, otherwise link_articles_to_group cannot link the article to the new
+    # group.
+    article.group = None
+    article.group_order = 0
+    article.save(update_fields=["group", "group_order"])
+
+    if not group_slug:
+        return
+
+    group = ArticlesGroup.objects.get_or_create_from_slug(article.user, group_slug)
+    Article.objects.link_articles_to_group(group, [article])

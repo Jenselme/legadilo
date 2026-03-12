@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-10 21:43+0000\n"
+"POT-Creation-Date: 2026-03-12 21:25+0100\n"
 "Language: en-US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -441,9 +441,12 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
+msgid "Choose the group"
+msgstr ""
+
 msgid ""
-"Group to associate this article with. If you need to create a new group, "
-"create it from the add article page."
+"Group to add the article to. If you need to create a new group, type and "
+"press enter."
 msgstr ""
 
 msgid "Summary"
@@ -471,14 +474,6 @@ msgid "Article URL"
 msgstr ""
 
 msgid "URL of the article to add."
-msgstr ""
-
-msgid "Choose the group"
-msgstr ""
-
-msgid ""
-"Group to add the article to. If you need to create a new group, type and "
-"press enter."
 msgstr ""
 
 msgid "Group title"
