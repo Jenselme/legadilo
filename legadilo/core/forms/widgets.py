@@ -8,6 +8,7 @@ from json import JSONDecodeError
 from typing import Any
 
 from django.forms import widgets
+from django.utils.functional import Promise
 
 
 class SelectMultipleAutocompleteWidget(widgets.SelectMultiple):
@@ -37,11 +38,24 @@ class SelectMultipleAutocompleteWidget(widgets.SelectMultiple):
 class SelectAutocompleteWidget(widgets.Select):
     template_name = "core/widgets/select_autocomplete.html"
 
-    def __init__(self, attrs=None, choices=(), *, allow_new: bool = True, empty_label=""):
+    def __init__(
+        self,
+        attrs=None,
+        choices=(),
+        *,
+        allow_new: bool = True,
+        empty_label="",
+        server_url: Promise | None = None,
+    ):
         attrs = attrs or {}
         attrs["data-bs5-tags"] = "true"
         if allow_new:
             attrs["data-allow-new"] = "true"
+
+        if server_url is not None:
+            attrs["data-server"] = server_url
+            attrs["data-live-server"] = "1"
+
         super().__init__(attrs, choices)
         self._empty_label = empty_label
 

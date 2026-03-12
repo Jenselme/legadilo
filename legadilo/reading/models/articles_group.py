@@ -73,9 +73,12 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
     def get_queryset(self) -> ArticlesGroupQuerySet:
         return ArticlesGroupQuerySet(model=self.model, using=self._db, hints=self._hints)
 
-    @transaction.atomic()
-    def get_all_choices(self, user: User) -> FormChoices:
-        return list(self.get_queryset().for_user(user=user).distinct().values_list("slug", "title"))
+    def get_choices(self, user: User, query: str) -> FormChoices:
+        qs = self.get_queryset().for_user(user=user)
+        if query:
+            qs = qs.for_search(query)
+
+        return list(qs.distinct().values_list("slug", "title"))
 
     @transaction.atomic()
     def get_or_create_from_slug(self, user: User, slug: str) -> ArticlesGroup:

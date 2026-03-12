@@ -9,6 +9,7 @@ from .article_actions_views import (
 from .article_details_views import article_details_view
 from .articles_group_views import (
     article_groups_read_all_articles_view,
+    articles_group_autocomplete_view,
     articles_group_details_view,
     articles_groups_list_view,
 )
@@ -36,6 +37,7 @@ __all__ = [
     "add_article_view",
     "article_details_view",
     "article_groups_read_all_articles_view",
+    "articles_group_autocomplete_view",
     "articles_group_details_view",
     "articles_groups_list_view",
     "create_comment_view",

@@ -59,6 +59,11 @@ urlpatterns = [
         views.article_groups_read_all_articles_view,
         name="article_groups_read_all_articles",
     ),
+    path(
+        "articles-groups/autocomplete/",
+        views.articles_group_autocomplete_view,
+        name="articles_groups_autocomplete",
+    ),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     # To clearly differentiate from the view that list articles in list/<slug>.
     path("lists/edit/create/", views.reading_list_edit_view, name="create_reading_list"),

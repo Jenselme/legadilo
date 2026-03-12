@@ -68,13 +68,13 @@ class TestArticlesGroupQuerySet:
 
 @pytest.mark.django_db
 class TestArticlesGroupManager:
-    def test_get_all_choices(self, user):
+    def test_get_choices(self, user):
         group1 = ArticlesGroupFactory(user=user, title="My group")
-        group2 = ArticlesGroupFactory(user=user, title="Other group")
-        ArticlesGroupFactory(title="Other user group")
+        ArticlesGroupFactory(user=user, title="Testing")
 
-        choices = ArticlesGroup.objects.get_all_choices(user)
-        assert choices == [(group1.slug, group1.title), (group2.slug, group2.title)]
+        choices = ArticlesGroup.objects.get_choices(user, query="Group")
+
+        assert choices == [(group1.slug, group1.title)]
 
     def test_get_or_create_from_slug(self, user, django_assert_num_queries):
         group = ArticlesGroupFactory(user=user, title="My group")

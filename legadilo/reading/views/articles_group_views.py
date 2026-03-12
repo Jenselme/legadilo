@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -236,3 +236,15 @@ def articles_groups_list_view(request: AuthenticatedHttpRequest) -> TemplateResp
         },
         status=status,
     )
+
+
+@require_GET
+@login_required
+def articles_group_autocomplete_view(request: AuthenticatedHttpRequest):
+    query = request.GET.get("query", "")
+    if not query:
+        return JsonResponse([], safe=False)
+
+    choices = ArticlesGroup.objects.get_choices(request.user, query)
+    autocomplete_groups = [{"value": choice[0], "label": choice[1]} for choice in choices]
+    return JsonResponse(autocomplete_groups, safe=False)

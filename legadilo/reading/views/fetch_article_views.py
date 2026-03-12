@@ -12,7 +12,7 @@ from django.forms import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
@@ -52,6 +52,7 @@ class FetchArticleForm(forms.Form):
         widget=SelectAutocompleteWidget(
             empty_label=_("Choose the group"),
             allow_new=True,
+            server_url=reverse_lazy("reading:articles_groups_autocomplete"),
         ),
         help_text=_(
             "Group to add the article to. If you need to create a new group, type and press enter."
@@ -61,16 +62,9 @@ class FetchArticleForm(forms.Form):
     class Meta:
         fields = ("url", "tags")
 
-    def __init__(
-        self,
-        *args,
-        tag_choices: FormChoices,
-        group_choices: FormChoices,
-        **kwargs,
-    ):
+    def __init__(self, *args, tag_choices: FormChoices, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
-        self.fields["group"].choices = group_choices  # type: ignore[attr-defined]
 
 
 class ArticleGroupForm(forms.Form):
@@ -122,10 +116,8 @@ class ArticleGroupLinkForm(forms.Form):
 @login_required
 def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
-    group_choices = ArticlesGroup.objects.get_all_choices(request.user)
     add_article_form = FetchArticleForm(
         tag_choices=tag_choices,
-        group_choices=group_choices,
     )
     add_article_result = None
     articles_group_form = ArticleGroupForm(tag_choices=tag_choices)
@@ -135,7 +127,7 @@ def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
 
     if request.method == "POST" and "add_article" in request.POST:
         status, add_article_form, add_article_result = _handle_article_save(
-            request, tag_choices, group_choices, force_update=False
+            request, tag_choices, force_update=False
         )
     elif request.method == "POST":
         status, articles_group_form, article_group_link_formset, save_articles_group_result = (
@@ -204,7 +196,6 @@ def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedir
     _status, _form, save_result = _handle_article_save(
         request,
         [],
-        [],
         force_update=True,
     )
     _handle_refetch_article_save_result(request, save_result)
@@ -244,17 +235,9 @@ def _handle_refetch_article_save_result(
 
 
 def _handle_article_save(
-    request: AuthenticatedHttpRequest,
-    tag_choices: FormChoices,
-    group_choices: FormChoices,
-    *,
-    force_update: bool,
+    request: AuthenticatedHttpRequest, tag_choices: FormChoices, *, force_update: bool
 ) -> tuple[HTTPStatus, FetchArticleForm, SaveArticleResult | None]:
-    form = FetchArticleForm(
-        request.POST,
-        tag_choices=tag_choices,
-        group_choices=group_choices,
-    )
+    form = FetchArticleForm(request.POST, tag_choices=tag_choices)
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
@@ -272,23 +255,16 @@ def _handle_article_save(
             Article.objects.link_articles_to_group(group, [save_result.article])
 
     new_tags = Tag.objects.get_all_choices(request.user)
-    new_groups = ArticlesGroup.objects.get_all_choices(request.user)
     if save_result.was_created:
         # Refresh linked models to get the newly created ones.
         return (
             HTTPStatus.CREATED,
-            FetchArticleForm(
-                tag_choices=new_tags,
-                group_choices=new_groups,
-            ),
+            FetchArticleForm(tag_choices=new_tags),
             save_result,
         )
 
     return (
         HTTPStatus.OK,
-        FetchArticleForm(
-            tag_choices=new_tags,
-            group_choices=new_groups,
-        ),
+        FetchArticleForm(tag_choices=new_tags),
         save_result,
     )
