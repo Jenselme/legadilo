@@ -207,23 +207,22 @@ def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
     return HTTPStatus.NO_CONTENT, None
 
 
-@reading_api_router.get("/tags/", url_name="list_tags", summary="List tags")
+class OutTagWithHierarchySchema(OutTagSchema):
+    sub_tags: list[OutTagSchema]
+
+
+@reading_api_router.get(
+    "/tags/",
+    url_name="list_tags",
+    summary="List tags",
+    response={HTTPStatus.OK: list[OutTagWithHierarchySchema]},
+)
+@paginate
 def list_tags_view(request: AuthenticatedApiRequest):
-    choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.auth)
-
-    tags = []
-
-    for slug, title in choices:
-        tags.append({
-            "slug": slug,
-            "title": title,
-            "sub_tags": hierarchy.get(slug, []),
-        })
-
-    return {"count": len(tags), "items": tags}
+    return Tag.objects.get_queryset().for_user(request.auth).for_api()
 
 
-class ArticlesGroupOut(ModelSchema):
+class OutArticlesGroupSchema(ModelSchema):
     tags: list[OutTagSchema]
 
     class Meta:
@@ -232,15 +231,14 @@ class ArticlesGroupOut(ModelSchema):
 
 
 @reading_api_router.get(
-    "/articles-groups/", url_name="list_articles_groups", summary="List articles groups"
+    "/articles-groups/",
+    url_name="list_articles_groups",
+    summary="List articles groups",
+    response={HTTPStatus.OK: list[OutArticlesGroupSchema]},
 )
+@paginate
 def list_articles_groups_view(request: AuthenticatedApiRequest):
-    groups = [
-        ArticlesGroupOut.from_orm(group).model_dump(mode="json")
-        for group in ArticlesGroup.objects.get_queryset().for_user(request.auth).for_api()
-    ]
-
-    return {"count": len(groups), "items": groups}
+    return ArticlesGroup.objects.get_queryset().for_user(request.auth).for_api()
 
 
 class ReadingListReorderPayload(Schema):

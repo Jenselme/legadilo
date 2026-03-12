@@ -77,6 +77,9 @@ class SubTagMapping(models.Model):
 
 
 class TagQuerySet(models.QuerySet["Tag"]):
+    def for_api(self):
+        return self.prefetch_related("sub_tags")
+
     def for_user(self, user: User) -> Self:
         return self.filter(user=user)
 

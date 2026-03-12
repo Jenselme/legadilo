@@ -460,7 +460,7 @@ class TestListTagsView:
         tag_with_sub_tag = TagFactory(user=user, title="With sub tags")
         tag_with_sub_tag.sub_tags.add(self.tag)
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -484,7 +484,7 @@ class TestListArticlesGroup:
     def test_list(self, logged_in_sync_client, django_assert_num_queries, snapshot):
         ArticlesGroupFactory()
 
-        with django_assert_num_queries(7):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
