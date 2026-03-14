@@ -10,7 +10,7 @@
 /** @typedef {import('./types.js').SaveArticlePayload} SaveArticlePayload */
 /** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
 
-import { mustJwtBeRenewed } from "./utils.js";
+import { mergeUrlFragments, mustJwtBeRenewed } from "./utils.js";
 
 /** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
 
@@ -29,7 +29,7 @@ export const DEFAULT_OPTIONS = {
  */
 export const testCredentials = async ({ instanceUrl, userEmail, tokenId, tokenSecret }) => {
   try {
-    const resp = await fetch(`${instanceUrl}/api/users/tokens/`, {
+    const resp = await fetch(mergeUrlFragments(instanceUrl, "/api/users/tokens/"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -249,7 +249,7 @@ const doFetch = async (url, fetchOptions) => {
     Authorization: `Bearer ${options.accessToken}`,
     .../** @type {Record<string, string>} */ (fetchOptions.headers),
   };
-  const resp = await fetch(`${options.instanceUrl}${url}`, fetchOptions);
+  const resp = await fetch(mergeUrlFragments(options.instanceUrl, url), fetchOptions);
   if (!resp.ok) {
     let detail = "";
     try {

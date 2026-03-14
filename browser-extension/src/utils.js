@@ -65,6 +65,15 @@ class SafeHtml {
 }
 
 /**
+ * Merges a server URL and an endpoint path, ensuring exactly one `/` between them.
+ *
+ * @param {string} serverUrl
+ * @param {string} endpoint
+ * @returns {string}
+ */
+export const mergeUrlFragments = (serverUrl, endpoint) => new URL(endpoint, serverUrl).href;
+
+/**
  * @param {unknown} err
  * @param {string} [fallback]
  * @returns {string}

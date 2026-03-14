@@ -5,7 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { html, mustJwtBeRenewed } from "./utils.js";
+import { html, mergeUrlFragments, mustJwtBeRenewed } from "./utils.js";
 
 /**
  * @param {{ exp?: number; sub?: string; }} payload
@@ -113,5 +113,27 @@ describe("html", () => {
     document.body.innerHTML = html`<p id="test">${"<b>safe</b>"}</p>`;
     const p = document.getElementById("test");
     expect(p?.textContent).toBe("<b>safe</b>");
+  });
+});
+
+describe("mergeUrlFragments", () => {
+  it("should join two fragments with a single slash", () => {
+    expect(mergeUrlFragments("https://example.com", "api")).toBe("https://example.com/api");
+  });
+
+  it("should remove trailing slash from the first fragment", () => {
+    expect(mergeUrlFragments("https://example.com/", "api")).toBe("https://example.com/api");
+  });
+
+  it("should remove leading slash from the last fragment", () => {
+    expect(mergeUrlFragments("https://example.com", "/api")).toBe("https://example.com/api");
+  });
+
+  it("should remove both trailing and leading slashes between two fragments", () => {
+    expect(mergeUrlFragments("https://example.com/", "/api")).toBe("https://example.com/api");
+  });
+
+  it("should preserve a trailing slash on the last fragment", () => {
+    expect(mergeUrlFragments("https://example.com/", "/api/")).toBe("https://example.com/api/");
   });
 });
