@@ -26,11 +26,20 @@
  */
 
 /**
+ * @typedef {Object} Group
+ * @property {number} id
+ * @property {string} title
+ * @property {string} slug
+ * @property {string} details_url
+ */
+
+/**
  * @typedef {Object} Article
  * @property {number} id
  * @property {string} title
  * @property {number} reading_time
  * @property {Tag[]} tags
+ * @property {Group | null} group
  * @property {boolean} is_read
  * @property {boolean} is_favorite
  * @property {boolean} is_for_later
@@ -73,6 +82,7 @@
  * @typedef {Object} UpdateArticlePayload
  * @property {string} title
  * @property {string[]} tags
+ * @property {string} [group]
  * @property {string | null} readAt
  * @property {boolean} isFavorite
  * @property {boolean} isForLater

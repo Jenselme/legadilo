@@ -91,11 +91,12 @@ export const saveArticle = async ({
  */
 export const updateArticle = async (
   articleId,
-  { title, tags, readAt, isFavorite, isForLater, readingTime },
+  { title, tags, group, readAt, isFavorite, isForLater, readingTime },
 ) =>
   await patch(`/api/reading/articles/${articleId}/`, {
     title,
     tags,
+    group_id: group,
     reading_time: readingTime,
     read_at: readAt,
     is_favorite: isFavorite,

@@ -4,6 +4,7 @@
 
 /** @typedef {import('./types.js').Tag} Tag */
 /** @typedef {import('./types.js').Category} Category */
+/** @typedef {import('./types.js').Group} Group */
 /** @typedef {import('./types.js').Article} Article */
 /** @typedef {import('./types.js').Feed} Feed */
 /** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
@@ -371,6 +372,33 @@ const displayArticle = async (article) => {
   getInputElementById("saved-article-title").value = article.title;
   getInputElementById("saved-article-reading-time").value = String(article.reading_time);
 
+  /**
+   * @type {import("./types.js").AutocompleteElement[]}
+   */
+  let selectedGroup = [];
+  if (article.group) {
+    selectedGroup = [
+      {
+        label: article.group.title,
+        value: article.group.slug,
+      },
+    ];
+  }
+
+  await createAutocompleteInstance(
+    "#saved-article-group",
+    "/reading/articles-groups/autocomplete/",
+    selectedGroup,
+  );
+
+  const openGroupDetailsLink = getLinkElementById("open-group-details");
+  if (article.group) {
+    openGroupDetailsLink.href = article.group.details_url;
+    openGroupDetailsLink.hidden = false;
+  } else {
+    openGroupDetailsLink.href = "";
+    openGroupDetailsLink.hidden = true;
+  }
   await createAutocompleteInstance(
     "#saved-article-tags",
     "/reading/tags/search/autocomplete/",
@@ -680,6 +708,7 @@ const setupArticleActions = (articleId) => {
       updateArticle({
         title: /** @type {string} */ (data.get("title")),
         tags: /** @type {string[]} */ (data.getAll("tags")),
+        group: data.get("group")?.toString(),
         readingTime: Number(data.get("reading-time")),
       });
     },

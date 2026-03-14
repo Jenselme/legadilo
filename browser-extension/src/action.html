@@ -71,6 +71,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                            step="1" />
                 </div>
                 <div class="mb-3">
+                    <label for="saved-article-group" class="form-label">Group</label>
+                    <select id="saved-article-group" name="group" class="form-select" data-allow-new="true">
+                        <option hidden value="">Choose a group...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label for="saved-article-tags" class="form-label">Tags</label>
                     <select id="saved-article-tags"
                             name="tags"
@@ -129,6 +135,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                    href="">
                     <svg class="bi" role="img" aria-label="Open article details">
                         <use href="./bs-sprite.svg#eye"></use>
+                    </svg>
+                </a>
+                <a id="open-group-details"
+                   class="btn btn-outline-secondary btn-sm"
+                   role="button"
+                   target="_blank"
+                   href=""
+                   hidden>
+                    <svg class="bi" role="img" aria-label="Open group details">
+                        <use href="./bs-sprite.svg#collection"></use>
                     </svg>
                 </a>
                 <button class="btn btn-outline-secondary btn-sm"
