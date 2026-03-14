@@ -307,8 +307,8 @@ class TestCreateArticleView:
     @pytest.mark.parametrize(
         ("group_id_attr", "nb_requests"),
         [
-            pytest.param("id", 22, id="group_id"),
-            pytest.param("slug", 24, id="group_slug"),
+            pytest.param("id", 25, id="group_id"),
+            pytest.param("slug", 27, id="group_slug"),
         ],
     )
     def test_create_link_with_group(
@@ -338,7 +338,7 @@ class TestCreateArticleView:
     def test_create_link_with_new_group(
         self, user, django_assert_num_queries, logged_in_sync_client
     ):
-        with django_assert_num_queries(30):
+        with django_assert_num_queries(33):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -534,8 +534,8 @@ class TestUpdateArticleView:
     @pytest.mark.parametrize(
         ("group_id_attr", "nb_requests"),
         [
-            pytest.param("id", 13, id="group_id"),
-            pytest.param("slug", 15, id="group_slug"),
+            pytest.param("id", 16, id="group_id"),
+            pytest.param("slug", 18, id="group_slug"),
         ],
     )
     def test_update_with_group(

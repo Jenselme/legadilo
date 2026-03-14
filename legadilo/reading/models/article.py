@@ -456,7 +456,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(filters)
 
     def for_api(self):
-        return self.prefetch_related("tags")
+        return self.prefetch_related("tags", "group__tags").select_related("group")
 
 
 class ArticleManager(models.Manager["Article"]):

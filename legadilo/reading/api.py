@@ -12,7 +12,7 @@ from django.urls import reverse
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import model_validator
+from pydantic import field_serializer, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
@@ -48,10 +48,19 @@ class OutCommentSchema(ModelSchema):
         fields = ("text", "created_at", "updated_at")
 
 
+class OutArticlesGroupSchema(ModelSchema):
+    tags: list[OutTagSchema]
+
+    class Meta:
+        model = ArticlesGroup
+        exclude = ("user", "created_at", "updated_at")
+
+
 class OutArticleSchema(ModelSchema):
     tags: list[OutTagSchema]
     comments: list[OutCommentSchema]
     details_url: str
+    group: OutArticlesGroupSchema | None
 
     @staticmethod
     def resolve_details_url(obj, context) -> str:
@@ -59,6 +68,15 @@ class OutArticleSchema(ModelSchema):
             "reading:article_details", kwargs={"article_id": obj.id, "article_slug": obj.slug}
         )
         return context["request"].build_absolute_uri(url)
+
+    @field_serializer("group")
+    def group_serializer(self, value: int | None) -> OutArticlesGroupSchema | None:
+        # Workaround for https://github.com/vitalik/django-ninja/issues/1580
+        if value is None:
+            return None
+
+        group = ArticlesGroup.objects.get(id=value)
+        return OutArticlesGroupSchema.model_validate(group)
 
     class Meta:
         model = Article
@@ -266,14 +284,6 @@ class OutTagWithHierarchySchema(OutTagSchema):
 @paginate
 def list_tags_view(request: AuthenticatedApiRequest):
     return Tag.objects.get_queryset().for_user(request.auth).for_api()
-
-
-class OutArticlesGroupSchema(ModelSchema):
-    tags: list[OutTagSchema]
-
-    class Meta:
-        model = ArticlesGroup
-        exclude = ("user", "created_at", "updated_at")
 
 
 @reading_api_router.get(
