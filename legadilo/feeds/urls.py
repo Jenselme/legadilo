@@ -20,7 +20,7 @@ urlpatterns = [
         name="edit_feed_category",
     ),
     path(
-        "categories/auotocomplete/",
+        "categories/autocomplete/",
         views.feed_categories_autocomplete_view,
         name="feed_category_autocomplete",
     ),
