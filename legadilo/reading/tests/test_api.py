@@ -12,7 +12,7 @@ from django.urls import reverse
 from legadilo.core.utils.testing import serialize_for_snapshot
 from legadilo.core.utils.time_utils import utcdt, utcnow
 from legadilo.reading import constants
-from legadilo.reading.models import Article
+from legadilo.reading.models import Article, ArticlesGroup
 from legadilo.reading.tests.factories import (
     ArticleDataFactory,
     ArticleFactory,
@@ -304,6 +304,80 @@ class TestCreateArticleView:
         assert article.reading_time == existing_article.reading_time
         assert article.read_at == existing_article.read_at
 
+    @pytest.mark.parametrize(
+        ("group_id_attr", "nb_requests"),
+        [
+            pytest.param("id", 22, id="group_id"),
+            pytest.param("slug", 24, id="group_slug"),
+        ],
+    )
+    def test_create_link_with_group(
+        self, user, django_assert_num_queries, logged_in_sync_client, group_id_attr, nb_requests
+    ):
+        group = ArticlesGroupFactory(user=user, title="Some group")
+
+        with django_assert_num_queries(nb_requests):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "url": "https://example.com/some-link",
+                    "group_id": getattr(group, group_id_attr),
+                    "content": "Just some text",
+                    "content_type": "text/plain",
+                    "title": "My article",
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == "https://example.com/some-link"
+        assert article.group == group
+
+    def test_create_link_with_new_group(
+        self, user, django_assert_num_queries, logged_in_sync_client
+    ):
+        with django_assert_num_queries(30):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "url": "https://example.com/some-link",
+                    "group_id": "Some group",
+                    "content": "Just some text",
+                    "content_type": "text/plain",
+                    "title": "My article",
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.url == "https://example.com/some-link"
+        assert article.group is not None
+        group = ArticlesGroup.objects.get()
+        assert group.title == "Some group"
+
+    def test_create_link_with_group_invalid_id(
+        self, user, django_assert_num_queries, logged_in_sync_client
+    ):
+        with django_assert_num_queries(17):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "url": "https://example.com/some-link",
+                    "group_id": 1,
+                    "content": "Just some text",
+                    "content_type": "text/plain",
+                    "title": "My article",
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
+        assert Article.objects.count() == 0
+
 
 @pytest.mark.django_db
 class TestListArticleView:
@@ -412,14 +486,14 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_no_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.patch(self.url, {}, content_type="application/json")
 
         assert response.status_code == HTTPStatus.OK
         snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -441,7 +515,7 @@ class TestUpdateArticleView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.article.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(17):
+        with django_assert_num_queries(19):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -456,6 +530,51 @@ class TestUpdateArticleView:
             "Tag to keep",
         ]
         snapshot.assert_match(serialize_for_snapshot(response.json()), "article.json")
+
+    @pytest.mark.parametrize(
+        ("group_id_attr", "nb_requests"),
+        [
+            pytest.param("id", 13, id="group_id"),
+            pytest.param("slug", 15, id="group_slug"),
+        ],
+    )
+    def test_update_with_group(
+        self, logged_in_sync_client, django_assert_num_queries, snapshot, group_id_attr, nb_requests
+    ):
+        group = ArticlesGroupFactory(user=self.article.user, title="Some group")
+
+        with django_assert_num_queries(nb_requests):
+            response = logged_in_sync_client.patch(
+                self.url,
+                {
+                    "group_id": getattr(group, group_id_attr),
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.group == group
+
+    def test_update_unlink_from_group(
+        self, logged_in_sync_client, django_assert_num_queries, snapshot
+    ):
+        group = ArticlesGroupFactory(user=self.article.user, title="Some group")
+        self.article.group = group
+        self.article.save()
+
+        with django_assert_num_queries(12):
+            response = logged_in_sync_client.patch(
+                self.url,
+                {
+                    "group_id": None,
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.group is None
 
 
 @pytest.mark.django_db

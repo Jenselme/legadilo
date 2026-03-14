@@ -10,6 +10,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import Field, ModelSchema, Query, Router, Schema
+from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import model_validator
 from pydantic.json_schema import SkipJsonSchema
@@ -74,6 +75,11 @@ class ArticleCreation(Schema):
     language: Language = ""
     content_type: ContentType = "text/html"
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
+    group_id: int | str | None = Field(
+        default=None,
+        description="Id (int) or slug (str) of the group. Leave empty or set to null to not link "
+        "the article to any group",
+    )
     must_extract_content: bool = Field(
         default=True,
         description="Whether to extract content. It must be true if content is the full HTML of "
@@ -118,6 +124,8 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
             [fetch_article_result],
             tags,
         )
+        if group := _get_group(request.auth, payload.group_id):
+            Article.objects.link_articles_to_group(group, [save_results[0].article])
 
     save_result = save_results[0]
     article = Article.objects.get_queryset().for_api().get(id=save_result.article.id)
@@ -126,6 +134,21 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
         return HTTPStatus.CREATED, article
 
     return HTTPStatus.OK, article
+
+
+def _get_group(user: User, group_id: int | str | None) -> ArticlesGroup | None:
+    if group_id is None:
+        return None
+
+    if isinstance(group_id, str):
+        return ArticlesGroup.objects.get_or_create_from_slug(user, group_id)
+
+    try:
+        return ArticlesGroup.objects.get(id=group_id, user=user)
+    except ArticlesGroup.DoesNotExist as e:
+        raise NinjaValidationError([
+            {"group_id": f"Failed to find the category with id: {group_id}"}
+        ]) from e
 
 
 def _get_article_data(payload: ArticleCreation) -> FetchArticleResult:
@@ -170,6 +193,11 @@ class ArticleUpdate(Schema):
     tags: (
         Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] | SkipJsonSchema[NotSet]
     ) = NotSet(tuple)
+    group_id: int | str | NotSet | None = Field(
+        default=NotSet(int),
+        description="Id (int) or slug (str) of the group. Leave empty or set to null to not link "
+        "the article to any group",
+    )
     read_at: datetime | SkipJsonSchema[NotSet] | None = NotSet(datetime.now)
     is_favorite: bool | SkipJsonSchema[NotSet] = NotSet(bool)
     is_for_later: bool | SkipJsonSchema[NotSet] = NotSet(bool)
@@ -182,6 +210,7 @@ class ArticleUpdate(Schema):
     url_name="update_article",
     summary="Update an article",
 )
+@transaction.atomic()
 def update_article_view(
     request: AuthenticatedApiRequest,
     article_id: int,
@@ -192,7 +221,14 @@ def update_article_view(
     if not isinstance(payload.tags, NotSet):
         _update_article_tags(request.auth, article, payload.tags)
 
-    update_model_from_schema(article, payload, excluded_fields={"tags"})
+    excluded_fields = {"tags"}
+    if payload.group_id:
+        excluded_fields.add("group_id")
+        group = _get_group(request.auth, payload.group_id)  # type: ignore[arg-type]
+        article.group = group
+        article.save(update_fields=["group"])
+
+    update_model_from_schema(article, payload, excluded_fields=excluded_fields)
 
     return Article.objects.get_queryset().for_api().get(id=article_id)
 
