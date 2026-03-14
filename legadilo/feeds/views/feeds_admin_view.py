@@ -18,7 +18,6 @@ from legadilo.feeds.models import Feed, FeedCategory, FeedTag
 from legadilo.users.user_types import AuthenticatedHttpRequest
 
 from ...core.forms.fields import MultipleTagsField
-from ...reading.models import Tag
 from .. import constants
 
 
@@ -131,9 +130,8 @@ def edit_feed_view(
         id=feed_id,
         user=request.user,
     )
-    tag_choices = Tag.objects.get_all_choices(request.user)
     category_choices = FeedCategory.objects.get_all_choices(request.user)
-    form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
+    form = _build_form_from_feed_instance(feed, category_choices)
     status = HTTPStatus.OK
 
     if request.method == "POST" and "delete" in request.POST:
@@ -151,16 +149,12 @@ def edit_feed_view(
         return HttpResponseRedirect(reverse("feeds:feeds_admin"))
 
     if request.method == "POST":
-        form = _build_form_from_feed_instance(
-            feed, tag_choices, category_choices, data=request.POST
-        )
+        form = _build_form_from_feed_instance(feed, category_choices, data=request.POST)
         status = HTTPStatus.BAD_REQUEST
         if form.is_valid():
             status = HTTPStatus.OK
             form.save()
-            # Update the list of tag choices. We may have created some new one.
-            tag_choices = Tag.objects.get_all_choices(request.user)
-            form = _build_form_from_feed_instance(feed, tag_choices, category_choices)
+            form = _build_form_from_feed_instance(feed, category_choices)
 
         if status == HTTPStatus.OK and "save" in request.POST:
             return HttpResponseRedirect(reverse("feeds:feeds_admin"))
@@ -182,7 +176,6 @@ def edit_feed_view(
 
 def _build_form_from_feed_instance(
     feed: Feed,
-    tag_choices: FormChoices,
     category_choices: FormChoices,
     data=None,
 ) -> EditFeedForm:
@@ -193,6 +186,6 @@ def _build_form_from_feed_instance(
             "tags": feed.feed_tags.get_selected_values(),
         },
         instance=feed,
-        tag_choices=tag_choices,
+        tag_choices=feed.feed_tags.get_selected_choices(),
         category_choices=category_choices,
     )

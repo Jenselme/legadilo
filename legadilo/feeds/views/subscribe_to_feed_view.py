@@ -171,7 +171,9 @@ def subscribe_to_feed_view(request: AuthenticatedHttpRequest):
 
 
 def _get_subscribe_to_feed_form(data: dict | None, user: User):
-    tag_choices = Tag.objects.get_all_choices(user)
+    tag_choices = []
+    if data:
+        tag_choices = Tag.objects.get_putative_choices(user, data.get("tags", []))
     category_choices = FeedCategory.objects.get_all_choices(user)
     return SubscribeToFeedForm(data, tag_choices=tag_choices, category_choices=category_choices)
 

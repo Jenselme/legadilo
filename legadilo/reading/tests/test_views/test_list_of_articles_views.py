@@ -134,7 +134,7 @@ class TestTagWithArticlesView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -179,12 +179,11 @@ class TestUpdateArticlesFromTagWithArticlesView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.context_data["update_articles_form"].errors == {
-            "remove_tags": ["'toto' is not a known tag."],
             "update_action": ["Select a valid choice. Test is not one of the available choices."],
         }
 
     def test_only_article_update_action(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(15):
+        with django_assert_num_queries(14):
             response = logged_in_sync_client.post(
                 self.url, {"update_action": constants.UpdateArticleActions.MARK_AS_READ}
             )
@@ -201,7 +200,7 @@ class TestUpdateArticlesFromTagWithArticlesView:
         assert self.article_not_in_list.tags.count() == 2
 
     def test_with_tag_actions(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(30):
+        with django_assert_num_queries(27):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -254,7 +253,7 @@ class TestExternalTagWithArticleView:
         assert list(response.context_data["articles_page"].object_list) == []
 
     def test_tag_with_articles_view(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK

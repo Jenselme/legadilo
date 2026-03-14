@@ -9,7 +9,6 @@
     <script src="{% static 'js/tag_edition.js' %}"
             nonce="{{ csp_nonce }}"
             type="module"></script>
-    {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
 
 {% block page_css %}

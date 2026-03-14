@@ -21,7 +21,7 @@ from legadilo.core.utils.validators import (
     ValidUrlValidator,
     remove_falsy_items,
 )
-from legadilo.reading.models import Article, ArticleTag, Comment, ReadingList, Tag
+from legadilo.reading.models import Article, ArticlesGroup, ArticleTag, Comment, ReadingList, Tag
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     FetchArticleResult,
@@ -207,20 +207,38 @@ def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
     return HTTPStatus.NO_CONTENT, None
 
 
-@reading_api_router.get("/tags/", url_name="list_tags", summary="List tags")
+class OutTagWithHierarchySchema(OutTagSchema):
+    sub_tags: list[OutTagSchema]
+
+
+@reading_api_router.get(
+    "/tags/",
+    url_name="list_tags",
+    summary="List tags",
+    response={HTTPStatus.OK: list[OutTagWithHierarchySchema]},
+)
+@paginate
 def list_tags_view(request: AuthenticatedApiRequest):
-    choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.auth)
+    return Tag.objects.get_queryset().for_user(request.auth).for_api()
 
-    tags = []
 
-    for slug, title in choices:
-        tags.append({
-            "slug": slug,
-            "title": title,
-            "sub_tags": hierarchy.get(slug, []),
-        })
+class OutArticlesGroupSchema(ModelSchema):
+    tags: list[OutTagSchema]
 
-    return {"count": len(tags), "items": tags}
+    class Meta:
+        model = ArticlesGroup
+        exclude = ("user", "created_at", "updated_at")
+
+
+@reading_api_router.get(
+    "/articles-groups/",
+    url_name="list_articles_groups",
+    summary="List articles groups",
+    response={HTTPStatus.OK: list[OutArticlesGroupSchema]},
+)
+@paginate
+def list_articles_groups_view(request: AuthenticatedApiRequest):
+    return ArticlesGroup.objects.get_queryset().for_user(request.auth).for_api()
 
 
 class ReadingListReorderPayload(Schema):

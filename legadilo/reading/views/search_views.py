@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import QueryDict
 from django.template.response import TemplateResponse
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
 
@@ -91,7 +92,11 @@ class SearchForm(forms.Form):
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be included in the search."),
-        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
+        widget=SelectMultipleAutocompleteWidget(
+            allow_new=False,
+            empty_label=_("Choose tags"),
+            server_url=reverse_lazy("reading:tags_autocomplete"),
+        ),
     )
     exclude_tag_operator = forms.ChoiceField(
         required=False,
@@ -103,7 +108,11 @@ class SearchForm(forms.Form):
         required=False,
         choices=[],
         help_text=_("Articles with these tags will be excluded from the search."),
-        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
+        widget=SelectMultipleAutocompleteWidget(
+            allow_new=False,
+            empty_label=_("Choose tags"),
+            server_url=reverse_lazy("reading:tags_autocomplete"),
+        ),
     )
     external_tags_to_include = forms.MultipleChoiceField(
         required=False,
@@ -122,7 +131,14 @@ class SearchForm(forms.Form):
         widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose feeds")),
     )
 
-    def __init__(self, data: QueryDict, *, tag_choices: FormChoices, feeds_qs: models.QuerySet):
+    def __init__(
+        self,
+        data: QueryDict,
+        *,
+        tags_to_include_choices: FormChoices,
+        tags_to_exclude_choices: FormChoices,
+        feeds_qs: models.QuerySet,
+    ):
         super().__init__(data.copy())
         # The goal is to spot invalid params when coming from "Advanced search" links.
         if data and (extra_fields := set(data.keys()) - set(self.fields.keys())):
@@ -131,8 +147,8 @@ class SearchForm(forms.Form):
                 ", ".join(extra_fields),
             )
 
-        self.fields["tags_to_include"].choices = tag_choices  # type: ignore[attr-defined]
-        self.fields["tags_to_exclude"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["tags_to_include"].choices = tags_to_include_choices  # type: ignore[attr-defined]
+        self.fields["tags_to_exclude"].choices = tags_to_exclude_choices  # type: ignore[attr-defined]
         self.fields["external_tags_to_include"].choices = [  # type: ignore[attr-defined]
             (tag, tag) for tag in data.getlist("external_tags_to_include", [])
         ]
@@ -254,11 +270,19 @@ class SearchForm(forms.Form):
 @login_required
 def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     status = HTTPStatus.OK
-    tag_choices = Tag.objects.get_all_choices(request.user)
-    search_form = SearchForm(
-        request.GET, tag_choices=tag_choices, feeds_qs=request.user.feeds.all()
+    tags_to_include_choices = Tag.objects.get_putative_choices(
+        request.user, request.GET.getlist("tags_to_include", [])
     )
-    update_articles_form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
+    tags_to_exclude_choices = Tag.objects.get_putative_choices(
+        request.user, request.GET.getlist("tags_to_exclude", [])
+    )
+    search_form = SearchForm(
+        request.GET,
+        tags_to_include_choices=tags_to_include_choices,
+        tags_to_exclude_choices=tags_to_exclude_choices,
+        feeds_qs=request.user.feeds.all(),
+    )
+    update_articles_form = UpdateArticlesForm(request.POST)
     # We don't do anything unless we have a valid search.
     if not search_form.is_valid():
         return TemplateResponse(
@@ -280,9 +304,7 @@ def search_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
         # these features, we extract the ids of the articles to update and build a new QS.
         article_ids_to_update = set(articles_qs.values_list("id", flat=True))
         status, update_articles_form = update_list_of_articles(
-            request,
-            Article.objects.get_queryset().filter(id__in=article_ids_to_update),
-            tag_choices,
+            request, Article.objects.get_queryset().filter(id__in=article_ids_to_update)
         )
 
     # Articles have been updated. Some may not be part of the search anymore. Rerun it.

@@ -6,12 +6,13 @@
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models.query import Prefetch
 from slugify import slugify
 
 from legadilo.reading import constants
 
+from ...core.utils.types import FormChoices
 from ...users.models import User
 from .article import Article
 from .tag import ArticlesGroupTag, Tag
@@ -26,6 +27,9 @@ else:
 class ArticlesGroupQuerySet(models.QuerySet["ArticlesGroup"]):
     def for_user(self, user: User) -> Self:
         return self.filter(user=user)
+
+    def for_api(self):
+        return self.prefetch_related("tags")
 
     def for_search(self, searched_text: str) -> Self:
         return self.filter(
@@ -69,6 +73,22 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
     def get_queryset(self) -> ArticlesGroupQuerySet:
         return ArticlesGroupQuerySet(model=self.model, using=self._db, hints=self._hints)
 
+    def get_choices(self, user: User, query: str) -> FormChoices:
+        qs = self.get_queryset().for_user(user=user)
+        if query:
+            qs = qs.for_search(query)
+
+        return list(qs.distinct().values_list("slug", "title"))
+
+    @transaction.atomic()
+    def get_or_create_from_slug(self, user: User, slug: str) -> ArticlesGroup:
+        existing_group = self.get_queryset().for_user(user=user).filter(slug=slug).first()
+        if existing_group:
+            return existing_group
+
+        return self.create_with_tags(user, slug, description="", tags=[])
+
+    @transaction.atomic()
     def create_with_tags(self, user: User, title: str, description: str, tags: list[Tag]):
         group = self.create(user=user, title=title, description=description, slug=slugify(title))
         ArticlesGroupTag.objects.associate_group_with_tags(group, tags)

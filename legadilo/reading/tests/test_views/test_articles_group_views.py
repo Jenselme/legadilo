@@ -268,3 +268,35 @@ class TestArticlesGroupsListView:
         assert response.context_data["form"].errors == {
             "q": ["Ensure this value has at least 3 characters (it has 1)."]
         }
+
+
+@pytest.mark.django_db
+class TestArticlesGroupsAutocompleteView:
+    @pytest.fixture(autouse=True)
+    def _setup_data(self, user):
+        self.url = reverse("reading:articles_groups_autocomplete")
+        self.group = ArticlesGroupFactory(user=user, title="My group")
+
+    def test_not_logged_in(self, client):
+        response = client.get(self.url)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert response["Location"] == reverse("account_login") + f"?next={self.url}"
+
+    def test_other_user(self, logged_in_other_user_sync_client):
+        response = logged_in_other_user_sync_client.get(self.url, data={"query": "gro"})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == []
+
+    def test_list(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url, data={"query": "gro"})
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == [{"value": self.group.slug, "label": self.group.title}]
+
+    def test_list_no_query(self, logged_in_sync_client):
+        response = logged_in_sync_client.get(self.url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == []

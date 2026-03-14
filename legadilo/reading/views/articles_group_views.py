@@ -10,10 +10,10 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_GET, require_http_methods
@@ -63,9 +63,8 @@ def articles_group_details_view(
     request: AuthenticatedHttpRequest, group_id: int, group_slug: str
 ) -> TemplateResponse | HttpResponseRedirect:
     group = _get_group(request.user, group_id, group_slug)
-    tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
     status = HTTPStatus.OK
-    edit_articles_group_form = _build_edit_articles_group_form_from_instance(tag_choices, group)
+    edit_articles_group_form = _build_edit_articles_group_form_from_instance(group)
     article_order_form = ReorderArticlesForm()
 
     if request.method == "POST" and "mark_all_as_read" in request.POST:
@@ -75,9 +74,7 @@ def articles_group_details_view(
     elif request.method == "POST" and "reorder" in request.POST:
         status, article_order_form, group = _handle_articles_group_reorder(request, group)
     elif request.method == "POST" and request.POST.get("action") == "update_articles_group":
-        status, edit_articles_group_form, group = _handle_articles_group_update(
-            request, group, tag_choices
-        )
+        status, edit_articles_group_form, group = _handle_articles_group_update(request, group)
     elif request.method == "POST" and request.POST.get("action") == "delete_group":
         group.delete()
         return HttpResponseRedirect(reverse("reading:articles_groups_list"))
@@ -92,7 +89,6 @@ def articles_group_details_view(
         {
             "group": group,
             "from_url": articles_group_details_url(group),
-            "tags_hierarchy": hierarchy,
             "edit_articles_group_form": edit_articles_group_form,
             "article_order_form": article_order_form,
         },
@@ -107,7 +103,7 @@ def _get_group(user: User, group_id: int, group_slug: str) -> ArticlesGroup:
 
 
 def _build_edit_articles_group_form_from_instance(
-    tag_choices: FormChoices, group: ArticlesGroup, data=None
+    group: ArticlesGroup, data=None
 ) -> EditArticlesGroupForm:
     return EditArticlesGroupForm(
         data,
@@ -116,7 +112,7 @@ def _build_edit_articles_group_form_from_instance(
             "title": group.title,
             "description": group.description,
         },
-        tag_choices=tag_choices,
+        tag_choices=group.articles_group_tags.get_selected_choices(),
     )
 
 
@@ -137,9 +133,9 @@ def _handle_articles_group_reorder(request: AuthenticatedHttpRequest, group: Art
 
 @transaction.atomic()
 def _handle_articles_group_update(
-    request: AuthenticatedHttpRequest, group: ArticlesGroup, tag_choices: FormChoices
+    request: AuthenticatedHttpRequest, group: ArticlesGroup
 ) -> tuple[HTTPStatus, EditArticlesGroupForm, ArticlesGroup]:
-    form = _build_edit_articles_group_form_from_instance(tag_choices, group, request.POST)
+    form = _build_edit_articles_group_form_from_instance(group, request.POST)
     status = HTTPStatus.BAD_REQUEST
     if form.is_valid():
         status = HTTPStatus.OK
@@ -147,9 +143,7 @@ def _handle_articles_group_update(
         ArticlesGroupTag.objects.associate_group_with_tags(group, tags)
         group.update_from_details(**form.cleaned_data)
         group.save()
-        # Update the list of tag choices. We may have created some new one.
-        tag_choices = Tag.objects.get_all_choices(request.user)
-        form = _build_edit_articles_group_form_from_instance(tag_choices, group)
+        form = _build_edit_articles_group_form_from_instance(group)
 
     # Refresh the many-to-many relationship of tags to display the latest value.
     return status, form, _get_group(request.user, group.id, group.slug)
@@ -187,7 +181,12 @@ class SearchArticlesGroupsForm(forms.Form):
         choices=[],
         label=_("Tags"),
         help_text=_("Find groups containing all these tags"),
-        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
+        widget=SelectMultipleAutocompleteWidget(
+            allow_new=False,
+            empty_label=_("Choose tags"),
+            server_url=reverse_lazy("reading:tags_autocomplete"),
+            extra_server_params={"hierarchy": False},
+        ),
     )
 
     def __init__(self, data: QueryDict, *, tag_choices: FormChoices):
@@ -207,7 +206,12 @@ class SearchArticlesGroupsForm(forms.Form):
 @login_required
 def articles_groups_list_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
     form = SearchArticlesGroupsForm(
-        request.GET, tag_choices=Tag.objects.get_all_choices(request.user)
+        request.GET,
+        tag_choices=list(
+            Tag.objects.filter(slug__in=request.GET.getlist("tags", [])).values_list(
+                "slug", "title"
+            )
+        ),
     )
     if form.is_valid():
         groups_qs = ArticlesGroup.objects.list_for_admin(
@@ -236,3 +240,15 @@ def articles_groups_list_view(request: AuthenticatedHttpRequest) -> TemplateResp
         },
         status=status,
     )
+
+
+@require_GET
+@login_required
+def articles_group_autocomplete_view(request: AuthenticatedHttpRequest):
+    query = request.GET.get("query", "")
+    if not query:
+        return JsonResponse([], safe=False)
+
+    choices = ArticlesGroup.objects.get_choices(request.user, query)
+    autocomplete_groups = [{"value": choice[0], "label": choice[1]} for choice in choices]
+    return JsonResponse(autocomplete_groups, safe=False)

@@ -7,7 +7,6 @@
             nonce="{{ csp_nonce }}"
             type="module"></script>
     <script src="{% static 'js/draggable.js' %}" nonce="{{ csp_nonce }}" defer></script>
-    {{ tags_hierarchy|json_script:"tags-hierarchy" }}
 {% endblock page_js %}
 
 {% block page_css %}

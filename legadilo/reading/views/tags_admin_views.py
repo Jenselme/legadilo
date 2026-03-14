@@ -57,13 +57,13 @@ class TagForm(forms.ModelForm):
         data=None,
         *,
         instance: Tag | None = None,
-        tag_choices: FormChoices,
+        sub_tag_choices: FormChoices,
         user: User,
         **kwargs,
     ):
         super().__init__(data, instance=instance, **kwargs)
         self._user = user
-        self.fields["sub_tags"].choices = tag_choices  # type: ignore[attr-defined]
+        self.fields["sub_tags"].choices = sub_tag_choices  # type: ignore[attr-defined]
 
     class Meta:
         model = Tag
@@ -111,23 +111,20 @@ def edit_tag_view(request: AuthenticatedHttpRequest, tag_id: int | None = None) 
         target_url = reverse("reading:tags_admin")
         return HttpResponse(headers={"HX-Redirect": target_url, "HX-Push-Url": "true"})
 
-    all_tag_choices = Tag.objects.get_all_choices(request.user)
-    if tag is None:
-        tag_choices = all_tag_choices
-        initial_sub_tags = []
-    else:
-        tag_choices = [choice for choice in all_tag_choices if choice[0] != tag.slug]
-        initial_sub_tags = SubTagMapping.objects.get_selected_mappings(tag)
+    initial_sub_choices = []
+    if tag:
+        initial_sub_choices = SubTagMapping.objects.get_selected_mappings(tag)
+
     form = TagForm(
         instance=tag,
-        tag_choices=tag_choices,
+        sub_tag_choices=initial_sub_choices,
         user=request.user,
-        initial={"sub_tags": initial_sub_tags},
+        initial={"sub_tags": [choice[0] for choice in initial_sub_choices]},
     )
     status = HTTPStatus.OK
 
     if request.method == "POST":
-        status, form, tag = _handle_tag_edition(request, tag, tag_choices, initial_sub_tags)
+        status, form, tag = _handle_tag_edition(request, tag, initial_sub_choices)
         if status == HTTPStatus.OK and "save" in request.POST:
             return HttpResponseRedirect(reverse("reading:tags_admin"))
         if status == HTTPStatus.OK and "save-add-new" in request.POST:
@@ -156,17 +153,14 @@ def edit_tag_view(request: AuthenticatedHttpRequest, tag_id: int | None = None) 
 
 
 def _handle_tag_edition(
-    request: AuthenticatedHttpRequest,
-    tag: Tag | None,
-    tag_choices: FormChoices,
-    initial_sub_tags: FormChoices,
+    request: AuthenticatedHttpRequest, tag: Tag | None, initial_sub_tags: FormChoices
 ) -> tuple[HTTPStatus, TagForm, Tag | None]:
     form = TagForm(
         data=request.POST,
         instance=tag,
-        tag_choices=tag_choices,
+        sub_tag_choices=initial_sub_tags,
         user=request.user,
-        initial={"sub_tags": initial_sub_tags},
+        initial={"sub_tags": [choice[0] for choice in initial_sub_tags]},
     )
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, tag

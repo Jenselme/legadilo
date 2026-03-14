@@ -9,6 +9,7 @@ from .article_actions_views import (
 from .article_details_views import article_details_view
 from .articles_group_views import (
     article_groups_read_all_articles_view,
+    articles_group_autocomplete_view,
     articles_group_details_view,
     articles_groups_list_view,
 )
@@ -31,11 +32,13 @@ from .reading_lists_admin_views import (
 )
 from .search_views import search_view
 from .tags_admin_views import edit_tag_view, tags_admin_view
+from .tags_views import tags_autocomplete_view
 
 __all__ = [
     "add_article_view",
     "article_details_view",
     "article_groups_read_all_articles_view",
+    "articles_group_autocomplete_view",
     "articles_group_details_view",
     "articles_groups_list_view",
     "create_comment_view",
@@ -53,5 +56,6 @@ __all__ = [
     "search_view",
     "tag_with_articles_view",
     "tags_admin_view",
+    "tags_autocomplete_view",
     "update_article_view",
 ]

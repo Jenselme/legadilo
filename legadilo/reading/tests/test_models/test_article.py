@@ -1492,7 +1492,6 @@ class TestArticleManager:
         assert other_independent_article.group_order == 0
 
 
-@pytest.mark.django_db
 class TestArticleModel:
     @pytest.mark.django_db
     def test_generated_fields(self):
@@ -1679,6 +1678,7 @@ class TestArticleModel:
         assert was_updated
         assert article.content_type == "text/html"
 
+    @pytest.mark.django_db
     def test_adjoining_articles_of_group_no_group(self, django_assert_num_queries):
         article = ArticleFactory(group=None)
 
@@ -1686,6 +1686,7 @@ class TestArticleModel:
             assert article.next_article_of_group is None
             assert article.previous_article_of_group is None
 
+    @pytest.mark.django_db
     def test_adjoining_articles_of_group_with_group_no_other_article(
         self, django_assert_num_queries
     ):
@@ -1695,6 +1696,7 @@ class TestArticleModel:
             assert article.next_article_of_group is None
             assert article.previous_article_of_group is None
 
+    @pytest.mark.django_db
     def test_adjoining_articles_of_group(self):
         group = ArticlesGroupFactory()
         article_1 = ArticleFactory(group=group, group_order=1)
@@ -1708,23 +1710,11 @@ class TestArticleModel:
         assert article_3.next_article_of_group is None
         assert article_3.previous_article_of_group == article_2
 
-    def test_update_from_details_link_to_group(self, user):
-        group = ArticlesGroupFactory(user=user)
-        article = ArticleFactory(user=user, group=None)
+    def test_update_from_details(self):
+        article = ArticleFactory.build()
 
-        article.update_from_details(
-            title="Test title", summary="Test summary", reading_time=10, group=group
-        )
+        article.update_from_details(title="Test title", summary="Test summary", reading_time=10)
 
-        assert article.group == group
-        assert article.group_order == 1
-
-    def test_update_from_details_unlink_from_group(self, user):
-        group = ArticlesGroupFactory(user=user)
-        article = ArticleFactory(user=user, group=group)
-
-        article.update_from_details(
-            title="Test title", summary="Test summary", reading_time=10, group=None
-        )
-
-        assert article.group_id is None
+        assert article.title == "Test title"
+        assert article.summary == "Test summary"
+        assert article.reading_time == 10

@@ -1,0 +1,17 @@
+{
+  "count": 1,
+  "items": [
+    {
+      "description": "",
+      "id": 1,
+      "slug": "some-group",
+      "tags": [
+        {
+          "slug": "some-tag",
+          "title": "Some tag"
+        }
+      ],
+      "title": "Some group"
+    }
+  ]
+}

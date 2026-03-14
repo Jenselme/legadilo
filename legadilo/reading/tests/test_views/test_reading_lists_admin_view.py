@@ -112,7 +112,7 @@ class TestCreateReadingListView:
         }
 
     def test_create_reading_list(self, logged_in_sync_client, user, django_assert_num_queries):
-        with django_assert_num_queries(52):
+        with django_assert_num_queries(50):
             response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         reading_list = ReadingList.objects.get()
@@ -142,7 +142,7 @@ class TestCreateReadingListView:
             **self.sample_data, slug=slugify(self.sample_data["title"]), user=user
         )
 
-        with django_assert_num_queries(39):
+        with django_assert_num_queries(37):
             response = logged_in_sync_client.post(self.url, data=self.sample_data)
 
         assert response.status_code == HTTPStatus.CONFLICT

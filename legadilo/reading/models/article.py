@@ -1077,13 +1077,7 @@ class Article(models.Model):
 
         return True
 
-    def update_from_details(
-        self, *, title: str, summary: str, reading_time: int, group: ArticlesGroup | None
-    ):
-        if group:
-            self.__class__.objects.link_articles_to_group(group, [self])
-        else:
-            self.group = None
+    def update_from_details(self, *, title: str, summary: str, reading_time: int):
         self.title = title
         self.summary = summary
         self.reading_time = reading_time

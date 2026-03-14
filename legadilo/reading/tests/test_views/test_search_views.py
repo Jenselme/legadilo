@@ -20,13 +20,21 @@ from legadilo.reading.views.search_views import SearchForm
 
 class TestSearchForm:
     def test_without_data(self):
-        form = SearchForm(QueryDict(), tag_choices=[], feeds_qs=Feed.objects.none())
+        form = SearchForm(
+            QueryDict(),
+            tags_to_include_choices=[],
+            tags_to_exclude_choices=[],
+            feeds_qs=Feed.objects.none(),
+        )
 
         assert form.is_valid()
 
     def test_with_only_q(self):
         form = SearchForm(
-            dict_to_query_dict({"q": "Claudius"}), tag_choices=[], feeds_qs=Feed.objects.none()
+            dict_to_query_dict({"q": "Claudius"}),
+            tags_to_include_choices=[],
+            tags_to_exclude_choices=[],
+            feeds_qs=Feed.objects.none(),
         )
 
         assert form.is_valid()
@@ -56,7 +64,8 @@ class TestSearchForm:
                 "articles_max_age_value": 12,
                 "articles_reading_time": 12,
             }),
-            tag_choices=[],
+            tags_to_include_choices=[],
+            tags_to_exclude_choices=[],
             feeds_qs=Feed.objects.none(),
         )
 
@@ -75,7 +84,8 @@ class TestSearchForm:
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
                 "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
             }),
-            tag_choices=[],
+            tags_to_include_choices=[],
+            tags_to_exclude_choices=[],
             feeds_qs=Feed.objects.none(),
         )
 
@@ -107,7 +117,8 @@ class TestSearchForm:
                 "external_tags_to_include": ["Some word"],
                 "linked_with_feeds": [],
             }),
-            tag_choices=[("some-tag", "Some tag"), ("other-tag", "Other tag")],
+            tags_to_include_choices=[("some-tag", "Some tag"), ("other-tag", "Other tag")],
+            tags_to_exclude_choices=[("some-tag", "Some tag"), ("other-tag", "Other tag")],
             feeds_qs=Feed.objects.none(),
         )
 

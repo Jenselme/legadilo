@@ -24,6 +24,7 @@ urlpatterns = [
     path("tags/", views.tags_admin_view, name="tags_admin"),
     path("tags/create/", views.edit_tag_view, name="create_tag"),
     path("tags/edit/<int:tag_id>/", views.edit_tag_view, name="edit_tag"),
+    path("tags/search/autocomplete/", views.tags_autocomplete_view, name="tags_autocomplete"),
     path("tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
         "tags/externals/list/",
@@ -58,6 +59,11 @@ urlpatterns = [
         "articles-groups/<int:group_id>-<slug:group_slug>/all/",
         views.article_groups_read_all_articles_view,
         name="article_groups_read_all_articles",
+    ),
+    path(
+        "articles-groups/autocomplete/",
+        views.articles_group_autocomplete_view,
+        name="articles_groups_autocomplete",
     ),
     path("lists/", views.reading_list_admin_view, name="reading_lists_admin"),
     # To clearly differentiate from the view that list articles in list/<slug>.

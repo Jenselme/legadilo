@@ -8,6 +8,7 @@ import pytest
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
+from legadilo.reading.models import ArticlesGroup
 from legadilo.reading.tests.factories import (
     ArticleFactory,
     ArticlesGroupFactory,
@@ -47,7 +48,7 @@ class TestArticleDetailsView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_view_details(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -58,7 +59,7 @@ class TestArticleDetailsView:
 
     def test_view_details_with_from_url(self, logged_in_sync_client, django_assert_num_queries):
         from_url = "/reading/lists/unread/"
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.get(self.url, data={"from_url": from_url})
 
         assert response.status_code == HTTPStatus.OK
@@ -180,14 +181,32 @@ class TestUpdateArticleDetailsView:
         group = ArticlesGroupFactory(user=user)
         ArticleFactory(user=user)
 
-        with django_assert_num_queries(36):
+        with django_assert_num_queries(39):
             response = logged_in_sync_client.post(
-                self.url, {**self.sample_payload, "group": group.id}
+                self.url, {**self.sample_payload, "group": group.slug}
             )
 
         assert response.status_code == HTTPStatus.OK
         self.article.refresh_from_db()
         assert self.article.group == group
+
+    def test_change_group(self, user, logged_in_sync_client, django_assert_num_queries):
+        group = ArticlesGroupFactory(user=user)
+        self.article.group = group
+        self.article.save()
+        other_group = ArticlesGroupFactory(user=user)
+        ArticleFactory(user=user, group=other_group, group_order=1)
+
+        with django_assert_num_queries(39):
+            response = logged_in_sync_client.post(
+                self.url, {**self.sample_payload, "group": other_group.slug}
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.group == other_group
+        assert self.article.group_order == 2
+        assert ArticlesGroup.objects.count() == 2
 
     def test_unlink_from_group(self, user, logged_in_sync_client, django_assert_num_queries):
         group = ArticlesGroupFactory(user=user)
@@ -200,12 +219,26 @@ class TestUpdateArticleDetailsView:
         self.article.refresh_from_db()
         assert self.article.group_id is None
 
-    def test_link_to_group_of_other_user(self, user, other_user, logged_in_sync_client):
-        group = ArticlesGroupFactory(user=other_user)
-        ArticleFactory(user=user, group=group)
+    def test_link_to_new_group(self, user, logged_in_sync_client, django_assert_num_queries):
+        ArticleFactory(user=user)
 
-        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "group": group.id})
+        with django_assert_num_queries(45):
+            response = logged_in_sync_client.post(
+                self.url, {**self.sample_payload, "group": "New group"}
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        group = ArticlesGroup.objects.get()
+        assert self.article.group == group
+        assert group.user == user
+
+    def test_invalid_new_groud(self, user, logged_in_sync_client):
+        ArticleFactory(user=user)
+
+        response = logged_in_sync_client.post(self.url, {**self.sample_payload, "group": "  "})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        self.article.refresh_from_db()
-        assert self.article.group_id is None
+        assert response.context_data["edit_article_form"].errors == {
+            "group": ["Cannot contain only spaces or special characters."],
+        }

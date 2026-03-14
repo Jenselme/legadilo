@@ -29,7 +29,7 @@ class TestSubTagMappingManager:
     def test_get_selected_mappings(self):
         choices = SubTagMapping.objects.get_selected_mappings(self.tag1)
 
-        assert choices == [self.sub_tag1.slug]
+        assert choices == [(self.sub_tag1.slug, self.sub_tag1.title)]
 
     def test_associate_tag_with_sub_tags(self, user, django_assert_num_queries):
         new_tag = TagFactory(title="New tag", user=user)
@@ -41,6 +41,14 @@ class TestSubTagMappingManager:
             new_tag.slug,
             self.sub_tag1.slug,
         }
+
+    def test_associate_tag_with_sub_tags_tag_in_sub_tags(self, user, django_assert_num_queries):
+        tag = TagFactory(title="New tag", user=user)
+
+        with django_assert_num_queries(5):
+            SubTagMapping.objects.associate_tag_with_sub_tags(tag, [tag.slug])
+
+        assert tag.sub_tags.all().count() == 0
 
     def test_associate_tag_with_sub_tags_clear_existing(self, user, django_assert_num_queries):
         new_tag = TagFactory(title="New tag", user=user)
@@ -66,23 +74,14 @@ class TestTagManager:
         )
         self.other_user_tag = TagFactory()
 
-    def test_get_all_choices(self, user):
-        choices = list(Tag.objects.get_all_choices(user))
-
-        assert choices == [
-            (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),
-            (self.tag1.slug, self.tag1.title),
-            (self.tag2.slug, self.tag2.title),
-        ]
-
-    def test_all_choices_with_hierarchy(self, user, other_user, django_assert_num_queries):
+    def test_choices_with_hierarchy(self, user, other_user, django_assert_num_queries):
         self.tag1.sub_tags.add(self.tag2)
         tag3 = TagFactory(user=user)
         tag4 = TagFactory(user=user)
         self.tag2.sub_tags.add(tag3, tag4)
 
         with django_assert_num_queries(2):
-            choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(user)
+            choices, hierarchy = Tag.objects.get_choices_with_hierarchy(user, query="")
 
         assert choices == [
             (self.existing_tag_with_spaces.slug, self.existing_tag_with_spaces.title),
@@ -101,6 +100,34 @@ class TestTagManager:
             tag3.slug: [],
             tag4.slug: [],
         }
+
+    def test_choices_with_hierarchy_with_query(self, user, other_user, django_assert_num_queries):
+        self.tag1.sub_tags.add(self.tag2)
+        tag3 = TagFactory(user=user, title="Étiquette")
+        tag4 = TagFactory(user=user, title="Tag 4")
+        self.tag2.sub_tags.add(tag3, tag4)
+
+        with django_assert_num_queries(2):
+            choices, hierarchy = Tag.objects.get_choices_with_hierarchy(user, query="ÉtiquettE")
+
+        assert choices == [
+            (tag3.slug, tag3.title),
+        ]
+        assert hierarchy == {
+            tag3.slug: [],
+        }
+
+    def test_get_putative_choices(self, user, other_user, django_assert_num_queries):
+        with django_assert_num_queries(1):
+            choices = Tag.objects.get_putative_choices(user, [self.tag1.slug, "New tag"])
+
+        assert choices == [(self.tag1.slug, self.tag1.title), ("New tag", "New tag")]
+
+    def test_get_from_list(self, django_assert_num_queries, user):
+        with django_assert_num_queries(1):
+            tags = Tag.objects.get_from_list(user, [self.tag1.slug, "New tag"])
+
+        assert tags == [self.tag1]
 
     def test_get_or_create_from_list(self, django_assert_num_queries, user):
         with django_assert_num_queries(4):

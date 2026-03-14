@@ -9,13 +9,12 @@ from urllib.parse import unquote_plus, urlencode
 
 from django import forms
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csp import csp_override
 from django.views.decorators.http import require_GET, require_http_methods
@@ -24,7 +23,6 @@ from config import settings
 from legadilo.core.forms.fields import MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.core.utils.pagination import get_requested_page
-from legadilo.core.utils.types import FormChoices
 from legadilo.core.utils.validators import get_page_number_from_request
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticleTag, ReadingList, Tag
@@ -183,11 +181,10 @@ def list_or_update_articles(
     extra_ctx: dict | None = None,
 ) -> TemplateResponse:
     extra_ctx = extra_ctx or {}
-    tag_choices = Tag.objects.get_all_choices(request.user)
     status = HTTPStatus.OK
-    form = UpdateArticlesForm(tag_choices=tag_choices)
+    form = UpdateArticlesForm()
     if request.method == "POST":
-        status, form = update_list_of_articles(request, articles_qs, tag_choices)
+        status, form = update_list_of_articles(request, articles_qs)
 
     return _display_list_of_articles(
         request,
@@ -219,28 +216,17 @@ class UpdateArticlesForm(forms.Form):
         help_text=_(
             "Tags to dissociate with all articles of this search (not only the visible ones)."
         ),
-        widget=SelectMultipleAutocompleteWidget(allow_new=False, empty_label=_("Choose tags")),
+        widget=SelectMultipleAutocompleteWidget(
+            allow_new=False,
+            empty_label=_("Choose tags"),
+            server_url=reverse_lazy("reading:tags_autocomplete"),
+        ),
     )
     update_action = forms.ChoiceField(
         required=False,
         initial=constants.UpdateArticleActions.DO_NOTHING,
         choices=constants.UpdateArticleActions.choices,
     )
-
-    def __init__(self, data=None, *, tag_choices: FormChoices, **kwargs):
-        super().__init__(data, **kwargs)
-        self._tag_value_choices = {choice[0] for choice in tag_choices}
-        self.fields["add_tags"].choices = tag_choices  # type: ignore[attr-defined]
-        self.fields["remove_tags"].choices = tag_choices  # type: ignore[attr-defined]
-
-    def clean_remove_tags(self):
-        for tag in self.cleaned_data["remove_tags"]:
-            if tag not in self._tag_value_choices:
-                raise ValidationError(
-                    _("'%s' is not a known tag.") % tag, code="tried-to-remove-inexistent-tag"
-                )
-
-        return self.cleaned_data["remove_tags"]
 
     def clean_update_action(self):
         if not self.cleaned_data.get("update_action"):
@@ -250,10 +236,8 @@ class UpdateArticlesForm(forms.Form):
 
 
 @transaction.atomic()
-def update_list_of_articles(
-    request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet, tag_choices: FormChoices
-):
-    form = UpdateArticlesForm(request.POST, tag_choices=tag_choices)
+def update_list_of_articles(request: AuthenticatedHttpRequest, articles_qs: ArticleQuerySet):
+    form = UpdateArticlesForm(request.POST)
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form
 
@@ -264,12 +248,9 @@ def update_list_of_articles(
         ArticleTag.objects.associate_articles_with_tags(articles_qs.all(), tags_to_add)
 
     if form.cleaned_data["remove_tags"]:
-        # Note: the form validation assures us we won't create any tags here.
-        tags_to_delete = Tag.objects.get_or_create_from_list(
-            request.user, form.cleaned_data["remove_tags"]
-        )
+        tags_to_delete = Tag.objects.get_from_list(request.user, form.cleaned_data["remove_tags"])
         ArticleTag.objects.dissociate_articles_with_tags(articles_qs.all(), tags_to_delete)
 
     articles_qs.all().update_articles_from_action(form.cleaned_data["update_action"])
 
-    return HTTPStatus.OK, UpdateArticlesForm(tag_choices=tag_choices)
+    return HTTPStatus.OK, UpdateArticlesForm()
