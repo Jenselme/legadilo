@@ -42,6 +42,13 @@ class FeedCategoryManager(models.Manager["FeedCategory"]):
     def get_queryset(self) -> FeedCategoryQuerySet:
         return FeedCategoryQuerySet(model=self.model, using=self._db, hints=self._hints)
 
+    def get_choices(self, user: User, query: str) -> FormChoices:
+        qs = self.get_queryset().for_user(user=user)
+        if query:
+            qs = qs.filter(title__icontains=query)
+
+        return list(qs.distinct().values_list("slug", "title"))
+
     def get_all_choices(self, user: User) -> FormChoices:
         choices = [("", str(_("None")))]
         choices.extend(self.get_queryset().for_user(user).values_list("slug", "title"))

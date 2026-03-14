@@ -20,6 +20,11 @@ urlpatterns = [
         name="edit_feed_category",
     ),
     path(
+        "categories/auotocomplete/",
+        views.feed_categories_autocomplete_view,
+        name="feed_category_autocomplete",
+    ),
+    path(
         "articles/<int:feed_id>-<slug:feed_slug>/",
         views.feed_articles_view,
         name="feed_articles",

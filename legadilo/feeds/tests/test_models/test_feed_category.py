@@ -24,6 +24,13 @@ class TestFeedCategoryQuerySet:
 
 @pytest.mark.django_db
 class TestFeedCategoryManager:
+    def test_get_choices(self, user):
+        feed_category = FeedCategoryFactory(user=user, title="Category")
+
+        choices = FeedCategory.objects.get_choices(user, query="category")
+
+        assert choices == [(feed_category.slug, feed_category.title)]
+
     def test_get_all_choices(self, user):
         feed_category = FeedCategoryFactory(user=user)
         FeedCategoryFactory()
