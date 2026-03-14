@@ -386,7 +386,7 @@ SECURE_CSP = {
 # ------------------------------------------------------------------------------
 # https://github.com/adamchainz/django-cors-headers#readme
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_URLS_REGEX = r"^/api/.*$"
+CORS_URLS_REGEX = r"^(/api/.*$)|(.*/autocomplete/$)"
 CORS_ALLOW_CREDENTIALS = False
 
 
