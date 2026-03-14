@@ -2,16 +2,16 @@
 #
 #  SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
 from legadilo.reading.models import Tag
 from legadilo.users.user_types import AuthenticatedHttpRequest
+from legadilo.users.view_decorators import require_cookie_login_or_api_auth
 
 
 @require_GET
-@login_required
+@require_cookie_login_or_api_auth
 def tags_autocomplete_view(request: AuthenticatedHttpRequest):
     query = request.GET.get("query", "")
     include_hierarchy = request.GET.get("hierarchy", "") != "false"

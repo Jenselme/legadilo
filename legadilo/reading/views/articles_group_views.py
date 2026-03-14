@@ -29,6 +29,7 @@ from legadilo.reading.models.articles_group import ArticlesGroupQuerySet
 from legadilo.reading.templatetags import articles_group_details_url
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedHttpRequest
+from legadilo.users.view_decorators import require_cookie_login_or_api_auth
 
 
 class EditArticlesGroupForm(forms.Form):
@@ -243,7 +244,7 @@ def articles_groups_list_view(request: AuthenticatedHttpRequest) -> TemplateResp
 
 
 @require_GET
-@login_required
+@require_cookie_login_or_api_auth
 def articles_group_autocomplete_view(request: AuthenticatedHttpRequest):
     query = request.GET.get("query", "")
     if not query:
