@@ -13,7 +13,6 @@
 import {
   deleteArticle,
   deleteFeed,
-  ensureIsAuthenticated,
   listCategories,
   listTags,
   loadOptions,
@@ -78,7 +77,6 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
     return;
   }
 
-  await ensureIsAuthenticated();
   try {
     await saveArticle({
       url: info.linkUrl,
@@ -114,8 +112,6 @@ if (isFirefox) {
  */
 const onMessage = async (request, sendResponse) => {
   try {
-    await ensureIsAuthenticated();
-
     switch (request.name) {
       case "save-article":
         await processSaveArticleRequest(

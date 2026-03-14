@@ -199,7 +199,7 @@ export const listCategories = async () => {
 /**
  * @returns {Promise<void>}
  */
-export const ensureIsAuthenticated = async () => {
+const ensureIsAuthenticated = async () => {
   const options = await loadOptions();
   if (mustJwtBeRenewed(options.accessToken)) {
     await getNewAccessToken(options);
@@ -239,6 +239,7 @@ const post = async (apiUrl, data) =>
  * @returns {Promise<any>}
  */
 const doFetch = async (url, fetchOptions) => {
+  await ensureIsAuthenticated();
   const options = await loadOptions();
   if (!fetchOptions.headers) {
     fetchOptions.headers = {};
