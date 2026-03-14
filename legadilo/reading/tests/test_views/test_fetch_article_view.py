@@ -47,7 +47,7 @@ class TestAddArticle:
     def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -70,7 +70,7 @@ class TestAddArticle:
     ):
         httpx_mock.add_response(html=self.article_content, url=self.article_url)
 
-        with django_assert_num_queries(23):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -224,7 +224,7 @@ class TestAddArticle:
             "group": group.slug,
         }
 
-        with django_assert_num_queries(25):
+        with django_assert_num_queries(22):
             response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -243,7 +243,7 @@ class TestAddArticle:
             "group": group.slug,
         }
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.OK
@@ -263,7 +263,7 @@ class TestAddArticle:
             "group": group.slug,
         }
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(16):
             response = logged_in_sync_client.post(self.url, payload)
 
         assert response.status_code == HTTPStatus.OK
@@ -338,7 +338,7 @@ class TestAddArticlesGroup:
         )
         httpx_mock.add_response(html="", url=self.no_content_article_url)
 
-        with django_assert_num_queries(32):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.CREATED
@@ -404,7 +404,7 @@ class TestRefetchArticleView:
             html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
         )
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND
@@ -424,7 +424,7 @@ class TestRefetchArticleView:
     ):
         httpx_mock.add_response(html="", url=self.article_url)
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
                 self.url,
                 self.sample_payload,
@@ -445,7 +445,7 @@ class TestRefetchArticleView:
         self.article.group = group
         self.article.save()
 
-        with django_assert_num_queries(18):
+        with django_assert_num_queries(17):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
 
         assert response.status_code == HTTPStatus.FOUND

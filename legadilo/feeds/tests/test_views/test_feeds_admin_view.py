@@ -119,7 +119,7 @@ class TestEditFeedView:
         tag1 = TagFactory(user=user)
         self.feed.tags.add(tag1)
 
-        with django_assert_num_queries(25):
+        with django_assert_num_queries(26):
             response = logged_in_sync_client.post(
                 self.url,
                 data={

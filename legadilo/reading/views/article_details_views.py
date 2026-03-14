@@ -64,12 +64,15 @@ class EditArticleForm(forms.Form):
         fields = ("tags", "title", "reading_time", "summary", "group")
 
     def __init__(
-        self, *args, tag_choices: FormChoices, group_choices: FormChoices | None = None, **kwargs
+        self,
+        *args,
+        tag_choices: FormChoices,
+        group_choices: FormChoices,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
-        if group_choices:
-            self.fields["group"].choices = group_choices  # type: ignore[attr-defined]
+        self.fields["group"].choices = group_choices  # type: ignore[attr-defined]
 
     def clean_summary(self):
         return sanitize_keep_safe_tags(self.cleaned_data["summary"])
@@ -87,12 +90,11 @@ def article_details_view(
         slug=article_slug,
         user=request.user,
     )
-    tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
     if request.method == "POST":
-        status, edit_article_form, article = _handle_update(request, article, tag_choices)
+        status, edit_article_form, article = _handle_update(request, article)
     else:
         status = HTTPStatus.OK
-        edit_article_form = _build_edit_article_form_from_instance(tag_choices, article)
+        edit_article_form = _build_edit_article_form_from_instance(article)
 
     return TemplateResponse(
         request,
@@ -106,7 +108,6 @@ def article_details_view(
             "edit_article_form": edit_article_form,
             "comment_article_form": CommentArticleForm(),
             "from_url": get_from_url_for_article_details(request, request.GET),
-            "tags_hierarchy": hierarchy,
         },
         status=status,
     )
@@ -114,9 +115,9 @@ def article_details_view(
 
 @transaction.atomic()
 def _handle_update(
-    request: AuthenticatedHttpRequest, article: Article, tag_choices: FormChoices
+    request: AuthenticatedHttpRequest, article: Article
 ) -> tuple[HTTPStatus, EditArticleForm, Article]:
-    form = _build_edit_article_form_from_instance(tag_choices, article, request.POST)
+    form = _build_edit_article_form_from_instance(article, request.POST)
     status = HTTPStatus.BAD_REQUEST
     if form.is_valid():
         status = HTTPStatus.OK
@@ -127,15 +128,13 @@ def _handle_update(
         ArticleTag.objects.dissociate_article_with_tags_not_in_list(article, tags)
         article.update_from_details(**form.cleaned_data)
         article.save()
-        # Update the list of linked models. We may have created some new one.
-        tag_choices = Tag.objects.get_all_choices(request.user)
-        form = _build_edit_article_form_from_instance(tag_choices, article)
+        form = _build_edit_article_form_from_instance(article)
 
     # Refresh the many-to-many relationship of tags to display the latest value.
     return status, form, Article.objects.get_queryset().for_details().get(id=article.id)
 
 
-def _build_edit_article_form_from_instance(tag_choices: FormChoices, article: Article, data=None):
+def _build_edit_article_form_from_instance(article: Article, data=None):
     return EditArticleForm(
         data=data,
         initial={
@@ -145,6 +144,6 @@ def _build_edit_article_form_from_instance(tag_choices: FormChoices, article: Ar
             "reading_time": article.reading_time,
             "group": article.group.slug if article.group else None,
         },
-        tag_choices=tag_choices,
+        tag_choices=article.article_tags.get_selected_choices(),
         group_choices=[(article.group.slug, article.group.title)] if article.group else [],
     )

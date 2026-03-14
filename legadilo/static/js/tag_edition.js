@@ -12,12 +12,6 @@ const setupTagsInstance = () => {
     return;
   }
 
-  let tagsHierarchy = {};
-  const tagsHierarchyElement = document.head.querySelector("#tags-hierarchy");
-  if (tagsHierarchyElement !== null) {
-    tagsHierarchy = JSON.parse(tagsHierarchyElement.textContent);
-  }
-
   if (tagsInstances) {
     tagsInstances.forEach((tagInstance) => tagInstance.dispose());
   }
@@ -26,12 +20,10 @@ const setupTagsInstance = () => {
     return new Tags(tagElement, {
       allowClear: true,
       onSelectItem(item, instance) {
-        if (!Array.isArray(tagsHierarchy[item.value])) {
-          return;
-        }
+        if (!item.hierarchy) return;
 
         const alreadyAddedItems = instance.getSelectedValues();
-        tagsHierarchy[item.value]
+        item.hierarchy
           .filter((tag) => !alreadyAddedItems.includes(tag.slug))
           .forEach((tag) => instance.addItem(tag.title, tag.slug));
       },

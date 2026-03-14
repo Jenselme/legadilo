@@ -10,6 +10,8 @@ from django.db import models
 
 from legadilo.reading.models.tag import Tag
 
+from ...core.utils.types import FormChoices
+
 if TYPE_CHECKING:
     from django_stubs_ext.db.models import TypedModelMeta
 
@@ -30,6 +32,9 @@ class FeedTagManager(models.Manager["FeedTag"]):
 
     def get_selected_values(self) -> list[str]:
         return list(self.get_queryset().values_list("tag__slug", flat=True))
+
+    def get_selected_choices(self) -> FormChoices:
+        return list(self.get_queryset().values_list("tag__slug", "tag__title"))
 
     def associate_feed_with_tags(self, feed: Feed, tags: Iterable[Tag]):
         feed_tags = [self.model(feed=feed, tag=tag) for tag in tags]

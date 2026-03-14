@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-12 21:25+0100\n"
+"POT-Creation-Date: 2026-03-14 17:29+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -579,10 +579,6 @@ msgid ""
 msgstr ""
 "Étiquettes à dissocier de tous les articles de cette recherche (y compris "
 "les articles non visibles sur cette page)."
-
-#, python-format
-msgid "'%s' is not a known tag."
-msgstr "'%s' n’est pas une étiquette connue."
 
 msgid "Reading lists admin"
 msgstr "Administration des listes de lecture"
@@ -1952,6 +1948,10 @@ msgstr "Erreur lors de la mise à jour des paramètres"
 
 msgid "Account deleted successfully"
 msgstr "Compte supprimé avec succès"
+
+#, python-format
+#~ msgid "'%s' is not a known tag."
+#~ msgstr "'%s' n’est pas une étiquette connue."
 
 #~ msgid ""
 #~ "Group to associate this article with. If you need to create a new group, "

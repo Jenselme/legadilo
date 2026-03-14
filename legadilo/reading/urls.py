@@ -24,6 +24,7 @@ urlpatterns = [
     path("tags/", views.tags_admin_view, name="tags_admin"),
     path("tags/create/", views.edit_tag_view, name="create_tag"),
     path("tags/edit/<int:tag_id>/", views.edit_tag_view, name="edit_tag"),
+    path("tags/search/autocomplete/", views.tags_autocomplete_view, name="tags_autocomplete"),
     path("tags/<slug:tag_slug>/", views.tag_with_articles_view, name="tag_with_articles"),
     path(
         "tags/externals/list/",

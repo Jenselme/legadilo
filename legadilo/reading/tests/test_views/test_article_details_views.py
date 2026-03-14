@@ -124,7 +124,7 @@ class TestUpdateArticleDetailsView:
     def test_update_tags_for_article_details(
         self, logged_in_sync_client, django_assert_num_queries
     ):
-        with django_assert_num_queries(31):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(
                 self.url,
                 {**self.sample_payload, "for_article_details": True},
@@ -143,7 +143,7 @@ class TestUpdateArticleDetailsView:
     ):
         initial_slug = self.article.slug
 
-        with django_assert_num_queries(31):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -181,7 +181,7 @@ class TestUpdateArticleDetailsView:
         group = ArticlesGroupFactory(user=user)
         ArticleFactory(user=user)
 
-        with django_assert_num_queries(40):
+        with django_assert_num_queries(39):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "group": group.slug}
             )
@@ -197,7 +197,7 @@ class TestUpdateArticleDetailsView:
         other_group = ArticlesGroupFactory(user=user)
         ArticleFactory(user=user, group=other_group, group_order=1)
 
-        with django_assert_num_queries(40):
+        with django_assert_num_queries(39):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "group": other_group.slug}
             )
@@ -212,7 +212,7 @@ class TestUpdateArticleDetailsView:
         group = ArticlesGroupFactory(user=user)
         ArticleFactory(user=user, group=group)
 
-        with django_assert_num_queries(31):
+        with django_assert_num_queries(30):
             response = logged_in_sync_client.post(self.url, {**self.sample_payload})
 
         assert response.status_code == HTTPStatus.OK
@@ -222,7 +222,7 @@ class TestUpdateArticleDetailsView:
     def test_link_to_new_group(self, user, logged_in_sync_client, django_assert_num_queries):
         ArticleFactory(user=user)
 
-        with django_assert_num_queries(46):
+        with django_assert_num_queries(45):
             response = logged_in_sync_client.post(
                 self.url, {**self.sample_payload, "group": "New group"}
             )

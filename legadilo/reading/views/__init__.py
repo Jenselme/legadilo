@@ -32,6 +32,7 @@ from .reading_lists_admin_views import (
 )
 from .search_views import search_view
 from .tags_admin_views import edit_tag_view, tags_admin_view
+from .tags_views import tags_autocomplete_view
 
 __all__ = [
     "add_article_view",
@@ -55,5 +56,6 @@ __all__ = [
     "search_view",
     "tag_with_articles_view",
     "tags_admin_view",
+    "tags_autocomplete_view",
     "update_article_view",
 ]

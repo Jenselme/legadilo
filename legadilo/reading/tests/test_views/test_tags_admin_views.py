@@ -52,14 +52,14 @@ class TestCreateTagView:
         assert_redirected_to_login_page(response)
 
     def test_view_page(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/edit_tag.html"
 
     def test_create_tag(self, logged_in_sync_client, django_assert_num_queries, user):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(8):
             response = logged_in_sync_client.post(self.url, {"title": "Tag to create"})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -78,7 +78,7 @@ class TestCreateTagView:
         }
 
     def test_create_duplicated_tag(self, logged_in_sync_client, django_assert_num_queries, user):
-        with django_assert_num_queries(11):
+        with django_assert_num_queries(10):
             response = logged_in_sync_client.post(self.url, {"title": self.tag.title})
 
         assert response.status_code == HTTPStatus.CONFLICT
@@ -105,7 +105,7 @@ class TestEditTagView:
         assert_redirected_to_login_page(response)
 
     def test_view_page(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.get(self.url)
 
         assert response.status_code == HTTPStatus.OK
@@ -149,7 +149,7 @@ class TestEditTagView:
         assert Tag.objects.get() == self.tag
 
     def test_update_tag(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(self.url, {"title": "Updated title", "save": ""})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -160,7 +160,7 @@ class TestEditTagView:
         assert self.tag.sub_tags.count() == 0
 
     def test_update_tag_add_new(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(
                 self.url, {"title": "Updated title", "save-add-new": ""}
             )
@@ -169,7 +169,7 @@ class TestEditTagView:
         assert response["Location"] == reverse("reading:create_tag")
 
     def test_update_tag_continue_edition(self, logged_in_sync_client, django_assert_num_queries):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.post(
                 self.url, {"title": "Updated title", "save-continue-edition": ""}
             )
@@ -181,7 +181,7 @@ class TestEditTagView:
         sub_tag = TagFactory(title="Sub tag", user=user)
         SubTagMapping.objects.create(base_tag=self.tag, sub_tag=sub_tag)
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(18):
             response = logged_in_sync_client.post(self.url, {"title": "Updated title", "save": ""})
 
         assert response.status_code == HTTPStatus.FOUND
@@ -194,7 +194,7 @@ class TestEditTagView:
         SubTagMapping.objects.create(base_tag=self.tag, sub_tag=sub_tag)
         existing_sub_tag = TagFactory(title="Existing tag", user=user)
 
-        with django_assert_num_queries(22):
+        with django_assert_num_queries(21):
             response = logged_in_sync_client.post(
                 self.url,
                 {

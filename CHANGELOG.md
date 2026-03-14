@@ -10,6 +10,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 - Can create groups from the add article and the edit article details forms.
 - Can list groups in the API.
+- Autocomplete tags and groups from the server in form fields.
 
 ## 26.02.5
 

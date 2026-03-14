@@ -173,10 +173,7 @@ def reading_list_edit_view(
     if reading_list_id is not None:
         reading_list = get_object_or_404(ReadingList, id=reading_list_id, user=request.user)
 
-    tag_choices = Tag.objects.get_all_choices(request.user)
-    form = _build_form_from_reading_list_instance(
-        tag_choices, request.user, reading_list=reading_list
-    )
+    form = _build_form_from_reading_list_instance(request.user, reading_list=reading_list)
     status = HTTPStatus.OK
 
     if reading_list and request.method == "POST" and "delete" in request.POST:
@@ -188,11 +185,7 @@ def reading_list_edit_view(
         return HttpResponseRedirect(reverse("reading:reading_lists_admin"))
 
     if request.method == "POST":
-        status, form, reading_list = _handle_reading_list_edition(
-            request, reading_list, tag_choices
-        )
-        # Update the list of tag choices. We may have created some new one.
-        tag_choices = Tag.objects.get_all_choices(request.user)
+        status, form, reading_list = _handle_reading_list_edition(request, reading_list)
         if status == HTTPStatus.OK and "save" in request.POST:
             return HttpResponseRedirect(reverse("reading:reading_lists_admin"))
         if status == HTTPStatus.OK and "save-add-new" in request.POST:
@@ -226,7 +219,6 @@ def reading_list_edit_view(
 
 
 def _build_form_from_reading_list_instance(
-    tag_choices: FormChoices,
     user: User,
     reading_list: ReadingList | None = None,
     data=None,
@@ -234,7 +226,7 @@ def _build_form_from_reading_list_instance(
     return ReadingListForm(
         data=data,
         instance=reading_list,
-        tag_choices=tag_choices,
+        tag_choices=reading_list.reading_list_tags.get_selected_choices() if reading_list else [],
         user=user,
         initial={
             "tags_to_include": reading_list.reading_list_tags.get_selected_values(
@@ -252,10 +244,10 @@ def _build_form_from_reading_list_instance(
 
 
 def _handle_reading_list_edition(
-    request: AuthenticatedHttpRequest, reading_list: ReadingList | None, tag_choices: FormChoices
+    request: AuthenticatedHttpRequest, reading_list: ReadingList | None
 ) -> tuple[HTTPStatus, ReadingListForm, ReadingList | None]:
     form = _build_form_from_reading_list_instance(
-        tag_choices, request.user, data=request.POST, reading_list=reading_list
+        request.user, data=request.POST, reading_list=reading_list
     )
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, reading_list

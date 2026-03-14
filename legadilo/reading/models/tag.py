@@ -39,7 +39,7 @@ class SubTagMappingManager(models.Manager):
         return list(
             self
             .filter(base_tag=tag)
-            .values_list("sub_tag__slug", flat=True)
+            .values_list("sub_tag__slug", "sub_tag__title")
             .order_by("sub_tag__title")
         )
 
@@ -51,7 +51,9 @@ class SubTagMappingManager(models.Manager):
             tag.sub_tag_mappings.all().delete()
 
         sub_tags = Tag.objects.get_or_create_from_list(tag.user, sub_tag_slugs)
-        sub_tag_mappings = [self.model(base_tag=tag, sub_tag=sub_tag) for sub_tag in sub_tags]
+        sub_tag_mappings = [
+            self.model(base_tag=tag, sub_tag=sub_tag) for sub_tag in sub_tags if tag != sub_tag
+        ]
         self.bulk_create(sub_tag_mappings)
 
 
@@ -93,22 +95,40 @@ class TagManager(models.Manager["Tag"]):
     def get_queryset(self) -> TagQuerySet:
         return TagQuerySet(self.model, using=self._db, hints=self._hints)
 
-    def get_all_choices(self, user: User) -> FormChoices:
-        return list(self.get_queryset().for_user(user).values_list("slug", "title"))
-
-    def get_all_choices_with_hierarchy(self, user: User) -> tuple[FormChoices, TagsHierarchy]:
+    def get_choices_with_hierarchy(
+        self, user: User, query: str
+    ) -> tuple[FormChoices, TagsHierarchy]:
         choices: FormChoices = []
         hierarchy: TagsHierarchy = {}
 
-        for tag in (
-            self.get_queryset().for_user(user).prefetch_related("sub_tags").order_by("title", "id")
-        ):
+        qs = self.get_queryset().for_user(user).order_by("title").prefetch_related("sub_tags")
+        if query:
+            qs = qs.filter(title__icontains=query)
+
+        for tag in qs:
             choices.append((tag.slug, tag.title))
             hierarchy[tag.slug] = [
                 {"title": sub_tag.title, "slug": sub_tag.slug} for sub_tag in tag.sub_tags.all()
             ]
 
         return choices, hierarchy
+
+    def get_putative_choices(self, user: User, titles_or_slugs: Iterable[str]) -> FormChoices:
+        """Get choices for tags may not exist yet.
+
+        Useful to handle form errors and keep tags. Without these choices, the tags would be
+        considered invalid and lost, forcing the user to re-type them.
+        """
+        existing_choices = list(
+            self
+            .get_queryset()
+            .for_user(user)
+            .filter(slug__in=titles_or_slugs)
+            .values_list("slug", "title")
+        )
+        existing_slugs = {choice[0] for choice in existing_choices}
+        new_choices = [(title, title) for title in titles_or_slugs if title not in existing_slugs]
+        return existing_choices + new_choices
 
     def get_slugs_to_ids(self, user: User, slugs: Iterable[str]) -> dict[str, int]:
         return {
@@ -120,14 +140,17 @@ class TagManager(models.Manager["Tag"]):
             .values_list("id", "slug")
         }
 
-    @transaction.atomic()
-    def get_or_create_from_list(self, user: User, titles_or_slugs: Iterable[str]) -> list[Tag]:
-        existing_tags = list(
-            Tag.objects
+    def get_from_list(self, user: User, titles_or_slugs: Iterable[str]) -> list[Tag]:
+        return list(
+            self
             .get_queryset()
             .for_user(user)
             .for_slugs([slugify(title_or_slug) for title_or_slug in titles_or_slugs])
         )
+
+    @transaction.atomic()
+    def get_or_create_from_list(self, user: User, titles_or_slugs: Iterable[str]) -> list[Tag]:
+        existing_tags = self.get_from_list(user, titles_or_slugs)
         existing_slugs = {tag.slug for tag in existing_tags}
         tags_to_create = [
             self.model(title=title_or_slug, slug=slugify(title_or_slug), user=user)
@@ -206,6 +229,9 @@ class ArticleTagManager(models.Manager["ArticleTag"]):
 
     def get_selected_values(self) -> list[str]:
         return list(self.get_queryset().values_list("tag__slug", flat=True))
+
+    def get_selected_choices(self) -> FormChoices:
+        return list(self.get_queryset().values_list("tag__slug", "tag__title"))
 
     def associate_articles_with_tags(
         self, all_articles: Sequence[Article] | ArticleQuerySet, tags: Iterable[Tag]
@@ -289,6 +315,9 @@ class ReadingListTagManager(models.Manager["ReadingListTag"]):
             self.get_queryset().for_reading_list(filter_type).values_list("slug", flat=True)
         )
 
+    def get_selected_choices(self) -> FormChoices:
+        return list(self.get_queryset().values_list("tag__slug", "tag__title"))
+
     @transaction.atomic()
     def associate_reading_list_with_tags(
         self,
@@ -364,6 +393,9 @@ class ArticlesGroupTagManager(models.Manager["ArticlesGroupTag"]):
 
     def get_selected_values(self) -> list[str]:
         return list(self.get_queryset().values_list("tag__slug", flat=True))
+
+    def get_selected_choices(self) -> FormChoices:
+        return list(self.get_queryset().values_list("tag__slug", "tag__title"))
 
 
 class ArticlesGroupTag(models.Model):

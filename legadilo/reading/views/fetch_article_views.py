@@ -19,7 +19,6 @@ from django.views.decorators.http import require_http_methods
 from legadilo.core.forms import BaseInlineTableFormSet
 from legadilo.core.forms.fields import MultipleTagsField, SlugifiableAutocompleteField
 from legadilo.core.forms.widgets import SelectAutocompleteWidget
-from legadilo.core.utils.types import FormChoices
 from legadilo.core.utils.urls import add_query_params, pop_query_param, validate_referer_url
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticlesGroup, Tag
@@ -62,10 +61,6 @@ class FetchArticleForm(forms.Form):
     class Meta:
         fields = ("url", "tags")
 
-    def __init__(self, *args, tag_choices: FormChoices, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
-
 
 class ArticleGroupForm(forms.Form):
     title = forms.CharField(
@@ -97,10 +92,6 @@ class ArticleGroupForm(forms.Form):
     class Meta:
         fields = ("title", "description", "tags")
 
-    def __init__(self, *args, tag_choices: FormChoices, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
-
 
 class ArticleGroupLinkForm(forms.Form):
     url = forms.URLField(
@@ -115,23 +106,20 @@ class ArticleGroupLinkForm(forms.Form):
 @require_http_methods(["GET", "POST"])
 @login_required
 def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
-    tag_choices, hierarchy = Tag.objects.get_all_choices_with_hierarchy(request.user)
-    add_article_form = FetchArticleForm(
-        tag_choices=tag_choices,
-    )
+    add_article_form = FetchArticleForm()
     add_article_result = None
-    articles_group_form = ArticleGroupForm(tag_choices=tag_choices)
+    articles_group_form = ArticleGroupForm()
     article_group_link_formset = _build_article_group_link_formset()
     save_articles_group_result = None
     status = HTTPStatus.OK
 
     if request.method == "POST" and "add_article" in request.POST:
         status, add_article_form, add_article_result = _handle_article_save(
-            request, tag_choices, force_update=False
+            request, force_update=False
         )
     elif request.method == "POST":
         status, articles_group_form, article_group_link_formset, save_articles_group_result = (
-            _handle_articles_group_save(request, tag_choices)
+            _handle_articles_group_save(request)
         )
 
     return TemplateResponse(
@@ -143,7 +131,6 @@ def add_article_view(request: AuthenticatedHttpRequest) -> TemplateResponse:
             "max_article_size": constants.MAX_ARTICLE_FILE_SIZE / (1024 * 1024),
             "articles_group_form": articles_group_form,
             "article_group_link_formset": article_group_link_formset,
-            "tags_hierarchy": hierarchy,
             "save_articles_group_result": save_articles_group_result,
         },
         status=status,
@@ -160,14 +147,14 @@ def _build_article_group_link_formset(data=None):
 
 
 def _handle_articles_group_save(
-    request: AuthenticatedHttpRequest, tag_choices: list[tuple[str, str]]
+    request: AuthenticatedHttpRequest,
 ) -> tuple[
     HTTPStatus,
     ArticleGroupForm,
     BaseInlineTableFormSet[ArticleGroupLinkForm],
     SaveArticlesGroupResult | None,
 ]:
-    articles_group_form = ArticleGroupForm(data=request.POST, tag_choices=tag_choices)
+    articles_group_form = ArticleGroupForm(data=request.POST)
     article_group_link_formset = _build_article_group_link_formset(request.POST)
 
     if not articles_group_form.is_valid() or not article_group_link_formset.is_valid():
@@ -183,7 +170,7 @@ def _handle_articles_group_save(
     )
     return (
         HTTPStatus.CREATED,
-        ArticleGroupForm(tag_choices=tag_choices),
+        ArticleGroupForm(),
         _build_article_group_link_formset(),
         save_result,
     )
@@ -195,7 +182,6 @@ def refetch_article_view(request: AuthenticatedHttpRequest) -> HttpResponseRedir
     article = get_object_or_404(Article, url=request.POST.get("url"), user=request.user)
     _status, _form, save_result = _handle_article_save(
         request,
-        [],
         force_update=True,
     )
     _handle_refetch_article_save_result(request, save_result)
@@ -235,9 +221,9 @@ def _handle_refetch_article_save_result(
 
 
 def _handle_article_save(
-    request: AuthenticatedHttpRequest, tag_choices: FormChoices, *, force_update: bool
+    request: AuthenticatedHttpRequest, *, force_update: bool
 ) -> tuple[HTTPStatus, FetchArticleForm, SaveArticleResult | None]:
-    form = FetchArticleForm(request.POST, tag_choices=tag_choices)
+    form = FetchArticleForm(request.POST)
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
@@ -254,17 +240,16 @@ def _handle_article_save(
             group = ArticlesGroup.objects.get_or_create_from_slug(request.user, group_slug)
             Article.objects.link_articles_to_group(group, [save_result.article])
 
-    new_tags = Tag.objects.get_all_choices(request.user)
     if save_result.was_created:
         # Refresh linked models to get the newly created ones.
         return (
             HTTPStatus.CREATED,
-            FetchArticleForm(tag_choices=new_tags),
+            FetchArticleForm(),
             save_result,
         )
 
     return (
         HTTPStatus.OK,
-        FetchArticleForm(tag_choices=new_tags),
+        FetchArticleForm(),
         save_result,
     )
