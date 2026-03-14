@@ -169,32 +169,16 @@ export const deleteFeed = async (feedId) => await httpDelete(`/api/feeds/${feedI
  */
 export const updateFeed = async (
   feedId,
-  { categoryId, tags, refreshDelay, articleRetentionTime, disabledAt, disabledReason },
+  { category, tags, refreshDelay, articleRetentionTime, disabledAt, disabledReason },
 ) =>
   await patch(`/api/feeds/${feedId}/`, {
-    category_id: categoryId,
+    category_id: category,
     tags,
     refresh_delay: refreshDelay,
     article_retention_time: articleRetentionTime,
     disabled_at: disabledAt,
     disabled_reason: disabledReason,
   });
-
-/**
- * @returns {Promise<Tag[]>}
- */
-export const listTags = async () => {
-  const response = await get("/api/reading/tags/");
-  return response.items;
-};
-
-/**
- * @returns {Promise<Category[]>}
- */
-export const listCategories = async () => {
-  const response = await get("/api/feeds/categories/");
-  return response.items;
-};
 
 /**
  * @returns {Promise<void>}

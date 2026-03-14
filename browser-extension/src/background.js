@@ -13,8 +13,6 @@
 import {
   deleteArticle,
   deleteFeed,
-  listCategories,
-  listTags,
   loadOptions,
   saveArticle,
   subscribeToFeed,
@@ -161,8 +159,7 @@ const onMessage = async (request, sendResponse) => {
  */
 const processSaveArticleRequest = async (sendResponse, payload) => {
   const article = await saveArticle(payload);
-  const tags = await listTags();
-  sendResponse({ name: "saved-article", article, tags });
+  sendResponse({ name: "saved-article", article });
 };
 
 /**
@@ -173,8 +170,7 @@ const processSaveArticleRequest = async (sendResponse, payload) => {
  */
 const processUpdateArticleRequest = async (sendResponse, articleId, payload) => {
   const article = await updateArticle(articleId, payload);
-  const tags = await listTags();
-  sendResponse({ name: "updated-article", article, tags });
+  sendResponse({ name: "updated-article", article });
 };
 
 /**
@@ -194,8 +190,7 @@ const processDeleteArticleRequest = async (sendResponse, articleId) => {
  */
 const processFeedSubscriptionRequest = async (sendResponse, payload) => {
   const feed = await subscribeToFeed(payload.link);
-  const [tags, categories] = await Promise.all([listTags(), listCategories()]);
-  sendResponse({ name: "subscribed-to-feed", feed, tags, categories });
+  sendResponse({ name: "subscribed-to-feed", feed });
 };
 
 /**
@@ -206,8 +201,7 @@ const processFeedSubscriptionRequest = async (sendResponse, payload) => {
  */
 const processUpdateFeedRequest = async (sendResponse, feedId, payload) => {
   const feed = await updateFeed(feedId, payload);
-  const [tags, categories] = await Promise.all([listTags(), listCategories()]);
-  sendResponse({ name: "updated-feed", feed, tags, categories });
+  sendResponse({ name: "updated-feed", feed });
 };
 
 /**

@@ -8,17 +8,17 @@
 /** @typedef {import('./types.js').Feed} Feed */
 /** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
 /** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
+/** @typedef {import('./types.js').AutocompleteElement} AutocompleteElement */
 
 import Tags from "./vendor/tags.js";
-import { html, getErrorMessage } from "./utils.js";
-import { listArticles, listEnabledFeeds } from "./legadilo.js";
+import { getErrorMessage, html, mergeUrlFragments } from "./utils.js";
+import { listArticles, listEnabledFeeds, loadOptions } from "./legadilo.js";
 import {
   getDialogById,
   getElementById,
   getFormById,
   getInputElementById,
   getLinkElementById,
-  getSelectElementById,
 } from "./typing-utils.js";
 import Readability from "./vendor/Readability.js";
 
@@ -52,10 +52,6 @@ import Readability from "./vendor/Readability.js";
 
 /** @type {chrome.runtime.Port | undefined} */
 let port;
-/** @type {ReturnType<typeof Tags.init> | null} */
-let articleTagsInstance = null;
-/** @type {ReturnType<typeof Tags.init> | null} */
-let feedTagsInstance = null;
 
 const isFirefox = typeof browser === "object";
 
@@ -127,9 +123,9 @@ const getCanonicalUrl = (tab, data) => {
 
 /**
  * @param {ResponseMessage} request
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const onMessage = (request) => {
+const onMessage = async (request) => {
   if (request.error) {
     hideLoader();
     displayErrorMessage(request.error);
@@ -140,36 +136,22 @@ const onMessage = (request) => {
   hideLoader();
   switch (request.name) {
     case "saved-article":
-      savedArticleSuccess(
-        /** @type {Article} */ (request.article),
-        /** @type {Tag[]} */ (request.tags),
-      );
+      await savedArticleSuccess(/** @type {Article} */ (request.article));
       break;
     case "updated-article":
-      updatedArticleSuccess(
-        /** @type {Article} */ (request.article),
-        /** @type {Tag[]} */ (request.tags),
-      );
+      await updatedArticleSuccess(/** @type {Article} */ (request.article));
       break;
     case "deleted-article":
-      displayActionsSelector();
+      await displayActionsSelector();
       break;
     case "subscribed-to-feed":
-      feedSubscriptionSuccess(
-        /** @type {Feed} */ (request.feed),
-        /** @type {Tag[]} */ (request.tags),
-        /** @type {Category[]} */ (request.categories),
-      );
+      await feedSubscriptionSuccess(/** @type {Feed} */ (request.feed));
       break;
     case "updated-feed":
-      updatedFeedSuccess(
-        /** @type {Feed} */ (request.feed),
-        /** @type {Tag[]} */ (request.tags),
-        /** @type {Category[]} */ (request.categories),
-      );
+      await updatedFeedSuccess(/** @type {Feed} */ (request.feed));
       break;
     case "deleted-feed":
-      displayActionsSelector();
+      await displayActionsSelector();
       break;
     default:
       console.warn(`Unknown action ${request.name}`);
@@ -349,29 +331,30 @@ const hideLoader = () => {
 
 /**
  * @param {string} element
- * @param {Tag[]} tags
- * @param {Tag[]} selectedTags
- * @returns {ReturnType<typeof Tags.init>}
+ * @param {string} endpoint
+ * @param {AutocompleteElement[]} selectedItems
+ * @returns {Promise<ReturnType<typeof Tags.init>>}
  */
-const createTagInstance = (element, tags, selectedTags) => {
-  /** @type {Record<string, Tag[]>} */
-  const tagsHierarchy = tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.sub_tags }), {});
+const createAutocompleteInstance = async (element, endpoint, selectedItems) => {
+  const { instanceUrl: serverUrl, accessToken } = await loadOptions();
 
   return Tags.init(element, {
     allowNew: true,
     allowClear: true,
-    items: tags.reduce(
-      (/** @type {Record<string, string>} */ acc, tag) => ({ ...acc, [tag.slug]: tag.title }),
-      {},
-    ),
-    selected: selectedTags.map((tag) => tag.slug),
-    onSelectItem(item, instance) {
-      if (!Array.isArray(tagsHierarchy[item.value])) {
-        return;
-      }
+    server: mergeUrlFragments(serverUrl, endpoint),
+    liveServer: true,
+    fetchOptions: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    items: selectedItems,
+    selected: selectedItems.map((item) => item.value),
+    onSelectItem(/** @type Tag */ item, /** @type Tags */ instance) {
+      if (!item.hierarchy) return;
 
       const alreadyAddedItems = instance.getSelectedValues();
-      tagsHierarchy[item.value]
+      item.hierarchy
         .filter((tag) => !alreadyAddedItems.includes(tag.slug))
         .forEach((tag) => instance.addItem(tag.title, tag.slug));
     },
@@ -380,18 +363,19 @@ const createTagInstance = (element, tags, selectedTags) => {
 
 /**
  * @param {Article} article
- * @param {Tag[]} tags
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const displayArticle = (article, tags) => {
+const displayArticle = async (article) => {
   getElementById("article-container").hidden = false;
 
   getInputElementById("saved-article-title").value = article.title;
   getInputElementById("saved-article-reading-time").value = String(article.reading_time);
 
-  if (articleTagsInstance === null) {
-    articleTagsInstance = createTagInstance("#saved-article-tags", tags, article.tags);
-  }
+  await createAutocompleteInstance(
+    "#saved-article-tags",
+    "/reading/tags/search/autocomplete/",
+    tagsToAutocompleteItems(article.tags),
+  );
 
   getElementById("mark-article-as-read").hidden = article.is_read;
   getElementById("mark-article-as-unread").hidden = !article.is_read;
@@ -406,6 +390,17 @@ const displayArticle = (article, tags) => {
 };
 
 /**
+ * @param {Tag[]} tags
+ * @returns {AutocompleteElement[]}
+ */
+const tagsToAutocompleteItems = (tags) =>
+  tags.map((tag) => ({
+    value: tag.slug,
+    label: tag.title,
+    hierarchy: tag.hierarchy,
+  }));
+
+/**
  * @returns {void}
  */
 const hideArticle = () => {
@@ -414,11 +409,9 @@ const hideArticle = () => {
 
 /**
  * @param {Feed} feed
- * @param {Tag[]} tags
- * @param {Category[]} categories
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const displayFeed = (feed, tags, categories) => {
+const displayFeed = async (feed) => {
   getElementById("feed-container").hidden = false;
   getElementById("feed-title").innerText = feed.title;
 
@@ -430,19 +423,29 @@ const displayFeed = (feed, tags, categories) => {
   getElementById("enable-feed").hidden = feed.enabled;
   getElementById("disable-feed").hidden = !feed.enabled;
 
-  const categorySelector = getSelectElementById("feed-category");
-  const categoriesOptions = [
-    html`<option value="">No Category</option>`,
-    ...categories.map(
-      (category) => html`<option value="${category.id}">${category.title}</option>`,
-    ),
-  ].join("");
-  categorySelector.innerHTML = categoriesOptions;
-  categorySelector.value = feed.category ? String(feed.category.id) : "";
-
-  if (feedTagsInstance === null) {
-    feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
+  /**
+   * @type {import("./types.js").AutocompleteElement[]}
+   */
+  let selectedCategory = [];
+  if (feed.category) {
+    selectedCategory = [
+      {
+        label: feed.category.title,
+        value: feed.category.slug,
+      },
+    ];
   }
+
+  await createAutocompleteInstance(
+    "#feed-category",
+    "/feeds/categories/autocomplete/",
+    selectedCategory,
+  );
+  await createAutocompleteInstance(
+    "#feed-tags",
+    "/reading/tags/search/autocomplete/",
+    tagsToAutocompleteItems(feed.tags),
+  );
 
   setupFeedActions(feed.id);
 };
@@ -486,7 +489,7 @@ const setupFeedActions = (feedId) => {
       event.preventDefault();
       const data = new FormData(getFormById("update-feed-form"));
       updateFeed({
-        categoryId: Number(data.get("category")) || null,
+        category: data.get("category")?.toString(),
         refreshDelay: data.get("refresh-delay")?.toString() || "DAILY_AT_NOON",
         articleRetentionTime: Number(data.get("retention-time")),
         tags: /** @type {string[]} */ (data.getAll("tags")),
@@ -628,11 +631,10 @@ const getPageUrlFromTab = (tab) => {
 
 /**
  * @param {Article} article
- * @param {Tag[]} tags
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const savedArticleSuccess = (article, tags) => {
-  displayArticle(article, tags);
+const savedArticleSuccess = async (article) => {
+  await displayArticle(article);
 };
 
 /**
@@ -734,11 +736,10 @@ const setupArticleActions = (articleId) => {
 
 /**
  * @param {Article} article
- * @param {Tag[]} tags
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const updatedArticleSuccess = (article, tags) => {
-  displayArticle(article, tags);
+const updatedArticleSuccess = async (article) => {
+  await displayArticle(article);
 };
 
 /**
@@ -755,22 +756,18 @@ const subscribeToFeed = (link) => {
 
 /**
  * @param {Feed} feed
- * @param {Tag[]} tags
- * @param {Category[]} categories
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const feedSubscriptionSuccess = (feed, tags, categories) => {
-  displayFeed(feed, tags, categories);
+const feedSubscriptionSuccess = async (feed) => {
+  await displayFeed(feed);
 };
 
 /**
  * @param {Feed} feed
- * @param {Tag[]} tags
- * @param {Category[]} categories
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const updatedFeedSuccess = (feed, tags, categories) => {
-  displayFeed(feed, tags, categories);
+const updatedFeedSuccess = async (feed) => {
+  await displayFeed(feed);
 };
 
 /**
@@ -785,7 +782,7 @@ const sendMessage = async (message) => {
     }
 
     const response = await chrome.runtime.sendMessage(message);
-    onMessage(response);
+    await onMessage(response);
   } catch (err) {
     hideLoader();
     displayErrorMessage(getErrorMessage(err, "An unexpected error occurred."));

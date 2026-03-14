@@ -75,8 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     <select id="saved-article-tags"
                             name="tags"
                             class="form-select"
-                            multiple
-                            data-allow-new="true">
+                            multiple>
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>
@@ -161,7 +160,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <form id="update-feed-form">
                 <div class="mb-3">
                     <label for="feed-category" class="form-label">Category</label>
-                    <select id="feed-category" name="category" class="form-select"></select>
+                    <select id="feed-category" name="category" class="form-select" data-allow-new="false">
+                        <option hidden value="">Choose a category...</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label for="feed-refresh-delay" class="form-label">Refresh delay</label>
@@ -195,8 +196,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     <select id="feed-tags"
                             name="tags"
                             class="form-select"
-                            multiple
-                            data-allow-new="true">
+                            multiple>
                         <option disabled hidden value="">Choose a tag...</option>
                     </select>
                 </div>

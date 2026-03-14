@@ -8,13 +8,21 @@
  * @typedef {Object} Tag
  * @property {string} slug
  * @property {string} title
- * @property {Tag[]} sub_tags
+ * @property {Tag[]} [hierarchy]
+ */
+
+/**
+ * @typedef {Object} AutocompleteElement
+ * @property {string} value
+ * @property {string} label
+ * @property {Tag[]} [hierarchy]
  */
 
 /**
  * @typedef {Object} Category
  * @property {number} id
  * @property {string} title
+ * @property {string} slug
  */
 
 /**
@@ -73,7 +81,7 @@
 
 /**
  * @typedef {Object} UpdateFeedPayload
- * @property {number | null} [categoryId]
+ * @property {string} [category]
  * @property {string[]} [tags]
  * @property {string} [refreshDelay]
  * @property {number} [articleRetentionTime]
