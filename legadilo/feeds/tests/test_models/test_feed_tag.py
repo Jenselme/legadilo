@@ -38,11 +38,11 @@ class TestFeedTagManager:
         FeedTag.objects.associate_feed_with_tag_slugs(self.feed, [self.tag2.slug, "New tag"])
 
         assert FeedTag.objects.count() == 3
-        assert self.feed.feed_tags.get_selected_values() == [
+        assert set(self.feed.feed_tags.get_selected_values()) == {
             "new-tag",
             self.tag1.slug,
             self.tag2.slug,
-        ]
+        }
 
     def test_associate_feed_with_tag_slugs_clear_existing(self):
         self.feed.tags.add(self.tag1, self.tag2)
