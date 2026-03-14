@@ -3,6 +3,7 @@
   "items": [
     {
       "description": "",
+      "details_url": "http://testserver/reading/articles-groups/1-some-group/",
       "id": 1,
       "slug": "some-group",
       "tags": [

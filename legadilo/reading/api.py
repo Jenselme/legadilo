@@ -14,6 +14,7 @@ from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import field_serializer, model_validator
 from pydantic.json_schema import SkipJsonSchema
+from pydantic_core.core_schema import SerializationInfo
 
 from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.core.utils.validators import (
@@ -49,7 +50,18 @@ class OutCommentSchema(ModelSchema):
 
 
 class OutArticlesGroupSchema(ModelSchema):
+    details_url: str
     tags: list[OutTagSchema]
+
+    @staticmethod
+    def resolve_details_url(obj, context) -> str:
+        if obj is None:
+            return ""
+
+        url = reverse(
+            "reading:articles_group_details", kwargs={"group_id": obj.id, "group_slug": obj.slug}
+        )
+        return context["request"].build_absolute_uri(url)
 
     class Meta:
         model = ArticlesGroup
@@ -70,13 +82,15 @@ class OutArticleSchema(ModelSchema):
         return context["request"].build_absolute_uri(url)
 
     @field_serializer("group")
-    def group_serializer(self, value: int | None) -> OutArticlesGroupSchema | None:
+    def group_serializer(
+        self, value: int | None, info: SerializationInfo
+    ) -> OutArticlesGroupSchema | None:
         # Workaround for https://github.com/vitalik/django-ninja/issues/1580
         if value is None:
             return None
 
         group = ArticlesGroup.objects.get(id=value)
-        return OutArticlesGroupSchema.model_validate(group)
+        return OutArticlesGroupSchema.model_validate(group, context=info.context)
 
     class Meta:
         model = Article
