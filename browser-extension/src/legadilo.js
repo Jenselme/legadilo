@@ -196,14 +196,16 @@ const ensureIsAuthenticated = async () => {
  * @returns {Promise<void>}
  */
 const getNewAccessToken = async (options) => {
-  const data = await doFetch("/api/users/tokens/", {
+  const resp = await fetch(mergeUrlFragments(options.instanceUrl, "/api/users/tokens/"), {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email: options.userEmail,
       application_token_uuid: options.tokenId,
       application_token_secret: options.tokenSecret,
     }),
   });
+  const data = await resp.json();
   await chrome.storage.local.set({ accessToken: data.access_token });
 };
 
