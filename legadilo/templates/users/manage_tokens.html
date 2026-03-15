@@ -25,10 +25,10 @@
                     {% endblocktranslate %}
                     <ul>
                         <li>
-                            Token id: <pre>{{ new_application_token.uuid }}</pre>
+                            {% translate "Token id:" %} <pre>{{ new_application_token.uuid }}</pre>
                         </li>
                         <li>
-                            Token secret: <pre>{{ new_application_token_secret }}</pre>
+                            {% translate "Token secret:" %}<pre>{{ new_application_token_secret }}</pre>
                         </li>
                     </ul>
                 </p>
