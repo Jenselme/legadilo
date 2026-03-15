@@ -870,3 +870,12 @@ const askConfirmation = (message) => {
 
   return deferred;
 };
+
+export const __test__ = {
+  getFeedNodes,
+  getCanonicalUrl,
+  getFeedHref,
+  buildFullUrl,
+  tagsToAutocompleteItems,
+  getPageUrlFromTab,
+};

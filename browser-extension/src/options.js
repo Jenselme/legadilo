@@ -126,6 +126,8 @@ const askConfirmation = () => {
   return deferred;
 };
 
+export const __test__ = { displayMessage, setOptions };
+
 addEventListener("DOMContentLoaded", async () => {
   applyI18n();
   await restoreOptions();

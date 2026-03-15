@@ -5,7 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { html, mergeUrlFragments, mustJwtBeRenewed } from "./utils.js";
+import { getErrorMessage, html, mergeUrlFragments, mustJwtBeRenewed } from "./utils.js";
 
 /**
  * @param {{ exp?: number; sub?: string; }} payload
@@ -113,6 +113,24 @@ describe("html", () => {
     document.body.innerHTML = html`<p id="test">${"<b>safe</b>"}</p>`;
     const p = document.getElementById("test");
     expect(p?.textContent).toBe("<b>safe</b>");
+  });
+});
+
+describe("getErrorMessage", () => {
+  it("should return the error message when given an Error instance", () => {
+    expect(getErrorMessage(new Error("something went wrong"))).toBe("something went wrong");
+  });
+
+  it("should return the fallback when err is not an Error and a fallback is provided", () => {
+    expect(getErrorMessage("raw string", "fallback message")).toBe("fallback message");
+  });
+
+  it("should return String(err) when err is not an Error and no fallback is provided", () => {
+    expect(getErrorMessage(42)).toBe("42");
+  });
+
+  it("should return String(err) for a plain object with no fallback", () => {
+    expect(getErrorMessage({ code: 500 })).toBe("[object Object]");
   });
 });
 
