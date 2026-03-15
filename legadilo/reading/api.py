@@ -31,6 +31,7 @@ from legadilo.reading.services.article_fetching import (
     build_article_data_from_content,
     fetch_article_data,
 )
+from legadilo.reading.services.articles_groups import update_article_group
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
 
@@ -179,7 +180,7 @@ def _get_group(user: User, group_id: int | str | None) -> ArticlesGroup | None:
         return ArticlesGroup.objects.get(id=group_id, user=user)
     except ArticlesGroup.DoesNotExist as e:
         raise NinjaValidationError([
-            {"group_id": f"Failed to find the category with id: {group_id}"}
+            {"group_id": f"Failed to find the group with id: {group_id}"}
         ]) from e
 
 
@@ -254,11 +255,11 @@ def update_article_view(
         _update_article_tags(request.auth, article, payload.tags)
 
     excluded_fields = {"tags"}
-    if payload.group_id:
+    if not isinstance(payload.group_id, NotSet):
         excluded_fields.add("group_id")
-        group = _get_group(request.auth, payload.group_id)  # type: ignore[arg-type]
-        article.group = group
-        article.save(update_fields=["group"])
+        # Use get group to check if the group exists and return the proper error message if not.
+        group = _get_group(request.auth, payload.group_id)
+        update_article_group(article, group.slug if group else None)
 
     update_model_from_schema(article, payload, excluded_fields=excluded_fields)
 

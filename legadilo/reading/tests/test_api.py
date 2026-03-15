@@ -534,12 +534,12 @@ class TestUpdateArticleView:
     @pytest.mark.parametrize(
         ("group_id_attr", "nb_requests"),
         [
-            pytest.param("id", 16, id="group_id"),
-            pytest.param("slug", 18, id="group_slug"),
+            pytest.param("id", 25, id="group_id"),
+            pytest.param("slug", 27, id="group_slug"),
         ],
     )
     def test_update_with_group(
-        self, logged_in_sync_client, django_assert_num_queries, snapshot, group_id_attr, nb_requests
+        self, logged_in_sync_client, django_assert_num_queries, group_id_attr, nb_requests
     ):
         group = ArticlesGroupFactory(user=self.article.user, title="Some group")
 
@@ -556,14 +556,23 @@ class TestUpdateArticleView:
         self.article.refresh_from_db()
         assert self.article.group == group
 
-    def test_update_unlink_from_group(
-        self, logged_in_sync_client, django_assert_num_queries, snapshot
-    ):
+    def test_update_with_group_invalid_id(self, logged_in_sync_client, django_assert_num_queries):
+        response = logged_in_sync_client.patch(
+            self.url,
+            {
+                "group_id": 1,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
+
+    def test_update_unlink_from_group(self, logged_in_sync_client, django_assert_num_queries):
         group = ArticlesGroupFactory(user=self.article.user, title="Some group")
         self.article.group = group
         self.article.save()
 
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(15):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
