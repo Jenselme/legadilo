@@ -76,6 +76,14 @@ path = [
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
 
+# Browser extension translations
+[[annotations]]
+path = [
+    "browser-extension/src/_locales/**/*.json"
+]
+SPDX-FileCopyrightText = "Legadilo contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
 # Various technical files.
 [[annotations]]
 path = [

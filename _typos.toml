@@ -2,6 +2,7 @@
 extend-exclude = [
     "*.po",
     "LICENSES/*",
+    "messages.json",
 ]
 
 [default]

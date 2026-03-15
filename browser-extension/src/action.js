@@ -13,6 +13,7 @@
 
 import Tags from "./vendor/tags.js";
 import { getErrorMessage, html, mergeUrlFragments } from "./utils.js";
+import { applyI18n } from "./i18n.js";
 import { listArticles, listEnabledFeeds, loadOptions } from "./legadilo.js";
 import {
   getDialogById,
@@ -57,6 +58,7 @@ let port;
 const isFirefox = typeof browser === "object";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  applyI18n();
   connectToPort();
 
   hideLoader();
@@ -179,7 +181,7 @@ const displayActionsSelector = async () => {
   try {
     savedArticles = (await listArticles({ articleUrls })).items;
   } catch (err) {
-    displayErrorMessage(getErrorMessage(err, "Failed to list saved articles."));
+    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("failedToListArticles")));
     return;
   }
   /** @type {string[]} */
@@ -187,7 +189,7 @@ const displayActionsSelector = async () => {
   try {
     subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
   } catch (err) {
-    displayErrorMessage(getErrorMessage(err, "Failed to list enabled feeds."));
+    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("failedToListFeeds")));
     return;
   }
   hideLoader();
@@ -209,7 +211,11 @@ const displayActionsSelector = async () => {
         feedTitle = `${hostname} (${feedType})`;
       }
       const subscribedIcon = subscribedFeedUrls.includes(feedHrefs[i])
-        ? html`<svg class="bi" role="img" aria-label="Already subscribed to this feed">
+        ? html`<svg
+            class="bi"
+            role="img"
+            aria-label="${chrome.i18n.getMessage("alreadySubscribedToFeed")}"
+          >
             <use href="./bs-sprite.svg#rss-fill"></use>
           </svg>`
         : "";
@@ -535,14 +541,14 @@ const setupFeedActions = (feedId) => {
     () =>
       updateFeed({
         disabledAt: new Date().toISOString(),
-        disabledReason: "Disable manually in the browser extension",
+        disabledReason: chrome.i18n.getMessage("disabledManually"),
       }),
     { signal },
   );
   getElementById("delete-feed").addEventListener(
     "click",
     async () => {
-      const confirmed = await askConfirmation("Are you sure you want to delete this feed?");
+      const confirmed = await askConfirmation(chrome.i18n.getMessage("confirmDeleteFeed"));
       if (confirmed) deleteFeed();
     },
     { signal },
@@ -747,7 +753,7 @@ const setupArticleActions = (articleId) => {
   getElementById("delete-article").addEventListener(
     "click",
     async () => {
-      const confirmed = await askConfirmation("Are you sure you want to delete this article?");
+      const confirmed = await askConfirmation(chrome.i18n.getMessage("confirmDeleteArticle"));
       if (confirmed) deleteArticle();
     },
     { signal },
@@ -814,7 +820,7 @@ const sendMessage = async (message) => {
     await onMessage(response);
   } catch (err) {
     hideLoader();
-    displayErrorMessage(getErrorMessage(err, "An unexpected error occurred."));
+    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("unexpectedError")));
   }
 };
 

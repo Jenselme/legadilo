@@ -1,0 +1,203 @@
+{
+  "extensionName": {
+    "message": "Legadilo"
+  },
+  "extensionDescription": {
+    "message": "Open the legadilo browser extension to easily subscribe to feeds & save articles in Legadilo"
+  },
+  "loading": {
+    "message": "Loading..."
+  },
+  "saveThisArticle": {
+    "message": "Save this article"
+  },
+  "articleAlreadySaved": {
+    "message": "Article already saved"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "articleTitle": {
+    "message": "Article title"
+  },
+  "readingTime": {
+    "message": "Reading time"
+  },
+  "group": {
+    "message": "Group"
+  },
+  "chooseGroup": {
+    "message": "Choose a group..."
+  },
+  "tags": {
+    "message": "Tags"
+  },
+  "chooseTag": {
+    "message": "Choose a tag..."
+  },
+  "update": {
+    "message": "Update"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "deleteArticle": {
+    "message": "Delete article"
+  },
+  "markAsFavorite": {
+    "message": "Mark as favorite"
+  },
+  "unmarkAsFavorite": {
+    "message": "Unmark as favorite"
+  },
+  "markAsForLater": {
+    "message": "Mark as for later"
+  },
+  "unmarkAsForLater": {
+    "message": "Unmark as for later"
+  },
+  "openArticleDetails": {
+    "message": "Open article details"
+  },
+  "openGroupDetails": {
+    "message": "Open group details"
+  },
+  "markAsRead": {
+    "message": "Mark as read"
+  },
+  "markAsUnread": {
+    "message": "Mark as unread"
+  },
+  "category": {
+    "message": "Category"
+  },
+  "chooseCategory": {
+    "message": "Choose a category..."
+  },
+  "refreshDelay": {
+    "message": "Refresh delay"
+  },
+  "refreshDelayHourly": {
+    "message": "Hourly"
+  },
+  "refreshDelayBihourly": {
+    "message": "Bihourly"
+  },
+  "refreshDelayEveryMorning": {
+    "message": "Every Morning"
+  },
+  "refreshDelayDailyAtNoon": {
+    "message": "Daily at Noon"
+  },
+  "refreshDelayEveryEvening": {
+    "message": "Every Evening"
+  },
+  "refreshDelayOnMondays": {
+    "message": "On Mondays"
+  },
+  "refreshDelayOnThursdays": {
+    "message": "On Thursdays"
+  },
+  "refreshDelayOnSaturdays": {
+    "message": "On Saturdays"
+  },
+  "refreshDelayOnSundays": {
+    "message": "On Sundays"
+  },
+  "refreshDelayTwiceAWeek": {
+    "message": "Twice a week"
+  },
+  "refreshDelayFirstDayOfMonth": {
+    "message": "First Day of the Month"
+  },
+  "refreshDelayMiddleOfMonth": {
+    "message": "Middle Day of the Month"
+  },
+  "refreshDelayEndOfMonth": {
+    "message": "End of the Month"
+  },
+  "refreshDelayThriceAMonth": {
+    "message": "Thrice a month"
+  },
+  "articleRetentionPeriod": {
+    "message": "Article retention period in days (0 for infinity)"
+  },
+  "deleteFeed": {
+    "message": "Delete feed"
+  },
+  "openFeed": {
+    "message": "Open feed"
+  },
+  "enable": {
+    "message": "Enable"
+  },
+  "disable": {
+    "message": "Disable"
+  },
+  "anErrorOccurred": {
+    "message": "An error occurred"
+  },
+  "doYouConfirm": {
+    "message": "Do you confirm?"
+  },
+  "no": {
+    "message": "No"
+  },
+  "yes": {
+    "message": "Yes"
+  },
+  "alreadySubscribedToFeed": {
+    "message": "Already subscribed to this feed"
+  },
+  "failedToListArticles": {
+    "message": "Failed to list saved articles."
+  },
+  "failedToListFeeds": {
+    "message": "Failed to list enabled feeds."
+  },
+  "unexpectedError": {
+    "message": "An unexpected error occurred."
+  },
+  "confirmDeleteArticle": {
+    "message": "Are you sure you want to delete this article?"
+  },
+  "confirmDeleteFeed": {
+    "message": "Are you sure you want to delete this feed?"
+  },
+  "disabledManually": {
+    "message": "Disable manually in the browser extension"
+  },
+  "optionsPageTitle": {
+    "message": "Legadilo Options"
+  },
+  "instanceUrl": {
+    "message": "Instance URL"
+  },
+  "email": {
+    "message": "Email"
+  },
+  "tokenId": {
+    "message": "Token id"
+  },
+  "tokenSecret": {
+    "message": "Token secret"
+  },
+  "test": {
+    "message": "Test"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "resetToDefault": {
+    "message": "Reset to default"
+  },
+  "optionsSaved": {
+    "message": "Options saved."
+  },
+  "credentialsValid": {
+    "message": "Instance URL and token are valid"
+  },
+  "credentialsInvalid": {
+    "message": "Failed to connect with supplied URL and tokens"
+  }
+}

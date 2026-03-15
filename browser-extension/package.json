@@ -9,10 +9,11 @@
   },
   "scripts": {
     "postinstall": "./copy-vendors.js",
-    "build": "web-ext build --overwrite-dest --source-dir src",
+    "build": "web-ext build --overwrite-dest --source-dir src --ignore-files=src/*.test.js",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "extract-i18n": "node scripts/extract-i18n.js"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.37",

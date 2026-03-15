@@ -6,6 +6,7 @@
 
 import { DEFAULT_OPTIONS, loadOptions, storeOptions, testCredentials } from "./legadilo.js";
 import { getDialogById, getElementById, getFormById, getInputById } from "./typing-utils.js";
+import { applyI18n } from "./i18n.js";
 
 /**
  * @param {SubmitEvent} event
@@ -23,7 +24,7 @@ const saveOptions = async (event) => {
   });
 
   // Update status to let user know options were saved.
-  displayMessage("Options saved.");
+  displayMessage(chrome.i18n.getMessage("optionsSaved"));
 };
 
 /**
@@ -81,9 +82,9 @@ const testOptions = async () => {
       tokenSecret: /** @type {string} */ (data.get("token-secret")),
     })
   ) {
-    displayMessage("Instance URL and token are valid");
+    displayMessage(chrome.i18n.getMessage("credentialsValid"));
   } else {
-    displayMessage("Failed to connect with supplied URL and tokens");
+    displayMessage(chrome.i18n.getMessage("credentialsInvalid"));
   }
 };
 
@@ -126,6 +127,7 @@ const askConfirmation = () => {
 };
 
 addEventListener("DOMContentLoaded", async () => {
+  applyI18n();
   await restoreOptions();
   const optionsForm = getFormById("options-form");
   optionsForm.addEventListener("submit", saveOptions);
