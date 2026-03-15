@@ -7,7 +7,7 @@ from http import HTTPStatus
 from operator import xor
 from typing import Annotated, Self
 
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import ModelSchema, Query, Router, Schema
@@ -94,7 +94,11 @@ class FeedSubscription(Schema):
     feed_url: Annotated[str, ValidUrlValidator]
     refresh_delay: constants.FeedRefreshDelays = constants.FeedRefreshDelays.DAILY_AT_NOON
     article_retention_time: int = 0
-    category_id: int | None = None
+    category_id: int | str | None = Field(
+        description="Id (int) or (slug) of the category. Leave empty or set to null to not link "
+        "the feed to any category",
+        default=None,
+    )
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
     open_original_url_by_default: bool = False
 
@@ -145,12 +149,17 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
     return status, Feed.objects.get_queryset().for_api().get(id=feed.id)
 
 
-def _get_category(user: User, category_id: int | None) -> FeedCategory | None:
+def _get_category(user: User, category_id: int | str | None) -> FeedCategory | None:
     if category_id is None:
         return None
 
+    if isinstance(category_id, str):
+        filter_ = models.Q(slug=category_id)
+    else:
+        filter_ = models.Q(id=category_id)
+
     try:
-        return FeedCategory.objects.get(id=category_id, user=user)
+        return FeedCategory.objects.filter(filter_, user=user).get()
     except FeedCategory.DoesNotExist as e:
         raise NinjaValidationError([
             {"category_id": f"We failed to find the category with id: {category_id}"}
@@ -170,7 +179,7 @@ def get_feed_view(request: AuthenticatedApiRequest, feed_id: int):
 class FeedUpdate(Schema):
     disabled_reason: CleanedString | SkipJsonSchema[NotSet] | None = NotSet(str)
     disabled_at: datetime | SkipJsonSchema[NotSet] | None = NotSet(datetime.now)
-    category_id: int | SkipJsonSchema[NotSet] | None = NotSet(int)
+    category_id: int | str | SkipJsonSchema[NotSet] | None = NotSet(int)
     tags: (
         Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] | SkipJsonSchema[NotSet]
     ) = NotSet(tuple)
@@ -198,6 +207,7 @@ class FeedUpdate(Schema):
 @feeds_api_router.patch(
     "/{int:feed_id}/", response=OutFeedSchema, url_name="update_feed", summary="Update a feed"
 )
+@transaction.atomic()
 def update_feed_view(
     request: AuthenticatedApiRequest,
     feed_id: int,
@@ -209,8 +219,15 @@ def update_feed_view(
     if not isinstance(payload.tags, NotSet):
         _update_feed_tags(request.auth, feed, payload.tags)
 
+    excluded_fields = {"tags"}
+    if payload.category_id:
+        excluded_fields.add("category_id")
+        category = _get_category(request.auth, payload.category_id)  # type: ignore[arg-type]
+        feed.category = category
+        feed.save(update_fields=["category"])
+
     # We must refresh to update generated fields & tags.
-    update_model_from_schema(feed, payload, excluded_fields={"tags"})
+    update_model_from_schema(feed, payload, excluded_fields=excluded_fields)
 
     return Feed.objects.get_queryset().for_api().get(id=feed_id)
 

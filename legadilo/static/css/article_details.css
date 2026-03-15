@@ -129,7 +129,7 @@ hr.article-separator {
 
   img,
   figure {
-    page-break-inside: auto;
+    break-inside: auto;
     clear: both;
     float: none;
   }

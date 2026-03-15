@@ -23,8 +23,7 @@ class TestTagAutocompleteView:
     def test_not_logged_in(self, client):
         response = client.get(self.url)
 
-        assert response.status_code == HTTPStatus.FOUND
-        assert response["Location"] == reverse("account_login") + f"?next={self.url}"
+        assert response.status_code == HTTPStatus.FORBIDDEN
 
     def test_other_user(self, logged_in_other_user_sync_client):
         response = logged_in_other_user_sync_client.get(self.url, data={"query": "tag"})

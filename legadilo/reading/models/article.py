@@ -456,7 +456,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
         return self.filter(filters)
 
     def for_api(self):
-        return self.prefetch_related("tags")
+        return self.prefetch_related("tags", "group__tags").select_related("group")
 
 
 class ArticleManager(models.Manager["Article"]):
@@ -572,6 +572,7 @@ class ArticleManager(models.Manager["Article"]):
                 "slug",
                 "summary",
                 "content",
+                "content_type",
                 "table_of_content",
                 "reading_time",
                 "authors",
@@ -965,11 +966,19 @@ class Article(models.Model):
     )
     main_source_title = models.CharField(max_length=constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)
     main_feed = models.ForeignKey(
-        "feeds.Feed", related_name="articles_main_feed", on_delete=models.SET_NULL, null=True
+        "feeds.Feed",
+        related_name="articles_main_feed",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     group = models.ForeignKey(
-        "reading.ArticlesGroup", related_name="articles", on_delete=models.SET_NULL, null=True
+        "reading.ArticlesGroup",
+        related_name="articles",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     group_order = models.PositiveIntegerField(default=0, help_text=_("Order in the group"))
 

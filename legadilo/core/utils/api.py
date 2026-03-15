@@ -29,6 +29,9 @@ class NotSet:
             ),
         )
 
+    def __bool__(self):
+        return False
+
 
 def update_model_from_schema(
     model: Model,

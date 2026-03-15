@@ -9,10 +9,12 @@ from typing import Annotated, Self
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Query, Router, Schema
+from ninja import Field, ModelSchema, Query, Router, Schema
+from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import model_validator
+from pydantic import field_serializer, model_validator
 from pydantic.json_schema import SkipJsonSchema
+from pydantic_core.core_schema import SerializationInfo
 
 from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
 from legadilo.core.utils.validators import (
@@ -25,9 +27,11 @@ from legadilo.reading.models import Article, ArticlesGroup, ArticleTag, Comment,
 from legadilo.reading.models.article import ArticleFullTextSearchQuery
 from legadilo.reading.services.article_fetching import (
     FetchArticleResult,
+    Language,
     build_article_data_from_content,
     fetch_article_data,
 )
+from legadilo.reading.services.articles_groups import update_article_group
 from legadilo.users.models import User
 from legadilo.users.user_types import AuthenticatedApiRequest
 
@@ -46,10 +50,30 @@ class OutCommentSchema(ModelSchema):
         fields = ("text", "created_at", "updated_at")
 
 
+class OutArticlesGroupSchema(ModelSchema):
+    details_url: str
+    tags: list[OutTagSchema]
+
+    @staticmethod
+    def resolve_details_url(obj, context) -> str:
+        if obj is None:
+            return ""
+
+        url = reverse(
+            "reading:articles_group_details", kwargs={"group_id": obj.id, "group_slug": obj.slug}
+        )
+        return context["request"].build_absolute_uri(url)
+
+    class Meta:
+        model = ArticlesGroup
+        exclude = ("user", "created_at", "updated_at")
+
+
 class OutArticleSchema(ModelSchema):
     tags: list[OutTagSchema]
     comments: list[OutCommentSchema]
     details_url: str
+    group: OutArticlesGroupSchema | None
 
     @staticmethod
     def resolve_details_url(obj, context) -> str:
@@ -57,6 +81,17 @@ class OutArticleSchema(ModelSchema):
             "reading:article_details", kwargs={"article_id": obj.id, "article_slug": obj.slug}
         )
         return context["request"].build_absolute_uri(url)
+
+    @field_serializer("group")
+    def group_serializer(
+        self, value: int | None, info: SerializationInfo
+    ) -> OutArticlesGroupSchema | None:
+        # Workaround for https://github.com/vitalik/django-ninja/issues/1580
+        if value is None:
+            return None
+
+        group = ArticlesGroup.objects.get(id=value)
+        return OutArticlesGroupSchema.model_validate(group, context=info.context)
 
     class Meta:
         model = Article
@@ -70,8 +105,20 @@ class ArticleCreation(Schema):
     # data (like authors, canonicals…). It will be sanitized later when we extract the actual
     # content of the article.
     content: str = ""
+    language: Language = ""
     content_type: ContentType = "text/html"
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
+    group_id: int | str | None = Field(
+        default=None,
+        description="Id (int) or slug (str) of the group. Leave empty or set to null to not link "
+        "the article to any group",
+    )
+    must_extract_content: bool = Field(
+        default=True,
+        description="Whether to extract content. It must be true if content is the full HTML of "
+        "the page to let the backend extract the content of the article. It must be false if "
+        "content is the extracted content of the article and must be saved directly.",
+    )
 
     @model_validator(mode="after")
     def check_title_and_content(self) -> Self:
@@ -110,6 +157,8 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
             [fetch_article_result],
             tags,
         )
+        if group := _get_group(request.auth, payload.group_id):
+            Article.objects.link_articles_to_group(group, [save_results[0].article])
 
     save_result = save_results[0]
     article = Article.objects.get_queryset().for_api().get(id=save_result.article.id)
@@ -120,6 +169,21 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     return HTTPStatus.OK, article
 
 
+def _get_group(user: User, group_id: int | str | None) -> ArticlesGroup | None:
+    if group_id is None:
+        return None
+
+    if isinstance(group_id, str):
+        return ArticlesGroup.objects.get_or_create_from_slug(user, group_id)
+
+    try:
+        return ArticlesGroup.objects.get(id=group_id, user=user)
+    except ArticlesGroup.DoesNotExist as e:
+        raise NinjaValidationError([
+            {"group_id": f"Failed to find the group with id: {group_id}"}
+        ]) from e
+
+
 def _get_article_data(payload: ArticleCreation) -> FetchArticleResult:
     if payload.has_data:
         article_data = build_article_data_from_content(
@@ -127,6 +191,8 @@ def _get_article_data(payload: ArticleCreation) -> FetchArticleResult:
             title=payload.title,
             content=payload.content,
             content_type=payload.content_type,
+            content_language=payload.language,
+            must_extract_content=payload.must_extract_content,
         )
         return FetchArticleResult(article_data=article_data)
     return fetch_article_data(payload.url)
@@ -160,6 +226,11 @@ class ArticleUpdate(Schema):
     tags: (
         Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] | SkipJsonSchema[NotSet]
     ) = NotSet(tuple)
+    group_id: int | str | NotSet | None = Field(
+        default=NotSet(int),
+        description="Id (int) or slug (str) of the group. Leave empty or set to null to not link "
+        "the article to any group",
+    )
     read_at: datetime | SkipJsonSchema[NotSet] | None = NotSet(datetime.now)
     is_favorite: bool | SkipJsonSchema[NotSet] = NotSet(bool)
     is_for_later: bool | SkipJsonSchema[NotSet] = NotSet(bool)
@@ -172,6 +243,7 @@ class ArticleUpdate(Schema):
     url_name="update_article",
     summary="Update an article",
 )
+@transaction.atomic()
 def update_article_view(
     request: AuthenticatedApiRequest,
     article_id: int,
@@ -182,7 +254,14 @@ def update_article_view(
     if not isinstance(payload.tags, NotSet):
         _update_article_tags(request.auth, article, payload.tags)
 
-    update_model_from_schema(article, payload, excluded_fields={"tags"})
+    excluded_fields = {"tags"}
+    if not isinstance(payload.group_id, NotSet):
+        excluded_fields.add("group_id")
+        # Use get group to check if the group exists and return the proper error message if not.
+        group = _get_group(request.auth, payload.group_id)
+        update_article_group(article, group.slug if group else None)
+
+    update_model_from_schema(article, payload, excluded_fields=excluded_fields)
 
     return Article.objects.get_queryset().for_api().get(id=article_id)
 
@@ -220,14 +299,6 @@ class OutTagWithHierarchySchema(OutTagSchema):
 @paginate
 def list_tags_view(request: AuthenticatedApiRequest):
     return Tag.objects.get_queryset().for_user(request.auth).for_api()
-
-
-class OutArticlesGroupSchema(ModelSchema):
-    tags: list[OutTagSchema]
-
-    class Meta:
-        model = ArticlesGroup
-        exclude = ("user", "created_at", "updated_at")
 
 
 @reading_api_router.get(

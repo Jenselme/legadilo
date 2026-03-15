@@ -1,0 +1,203 @@
+{
+  "extensionName": {
+    "message": "Legadilo"
+  },
+  "extensionDescription": {
+    "message": "Ouvrez l'extension navigateur Legadilo pour vous abonner facilement à des flux et enregistrer des articles dans Legadilo"
+  },
+  "loading": {
+    "message": "Chargement..."
+  },
+  "saveThisArticle": {
+    "message": "Enregistrer cet article"
+  },
+  "articleAlreadySaved": {
+    "message": "Article déjà enregistré"
+  },
+  "back": {
+    "message": "Retour"
+  },
+  "articleTitle": {
+    "message": "Titre de l'article"
+  },
+  "readingTime": {
+    "message": "Temps de lecture"
+  },
+  "group": {
+    "message": "Groupe"
+  },
+  "chooseGroup": {
+    "message": "Choisir un groupe..."
+  },
+  "tags": {
+    "message": "Étiquettes"
+  },
+  "chooseTag": {
+    "message": "Choisir une étiquette..."
+  },
+  "update": {
+    "message": "Mettre à jour"
+  },
+  "delete": {
+    "message": "Supprimer"
+  },
+  "deleteArticle": {
+    "message": "Supprimer l'article"
+  },
+  "markAsFavorite": {
+    "message": "Marquer comme favori"
+  },
+  "unmarkAsFavorite": {
+    "message": "Retirer des favoris"
+  },
+  "markAsForLater": {
+    "message": "Marquer pour plus tard"
+  },
+  "unmarkAsForLater": {
+    "message": "Retirer de « pour plus tard »"
+  },
+  "openArticleDetails": {
+    "message": "Ouvrir les détails de l'article"
+  },
+  "openGroupDetails": {
+    "message": "Ouvrir les détails du groupe"
+  },
+  "markAsRead": {
+    "message": "Marquer comme lu"
+  },
+  "markAsUnread": {
+    "message": "Marquer comme non lu"
+  },
+  "category": {
+    "message": "Catégorie"
+  },
+  "chooseCategory": {
+    "message": "Choisir une catégorie..."
+  },
+  "refreshDelay": {
+    "message": "Délai d’actualisation"
+  },
+  "refreshDelayHourly": {
+    "message": "Toutes les heures"
+  },
+  "refreshDelayBihourly": {
+    "message": "Toutes les deux heures"
+  },
+  "refreshDelayEveryMorning": {
+    "message": "Chaque matin"
+  },
+  "refreshDelayDailyAtNoon": {
+    "message": "Tous les jours à midi"
+  },
+  "refreshDelayEveryEvening": {
+    "message": "Chaque soir"
+  },
+  "refreshDelayOnMondays": {
+    "message": "Le lundi"
+  },
+  "refreshDelayOnThursdays": {
+    "message": "Le jeudi"
+  },
+  "refreshDelayOnSaturdays": {
+    "message": "Le samedi"
+  },
+  "refreshDelayOnSundays": {
+    "message": "Le dimanche"
+  },
+  "refreshDelayTwiceAWeek": {
+    "message": "Deux fois par semaine"
+  },
+  "refreshDelayFirstDayOfMonth": {
+    "message": "Premier jour du mois"
+  },
+  "refreshDelayMiddleOfMonth": {
+    "message": "Milieu du mois"
+  },
+  "refreshDelayEndOfMonth": {
+    "message": "Fin du mois"
+  },
+  "refreshDelayThriceAMonth": {
+    "message": "Trois fois par mois"
+  },
+  "articleRetentionPeriod": {
+    "message": "Durée de rétention des articles en jours (0 pour l'infini)"
+  },
+  "deleteFeed": {
+    "message": "Supprimer le flux"
+  },
+  "openFeed": {
+    "message": "Ouvrir le flux"
+  },
+  "enable": {
+    "message": "Activer"
+  },
+  "disable": {
+    "message": "Désactiver"
+  },
+  "anErrorOccurred": {
+    "message": "Une erreur s'est produite"
+  },
+  "doYouConfirm": {
+    "message": "Confirmez-vous ?"
+  },
+  "no": {
+    "message": "Non"
+  },
+  "yes": {
+    "message": "Oui"
+  },
+  "alreadySubscribedToFeed": {
+    "message": "Déjà abonné à ce flux"
+  },
+  "failedToListArticles": {
+    "message": "Impossible de récupérer les articles enregistrés."
+  },
+  "failedToListFeeds": {
+    "message": "Impossible de récupérer les flux actifs."
+  },
+  "unexpectedError": {
+    "message": "Une erreur inattendue s'est produite."
+  },
+  "confirmDeleteArticle": {
+    "message": "Voulez-vous vraiment supprimer cet article ?"
+  },
+  "confirmDeleteFeed": {
+    "message": "Voulez-vous vraiment supprimer ce flux ?"
+  },
+  "disabledManually": {
+    "message": "Désactivé manuellement via l'extension navigateur"
+  },
+  "optionsPageTitle": {
+    "message": "Options de Legadilo"
+  },
+  "instanceUrl": {
+    "message": "URL de l'instance"
+  },
+  "email": {
+    "message": "E-mail"
+  },
+  "tokenId": {
+    "message": "Identifiant du jeton"
+  },
+  "tokenSecret": {
+    "message": "Secret du jeton"
+  },
+  "test": {
+    "message": "Tester"
+  },
+  "save": {
+    "message": "Enregistrer"
+  },
+  "resetToDefault": {
+    "message": "Réinitialiser"
+  },
+  "optionsSaved": {
+    "message": "Options enregistrées."
+  },
+  "credentialsValid": {
+    "message": "L'URL de l'instance et le jeton sont valides"
+  },
+  "credentialsInvalid": {
+    "message": "Impossible de se connecter avec l'URL et les jetons fournis"
+  }
+}

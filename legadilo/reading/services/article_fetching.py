@@ -216,9 +216,22 @@ def fetch_article_data(url: str) -> FetchArticleResult:
 
 
 def build_article_data_from_content(
-    *, url: str, title: str, content: str, content_type: ContentType
+    *,
+    url: str,
+    title: str,
+    content: str,
+    content_type: ContentType,
+    content_language: str = "",
+    must_extract_content: bool = True,
 ) -> ArticleData:
-    return _build_article_data(url, content, content_type=content_type, forced_title=title)
+    return _build_article_data(
+        url,
+        content,
+        content_type=content_type,
+        forced_title=title,
+        content_language=content_language,
+        must_extract_content=must_extract_content,
+    )
 
 
 def _get_page_content(url: str) -> tuple[str, str, ContentType, str | None]:
@@ -268,11 +281,12 @@ def _parse_http_equiv_refresh(value: str) -> str | None:
 
 def _build_article_data(
     fetched_url: str,
-    raw_content: str,
+    content: str,
     *,
     content_type: ContentType,
     content_language: str | None = None,
     forced_title: str | None = None,
+    must_extract_content: bool = True,
 ) -> ArticleData:
     if content_type == "text/plain":
         return ArticleData(
@@ -280,7 +294,7 @@ def _build_article_data(
             source_title=urlparse(fetched_url).netloc,
             title=forced_title or fetched_url,
             summary="",
-            content=raw_content,
+            content=content,
             content_type="text/plain",
             authors=(),
             contributors=(),
@@ -293,13 +307,14 @@ def _build_article_data(
             language=content_language or "",
         )
 
-    soup = BeautifulSoup(raw_content, "html.parser")
-    content = _get_content(soup)
+    soup = BeautifulSoup(content, "html.parser")
+    if must_extract_content:
+        content = _get_content(soup)
 
     return ArticleData(
         external_article_id="",
         source_title=_get_site_title(fetched_url, soup),
-        title=forced_title or _get_title(soup),
+        title=forced_title or _get_title(soup, fetched_url),
         summary=_get_summary(soup),
         content=content,
         content_type=content_type,
@@ -315,7 +330,7 @@ def _build_article_data(
     )
 
 
-def _get_title(soup) -> str:
+def _get_title(soup, fetched_url) -> str:
     title = ""
     if (og_title := soup.find("meta", attrs={"property": "og:title"})) and og_title.get("content"):
         title = og_title.get("content")
@@ -332,7 +347,7 @@ def _get_title(soup) -> str:
     elif (h1_tag := soup.find("h1")) and h1_tag.text:
         title = h1_tag.text
 
-    return title
+    return title or fetched_url
 
 
 def _get_site_title(fetched_url: str, soup) -> str:

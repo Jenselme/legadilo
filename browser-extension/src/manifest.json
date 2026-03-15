@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Legadilo",
+  "name": "__MSG_extensionName__",
   "version": "25.11.1",
+  "default_locale": "en",
 
-  "description": "Open the legadilo browser extension to easily subscribe to feeds & save articles in Legadilo",
+  "description": "__MSG_extensionDescription__",
 
   "icons": {
     "48": "icons/legadilo.48x48.png",
@@ -11,7 +12,7 @@
   },
 
   "action": {
-    "default_title": "Legadilo",
+    "default_title": "__MSG_extensionName__",
     "default_icon": "icons/legadilo.48x48.png",
     "default_popup": "action.html"
   },
@@ -29,6 +30,8 @@
 
   "permissions": [
     "activeTab",
+    "tabs",
+    "contextMenus",
     "scripting",
     "storage"
   ],

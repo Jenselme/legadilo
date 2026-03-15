@@ -6,6 +6,8 @@
 
 .bi {
   display: inline-block;
+  width: 1em;
+  height: 1em;
   vertical-align: -0.125em;
   fill: currentcolor;
 }
@@ -34,4 +36,8 @@ body,
 #loading-indicator {
   min-height: 350px;
   min-width: 300px;
+}
+
+[data-bs-theme="dark"] img.bi {
+  filter: invert(0.715);
 }

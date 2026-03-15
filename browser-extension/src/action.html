@@ -12,43 +12,50 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <link rel="stylesheet" type="text/css" href="./vendor/bootstrap.css" />
         <link rel="stylesheet" type="text/css" href="./action.css" />
         <script src="./vendor/bootstrap.js"></script>
+        <script src="./theme_chooser.js"></script>
     </head>
     <body>
-        <div id="loading-indicator-container">
+        <div id="loading-indicator-container" hidden>
             <div id="loading-indicator"
                  class="d-flex align-items-center justify-content-center">
                 <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden" data-i18n="loading">Loading...</span>
                 </div>
             </div>
         </div>
-        <div id="action-selector-container">
+        <div id="action-selector-container" hidden>
             <div id="choose-action-container" class="row row-cols-1 m-auto">
                 <button id="save-article-action-btn"
                         class="btn btn-primary mb-2 col"
                         type="button">
-                    Save this article
-                    <img id="article-already-saved"
-                         class="bi hidden"
-                         src="./vendor/bs-icons/save-fill.svg"
-                         alt="Article already saved" />
+                    <span data-i18n="saveThisArticle">Save this article</span>
+                    <span id="article-already-saved" hidden>
+                        <svg class="bi"
+                             role="img"
+                             data-i18n-aria-label="articleAlreadySaved"
+                             aria-label="Article already saved">
+                            <use href="./bs-sprite.svg#save-fill"></use>
+                        </svg>
+                    </span>
                 </button>
             </div>
             <div id="subscribe-to-feeds-container" class="row row-cols-1 m-auto"></div>
         </div>
-        <div id="article-container">
+        <div id="article-container" hidden>
             <button id="article-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
-                <img class="bi"
-                     src="./vendor/bs-icons/arrow-left.svg"
-                     alt="Go back button" />
-                Back
+                <svg class="bi" role="img"
+                     data-i18n-aria-label="back"
+                     aria-label="Back">
+                    <use href="./bs-sprite.svg#arrow-left"></use>
+                </svg>
+                <span data-i18n="back">Back</span>
             </button>
             <form id="update-saved-article-form">
                 <div class="mb-3">
                     <label for="saved-article-title" class="form-label">
-                        Article title <span>*</span>
+                        <span data-i18n="articleTitle">Article title</span> <span>*</span>
                     </label>
                     <input id="saved-article-title"
                            name="title"
@@ -57,7 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </div>
                 <div class="mb-3">
                     <label for="saved-article-reading-time" class="form-label">
-                        Reading time
+                        <span data-i18n="readingTime">Reading time</span>
                         <span>*</span>
                     </label>
                     <input id="saved-article-reading-time"
@@ -67,24 +74,34 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                            step="1" />
                 </div>
                 <div class="mb-3">
-                    <label for="saved-article-tags" class="form-label">Tags</label>
+                    <label for="saved-article-group" class="form-label" data-i18n="group">Group</label>
+                    <select id="saved-article-group" name="group" class="form-select" data-allow-new="true">
+                        <option hidden value="" data-i18n="chooseGroup">Choose a group...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="saved-article-tags" class="form-label" data-i18n="tags">Tags</label>
                     <select id="saved-article-tags"
                             name="tags"
                             class="form-select"
-                            multiple
-                            data-allow-new="true">
-                        <option disabled hidden value="">Choose a tag...</option>
+                            multiple>
+                        <option disabled hidden value="" data-i18n="chooseTag">Choose a tag...</option>
                     </select>
                 </div>
                 <div class="mb-3 d-flex justify-content-around">
                     <button id="update-saved-article"
                             class="btn btn-primary btn-sm"
-                            type="submit">Update</button>
+                            type="submit"
+                            data-i18n="update">Update</button>
                     <button class="btn btn-danger btn-sm"
                         type="button"
                         id="delete-article">
-                        <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete article" />
-                        Delete
+                        <svg class="bi" role="img"
+                             data-i18n-aria-label="deleteArticle"
+                             aria-label="Delete article">
+                            <use href="./bs-sprite.svg#trash"></use>
+                        </svg>
+                        <span data-i18n="delete">Delete</span>
                     </button>
                 </div>
             </form>
@@ -92,83 +109,122 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-favorite">
-                    <img class="bi" src="./vendor/bs-icons/star.svg" alt="Mark as favorite" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="markAsFavorite"
+                         aria-label="Mark as favorite">
+                        <use href="./bs-sprite.svg#star"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="unmark-article-as-favorite">
-                    <img class="bi"
-                         src="./vendor/bs-icons/star-fill.svg"
-                         alt="Unmark as favorite" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="unmarkAsFavorite"
+                         aria-label="Unmark as favorite">
+                        <use href="./bs-sprite.svg#star-fill"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-for-later">
-                    <img class="bi"
-                         src="./vendor/bs-icons/bookmark.svg"
-                         alt="Mark as for later" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="markAsForLater"
+                         aria-label="Mark as for later">
+                        <use href="./bs-sprite.svg#bookmark"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="unmark-article-as-for-later">
-                    <img class="bi"
-                         src="./vendor/bs-icons/bookmark-fill.svg"
-                         alt="Unmark as for later" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="unmarkAsForLater"
+                         aria-label="Unmark as for later">
+                        <use href="./bs-sprite.svg#bookmark-fill"></use>
+                    </svg>
                 </button>
                  <a id="open-article-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
+                   target="_blank"
                    href="">
-                    <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open article details" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="openArticleDetails"
+                         aria-label="Open article details">
+                        <use href="./bs-sprite.svg#eye"></use>
+                    </svg>
+                </a>
+                <a id="open-group-details"
+                   class="btn btn-outline-secondary btn-sm"
+                   role="button"
+                   target="_blank"
+                   href=""
+                   hidden>
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="openGroupDetails"
+                         aria-label="Open group details">
+                        <use href="./bs-sprite.svg#collection"></use>
+                    </svg>
                 </a>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-read">
-                    <img class="bi" src="./vendor/bs-icons/book.svg" alt="Mark as read" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="markAsRead"
+                         aria-label="Mark as read">
+                        <use href="./bs-sprite.svg#book"></use>
+                    </svg>
                 </button>
                 <button class="btn btn-outline-secondary btn-sm"
                         type="button"
                         id="mark-article-as-unread">
-                    <img class="bi" src="./vendor/bs-icons/book-fill.svg" alt="Mark as unread" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="markAsUnread"
+                         aria-label="Mark as unread">
+                        <use href="./bs-sprite.svg#book-fill"></use>
+                    </svg>
                 </button>
             </div>
         </div>
-        <div id="feed-container">
+        <div id="feed-container" hidden>
             <button id="feed-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
-                <img class="bi"
-                     src="./vendor/bs-icons/arrow-left.svg"
-                     alt="Go back button" />
-                Back
+                <svg class="bi" role="img"
+                     data-i18n-aria-label="back"
+                     aria-label="Back">
+                    <use href="./bs-sprite.svg#arrow-left"></use>
+                </svg>
+                <span data-i18n="back">Back</span>
             </button>
             <h2 id="feed-title"></h2>
             <form id="update-feed-form">
                 <div class="mb-3">
-                    <label for="feed-category" class="form-label">Category</label>
-                    <select id="feed-category" name="category" class="form-select"></select>
-                </div>
-                <div class="mb-3">
-                    <label for="feed-refresh-delay" class="form-label">Refresh delay</label>
-                    <select id="feed-refresh-delay" name="refresh-delay" class="form-select">
-                        <option value="HOURLY">Hourly</option>
-                        <option value="BIHOURLY">Bihourly</option>
-                        <option value="EVERY_MORNING">Every Morning</option>
-                        <option value="DAILY_AT_NOON">Daily at Noon</option>
-                        <option value="EVERY_EVENING">Every Evening</option>
-                        <option value="ON_MONDAYS">On Mondays</option>
-                        <option value="ON_THURSDAYS">On Thursdays</option>
-                        <option value="ON_SATURDAYS">On Saturdays</option>
-                        <option value="ON_SUNDAYS">On Sundays</option>
-                        <option value="TWICE_A_WEEK">Twice a week</option>
-                        <option value="FIRST_DAY_OF_THE_MONTH">First Day of the Month</option>
-                        <option value="MIDDLE_OF_THE_MONTH">Middle Day of the Month</option>
-                        <option value="END_OF_THE_MONTH">End of the Month</option>
-                        <option value="THRICE_A_MONTH">Thrice a month</option>
+                    <label for="feed-category" class="form-label" data-i18n="category">Category</label>
+                    <select id="feed-category" name="category" class="form-select" data-allow-new="false">
+                        <option hidden value="" data-i18n="chooseCategory">Choose a category...</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="feed-article-retention-time" class="form-label">Article retention period in days (0 for infinity)</label>
+                    <label for="feed-refresh-delay" class="form-label" data-i18n="refreshDelay">Refresh delay</label>
+                    <select id="feed-refresh-delay" name="refresh-delay" class="form-select">
+                        <option value="HOURLY" data-i18n="refreshDelayHourly">Hourly</option>
+                        <option value="BIHOURLY" data-i18n="refreshDelayBihourly">Bihourly</option>
+                        <option value="EVERY_MORNING" data-i18n="refreshDelayEveryMorning">Every Morning</option>
+                        <option value="DAILY_AT_NOON" data-i18n="refreshDelayDailyAtNoon">Daily at Noon</option>
+                        <option value="EVERY_EVENING" data-i18n="refreshDelayEveryEvening">Every Evening</option>
+                        <option value="ON_MONDAYS" data-i18n="refreshDelayOnMondays">On Mondays</option>
+                        <option value="ON_THURSDAYS" data-i18n="refreshDelayOnThursdays">On Thursdays</option>
+                        <option value="ON_SATURDAYS" data-i18n="refreshDelayOnSaturdays">On Saturdays</option>
+                        <option value="ON_SUNDAYS" data-i18n="refreshDelayOnSundays">On Sundays</option>
+                        <option value="TWICE_A_WEEK" data-i18n="refreshDelayTwiceAWeek">Twice a week</option>
+                        <option value="FIRST_DAY_OF_THE_MONTH" data-i18n="refreshDelayFirstDayOfMonth">First Day of the Month</option>
+                        <option value="MIDDLE_OF_THE_MONTH" data-i18n="refreshDelayMiddleOfMonth">Middle Day of the Month</option>
+                        <option value="END_OF_THE_MONTH" data-i18n="refreshDelayEndOfMonth">End of the Month</option>
+                        <option value="THRICE_A_MONTH" data-i18n="refreshDelayThriceAMonth">Thrice a month</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="feed-article-retention-time" class="form-label" data-i18n="articleRetentionPeriod">Article retention period in days (0 for infinity)</label>
                     <input id="feed-article-retention-time"
                            name="retention-time"
                            class="form-control"
@@ -176,57 +232,71 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                            step="1" />
                 </div>
                 <div class="mb-3">
-                    <label for="feed-tags" class="form-label">Tags</label>
+                    <label for="feed-tags" class="form-label" data-i18n="tags">Tags</label>
                     <select id="feed-tags"
                             name="tags"
                             class="form-select"
-                            multiple
-                            data-allow-new="true">
-                        <option disabled hidden value="">Choose a tag...</option>
+                            multiple>
+                        <option disabled hidden value="" data-i18n="chooseTag">Choose a tag...</option>
                     </select>
                 </div>
-                <div class="mb-3 d-flex justify-content-center">
-                    <button id="update-feed" class="btn btn-primary btn-sm" type="submit">Update</button>
+                <div class="mb-3 d-flex justify-content-around">
+                    <button id="update-feed" class="btn btn-primary btn-sm" type="submit" data-i18n="update">Update</button>
+                    <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
+                        <svg class="bi" role="img"
+                             data-i18n-aria-label="deleteFeed"
+                             aria-label="Delete feed">
+                            <use href="./bs-sprite.svg#trash"></use>
+                        </svg>
+                        <span data-i18n="delete">Delete</span>
+                    </button>
                 </div>
             </form>
             <div class="mb-3 d-flex justify-content-evenly">
                 <button id="enable-feed"
                         class="btn btn-outline-secondary btn-sm"
-                        type="button">Enable</button>
+                        type="button"
+                        data-i18n="enable">Enable</button>
                 <button id="disable-feed"
                         class="btn btn-outline-secondary btn-sm"
-                        type="button">Disable</button>
-                <button class="btn btn-outline-danger btn-sm" type="button" id="delete-feed">
-                    <img class="bi" src="./vendor/bs-icons/trash.svg" alt="Delete feed" />
-                </button>
+                        type="button"
+                        data-i18n="disable">Disable</button>
                 <a id="open-feed-details"
                    class="btn btn-outline-secondary btn-sm"
                    role="button"
+                   target="_blank"
                    href="">
-                    <img class="bi" src="./vendor/bs-icons/eye.svg" alt="Open feed" />
+                    <svg class="bi" role="img"
+                         data-i18n-aria-label="openFeed"
+                         aria-label="Open feed">
+                        <use href="./bs-sprite.svg#eye"></use>
+                    </svg>
                 </a>
             </div>
         </div>
-        <div id="error-container" class="alert alert-danger">
+        <div id="error-container" class="alert alert-danger" hidden>
             <button id="error-nav-back"
                     class="btn btn-outline-secondary btn-sm"
                     type="button">
-                <img class="bi"
-                     src="./vendor/bs-icons/arrow-left.svg"
-                     alt="Go back button" />
-                Back
+                <svg class="bi" role="img"
+                     data-i18n-aria-label="back"
+                     aria-label="Back">
+                    <use href="./bs-sprite.svg#arrow-left"></use>
+                </svg>
+                <span data-i18n="back">Back</span>
             </button>
-            <p>An error occurred</p>
+            <p data-i18n="anErrorOccurred">An error occurred</p>
             <pre id="error-message"></pre>
         </div>
         <dialog id="confirm-dialog">
             <div class="modal-header">
-                <h2 id="confirm-dialog-title" class="modal-title">Do you confirm?</h2>
+                <h2 id="confirm-dialog-title" class="modal-title" data-i18n="doYouConfirm">Do you confirm?</h2>
             </div>
             <button id="confirm-dialog-cancel-btn"
                     class="btn btn-outline-secondary"
-                    type="button">No</button>
-            <button id="confirm-dialog-confirm-btn" class="btn btn-danger" type="button">Yes</button>
+                    type="button"
+                    data-i18n="no">No</button>
+            <button id="confirm-dialog-confirm-btn" class="btn btn-danger" type="button" data-i18n="yes">Yes</button>
         </dialog>
         <script src="action.js" type="module"></script>
     </body>

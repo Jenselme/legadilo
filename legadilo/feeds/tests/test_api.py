@@ -339,9 +339,39 @@ class TestSubscribeToFeedView:
         feed = Feed.objects.get()
         assert list(feed.tags.values_list("title", flat=True)) == ["Some tag", existing_tag.title]
         assert feed.user == user
+        assert feed.category == category
         snapshot.assert_match(
             serialize_for_snapshot(_prepare_feed_for_snapshot(response.json(), feed)), "feed.json"
         )
+
+    def test_subscribe_to_feed_with_category_slug(
+        self, user, logged_in_sync_client, mocker, django_assert_num_queries, snapshot
+    ):
+        feed_url = "https://example.com/feed.rss"
+        mocker.patch(
+            "legadilo.feeds.api.get_feed_data", return_value=FeedDataFactory(feed_url=feed_url)
+        )
+        category = FeedCategoryFactory(user=user)
+        existing_tag = TagFactory(user=user)
+
+        with django_assert_num_queries(29):
+            response = logged_in_sync_client.post(
+                self.url,
+                {
+                    "feed_url": feed_url,
+                    "refresh_delay": constants.FeedRefreshDelays.HOURLY.value,
+                    "article_retention_time": 100,
+                    "category_id": category.slug,
+                    "tags": ["", "<p>Some tag</p>", existing_tag.slug],
+                    "open_original_url_by_default": True,
+                },
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Feed.objects.count() == 1
+        feed = Feed.objects.get()
+        assert feed.category == category
 
     def test_subscribe_to_feed_invalid_category(self, logged_in_sync_client):
         response = logged_in_sync_client.post(
@@ -446,7 +476,7 @@ class TestUpdateFeedView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_category(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(13):
             response = logged_in_sync_client.patch(
                 self.url,
                 {"category_id": self.other_feed_category.id},
@@ -458,8 +488,22 @@ class TestUpdateFeedView:
         assert self.feed.category_id == self.other_feed_category.id
         snapshot.assert_match(serialize_for_snapshot(response.json()), "feed.json")
 
+    def test_update_category_from_slug(
+        self, logged_in_sync_client, django_assert_num_queries, snapshot
+    ):
+        with django_assert_num_queries(13):
+            response = logged_in_sync_client.patch(
+                self.url,
+                {"category_id": self.other_feed_category.slug},
+                content_type="application/json",
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        self.feed.refresh_from_db()
+        assert self.feed.category_id == self.other_feed_category.id
+
     def test_unset_category(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(9):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.patch(
                 self.url,
                 {"category_id": None},
@@ -495,7 +539,7 @@ class TestUpdateFeedView:
         }
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(10):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -544,7 +588,7 @@ class TestUpdateFeedView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.feed.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(19):
+        with django_assert_num_queries(21):
             response = logged_in_sync_client.patch(
                 self.url,
                 {

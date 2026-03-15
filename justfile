@@ -39,6 +39,7 @@ setup-ci:
     sudo apt-get update
     sudo apt-get install -y gettext
     uv sync --dev --locked
+    npm ci
 
 test:
     uv run pytest
@@ -69,8 +70,26 @@ compile-po:
     uv run python manage.py compilemessages
 
 [working-directory('browser-extension')]
+test-browser-extension:
+    npm test
+
+[working-directory('browser-extension')]
+watch-test-browser-extension:
+    npm run test:watch
+
+[working-directory('browser-extension')]
 build-browser-extension:
     npm run build
+
+[working-directory('browser-extension')]
+typecheck-browser-extension:
+    npm run typecheck
+
+check:
+    just lint
+    just test
+    just typecheck-browser-extension
+    just test-browser-extension
 
 release:
     #!/usr/bin/env bash

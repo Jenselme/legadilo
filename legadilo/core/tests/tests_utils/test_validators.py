@@ -5,7 +5,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from ..validators import (
+from legadilo.core.utils.validators import (
     get_page_number_from_request,
     is_url_valid,
     language_code_validator,

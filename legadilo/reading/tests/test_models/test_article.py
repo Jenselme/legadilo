@@ -752,6 +752,7 @@ class TestArticleManager:
         existing_article_no_tag = ArticleFactory(
             title="Old title",
             content="Old content",
+            content_type="text/html",
             user=user,
             external_article_id="existing-article-feed",
             updated_at=utcdt(2023, 4, 20),
@@ -851,6 +852,8 @@ class TestArticleManager:
         assert Article.objects.count() == 4
         existing_article_no_tag.refresh_from_db()
         assert existing_article_no_tag.title == "Old title"
+        assert existing_article_no_tag.content == "Description updated"
+        assert existing_article_no_tag.content_type == "text/plain"
         assert existing_article_no_tag.slug == "old-title"
         assert existing_article_no_tag.updated_at == now_dt
         assert existing_article_no_tag.read_at is not None

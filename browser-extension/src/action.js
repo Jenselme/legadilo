@@ -2,16 +2,63 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import Tags from "./vendor/tags.js";
-import { listArticles, listEnabledFeeds } from "./legadilo.js";
+/** @typedef {import('./types.js').Tag} Tag */
+/** @typedef {import('./types.js').Category} Category */
+/** @typedef {import('./types.js').Group} Group */
+/** @typedef {import('./types.js').Article} Article */
+/** @typedef {import('./types.js').Feed} Feed */
+/** @typedef {import('./types.js').UpdateArticlePayload} UpdateArticlePayload */
+/** @typedef {import('./types.js').UpdateFeedPayload} UpdateFeedPayload */
+/** @typedef {import('./types.js').AutocompleteElement} AutocompleteElement */
 
+import Tags from "./vendor/tags.js";
+import { getErrorMessage, html, mergeUrlFragments } from "./utils.js";
+import { applyI18n } from "./i18n.js";
+import { listArticles, listEnabledFeeds, loadOptions } from "./legadilo.js";
+import {
+  getDialogById,
+  getElementById,
+  getFormById,
+  getInputElementById,
+  getLinkElementById,
+} from "./typing-utils.js";
+import Readability from "./vendor/Readability.js";
+
+/**
+ * @typedef {Object} ArticleData
+ * @property {string} content
+ * @property {string} pageContent
+ * @property {string} contentType
+ * @property {string} title
+ * @property {string} language
+ * @property {boolean} mustExtractContent
+ */
+
+/**
+ * @typedef {Object} ResponseMessage
+ * @property {string} [error]
+ * @property {string} [name]
+ * @property {Article} [article]
+ * @property {Feed} [feed]
+ * @property {Tag[]} [tags]
+ * @property {Category[]} [categories]
+ */
+
+/**
+ * @typedef {Object} OutboundMessage
+ * @property {string} name
+ * @property {number} [articleId]
+ * @property {number} [feedId]
+ * @property {object} [payload]
+ */
+
+/** @type {chrome.runtime.Port | undefined} */
 let port;
-let articleTagsInstance = null;
-let feedTagsInstance = null;
 
 const isFirefox = typeof browser === "object";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  applyI18n();
   connectToPort();
 
   hideLoader();
@@ -20,59 +67,68 @@ document.addEventListener("DOMContentLoaded", () => {
   hideArticle();
   hideFeed();
 
-  runDefaultAction();
+  await displayActionsSelector();
 });
 
+/**
+ * @returns {void}
+ */
 const connectToPort = () => {
   if (!isFirefox) {
-    return null;
+    return;
   }
 
   port = chrome.runtime.connect({ name: "legadilo-popup" });
   port.onMessage.addListener(onMessage);
 };
 
-const runDefaultAction = async () => {
-  const tab = await getCurrentTab();
-  const [pageContent, contentType] = await getPageContent(tab);
-  const feedNodes = getFeedNodes(pageContent, contentType);
-
-  // No feed links, let's save immediately.
-  if (feedNodes.length === 0) {
-    await saveArticle(tab, pageContent, contentType);
-    return;
-  }
-
-  await displayActionsSelector();
-};
-
+/**
+ * @param {string} pageContent
+ * @param {string} contentType
+ * @returns {Element[]}
+ */
 const getFeedNodes = (pageContent, contentType) => {
   if (contentType === "text/plain") return [];
 
   const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, contentType);
-  const feedNodes = [];
+  const htmlDoc = parser.parseFromString(
+    pageContent,
+    /** @type {DOMParserSupportedType} */ (contentType),
+  );
+  const feedNodes = /** @type {Element[]} */ ([]);
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/rss+xml"]'));
   feedNodes.push(...htmlDoc.querySelectorAll('[type="application/atom+xml"]'));
 
   return feedNodes;
 };
 
-const getCanonicalUrl = (tab, pageContent, contentType) => {
-  if (contentType === "text/plain") return null;
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {ArticleData} data
+ * @returns {string | null}
+ */
+const getCanonicalUrl = (tab, data) => {
+  if (data.contentType === "text/plain") return null;
 
   const parser = new DOMParser();
-  const htmlDoc = parser.parseFromString(pageContent, contentType);
+  const htmlDoc = parser.parseFromString(
+    data.pageContent,
+    /** @type {DOMParserSupportedType} */ (data.contentType),
+  );
 
   const canonicalLink = htmlDoc.querySelector("link[rel='canonical']");
   if (!canonicalLink) {
     return null;
   }
 
-  return buildFullUrl(tab, canonicalLink.getAttribute("href"));
+  return buildFullUrl(tab, canonicalLink.getAttribute("href") ?? "");
 };
 
-const onMessage = (request) => {
+/**
+ * @param {ResponseMessage} request
+ * @returns {Promise<void>}
+ */
+const onMessage = async (request) => {
   if (request.error) {
     hideLoader();
     displayErrorMessage(request.error);
@@ -83,105 +139,140 @@ const onMessage = (request) => {
   hideLoader();
   switch (request.name) {
     case "saved-article":
-      savedArticleSuccess(request.article, request.tags);
+      await savedArticleSuccess(/** @type {Article} */ (request.article));
       break;
     case "updated-article":
-      updatedArticleSuccess(request.article, request.tags);
+      await updatedArticleSuccess(/** @type {Article} */ (request.article));
       break;
     case "deleted-article":
-      displayActionsSelector();
+      await displayActionsSelector();
       break;
     case "subscribed-to-feed":
-      feedSubscriptionSuccess(request.feed, request.tags, request.categories);
+      await feedSubscriptionSuccess(/** @type {Feed} */ (request.feed));
       break;
     case "updated-feed":
-      updatedFeedSuccess(request.feed, request.tags, request.categories);
+      await updatedFeedSuccess(/** @type {Feed} */ (request.feed));
       break;
     case "deleted-feed":
-      displayActionsSelector();
+      await displayActionsSelector();
       break;
     default:
       console.warn(`Unknown action ${request.name}`);
   }
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const displayActionsSelector = async () => {
   displayLoader();
   const tab = await getCurrentTab();
-  const [pageContent, contentType] = await getPageContent(tab);
-  const feedNodes = getFeedNodes(pageContent, contentType);
+  const data = await getPageContent(tab);
+  const feedNodes = getFeedNodes(data.pageContent, data.contentType);
   const feedUrls = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
   const pageUrl = getPageUrlFromTab(tab);
   const articleUrls = [pageUrl];
-  const articleCanonicalUrl = getCanonicalUrl(tab, pageContent, contentType);
+  const articleCanonicalUrl = getCanonicalUrl(tab, data);
   if (articleCanonicalUrl) {
     articleUrls.push(articleCanonicalUrl);
   }
-  let savedArticles = [];
+  /** @type {Article[]} */
+  let savedArticles;
   try {
     savedArticles = (await listArticles({ articleUrls })).items;
-  } catch {
-    console.error("Failed to list saved articles.");
+  } catch (err) {
+    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("failedToListArticles")));
+    return;
   }
-  let subscribedFeedUrls = [];
+  /** @type {string[]} */
+  let subscribedFeedUrls;
   try {
     subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
-  } catch {
-    console.error("Failed to list enabled feeds.");
+  } catch (err) {
+    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("failedToListFeeds")));
+    return;
   }
   hideLoader();
 
-  const articleAlreadySaved = document.querySelector("#article-already-saved");
-  if (savedArticles.length > 0) {
-    articleAlreadySaved.style.display = "inline";
-  } else {
-    articleAlreadySaved.style.display = "none";
-  }
+  getElementById("article-already-saved").hidden = savedArticles.length === 0;
 
-  document.querySelector("#action-selector-container").style.display = "block";
+  getElementById("action-selector-container").hidden = false;
 
-  const chooseFeedsContainer = document.querySelector("#subscribe-to-feeds-container");
-  chooseFeedsContainer.replaceChildren();
+  const chooseFeedsContainer = getElementById("subscribe-to-feeds-container");
 
-  for (const feedNode of feedNodes) {
-    let feedHref = getFeedHref(tab, feedNode);
+  const feedHrefs = feedNodes.map((feedNode) => getFeedHref(tab, feedNode));
+  const feedsButtons = feedNodes
+    .map((feedNode, i) => {
+      let feedTitle = feedNode.getAttribute("title");
+      if (!feedTitle) {
+        const hostname = new URL(pageUrl).hostname;
+        const type = feedNode.getAttribute("type") ?? "";
+        const feedType = type.replace("application/", "").replace("+xml", "");
+        feedTitle = `${hostname} (${feedType})`;
+      }
+      const subscribedIcon = subscribedFeedUrls.includes(feedHrefs[i])
+        ? html`<svg
+            class="bi"
+            role="img"
+            aria-label="${chrome.i18n.getMessage("alreadySubscribedToFeed")}"
+          >
+            <use href="./bs-sprite.svg#rss-fill"></use>
+          </svg>`
+        : "";
+      return html`<button
+        class="btn btn-outline-primary mb-2 col"
+        type="button"
+        data-feed-index="${i}"
+      >
+        ${feedTitle} ${subscribedIcon}
+      </button>`;
+    })
+    .join("");
+  chooseFeedsContainer.innerHTML = feedsButtons;
 
-    const button = document.createElement("button");
-    button.classList.add("btn", "btn-outline-primary", "mb-2", "col");
-    let feedTitle = feedNode.getAttribute("title");
-    if (!feedTitle) {
-      const hostname = new URL(pageUrl).hostname;
-      const type = feedNode.getAttribute("type");
-      const feedType = type.replace("application/", "").replace("+xml", "");
-      feedTitle = `${hostname} (${feedType})`;
-    }
+  const actionSelectorController = new AbortController();
+  const { signal: actionSelectorSignal } = actionSelectorController;
 
-    button.innerHTML = `${feedTitle} ${
-      subscribedFeedUrls.includes(feedHref)
-        ? '<img class="bi" src="./vendor/bs-icons/rss-fill.svg" alt="Already subscribed to this feed" />'
-        : ""
-    }`;
+  chooseFeedsContainer.addEventListener(
+    "click",
+    (event) => {
+      if (!(event.target instanceof Element) || !event.target.hasAttribute("data-feed-index"))
+        return;
 
-    button.addEventListener("click", () => {
+      actionSelectorController.abort();
+      const index = Number(event.target.getAttribute("data-feed-index"));
       hideActionSelector();
-      subscribeToFeed(feedHref);
-    });
-    chooseFeedsContainer.appendChild(button);
-  }
+      subscribeToFeed(feedHrefs[index]);
+    },
+    { signal: actionSelectorSignal },
+  );
 
-  document.querySelector("#save-article-action-btn").addEventListener("click", async () => {
-    hideActionSelector();
-    await saveArticle(tab, pageContent, contentType);
-  });
+  getElementById("save-article-action-btn").addEventListener(
+    "click",
+    async () => {
+      actionSelectorController.abort();
+      hideActionSelector();
+      await saveArticle(tab, data);
+    },
+    { signal: actionSelectorSignal },
+  );
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {Element} feedNode
+ * @returns {string}
+ */
 const getFeedHref = (tab, feedNode) => {
-  let feedHref = feedNode.getAttribute("href");
-  feedHref = buildFullUrl(tab, feedHref);
-
-  return feedHref;
+  const feedHref = feedNode.getAttribute("href") ?? "";
+  return buildFullUrl(tab, feedHref);
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {string} url
+ * @returns {string}
+ */
 const buildFullUrl = (tab, url) => {
   if (/^https?:\/\//.test(url)) {
     return url;
@@ -197,134 +288,216 @@ const buildFullUrl = (tab, url) => {
   return `${origin}${url}`;
 };
 
+/**
+ * @returns {void}
+ */
 const hideActionSelector = () => {
-  document.querySelector("#action-selector-container").style.display = "none";
+  getElementById("action-selector-container").hidden = true;
 };
 
+/**
+ * @returns {Promise<void>}
+ */
 const errorNavBack = async () => {
   hideErrorMessage();
   await displayActionsSelector();
-  document.querySelector("#error-nav-back").removeEventListener("click", errorNavBack);
+  getElementById("error-nav-back").removeEventListener("click", errorNavBack);
 };
 
+/**
+ * @param {string} message
+ * @returns {void}
+ */
 const displayErrorMessage = (message) => {
-  document.querySelector("#error-message").innerText = message;
-  document.querySelector("#error-container").style.display = "block";
+  getElementById("error-message").innerText = message;
+  getElementById("error-container").hidden = false;
 
-  document.querySelector("#error-nav-back").addEventListener("click", errorNavBack);
+  getElementById("error-nav-back").addEventListener("click", errorNavBack);
 };
 
+/**
+ * @returns {void}
+ */
 const hideErrorMessage = () => {
-  document.querySelector("#error-container").style.display = "none";
+  getElementById("error-container").hidden = true;
 };
 
+/**
+ * @returns {void}
+ */
 const displayLoader = () => {
-  document.querySelector("#loading-indicator-container").style.display = "block";
+  getElementById("loading-indicator-container").hidden = false;
 };
 
+/**
+ * @returns {void}
+ */
 const hideLoader = () => {
-  document.querySelector("#loading-indicator-container").style.display = "none";
+  getElementById("loading-indicator-container").hidden = true;
 };
 
-const createTagInstance = (element, tags, selectedTags) => {
-  const tagsHierarchy = tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.sub_tags }), {});
+/**
+ * @param {string} element
+ * @param {string} endpoint
+ * @param {AutocompleteElement[]} selectedItems
+ * @returns {Promise<ReturnType<typeof Tags.init>>}
+ */
+const createAutocompleteInstance = async (element, endpoint, selectedItems) => {
+  const { instanceUrl: serverUrl, accessToken } = await loadOptions();
 
   return Tags.init(element, {
     allowNew: true,
     allowClear: true,
-    items: tags.reduce((acc, tag) => ({ ...acc, [tag.slug]: tag.title }), {}),
-    selected: selectedTags.map((tag) => tag.slug),
-    onSelectItem(item, instance) {
-      if (!Array.isArray(tagsHierarchy[item.value])) {
-        return;
-      }
+    server: mergeUrlFragments(serverUrl, endpoint),
+    liveServer: true,
+    fetchOptions: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    items: selectedItems,
+    selected: selectedItems.map((item) => item.value),
+    onSelectItem(/** @type Tag */ item, /** @type Tags */ instance) {
+      if (!item.hierarchy) return;
 
       const alreadyAddedItems = instance.getSelectedValues();
-      tagsHierarchy[item.value]
+      item.hierarchy
         .filter((tag) => !alreadyAddedItems.includes(tag.slug))
         .forEach((tag) => instance.addItem(tag.title, tag.slug));
     },
   });
 };
 
-const displayArticle = (article, tags) => {
-  document.querySelector("#article-container").style.display = "block";
+/**
+ * @param {Article} article
+ * @returns {Promise<void>}
+ */
+const displayArticle = async (article) => {
+  getElementById("article-container").hidden = false;
 
-  document.querySelector("#saved-article-title").value = article.title;
-  document.querySelector("#saved-article-reading-time").value = article.reading_time;
+  getInputElementById("saved-article-title").value = article.title;
+  getInputElementById("saved-article-reading-time").value = String(article.reading_time);
 
-  if (articleTagsInstance === null) {
-    articleTagsInstance = createTagInstance("#saved-article-tags", tags, article.tags);
+  /**
+   * @type {import("./types.js").AutocompleteElement[]}
+   */
+  let selectedGroup = [];
+  if (article.group) {
+    selectedGroup = [
+      {
+        label: article.group.title,
+        value: article.group.slug,
+      },
+    ];
   }
 
-  if (article.is_read) {
-    document.querySelector("#mark-article-as-read").style.display = "none";
-    document.querySelector("#mark-article-as-unread").style.display = "block";
+  await createAutocompleteInstance(
+    "#saved-article-group",
+    "/reading/articles-groups/autocomplete/",
+    selectedGroup,
+  );
+
+  const openGroupDetailsLink = getLinkElementById("open-group-details");
+  if (article.group) {
+    openGroupDetailsLink.href = article.group.details_url;
+    openGroupDetailsLink.hidden = false;
   } else {
-    document.querySelector("#mark-article-as-read").style.display = "block";
-    document.querySelector("#mark-article-as-unread").style.display = "none";
+    openGroupDetailsLink.href = "";
+    openGroupDetailsLink.hidden = true;
   }
-  if (article.is_favorite) {
-    document.querySelector("#mark-article-as-favorite").style.display = "none";
-    document.querySelector("#unmark-article-as-favorite").style.display = "block";
-  } else {
-    document.querySelector("#mark-article-as-favorite").style.display = "block";
-    document.querySelector("#unmark-article-as-favorite").style.display = "none";
-  }
-  if (article.is_for_later) {
-    document.querySelector("#mark-article-as-for-later").style.display = "none";
-    document.querySelector("#unmark-article-as-for-later").style.display = "block";
-  } else {
-    document.querySelector("#mark-article-as-for-later").style.display = "block";
-    document.querySelector("#unmark-article-as-for-later").style.display = "none";
-  }
+  await createAutocompleteInstance(
+    "#saved-article-tags",
+    "/reading/tags/search/autocomplete/",
+    tagsToAutocompleteItems(article.tags),
+  );
 
-  document.querySelector("#open-article-details").href = article.details_url;
+  getElementById("mark-article-as-read").hidden = article.is_read;
+  getElementById("mark-article-as-unread").hidden = !article.is_read;
+  getElementById("mark-article-as-favorite").hidden = article.is_favorite;
+  getElementById("unmark-article-as-favorite").hidden = !article.is_favorite;
+  getElementById("mark-article-as-for-later").hidden = article.is_for_later;
+  getElementById("unmark-article-as-for-later").hidden = !article.is_for_later;
+
+  getLinkElementById("open-article-details").href = article.details_url;
+
+  setupArticleActions(article.id);
 };
 
+/**
+ * @param {Tag[]} tags
+ * @returns {AutocompleteElement[]}
+ */
+const tagsToAutocompleteItems = (tags) =>
+  tags.map((tag) => ({
+    value: tag.slug,
+    label: tag.title,
+    hierarchy: tag.hierarchy,
+  }));
+
+/**
+ * @returns {void}
+ */
 const hideArticle = () => {
-  document.querySelector("#article-container").style.display = "none";
+  getElementById("article-container").hidden = true;
 };
 
-const displayFeed = (feed, tags, categories) => {
-  document.querySelector("#feed-container").style.display = "block";
-  document.querySelector("#feed-title").innerText = feed.title;
+/**
+ * @param {Feed} feed
+ * @returns {Promise<void>}
+ */
+const displayFeed = async (feed) => {
+  getElementById("feed-container").hidden = false;
+  getElementById("feed-title").innerText = feed.title;
 
-  document.querySelector("#feed-refresh-delay").value = feed.refresh_delay;
-  document.querySelector("#feed-article-retention-time").value = feed.article_retention_time;
+  getInputElementById("feed-refresh-delay").value = String(feed.refresh_delay);
+  getInputElementById("feed-article-retention-time").value = String(feed.article_retention_time);
 
-  document.querySelector("#open-feed-details").href = feed.details_url;
+  getLinkElementById("open-feed-details").href = feed.details_url;
 
-  if (feed.enabled) {
-    document.querySelector("#enable-feed").style.display = "none";
-    document.querySelector("#disable-feed").style.display = "block";
-  } else {
-    document.querySelector("#enable-feed").style.display = "block";
-    document.querySelector("#disable-feed").style.display = "none";
+  getElementById("enable-feed").hidden = feed.enabled;
+  getElementById("disable-feed").hidden = !feed.enabled;
+
+  /**
+   * @type {import("./types.js").AutocompleteElement[]}
+   */
+  let selectedCategory = [];
+  if (feed.category) {
+    selectedCategory = [
+      {
+        label: feed.category.title,
+        value: feed.category.slug,
+      },
+    ];
   }
 
-  const categorySelector = document.querySelector("#feed-category");
-  // Clean all existing choices.
-  categorySelector.innerHTML = "";
-  const noCategoryOption = document.createElement("option");
-  noCategoryOption.value = "";
-  noCategoryOption.innerText = "No Category";
-  categorySelector.appendChild(noCategoryOption);
-  for (const category of categories) {
-    const option = document.createElement("option");
-    option.value = category.id;
-    option.innerText = category.title;
-    categorySelector.appendChild(option);
-  }
-  categorySelector.value = feed.category ? feed.category.id : "";
+  await createAutocompleteInstance(
+    "#feed-category",
+    "/feeds/categories/autocomplete/",
+    selectedCategory,
+  );
+  await createAutocompleteInstance(
+    "#feed-tags",
+    "/reading/tags/search/autocomplete/",
+    tagsToAutocompleteItems(feed.tags),
+  );
 
-  if (feedTagsInstance === null) {
-    feedTagsInstance = createTagInstance("#feed-tags", tags, feed.tags);
-  }
+  setupFeedActions(feed.id);
 };
 
+/**
+ * @param {number} feedId
+ * @returns {void}
+ */
 const setupFeedActions = (feedId) => {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  /**
+   * @param {UpdateFeedPayload} payload
+   * @returns {void}
+   */
   const updateFeed = (payload) => {
+    controller.abort();
     hideFeed();
     displayLoader();
     sendMessage({
@@ -335,6 +508,7 @@ const setupFeedActions = (feedId) => {
   };
 
   const deleteFeed = () => {
+    controller.abort();
     hideFeed();
     displayLoader();
     sendMessage({
@@ -343,102 +517,174 @@ const setupFeedActions = (feedId) => {
     });
   };
 
-  const actions = {
-    "#update-feed": (event) => {
+  getElementById("update-feed").addEventListener(
+    "click",
+    (event) => {
       event.preventDefault();
-      const data = new FormData(document.querySelector("#update-feed-form"));
+      const data = new FormData(getFormById("update-feed-form"));
       updateFeed({
-        categoryId: data.get("category") || null,
-        refreshDelay: data.get("refresh-delay"),
-        articleRetentionTime: data.get("retention-time"),
-        tags: data.getAll("tags"),
+        category: data.get("category")?.toString(),
+        refreshDelay: data.get("refresh-delay")?.toString() || "DAILY_AT_NOON",
+        articleRetentionTime: Number(data.get("retention-time")),
+        tags: /** @type {string[]} */ (data.getAll("tags")),
       });
     },
-    "#enable-feed": () => updateFeed({ disabledAt: null, disabledReason: null }),
-    "#disable-feed": () =>
+    { signal },
+  );
+  getElementById("enable-feed").addEventListener(
+    "click",
+    () => updateFeed({ disabledAt: null, disabledReason: null }),
+    { signal },
+  );
+  getElementById("disable-feed").addEventListener(
+    "click",
+    () =>
       updateFeed({
         disabledAt: new Date().toISOString(),
-        disabledReason: "Disable manually in the browser extension",
+        disabledReason: chrome.i18n.getMessage("disabledManually"),
       }),
-    "#delete-feed": () =>
-      askConfirmation("Are you sure you want to delete this feed?").then(deleteFeed),
-    "#feed-nav-back": async () => {
-      Object.entries(actions).forEach(([selector, action]) => {
-        document.querySelector(selector).removeEventListener("click", action);
-      });
-
+    { signal },
+  );
+  getElementById("delete-feed").addEventListener(
+    "click",
+    async () => {
+      const confirmed = await askConfirmation(chrome.i18n.getMessage("confirmDeleteFeed"));
+      if (confirmed) deleteFeed();
+    },
+    { signal },
+  );
+  getElementById("feed-nav-back").addEventListener(
+    "click",
+    async () => {
+      controller.abort();
       hideFeed();
       await displayActionsSelector();
     },
-  };
-
-  Object.entries(actions).forEach(([selector, action]) => {
-    document.querySelector(selector).addEventListener("click", action);
-  });
-};
-
-const hideFeed = () => {
-  document.querySelector("#feed-container").style.display = "none";
+    { signal },
+  );
 };
 
 /**
- * @returns {Promise<tabs.Tab>}
+ * @returns {void}
+ */
+const hideFeed = () => {
+  getElementById("feed-container").hidden = true;
+};
+
+/**
+ * @returns {Promise<chrome.tabs.Tab>}
  */
 const getCurrentTab = () =>
   chrome.tabs.query({ currentWindow: true, active: true }).then((tabs) => tabs[0]);
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @returns {Promise<ArticleData>}
+ */
 const getPageContent = async (tab) => {
   try {
     const getcontentTypeScriptResult = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId: /** @type {number} */ (tab.id) },
       func: () => document.contentType,
     });
-    const contentType = getcontentTypeScriptResult[0].result;
+    const contentType = getcontentTypeScriptResult[0].result ?? "text/plain";
     const getPageContentScriptResult = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId: /** @type {number} */ (tab.id) },
       func: () =>
         document.contentType === "text/plain"
           ? document.documentElement.outerText
           : document.documentElement.outerHTML,
     });
-    const content = getPageContentScriptResult[0].result;
-    return [content, contentType];
+    const content = getPageContentScriptResult[0].result ?? "";
+
+    let readabilityArticle = null;
+    if (contentType !== "text/plain") {
+      const parser = new DOMParser();
+      const htmlDoc = parser.parseFromString(
+        content,
+        /** @type {DOMParserSupportedType} */ (contentType),
+      );
+      readabilityArticle = new Readability(htmlDoc, {}).parse();
+    }
+
+    return {
+      title: readabilityArticle?.title || tab.title || "",
+      contentType,
+      content: readabilityArticle?.content || content,
+      pageContent: content,
+      language: readabilityArticle?.lang || "",
+      mustExtractContent: !readabilityArticle?.content,
+    };
   } catch (error) {
     console.error(error);
-    return ["", "text/plain"];
+    return {
+      title: tab.title || "",
+      contentType: "text/plain",
+      content: "",
+      pageContent: "",
+      language: "",
+      mustExtractContent: false,
+    };
   }
 };
 
-const saveArticle = (tab, pageContent, contentType) => {
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {ArticleData} data
+ * @returns {Promise<void>}
+ */
+const saveArticle = (tab, { title, content, contentType, language, mustExtractContent }) => {
   displayLoader();
-  sendMessage({
+  return sendMessage({
     name: "save-article",
     payload: {
       url: getPageUrlFromTab(tab),
-      title: tab.title,
-      content: pageContent,
+      title,
+      content,
       contentType,
+      language: language,
+      mustExtractContent,
     },
   });
 };
 
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @returns {string}
+ */
 const getPageUrlFromTab = (tab) => {
-  if (tab.url.startsWith("about:")) {
-    const internalUrlLike = tab.url.replace("about:", "http://");
+  const url = tab.url ?? "";
+  if (url.startsWith("about:")) {
+    const internalUrlLike = url.replace("about:", "http://");
     const parsedInternalUrl = new URL(internalUrlLike);
-    return parsedInternalUrl.searchParams.get("url");
+    return parsedInternalUrl.searchParams.get("url") ?? "";
   }
 
-  return tab.url;
+  return url;
 };
 
-const savedArticleSuccess = (article, tags) => {
-  displayArticle(article, tags);
-  setupArticleActions(article.id);
+/**
+ * @param {Article} article
+ * @returns {Promise<void>}
+ */
+const savedArticleSuccess = async (article) => {
+  await displayArticle(article);
 };
 
+/**
+ * @param {number} articleId
+ * @returns {void}
+ */
 const setupArticleActions = (articleId) => {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  /**
+   * @param {Partial<UpdateArticlePayload>} payload
+   * @returns {void}
+   */
   const updateArticle = (payload) => {
+    controller.abort();
     hideArticle();
     displayLoader();
     sendMessage({
@@ -449,6 +695,7 @@ const setupArticleActions = (articleId) => {
   };
 
   const deleteArticle = () => {
+    controller.abort();
     hideArticle();
     displayLoader();
     sendMessage({
@@ -457,58 +704,83 @@ const setupArticleActions = (articleId) => {
     });
   };
 
-  const actions = {
-    "#update-saved-article": (event) => {
+  getElementById("update-saved-article").addEventListener(
+    "click",
+    (event) => {
       event.preventDefault();
 
-      const data = new FormData(document.querySelector("#update-saved-article-form"));
+      const data = new FormData(getFormById("update-saved-article-form"));
 
       updateArticle({
-        title: data.get("title"),
-        tags: data.getAll("tags"),
-        readingTime: data.get("reading-time"),
+        title: /** @type {string} */ (data.get("title")),
+        tags: /** @type {string[]} */ (data.getAll("tags")),
+        group: data.get("group")?.toString(),
+        readingTime: Number(data.get("reading-time")),
       });
     },
-    "#mark-article-as-read": () => {
-      updateArticle({ readAt: new Date().toISOString() });
+    { signal },
+  );
+  getElementById("mark-article-as-read").addEventListener(
+    "click",
+    () => updateArticle({ readAt: new Date().toISOString() }),
+    { signal },
+  );
+  getElementById("mark-article-as-unread").addEventListener(
+    "click",
+    () => updateArticle({ readAt: null }),
+    { signal },
+  );
+  getElementById("mark-article-as-favorite").addEventListener(
+    "click",
+    () => updateArticle({ isFavorite: true }),
+    { signal },
+  );
+  getElementById("unmark-article-as-favorite").addEventListener(
+    "click",
+    () => updateArticle({ isFavorite: false }),
+    { signal },
+  );
+  getElementById("mark-article-as-for-later").addEventListener(
+    "click",
+    () => updateArticle({ isForLater: true }),
+    { signal },
+  );
+  getElementById("unmark-article-as-for-later").addEventListener(
+    "click",
+    () => updateArticle({ isForLater: false }),
+    { signal },
+  );
+  getElementById("delete-article").addEventListener(
+    "click",
+    async () => {
+      const confirmed = await askConfirmation(chrome.i18n.getMessage("confirmDeleteArticle"));
+      if (confirmed) deleteArticle();
     },
-    "#mark-article-as-unread": () => {
-      updateArticle({ readAt: null });
-    },
-    "#mark-article-as-favorite": () => {
-      updateArticle({ isFavorite: true });
-    },
-    "#unmark-article-as-favorite": () => {
-      updateArticle({ isFavorite: false });
-    },
-    "#mark-article-as-for-later": () => {
-      updateArticle({ isForLater: true });
-    },
-    "#unmark-article-as-for-later": () => {
-      updateArticle({ isForLater: false });
-    },
-    "#delete-article": () =>
-      askConfirmation("Are you sure you want to delete this article?").then(deleteArticle),
-    "#article-nav-back": async () => {
+    { signal },
+  );
+  getElementById("article-nav-back").addEventListener(
+    "click",
+    async () => {
+      controller.abort();
       hideArticle();
-
-      Object.entries(actions).forEach(([selector, action]) => {
-        document.querySelector(selector).removeEventListener("click", action);
-      });
-
       await displayActionsSelector();
     },
-  };
-
-  Object.entries(actions).forEach(([selector, action]) => {
-    document.querySelector(selector).addEventListener("click", action);
-  });
+    { signal },
+  );
 };
 
-const updatedArticleSuccess = (article, tags) => {
-  displayArticle(article, tags);
+/**
+ * @param {Article} article
+ * @returns {Promise<void>}
+ */
+const updatedArticleSuccess = async (article) => {
+  await displayArticle(article);
 };
 
+/**
+ * @param {string} link
+ * @returns {void}
+ */
 const subscribeToFeed = (link) => {
   displayLoader();
   sendMessage({
@@ -517,56 +789,93 @@ const subscribeToFeed = (link) => {
   });
 };
 
-const feedSubscriptionSuccess = (feed, tags, categories) => {
-  displayFeed(feed, tags, categories);
-  setupFeedActions(feed.id);
+/**
+ * @param {Feed} feed
+ * @returns {Promise<void>}
+ */
+const feedSubscriptionSuccess = async (feed) => {
+  await displayFeed(feed);
 };
 
-const updatedFeedSuccess = (feed, tags, categories) => {
-  displayFeed(feed, tags, categories);
+/**
+ * @param {Feed} feed
+ * @returns {Promise<void>}
+ */
+const updatedFeedSuccess = async (feed) => {
+  await displayFeed(feed);
 };
 
+/**
+ * @param {OutboundMessage} message
+ * @returns {Promise<void>}
+ */
 const sendMessage = async (message) => {
-  if (isFirefox) {
-    port.postMessage(message);
-    return;
-  }
+  try {
+    if (isFirefox) {
+      /** @type {chrome.runtime.Port} */ (port).postMessage(message);
+      return;
+    }
 
-  const response = await chrome.runtime.sendMessage(message);
-  onMessage(response);
+    const response = await chrome.runtime.sendMessage(message);
+    await onMessage(response);
+  } catch (err) {
+    hideLoader();
+    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("unexpectedError")));
+  }
 };
 
+/**
+ * @param {string} message
+ * @returns {Promise<boolean>}
+ */
 const askConfirmation = (message) => {
-  const confirmDialog = document.getElementById("confirm-dialog");
+  const confirmDialog = getDialogById("confirm-dialog");
 
-  const confirmDialogTitle = document.getElementById("confirm-dialog-title");
-  confirmDialogTitle.innerText = message;
+  getElementById("confirm-dialog-title").innerText = message;
 
+  /** @type {(value: boolean) => void} */
   let resolveDeferred;
-  let rejectDeferred;
-  const deferred = new Promise((resolve, reject) => {
-    resolveDeferred = resolve;
-    rejectDeferred = reject;
-  });
-  const cancelBtn = document.getElementById("confirm-dialog-cancel-btn");
-  const confirmBtn = document.getElementById("confirm-dialog-confirm-btn");
-  const cancel = () => {
-    confirmDialog.close();
-    rejectDeferred();
-    cancelBtn.removeEventListener("click", cancel);
-    confirmBtn.removeEventListener("click", confirm);
-  };
-  const confirm = () => {
-    confirmDialog.close();
-    resolveDeferred();
-    cancelBtn.removeEventListener("click", cancel);
-    confirmBtn.removeEventListener("click", confirm);
-  };
+  const deferred = /** @type {Promise<boolean>} */ (
+    new Promise((resolve) => {
+      resolveDeferred = /** @type {(value: boolean) => void} */ (resolve);
+    })
+  );
 
-  cancelBtn.addEventListener("click", cancel);
-  confirmBtn.addEventListener("click", confirm);
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  const cancelBtn = getElementById("confirm-dialog-cancel-btn");
+  const confirmBtn = getElementById("confirm-dialog-confirm-btn");
+
+  cancelBtn.addEventListener(
+    "click",
+    () => {
+      controller.abort();
+      confirmDialog.close();
+      resolveDeferred(false);
+    },
+    { signal },
+  );
+  confirmBtn.addEventListener(
+    "click",
+    () => {
+      controller.abort();
+      confirmDialog.close();
+      resolveDeferred(true);
+    },
+    { signal },
+  );
 
   confirmDialog.showModal();
 
   return deferred;
+};
+
+export const __test__ = {
+  getFeedNodes,
+  getCanonicalUrl,
+  getFeedHref,
+  buildFullUrl,
+  tagsToAutocompleteItems,
+  getPageUrlFromTab,
 };

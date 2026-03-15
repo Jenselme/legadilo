@@ -8,14 +8,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Legadilo Options</title>
+        <title data-i18n="optionsPageTitle">Legadilo Options</title>
         <link rel="stylesheet" type="text/css" href="./vendor/bootstrap.css" />
+        <link rel="stylesheet" type="text/css" href="./options.css" />
+        <script src="./theme_chooser.js"></script>
     </head>
     <body>
         <form id="options-form">
             <div class="mb-3">
                 <label for="instance-url" class="form-label">
-                    Instance URL <span>*</span>
+                    <span data-i18n="instanceUrl">Instance URL</span> <span>*</span>
                 </label>
                 <input id="instance-url"
                        class="form-control"
@@ -25,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
             <div class="mb-3">
                 <label for="user-email" class="form-label">
-                    Email <span>*</span>
+                    <span data-i18n="email">Email</span> <span>*</span>
                 </label>
                 <input id="user-email"
                        class="form-control"
@@ -35,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
             <div class="mb-3">
                 <label for="token-id" class="form-label">
-                    Token id <span>*</span>
+                    <span data-i18n="tokenId">Token id</span> <span>*</span>
                 </label>
                 <input id="token-id"
                        class="form-control"
@@ -45,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
             <div class="mb-3">
                 <label for="token-secret" class="form-label">
-                    Token secret <span>*</span>
+                    <span data-i18n="tokenSecret">Token secret</span> <span>*</span>
                 </label>
                 <input id="token-secret"
                        class="form-control"
@@ -55,23 +57,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
             <div class="d-flex justify-content-between">
                 <div>
-                    <button id="test-options" class="btn btn-outline-secondary" type="button">Test</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button id="test-options" class="btn btn-outline-secondary" type="button" data-i18n="test">Test</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="save">Save</button>
                 </div>
                 <div>
-                    <button id="reset-options" class="btn btn-danger" type="button">Reset to default</button>
+                    <button id="reset-options" class="btn btn-danger" type="button" data-i18n="resetToDefault">Reset to default</button>
                 </div>
             </div>
         </form>
         <p id="status"></p>
         <dialog id="confirm-dialog">
             <div class="modal-header">
-                <h2 class="modal-title">Do you confirm?</h2>
+                <h2 class="modal-title" data-i18n="doYouConfirm">Do you confirm?</h2>
             </div>
             <button id="confirm-dialog-cancel-btn"
                     class="btn btn-outline-secondary"
-                    type="button">No</button>
-            <button id="confirm-dialog-confirm-btn" class="btn btn-danger" type="button">Yes</button>
+                    type="button"
+                    data-i18n="no">No</button>
+            <button id="confirm-dialog-confirm-btn" class="btn btn-danger" type="button" data-i18n="yes">Yes</button>
         </dialog>
         <script src="./options.js" type="module"></script>
     </body>
