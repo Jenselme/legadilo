@@ -65,6 +65,20 @@ class SafeHtml {
 }
 
 /**
+ * @param {TemplateStringsArray} strings
+ * @param {...unknown} values
+ * @returns {SafeHtml}
+ */
+export const html = (strings, ...values) => {
+  let result = strings[0];
+  values.forEach((value, i) => {
+    result += value instanceof SafeHtml ? value.value : escapeHtml(value);
+    result += strings[i + 1];
+  });
+  return new SafeHtml(result);
+};
+
+/**
  * Merges a server URL and an endpoint path, ensuring exactly one `/` between them.
  *
  * @param {string} serverUrl
@@ -80,17 +94,3 @@ export const mergeUrlFragments = (serverUrl, endpoint) => new URL(endpoint, serv
  */
 export const getErrorMessage = (err, fallback) =>
   err instanceof Error ? err.message : (fallback ?? String(err));
-
-/**
- * @param {TemplateStringsArray} strings
- * @param {...unknown} values
- * @returns {SafeHtml}
- */
-export const html = (strings, ...values) => {
-  let result = strings[0];
-  values.forEach((value, i) => {
-    result += value instanceof SafeHtml ? value.value : escapeHtml(value);
-    result += strings[i + 1];
-  });
-  return new SafeHtml(result);
-};
