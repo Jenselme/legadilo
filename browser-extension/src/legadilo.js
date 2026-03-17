@@ -119,7 +119,9 @@ export const listArticles = async ({ articleUrls }) => {
   if (!isFilteringByUrls) {
     return await get("/api/reading/articles/");
   }
-  const queries = articleUrls
+
+  const uniqueArticleUrls = [...new Set(articleUrls)];
+  const queries = uniqueArticleUrls
     .map(
       (articleUrl) => `/api/reading/articles/?q=${encodeURIComponent(articleUrl)}&search_type=url`,
     )

@@ -177,20 +177,24 @@ const displayActionsSelector = async () => {
     articleUrls.push(articleCanonicalUrl);
   }
   /** @type {Article[]} */
-  let savedArticles;
+  let savedArticles = [];
   try {
-    savedArticles = (await listArticles({ articleUrls })).items;
+    if (articleUrls.length > 0) {
+      savedArticles = (await listArticles({ articleUrls })).items;
+    }
   } catch (err) {
-    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("failedToListArticles")));
-    return;
+    console.error(err);
   }
   /** @type {string[]} */
-  let subscribedFeedUrls;
+  let subscribedFeedUrls = [];
   try {
-    subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map((feed) => feed.feed_url);
+    if (feedUrls.length > 0) {
+      subscribedFeedUrls = (await listEnabledFeeds({ feedUrls })).items.map(
+        (feed) => feed.feed_url,
+      );
+    }
   } catch (err) {
-    displayErrorMessage(getErrorMessage(err, chrome.i18n.getMessage("failedToListFeeds")));
-    return;
+    console.error(err);
   }
   hideLoader();
 
