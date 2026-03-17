@@ -320,7 +320,7 @@ class TestSubscribeToFeedView:
         category = FeedCategoryFactory(user=user)
         existing_tag = TagFactory(user=user)
 
-        with django_assert_num_queries(29):
+        with django_assert_num_queries(28):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -354,7 +354,7 @@ class TestSubscribeToFeedView:
         category = FeedCategoryFactory(user=user)
         existing_tag = TagFactory(user=user)
 
-        with django_assert_num_queries(29):
+        with django_assert_num_queries(28):
             response = logged_in_sync_client.post(
                 self.url,
                 {
@@ -476,7 +476,7 @@ class TestUpdateFeedView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_update_category(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.patch(
                 self.url,
                 {"category_id": self.other_feed_category.id},
@@ -491,7 +491,7 @@ class TestUpdateFeedView:
     def test_update_category_from_slug(
         self, logged_in_sync_client, django_assert_num_queries, snapshot
     ):
-        with django_assert_num_queries(13):
+        with django_assert_num_queries(12):
             response = logged_in_sync_client.patch(
                 self.url,
                 {"category_id": self.other_feed_category.slug},
@@ -539,7 +539,7 @@ class TestUpdateFeedView:
         }
 
     def test_update(self, logged_in_sync_client, django_assert_num_queries, snapshot):
-        with django_assert_num_queries(12):
+        with django_assert_num_queries(11):
             response = logged_in_sync_client.patch(
                 self.url,
                 {
@@ -588,7 +588,7 @@ class TestUpdateFeedView:
         tag_to_delete = TagFactory(user=user, title="Tag to delete")
         self.feed.tags.add(existing_tag, tag_to_delete)
 
-        with django_assert_num_queries(21):
+        with django_assert_num_queries(20):
             response = logged_in_sync_client.patch(
                 self.url,
                 {

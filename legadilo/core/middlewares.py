@@ -5,7 +5,7 @@
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponseBase
+from django.http import HttpRequest, HttpResponse
 from django.middleware.csp import ContentSecurityPolicyMiddleware
 from django.utils import timezone
 from django.utils.csp import CSP, build_policy
@@ -17,7 +17,7 @@ class CSPMiddleware(ContentSecurityPolicyMiddleware):
     It's the easiest solution and avoid having to override many templates with the nonce.
     """
 
-    def process_response(self, request: HttpRequest, response: HttpResponseBase):
+    def process_response(self, request: HttpRequest, response: HttpResponse):
         if request.path.startswith(f"/{settings.ADMIN_URL}"):
             response.headers[str(CSP.HEADER_ENFORCE)] = build_policy({
                 **settings.SECURE_CSP,
