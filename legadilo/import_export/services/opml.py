@@ -4,11 +4,13 @@
 
 import logging
 from pathlib import Path
+from urllib.parse import urlparse
 
 import httpx
 from defusedxml.ElementTree import parse
 from django.db import IntegrityError
 from pydantic import ValidationError as PydanticValidationError
+from slugify import slugify
 
 from legadilo.core.utils.http_utils import get_rss_sync_client
 from legadilo.core.utils.time_utils import utcnow
@@ -97,7 +99,7 @@ def _process_outline(user, client, outline):
     nb_imported_categories = 0
     nb_imported_feeds = 0
 
-    if outline.is_category:
+    if outline.is_category and outline.text and slugify(outline.text):
         nb_imported_feeds, nb_imported_categories = _process_category(user, client, outline)
     elif outline.is_feed:
         nb_imported_feeds = _process_feed(user, client, outline)
@@ -106,7 +108,9 @@ def _process_outline(user, client, outline):
 
 
 def _process_category(user, client, outline):
-    category, created = FeedCategory.objects.get_or_create(user=user, title=outline.text)
+    category, created = FeedCategory.objects.get_or_create(
+        user=user, slug=slugify(outline.text), defaults={"title": outline.text}
+    )
     nb_imported_categories = 0
     if created:
         logger.info(f"Imported category {category}")
@@ -146,7 +150,7 @@ def _process_feed(user, client, outline, category=None):
             user=user,
             defaults={
                 "site_url": outline.site_url,
-                "title": "",
+                "title": urlparse(outline.feed_url).netloc,
                 "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON,
                 "description": "",
                 "feed_type": feeds_constants.SupportedFeedType.rss,

@@ -31,6 +31,7 @@ from legadilo.core.utils.validators import (
     ContentType,
     FullSanitizeValidator,
     LanguageCodeValidatorOrDefault,
+    SlugifiableValidator,
     TableOfContentItem,
     TableOfContentTopItem,
     ValidUrlValidator,
@@ -64,7 +65,9 @@ class ArticleData(BaseSchema):
         CleanedString, truncate(constants.EXTERNAL_ARTICLE_ID_MAX_LENGTH)
     ]
     source_title: Annotated[CleanedString, truncate(constants.ARTICLE_SOURCE_TITLE_MAX_LENGTH)]
-    title: CleanedString
+    title: Annotated[
+        CleanedString, truncate(constants.ARTICLE_TITLE_MAX_LENGTH), SlugifiableValidator
+    ]
     summary: Annotated[
         str,
         sanitize_keep_safe_tags_validator(constants.EXTRA_TAGS_TO_REMOVE_FROM_SUMMARY),

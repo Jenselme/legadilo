@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 import httpx
 from django.db import IntegrityError, models
+from slugify import slugify
 
 from legadilo.core.utils.http_utils import get_rss_sync_client
 from legadilo.core.utils.time_utils import safe_datetime_parse
@@ -75,7 +76,13 @@ def _process_row(user: User, row: dict, feed_url_in_file_to_true_feed: dict[str,
 
     feed = None
     created_feed = False
-    if row["feed_url"] and is_url_valid(row["feed_url"]) and is_url_valid(row["feed_site_url"]):
+    if (
+        row["feed_url"]
+        and is_url_valid(row["feed_url"])
+        and is_url_valid(row["feed_site_url"])
+        and row["feed_title"]
+        and slugify(row["feed_title"])
+    ):
         feed, created_feed = _import_feed(user, category, row, feed_url_in_file_to_true_feed)
 
     articles_group = None

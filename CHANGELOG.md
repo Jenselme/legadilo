@@ -9,6 +9,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## Unreleased
 
 - Prevent 500 errors on 404 pages.
+- Make sure all feeds always have a title and a slugifiable title.
 
 ## 26.03.1
 

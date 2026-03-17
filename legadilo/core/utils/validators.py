@@ -22,6 +22,7 @@ from pydantic import (
 )
 from pydantic import BaseModel as BaseSchema
 from pydantic import ValidationError as PydanticValidationError
+from slugify import slugify
 
 from legadilo.core.utils.security import full_sanitize, sanitize_keep_safe_tags
 
@@ -146,6 +147,16 @@ def _is_url_valid_for_pydantic_validator(url: str | None) -> str:
 
 
 ValidUrlValidator = AfterValidator(_is_url_valid_for_pydantic_validator)
+
+
+def _is_slugifiable_pydantic_validator(value: str) -> str:
+    if value and slugify(value):
+        return value
+
+    raise ValueError(f"'{value}' cannot be slugified")
+
+
+SlugifiableValidator = AfterValidator(_is_slugifiable_pydantic_validator)
 
 
 def normalize_url(base_url: str, url_to_normalize: str) -> str:
