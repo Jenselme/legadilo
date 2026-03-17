@@ -399,3 +399,36 @@ def test_build_article_data(parameters: dict[str, Any], snapshot):
     article_data = ArticleData(**parameters)
 
     snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
+
+
+@pytest.mark.parametrize(
+    ("parameters", "error"),
+    [
+        pytest.param(
+            {
+                "external_article_id": "<p>external article id",
+                "source_title": "<p>source article title</p>",
+                "title": "   ",
+                "summary": """Summary""",
+                "content": """Some <p>content</p> <script>alert()</script>""",
+                "content_type": "text/plain",
+                "authors": [],
+                "contributors": [],
+                "tags": [],
+                "url": "https://example.com/articles/1?toto=1#anchor",
+                "preview_picture_url": "https://example.com/articles/1.png",
+                "preview_picture_alt": "",
+                "published_at": None,
+                "updated_at": None,
+                "language": None,
+                "read_at": None,
+                "is_favorite": False,
+            },
+            "'' cannot be slugified",
+            id="unslugifiable-title",
+        ),
+    ],
+)
+def test_build_article_data_with_invalid_data(parameters: dict[str, Any], error: str):
+    with pytest.raises(ValueError, match=error):
+        ArticleData(**parameters)

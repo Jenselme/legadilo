@@ -120,11 +120,6 @@ class SettingsSchema(ModelSchema):
         model = UserSettings
         exclude = ("id", "user")
 
-    @field_serializer("timezone", mode="plain")
-    def tz_serializer(self, timezone_id: int) -> str:
-        # Workaround for https://github.com/vitalik/django-ninja/issues/1580
-        return Timezone.objects.get(id=timezone_id).name
-
 
 class UserSchema(ModelSchema):
     settings: SettingsSchema

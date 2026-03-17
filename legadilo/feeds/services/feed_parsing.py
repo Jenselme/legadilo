@@ -9,7 +9,7 @@ import time
 from datetime import UTC, datetime
 from html import unescape
 from itertools import chain
-from typing import Annotated
+from typing import Annotated, Any
 from urllib.parse import parse_qs, urlparse
 
 import httpx
@@ -17,10 +17,12 @@ from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 from pydantic import BaseModel as BaseSchema
+from pydantic import model_validator
 
 from legadilo.core.utils.time_utils import dt_to_http_date
 from legadilo.core.utils.validators import (
     CleanedString,
+    SlugifiableValidator,
     ValidUrlValidator,
     default_frozen_model_config,
     is_url_valid,
@@ -42,12 +44,23 @@ class FeedData(BaseSchema):
 
     feed_url: Annotated[str, ValidUrlValidator]
     site_url: Annotated[str, ValidUrlValidator]
-    title: Annotated[CleanedString, truncate(constants.FEED_TITLE_MAX_LENGTH)]
+    title: Annotated[CleanedString, truncate(constants.FEED_TITLE_MAX_LENGTH), SlugifiableValidator]
     description: CleanedString
     feed_type: constants.SupportedFeedType
     etag: str
     last_modified: datetime | None
     articles: list[ArticleData]
+
+    @model_validator(mode="before")
+    @classmethod
+    def prepare_values(cls, values: dict[str, Any]) -> dict[str, Any]:
+        title = values.get("title", "")
+        feed_url = values.get("feed_url")
+
+        if not title and feed_url:
+            title = urlparse(feed_url).netloc
+
+        return {**values, "title": title}
 
 
 class NoFeedUrlFoundError(Exception):

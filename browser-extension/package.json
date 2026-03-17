@@ -9,7 +9,7 @@
   },
   "scripts": {
     "postinstall": "./copy-vendors.js",
-    "build": "web-ext build --overwrite-dest --source-dir src --ignore-files=src/*.test.js",
+    "build": "web-ext build --overwrite-dest --source-dir src --ignore-files=*.test.js",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "typecheck": "tsc",

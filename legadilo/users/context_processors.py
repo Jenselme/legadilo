@@ -17,5 +17,6 @@ def allauth_settings(request):
 def user_settings(request):
     return {
         "USER_SETTINGS_PAGES": USER_SETTINGS_PAGES,
-        "IS_USER_SETTINGS_VIEW": request.resolver_match.view_name in USER_SETTINGS_PAGES,
+        "IS_USER_SETTINGS_VIEW": request.resolver_match is not None
+        and request.resolver_match.view_name in USER_SETTINGS_PAGES,
     }

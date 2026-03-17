@@ -110,7 +110,7 @@ class ArticlesGroupManager(models.Manager["ArticlesGroup"]):
         if tag_slugs:
             qs = qs.filter(tags__slug__in=tag_slugs)
 
-        return qs.order_by("-annot_unread_articles_count", "created_at")
+        return qs.order_by("-annot_unread_articles_count", "created_at")  # type: ignore[misc]
 
 
 class ArticlesGroup(models.Model):

@@ -8,12 +8,20 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Prevent 500 errors on 404 pages.
+- Make sure all feeds always have a title and a slugifiable title.
+- Browser extension:
+  - Prevent request duplication.
+  - Avoid errors on some failures.
+
 ## 26.03.1
 
 - Can create groups from the add article and the edit article details forms.
 - Can list groups in the API.
 - Autocomplete tags and groups from the server in form fields.
 - Rework browser extension.
+  - Improve its technical state.
+  - Add support for groups.
 
 ## 26.02.5
 

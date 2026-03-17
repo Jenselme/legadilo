@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
+from typing import Any
 
 import httpx
 import pytest
@@ -8,6 +9,7 @@ import pytest
 from legadilo.core.utils.testing import serialize_for_snapshot
 from legadilo.feeds.constants import SupportedFeedType
 from legadilo.feeds.services.feed_parsing import (
+    FeedData,
     FeedFileTooBigError,
     MultipleFeedFoundError,
     NoFeedUrlFoundError,
@@ -19,6 +21,7 @@ from legadilo.feeds.services.feed_parsing import (
     parse_feed,
 )
 
+from ... import constants
 from ..fixtures import (
     get_feed_fixture_content,
     get_page_for_feed_subscription_content,
@@ -336,3 +339,51 @@ class TestGetFeedSiteUrl:
         build_site_url = _get_feed_site_url(found_site_url, feed_url)
 
         assert build_site_url == expected_site_url
+
+
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        pytest.param(
+            {
+                "feed_url": "https://example.com/rss",
+                "site_url": "https://example.com",
+                "title": "",
+                "description": "",
+                "feed_type": constants.SupportedFeedType.rss,
+                "etag": "",
+                "last_modified": None,
+                "articles": [],
+            },
+            id="empty-title",
+        ),
+    ],
+)
+def test_build_feed_data(parameters: dict[str, Any], snapshot):
+    feed_data = FeedData(**parameters)
+
+    snapshot.assert_match(serialize_for_snapshot(feed_data), "feed_data.json")
+
+
+@pytest.mark.parametrize(
+    ("parameters", "error"),
+    [
+        pytest.param(
+            {
+                "feed_url": "https://example.com/rss",
+                "site_url": "https://example.com",
+                "title": "   ",
+                "description": "",
+                "feed_type": constants.SupportedFeedType.rss,
+                "etag": "",
+                "last_modified": None,
+                "articles": [],
+            },
+            "'' cannot be slugified",
+            id="unslugifiable-title",
+        ),
+    ],
+)
+def test_build_feed_data_with_invalid_data(parameters: dict[str, Any], error: str):
+    with pytest.raises(ValueError, match=error):
+        FeedData(**parameters)

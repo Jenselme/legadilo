@@ -451,7 +451,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
     def for_url_search(self, urls: list[str]) -> Self:
         filters = models.Q()
         for url in urls:
-            filters |= models.Q(url__icontains=url)
+            filters |= models.Q(url=url)
 
         return self.filter(filters)
 

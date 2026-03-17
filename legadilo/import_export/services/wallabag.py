@@ -14,10 +14,13 @@ from pydantic import ConfigDict, TypeAdapter
 
 from legadilo.core.utils.validators import (
     CleanedString,
+    SlugifiableValidator,
     ValidUrlValidator,
     remove_falsy_items,
     sanitize_keep_safe_tags_validator,
+    truncate,
 )
+from legadilo.reading import constants as reading_constants
 from legadilo.reading.models import Article, Tag
 from legadilo.reading.services.article_fetching import ArticleData, Language, OptionalUrl
 from legadilo.users.models import User
@@ -34,7 +37,9 @@ class WallabagArticle(BaseSchema):
     is_archived: bool
     is_starred: bool
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    title: CleanedString
+    title: Annotated[
+        CleanedString, truncate(reading_constants.ARTICLE_TITLE_MAX_LENGTH), SlugifiableValidator
+    ]
     url: Annotated[str, ValidUrlValidator]
     content: Annotated[str, sanitize_keep_safe_tags_validator()] = ""
     created_at: datetime | None = None
