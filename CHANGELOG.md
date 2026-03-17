@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Prevent 500 errors on 404 pages.
+
 ## 26.03.1
 
 - Can create groups from the add article and the edit article details forms.
