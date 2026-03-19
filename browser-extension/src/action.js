@@ -718,7 +718,7 @@ const setupArticleActions = (articleId) => {
       updateArticle({
         title: /** @type {string} */ (data.get("title")),
         tags: /** @type {string[]} */ (data.getAll("tags")),
-        group: data.get("group")?.toString(),
+        group: data.get("group")?.toString() || null,
         readingTime: Number(data.get("reading-time")),
       });
     },

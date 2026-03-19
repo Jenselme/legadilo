@@ -82,7 +82,7 @@
  * @typedef {Object} UpdateArticlePayload
  * @property {string} title
  * @property {string[]} tags
- * @property {string} [group]
+ * @property {string | null} [group]
  * @property {string | null} readAt
  * @property {boolean} isFavorite
  * @property {boolean} isForLater
