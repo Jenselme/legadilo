@@ -158,7 +158,8 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
 
 
 def _get_group(user: User, group_id: int | str | None) -> ArticlesGroup | None:
-    if group_id is None:
+    # If the group id is None or an empty slug, the group must not be created.
+    if not group_id:
         return None
 
     if isinstance(group_id, str):

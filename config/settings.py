@@ -613,8 +613,11 @@ if DEBUG:
     if env("USE_DOCKER", default="no") == "yes":
         import socket
 
-        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())  # type: ignore[assignment]
-        INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]  # noqa: RUF005
+        try:
+            hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())  # type: ignore[assignment]
+            INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]  # noqa: RUF005
+        except socket.gaierror:
+            pass
 
 
 # Sentry

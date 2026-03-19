@@ -378,6 +378,25 @@ class TestCreateArticleView:
         assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
         assert Article.objects.count() == 0
 
+    def test_create_link_with_empty_group_id(self, user, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {
+                "url": "https://example.com/some-link",
+                "group_id": "",
+                "content": "Just some text",
+                "content_type": "text/plain",
+                "title": "My article",
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert Article.objects.count() == 1
+        article = Article.objects.get()
+        assert article.group is None
+        assert ArticlesGroup.objects.count() == 0
+
 
 @pytest.mark.django_db
 class TestListArticleView:
@@ -584,6 +603,22 @@ class TestUpdateArticleView:
         assert response.status_code == HTTPStatus.OK
         self.article.refresh_from_db()
         assert self.article.group is None
+
+    def test_update_with_empty_group_id(self, logged_in_sync_client):
+        initial_group_count = ArticlesGroup.objects.count()
+
+        response = logged_in_sync_client.patch(
+            self.url,
+            {
+                "group_id": "",
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        self.article.refresh_from_db()
+        assert self.article.group is None
+        assert ArticlesGroup.objects.count() == initial_group_count
 
 
 @pytest.mark.django_db
