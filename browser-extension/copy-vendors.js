@@ -9,7 +9,6 @@ const fs = require("fs");
 const vendorFiles = [
   "node_modules/@mozilla/readability/Readability.js",
   "node_modules/bootstrap/dist/css/bootstrap.css",
-  "node_modules/bootstrap/dist/js/bootstrap.js",
   "node_modules/bootstrap5-tags/tags.js",
 ];
 
