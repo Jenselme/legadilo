@@ -8,6 +8,13 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.03.3
+
+Browser extension:
+- Remove the unused Bootstrap JS from the extension.
+- Correct the order of the fields on the article form so it makes more sense.
+- Correct a bug that would create empty groups when updating an article.
+
 ## 26.03.2
 
 - Prevent 500 errors on 404 pages.
