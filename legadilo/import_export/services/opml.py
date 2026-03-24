@@ -113,7 +113,7 @@ def _process_category(user, client, outline):
     )
     nb_imported_categories = 0
     if created:
-        logger.info(f"Imported category {category}")
+        logger.info("Imported category %s", category)
         nb_imported_categories = 1
     nb_imported_feeds = 0
     for feed_outline in outline.children_outline:
@@ -128,7 +128,7 @@ def _process_category(user, client, outline):
 def _process_feed(user, client, outline, category=None):
     nb_imported_feeds = 0
     try:
-        logger.debug(f"Importing feed {outline.feed_url}")
+        logger.debug("Importing feed %s", outline.feed_url)
         feed_data = get_feed_data(outline.feed_url, client=client)
         _feed, created = Feed.objects.create_from_metadata(
             feed_data,
@@ -140,10 +140,10 @@ def _process_feed(user, client, outline, category=None):
         )
         if created:
             nb_imported_feeds += 1
-        logger.debug(f"Feed {outline.feed_url} imported successfully with all its metadata")
+        logger.debug("Feed %s imported successfully with all its metadata", outline.feed_url)
     except httpx.HTTPError:
         logger.exception(
-            f"Failed to import feed {outline.feed_url}. Created with basic data and disabled."
+            "Failed to import feed %s. Created with basic data and disabled.", outline.feed_url
         )
         Feed.objects.get_or_create(
             feed_url=outline.feed_url,
@@ -161,7 +161,7 @@ def _process_feed(user, client, outline, category=None):
         )
         nb_imported_feeds += 1
     except IntegrityError:
-        logger.info(f"You are already subscribed to {outline.feed_url}")
+        logger.info("You are already subscribed to %s", outline.feed_url)
     except FeedFileTooBigError, InvalidFeedFileError, PydanticValidationError:
         logger.exception("Failed to import the feed")
 

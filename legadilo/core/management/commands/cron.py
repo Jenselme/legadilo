@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         schedule = options["schedule"][0]
-        logger.info(f"Starting cron running every {schedule} hour(s)")
+        logger.info("Starting cron running every %s hour(s)", schedule)
 
         while True:
             logger.info("Starting commands")

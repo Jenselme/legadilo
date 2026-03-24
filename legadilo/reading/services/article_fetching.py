@@ -182,7 +182,7 @@ def _normalize_url(article_url: str, elt_url: str):
     try:
         return normalize_url(article_url, elt_url)
     except ValueError:
-        logger.info(f"Failed to normalize url {elt_url=} against {article_url=}")
+        logger.info("Failed to normalize url %s against %s", elt_url, article_url)
         return elt_url
 
 
