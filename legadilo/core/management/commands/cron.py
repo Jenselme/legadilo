@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import logging
-from time import sleep
+import signal
+import threading
 
 from django.core.management import BaseCommand, call_command
 
@@ -32,7 +33,16 @@ class Command(BaseCommand):
         schedule = options["schedule"][0]
         logger.info("Starting cron running every %s hour(s)", schedule)
 
-        while True:
+        shutdown_event = threading.Event()
+
+        def _signal_handler(signal, frame):
+            logger.info("Received signal %s, exiting", signal)
+            shutdown_event.set()
+
+        signal.signal(signal.SIGINT, _signal_handler)
+        signal.signal(signal.SIGTERM, _signal_handler)
+
+        while not shutdown_event.is_set():
             logger.info("Starting commands")
             call_command("update_feeds")
             call_command("clean_data")
@@ -42,4 +52,4 @@ class Command(BaseCommand):
             if schedule <= 0:
                 break
 
-            sleep(schedule * 3_600)
+            shutdown_event.wait(schedule * 3_600)
