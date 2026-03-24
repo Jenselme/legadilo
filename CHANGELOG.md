@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.03.4
+
 - Allow Markdown in all editable articles groups descriptions and articles summaries.
 - Correct preview picture URLs fallback when editing an article.
 - Make secure HSTS seconds configurable with the `DJANGO_SECURE_HSTS_SECONDS` environment variable. It still defaults to 60 seconds (the previously hardcoded value).
