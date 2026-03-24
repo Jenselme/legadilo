@@ -132,7 +132,7 @@ preview = true
 select = [
     "F", "E", "W", "C", "I", "N", "UP", "ASYNC", "S", "BLE", "FBT", "B", "A", "COM", "DTZ", "T",
     "DJ", "ICN", "RSE", "PT", "ISC", "RET", "SIM", "INT", "PTH", "ERA", "PGH", "PL", "FLY",
-    "FURB", "LOG", "RUF", "D"
+    "FURB", "LOG", "G", "RUF", "D"
 ]
 ignore = [
     "RUF012", # RUF012 Mutable class attributes should be annotated with `typing.ClassVar`

@@ -24,7 +24,7 @@
 
     {% include "reading/partials/articles_groups_metadata.html" %}
 
-    <p>{{ group.description|markdown|safe }}</p>
+    <div>{{ group.description|markdown }}</div>
 
     <div id="articles-group-edit-accordion" class="accordion mb-2">
         <div class="accordion-item">
@@ -137,7 +137,7 @@
                 <div class="card-body">
                     <h2 class="card-title">{{ article.title }}</h2>
                     {% include "reading/partials/article_metadata.html" %}
-                    <p class="card-text">{{ article.summary }}</p>
+                    <div class="card-text">{{ article.summary|truncatewords_html:100|markdown }}</div>
                 </div>
                 <div class="card-footer d-flex justify-content-end">
                     <a class="card-link"

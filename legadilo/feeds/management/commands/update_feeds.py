@@ -18,6 +18,7 @@ from legadilo.core.utils.exceptions import extract_debug_information, format_exc
 from legadilo.core.utils.http_utils import get_rss_sync_client
 from legadilo.core.utils.loggers import unlink_logger_from_sentry
 from legadilo.core.utils.time_utils import utcnow
+from legadilo.feeds import constants as feed_constants
 from legadilo.feeds.models import Feed, FeedUpdate
 from legadilo.feeds.models.feed import FeedQuerySet
 from legadilo.feeds.services.feed_parsing import get_feed_data
@@ -135,7 +136,7 @@ class Command(BaseCommand):
 
     def _update_feed_from_future(self, feed: Feed, future: Future):
         try:
-            feed_data = future.result()
+            feed_data = future.result(timeout=feed_constants.UPDATE_FEED_FUTURE_TIMEOUT)
             Feed.objects.update_feed(feed, feed_data)
         except HTTPStatusError as e:
             if e.response.status_code == HTTPStatus.NOT_MODIFIED:

@@ -19,6 +19,7 @@ from django.views.decorators.http import require_http_methods
 from legadilo.core.forms import BaseInlineTableFormSet
 from legadilo.core.forms.fields import MultipleTagsField, SlugifiableAutocompleteField
 from legadilo.core.forms.widgets import SelectAutocompleteWidget
+from legadilo.core.utils.security import sanitize_keep_safe_tags
 from legadilo.core.utils.urls import add_query_params, pop_query_param, validate_referer_url
 from legadilo.reading import constants
 from legadilo.reading.models import Article, ArticlesGroup, Tag
@@ -91,6 +92,9 @@ class ArticleGroupForm(forms.Form):
 
     class Meta:
         fields = ("title", "description", "tags")
+
+    def clean_description(self):
+        return sanitize_keep_safe_tags(self.cleaned_data["description"])
 
 
 class ArticleGroupLinkForm(forms.Form):

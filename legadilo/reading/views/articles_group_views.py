@@ -21,6 +21,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 from legadilo.core.forms.fields import ListField, MultipleTagsField
 from legadilo.core.forms.widgets import SelectMultipleAutocompleteWidget
 from legadilo.core.utils.pagination import get_requested_page
+from legadilo.core.utils.security import sanitize_keep_safe_tags
 from legadilo.core.utils.types import FormChoices
 from legadilo.core.utils.validators import get_page_number_from_request
 from legadilo.reading import constants
@@ -52,6 +53,9 @@ class EditArticlesGroupForm(forms.Form):
     def __init__(self, *args, tag_choices: FormChoices, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["tags"].choices = tag_choices  # type: ignore[attr-defined]
+
+    def clean_description(self):
+        return sanitize_keep_safe_tags(self.cleaned_data["description"])
 
 
 class ReorderArticlesForm(forms.Form):

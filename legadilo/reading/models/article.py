@@ -1066,7 +1066,7 @@ class Article(models.Model):
             self.reading_time = self.reading_time or (
                 get_nb_words_from_html(self.content) // self.user.settings.default_reading_time
             )
-            self.preview_picture_url = article_data.preview_picture_url or self.preview_picture_alt
+            self.preview_picture_url = article_data.preview_picture_url or self.preview_picture_url
             self.preview_picture_alt = article_data.preview_picture_alt or self.preview_picture_alt
             # We create the deduplicated list with dict.fromkeys and not sets to preserve the
             # initial order. We chain the iterable since they don't have the same type.

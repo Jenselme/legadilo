@@ -52,7 +52,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logger.info(
-            f"Starting import of {options['file_to_import'][0]} with type {options['source_type']}"
+            "Starting import of %s with type %s",
+            options["file_to_import"][0],
+            options["source_type"],
         )
         try:
             self._import(options)
@@ -79,22 +81,25 @@ class Command(BaseCommand):
                 nb_imported_articles = import_wallabag_json_file_path(
                     user, options["file_to_import"][0]
                 )
-                logger.info(f"Imported {nb_imported_articles} articles")
+                logger.info("Imported %s articles", nb_imported_articles)
             case "opml":
                 nb_imported_feeds, nb_imported_categories = import_opml_file_sync(
                     user, options["file_to_import"][0]
                 )
                 logger.info(
-                    f"Imported {nb_imported_feeds} feeds in {nb_imported_categories} feed "
-                    f"categories"
+                    "Imported %s feeds in %s feed categories",
+                    nb_imported_feeds,
+                    nb_imported_categories,
                 )
             case "custom_csv":
                 nb_imported_articles, nb_imported_feeds, nb_imported_categories = (
                     import_custom_csv_file(user, options["file_to_import"][0])
                 )
                 logger.info(
-                    f"Imported {nb_imported_articles} articles, {nb_imported_feeds} feeds "
-                    f"and {nb_imported_categories} feed categories"
+                    "Imported %s articles, %s feeds and %s feed categories",
+                    nb_imported_articles,
+                    nb_imported_feeds,
+                    nb_imported_categories,
                 )
             case _:
                 raise CommandError("Unknown source type")

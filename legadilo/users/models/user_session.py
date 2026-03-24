@@ -23,7 +23,7 @@ class UserSession(AbstractBaseSession):
         null=True,
     )
 
-    class Meta(AbstractBaseSession.Meta): ...  # type: ignore[name-defined]
+    class Meta(AbstractBaseSession.Meta): ...
 
     @classmethod
     def get_session_store_class(cls):

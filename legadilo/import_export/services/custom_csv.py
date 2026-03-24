@@ -132,7 +132,7 @@ def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         SSLCertVerificationError,
     ):
         logger.error(
-            f"Failed to import feed {row['feed_url']} Created with basic data and disabled."
+            "Failed to import feed %s Created with basic data and disabled.", row["feed_url"]
         )
         feed_data = FeedData(
             feed_url=row["feed_url"],
@@ -159,7 +159,7 @@ def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         feed_url_in_file_to_true_feed[row["feed_url"]] = feed
         return feed, created
     except IntegrityError:
-        logger.info(f"You are already subscribed to {row['feed_url']}")
+        logger.info("You are already subscribed to %s", row["feed_url"])
         return None, False
 
 

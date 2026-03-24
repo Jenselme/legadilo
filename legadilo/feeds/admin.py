@@ -63,7 +63,7 @@ class FeedAdmin(admin.ModelAdmin):
     def refresh_feeds(self, request, queryset):
         logger.info("Refresh selected feeds from admin")
         call_command("update_feeds", "--feed-ids", *queryset.values_list("id", flat=True))
-        logger.info(f"Refreshed {len(queryset)} feeds from admin")
+        logger.info("Refreshed %s feeds from admin", len(queryset))
 
     @admin.action(description="Force a refresh of selected feeds")
     def force_refresh_feeds(self, request, queryset):
@@ -74,7 +74,7 @@ class FeedAdmin(admin.ModelAdmin):
             *queryset.values_list("id", flat=True),
             "--force",
         )
-        logger.info(f"Refreshed {len(queryset)} feeds from admin")
+        logger.info("Refreshed %s feeds from admin", len(queryset))
 
 
 @admin.register(FeedCategory)

@@ -54,6 +54,24 @@
                     <div class="accordion-item">
                         <div class="accordion-header">
                             <button
+                                class="accordion-button collapsed p-2"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#article-summary"
+                                aria-expanded="false"
+                                aria-controls="article-summary">{% translate "Summary" %}</button>
+                        </div>
+                        <div id="article-summary"
+                             class="accordion-collapse collapse"
+                             data-bs-parent="#article-edit-accordion">
+                            <div class="accordion-body p-2 px-3">
+                                {{ article.summary|markdown }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <button
                                 class="accordion-button {% if not edit_article_form.errors %}collapsed{% endif %} p-2"
                                 type="button"
                                 data-bs-toggle="collapse"
