@@ -96,7 +96,7 @@ class ArticleCreation(Schema):
     language: Language = ""
     content_type: ContentType = "text/html"
     tags: Annotated[tuple[CleanedString, ...], remove_falsy_items(tuple)] = ()
-    group_id: int | str | None = Field(
+    group_id: int | CleanedString | None = Field(
         default=None,
         description="Id (int) or slug (str) of the group. Leave empty or set to null to not link "
         "the article to any group",
