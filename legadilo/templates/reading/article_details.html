@@ -40,7 +40,7 @@
                         <div class="mt-5">
                             {% include "reading/partials/article_danger_actions.html" with for_article_details=True vertical_group=True %}
                         </div>
-                    {% endpartialdef %}
+                    {% endpartialdef article-side-actions %}
                 </div>
             </aside>
             <article {% if article.language %}lang="{{ article.language }}"{% endif %}
@@ -151,14 +151,14 @@
                      class="d-flex d-md-none justify-content-center mt-2 mb-4">
                     {% partialdef article-mobile-actions inline %}
                         {% include 'reading/partials/article_actions.html' with for_article_details=True %}
-                    {% endpartialdef %}
+                    {% endpartialdef article-mobile-actions %}
                 </div>
                 {% include "reading/partials/article_content.html" %}
                 <footer>
                     <div id="article-bottom-actions" class="d-flex justify-content-center mt-2 mb-4">
                         {% partialdef article-bottom-actions inline %}
                             {% include 'reading/partials/article_actions.html' with for_article_details=True %}
-                        {% endpartialdef %}
+                        {% endpartialdef article-bottom-actions %}
                     </div>
                     {% if article.group %}
                         <div class="row d-flex justify-content-md-between mt-1">
@@ -203,7 +203,7 @@
                                 {% translate "Back to top" %}
                             </a>
                         </div>
-                    {% endpartialdef %}
+                    {% endpartialdef article-side-toc %}
                 </div>
             </aside>
         </div>

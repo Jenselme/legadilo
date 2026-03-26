@@ -6,7 +6,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -26,18 +26,18 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/fsfe/reuse-tool
-    rev: v6.2.0
+    rev: a1bb792acda6fd0724936b4ebbdbc8eceb9c0459 # v6.2.0
     hooks:
       - id: reuse
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: "1.29.1"
+    rev: 1db0cbd209d6c4dc78191593942e6269fae99e8d # v1.30.0
     hooks:
       - id: django-upgrade
         args: ["--target-version", "5.0"]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.2
+    rev: 75992aaa40730136014f34227e0135f63fc951b4 # v3.21.2
     hooks:
       - id: pyupgrade
         args: [--py314-plus]
@@ -58,25 +58,25 @@ repos:
         language: system
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.36.4
+    rev: 9112cb64851c95a7802358af285d21ad8b7f6437 # v1.36.4
     hooks:
       - id: djlint-django
 
   - repo: https://github.com/adamchainz/djade-pre-commit
-    rev: 1.7.0
+    rev: b8bfd27da9514450edbc0fe5254bc3ba3d3032c6 # 1.9.0
     hooks:
       - id: djade
         args: [--target-version, "5.2"]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
+    rev: 745eface02aef23e168a8afb6b5737818efbea95 # v0.11.0.1
     hooks:
       - id: shellcheck
         exclude: ".envrc"
         args: [-e, SC1091]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.40.0
+    rev: 631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
     hooks:
       - id: typos
 
