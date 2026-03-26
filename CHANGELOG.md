@@ -9,6 +9,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 ## Unreleased
 
 - Disable autocomplete for URLs. They will be unique anyway, and it’s confusing on mobile.
+- Prevent horizontal scrolling on mobile on article details with long `code` elements.
 
 ## 26.03.4
 
