@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Disable autocomplete for URLs. They will be unique anyway, and it’s confusing on mobile.
+
 ## 26.03.4
 
 - Allow Markdown in all editable articles groups descriptions and articles summaries.

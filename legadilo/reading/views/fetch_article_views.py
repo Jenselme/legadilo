@@ -37,6 +37,9 @@ class FetchArticleForm(forms.Form):
         max_length=2048,
         assume_scheme="https",
         help_text=_("URL of the article to add."),
+        widget=forms.URLInput(
+            attrs={"placeholder": "https://example.com/article", "autocomplete": "off"}
+        ),
     )
     tags = MultipleTagsField(
         label=_("Tags"),
@@ -104,6 +107,9 @@ class ArticleGroupLinkForm(forms.Form):
         max_length=2048,
         assume_scheme="https",
         help_text=_("URL of an article to add to the group."),
+        widget=forms.URLInput(
+            attrs={"placeholder": "https://example.com/article", "autocomplete": "off"}
+        ),
     )
 
 
