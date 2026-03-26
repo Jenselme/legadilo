@@ -11,7 +11,7 @@
         {{ comment_article_form.text|as_crispy_field }}
         <button class="btn btn-primary" type="submit" name="comment">{% translate "Comment" context "action" %}</button>
     </form>
-{% endpartialdef %}
+{% endpartialdef add-comment-form %}
 {% partialdef comment-card %}
     <div class="card mt-2" hx-target="this" hx-swap="outerHTML">
         <div class="card-header">
@@ -37,7 +37,7 @@
             </form>
         </div>
     </div>
-{% endpartialdef %}
+{% endpartialdef comment-card %}
 {% partialdef edit-comment-form %}
     <form hx-post="{% url 'reading:edit_comment' pk=comment.id %}"
           hx-target="this"
@@ -49,10 +49,10 @@
                 type="button"
                 hx-get="{% url 'reading:display_comment' pk=comment.id %}">{% translate "Cancel" %}</button>
     </form>
-{% endpartialdef %}
+{% endpartialdef edit-comment-form %}
 {% partialdef add-comment-success %}
     {% partial comment-card %}
     <div hx-swap-oob="outerHTML:#add-comment-form">
         {% partial add-comment-form %}
     </div>
-{% endpartialdef %}
+{% endpartialdef add-comment-success %}

@@ -32,7 +32,7 @@
             </a>
         {% endfor %}
     </div>
-{% endpartialdef %}
+{% endpartialdef reading-list-group %}
 {% block center_navbar %}
     <div id="reading-list-dropdown-menu"
          class="col col-5 d-md-none dropdown d-flex justify-content-center">
@@ -53,7 +53,7 @@
                 {% endif %}
             </button>
             <div class="p-0 dropdown-menu">{% partial reading-list-group %}</div>
-        {% endpartialdef %}
+        {% endpartialdef reading-list-dropdown-menu %}
     </div>
 {% endblock center_navbar %}
 
@@ -86,7 +86,7 @@
                                     {% plural %}
                                         {{ formatted_nb_articles }} articles in total
                                     {% endblocktranslate %}
-                                {% endpartialdef %}
+                                {% endpartialdef articles-in-total %}
                             </span>
                         </h2>
                     {% endif %}
@@ -135,7 +135,7 @@
                     {% empty %}
                         <p>{% translate "No articles to display." %}</p>
                     {% endfor %}
-                {% endpartialdef %}
+                {% endpartialdef articles-page %}
                 {% if articles_paginator.num_pages > 1 %}
                     {% translate 'Navigation between articles' as pagination_aria_label %}
                     {% include "core/partials/pagination.html" with arial_label=pagination_aria_label objects_page=articles_page elided_page_range=elided_page_range %}

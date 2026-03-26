@@ -91,13 +91,18 @@ def test_for_later_action_url(is_for_later, update_action):
             id="markdown-to-html",
         ),
         pytest.param(
+            "https://example.com [Hello](https://example.com)",
+            """<p><a href="https://example.com" rel="noopener noreferrer">https://example.com</a> <a href="https://example.com" rel="noopener noreferrer">Hello</a></p>""",  # noqa: E501
+            id="markdown-with-links",
+        ),
+        pytest.param(
             "<strong>Hello</strong>",
             "<p><strong>Hello</strong></p>",
             id="with-basic-html",
         ),
         pytest.param(
             "<script>Hello</script> World",
-            "<p>World</p>",
+            "World",
             id="with-dangerous-html",
         ),
     ],

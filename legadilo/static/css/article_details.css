@@ -50,6 +50,10 @@ pre {
   pre {
     overflow-wrap: normal;
   }
+
+  code {
+    overflow-wrap: inherit;
+  }
 }
 
 table {
