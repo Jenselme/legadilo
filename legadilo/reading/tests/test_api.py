@@ -97,6 +97,27 @@ class TestCreateArticleView:
         article = Article.objects.get()
         assert article.url == self.article_url
 
+    def test_url_from_instance(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url, {"url": "https://testserver/some/url"}, content_type="application/json"
+        )
+
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        assert (
+            response.json()
+            == {
+                "detail": [
+                    {
+                        "ctx": {"error": "https://testserver/some/url is not a valid url"},
+                        "loc": ["body", "payload", "url"],
+                        "msg": "Value error, https://testserver/some/url is not a valid url",
+                        "type": "value_error",
+                    }
+                ]
+            }
+            != {"detail": "Invalid URL: https://example.com/"}
+        )
+
     def test_create_article_from_url_only_http_failure(self, logged_in_sync_client, mocker):
         mocked_fetch_article_data = mocker.patch(
             "legadilo.reading.api.fetch_article_data",

@@ -6,6 +6,7 @@ from http import HTTPStatus
 
 import httpx
 import pytest
+from django.test import modify_settings
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
@@ -129,6 +130,19 @@ class TestAddArticle:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "reading/add_article.html"
         assert Article.objects.count() == 0
+
+    @modify_settings(ALLOWED_HOSTS={"append": ["testserver.com"]})
+    def test_url_from_instance(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {"add_article": "", "url": "https://testserver.com/url"},
+            HTTP_REFERER="https://testserver.com/reading/",
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["add_article_form"].errors == {
+            "url": ["The URL cannot be from the instance."]
+        }
 
     def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
@@ -366,6 +380,20 @@ class TestAddArticlesGroup:
         assert response.context_data["article_group_link_formset"].errors == []
         assert Article.objects.count() == 0
         assert ArticlesGroup.objects.count() == 0
+
+    @modify_settings(ALLOWED_HOSTS={"append": ["testserver.com"]})
+    def test_url_from_instance(self, logged_in_sync_client):
+        response = logged_in_sync_client.post(
+            self.url,
+            {**self.sample_payload, "form-0-url": "https://testserver.com/url"},
+            HTTP_REFERER="https://testserver.com/reading/",
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["article_group_link_formset"].errors == [
+            {"url": ["The URL cannot be from the instance."]},
+            {},
+        ]
 
 
 @pytest.mark.django_db
