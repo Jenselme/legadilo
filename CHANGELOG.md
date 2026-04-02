@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+- Prevent saving links from the instance. It’s always a mistake.
+
 ## 26.03.5
 
 - Disable autocomplete for URLs. They will be unique anyway, and it’s confusing on mobile.

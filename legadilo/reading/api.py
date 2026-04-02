@@ -5,14 +5,16 @@
 from datetime import datetime
 from http import HTTPStatus
 from typing import Annotated, Self
+from urllib.parse import urlparse
 
+from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from legadilo.core.utils.api import ApiError, NotSet, update_model_from_schema
@@ -107,6 +109,15 @@ class ArticleCreation(Schema):
         "the page to let the backend extract the content of the article. It must be false if "
         "content is the extracted content of the article and must be saved directly.",
     )
+
+    @field_validator("url", mode="after")
+    @classmethod
+    def check_url_is_not_from_instance(cls, value: str) -> str:
+        domain = urlparse(value).netloc
+        if domain in settings.ALLOWED_HOSTS:
+            raise ValueError("The URL cannot be from the instance.")
+
+        return value
 
     @model_validator(mode="after")
     def check_title_and_content(self) -> Self:

@@ -3,10 +3,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from urllib.parse import urlparse
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms import formset_factory
 from django.http import HttpResponseRedirect
@@ -29,6 +32,14 @@ from legadilo.reading.services.article_fetching import (
 )
 from legadilo.reading.services.articles_groups import SaveArticlesGroupResult, save_articles_group
 from legadilo.users.user_types import AuthenticatedHttpRequest
+
+
+def _clean_url(form):
+    domain = urlparse(form.cleaned_data["url"]).netloc
+    if domain in settings.ALLOWED_HOSTS:
+        raise ValidationError(_("The URL cannot be from the instance."), code="url-from-instance")
+
+    return form.cleaned_data["url"]
 
 
 class FetchArticleForm(forms.Form):
@@ -64,6 +75,8 @@ class FetchArticleForm(forms.Form):
 
     class Meta:
         fields = ("url", "tags")
+
+    clean_url = _clean_url
 
 
 class ArticleGroupForm(forms.Form):
@@ -111,6 +124,8 @@ class ArticleGroupLinkForm(forms.Form):
             attrs={"placeholder": "https://example.com/article", "autocomplete": "off"}
         ),
     )
+
+    clean_url = _clean_url
 
 
 @require_http_methods(["GET", "POST"])

@@ -130,6 +130,19 @@ class TestAddArticle:
         assert response.template_name == "reading/add_article.html"
         assert Article.objects.count() == 0
 
+    def test_url_from_instance(self, logged_in_sync_client, settings):
+        settings.ALLOWED_HOSTS.append("testserver.com")
+        response = logged_in_sync_client.post(
+            self.url,
+            {"add_article": "", "url": "https://testserver.com/url"},
+            HTTP_REFERER="https://testserver.com/reading/",
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["add_article_form"].errors == {
+            "url": ["The URL cannot be from the instance."]
+        }
+
     def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
         httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
 
@@ -366,6 +379,20 @@ class TestAddArticlesGroup:
         assert response.context_data["article_group_link_formset"].errors == []
         assert Article.objects.count() == 0
         assert ArticlesGroup.objects.count() == 0
+
+    def test_url_from_instance(self, logged_in_sync_client, settings):
+        settings.ALLOWED_HOSTS.append("testserver.com")
+        response = logged_in_sync_client.post(
+            self.url,
+            {**self.sample_payload, "form-0-url": "https://testserver.com/url"},
+            HTTP_REFERER="https://testserver.com/reading/",
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.context_data["article_group_link_formset"].errors == [
+            {"url": ["The URL cannot be from the instance."]},
+            {},
+        ]
 
 
 @pytest.mark.django_db

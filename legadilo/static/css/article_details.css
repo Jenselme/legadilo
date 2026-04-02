@@ -27,6 +27,7 @@ blockquote {
   padding: 0 1em;
   color: var(--bs-secondary-color);
   border-left: 0.25em solid var(--bs-border-color);
+  max-width: calc(100vw - 1.5em);
 }
 
 figcaption {
