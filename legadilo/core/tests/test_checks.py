@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 from django.db import models
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase
 from django.test.utils import isolate_apps
 
 from ..checks import check_dev_mode, check_model_names
@@ -22,18 +22,21 @@ def mock_dev_mode(value):
 
 
 class CheckDevModeTests:
-    def test_success_dev_mode(self):
-        with override_settings(DEBUG=True), mock_dev_mode(True):
+    def test_success_dev_mode(self, settings):
+        settings.DEBUG = True
+        with mock_dev_mode(True):
             result = check_dev_mode()
             assert result == []
 
-    def test_success_not_debug(self):
-        with override_settings(DEBUG=False), mock_dev_mode(False):
+    def test_success_not_debug(self, settings):
+        settings.DEBUG = False
+        with mock_dev_mode(False):
             result = check_dev_mode()
             assert result == []
 
-    def test_fail_not_dev_mode(self):
-        with override_settings(DEBUG=True), mock_dev_mode(False):
+    def test_fail_not_dev_mode(self, settings):
+        settings.DEBUG = True
+        with mock_dev_mode(False):
             result = check_dev_mode()
             assert len(result) == 1
             assert result[0].id == "legadilo.W001"

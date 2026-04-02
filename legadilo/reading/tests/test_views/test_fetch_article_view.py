@@ -6,7 +6,6 @@ from http import HTTPStatus
 
 import httpx
 import pytest
-from django.test import modify_settings
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
@@ -131,8 +130,8 @@ class TestAddArticle:
         assert response.template_name == "reading/add_article.html"
         assert Article.objects.count() == 0
 
-    @modify_settings(ALLOWED_HOSTS={"append": ["testserver.com"]})
-    def test_url_from_instance(self, logged_in_sync_client):
+    def test_url_from_instance(self, logged_in_sync_client, settings):
+        settings.ALLOWED_HOSTS.append("testserver.com")
         response = logged_in_sync_client.post(
             self.url,
             {"add_article": "", "url": "https://testserver.com/url"},
@@ -381,8 +380,8 @@ class TestAddArticlesGroup:
         assert Article.objects.count() == 0
         assert ArticlesGroup.objects.count() == 0
 
-    @modify_settings(ALLOWED_HOSTS={"append": ["testserver.com"]})
-    def test_url_from_instance(self, logged_in_sync_client):
+    def test_url_from_instance(self, logged_in_sync_client, settings):
+        settings.ALLOWED_HOSTS.append("testserver.com")
         response = logged_in_sync_client.post(
             self.url,
             {**self.sample_payload, "form-0-url": "https://testserver.com/url"},

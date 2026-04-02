@@ -8,7 +8,6 @@ import pytest
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.test import modify_settings, override_settings
 from django.urls import reverse
 
 from legadilo.core.models import Timezone
@@ -21,9 +20,10 @@ class TestUserRegistration:
     user_email = "tester@legadilo.eu"
     password = "tester-password"  # noqa: S105 possible hardcoded password.
 
-    @override_settings(CONTACT_EMAIL="contact@legadilo.eu", VERSION="0.0.0")
-    @modify_settings(MIDDLEWARE={"remove": ["legadilo.core.middlewares.CSPMiddleware"]})
-    def test_registration_success(self, client, utc_tz, mocker, snapshot):
+    def test_registration_success(self, client, utc_tz, mocker, snapshot, settings):
+        settings.CONTACT_EMAIL = "contact@legadilo.eu"
+        settings.VERSION = "0.0.0"
+        settings.MIDDLEWARE.remove("legadilo.core.middlewares.CSPMiddleware")
         self.client = client
         self.mocker = mocker
         self.snapshot = snapshot

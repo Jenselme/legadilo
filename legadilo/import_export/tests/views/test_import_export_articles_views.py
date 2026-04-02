@@ -11,7 +11,6 @@ from django.conf import settings
 from django.contrib.messages import DEFAULT_LEVELS, get_messages
 from django.contrib.messages.storage.base import Message
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
-from django.test import override_settings
 from django.urls import reverse
 
 from legadilo.conftest import assert_redirected_to_login_page
@@ -177,8 +176,8 @@ class TestImportCustomCSV:
             )
         ]
 
-    @override_settings(FILE_UPLOAD_MAX_MEMORY_SIZE=0)
-    def test_import_temporary_file(self, logged_in_sync_client, httpx_mock):
+    def test_import_temporary_file(self, logged_in_sync_client, httpx_mock, settings):
+        settings.FILE_UPLOAD_MAX_MEMORY_SIZE = 0
         httpx_mock.add_response(
             url="https://example.com/rss2.xml",
             content=get_feed_fixture_content("sample_rss.xml"),
