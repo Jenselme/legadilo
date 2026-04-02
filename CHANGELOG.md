@@ -8,6 +8,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+## 26.04.1
+
 - Prevent saving links from the instance. It’s always a mistake.
 
 ## 26.03.5
