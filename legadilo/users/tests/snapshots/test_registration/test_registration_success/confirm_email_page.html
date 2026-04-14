@@ -82,30 +82,20 @@
 </svg>
 <!-- Ends icons for theme selector -->
 <div class="content-main-container">
-    <div id="danger-modal"
-         class="modal fade"
-         tabindex="-1"
-         aria-labelledby=""
-         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5"></h1>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                </div>
-                <div class="modal-body"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">No</button>
-                    <button type="button"
-                            class="btn btn-danger proceed">Yes</button>
-                </div>
-            </div>
+    <dialog id="danger-modal" aria-labelledby="danger-modal-title">
+        <div class="modal-header">
+            <h1 id="danger-modal-title" class="modal-title fs-5"></h1>
+            <button type="button"
+                    class="btn-close"
+                    id="danger-modal-close-btn"
+                    aria-label="Close"></button>
         </div>
-    </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="danger-modal-cancel-btn">No</button>
+            <button type="button" class="btn btn-danger proceed">Yes</button>
+        </div>
+    </dialog>
     
         <div class="header-container mb-1 sticky-top">
             <nav class="navbar navbar-expand-md bd-navbar bg-body-tertiary">

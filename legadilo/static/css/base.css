@@ -145,6 +145,94 @@ svg.bi {
   display: block !important;
 }
 
+/* Native dialog styling */
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dialog-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes backdrop-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+dialog {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  padding: 0;
+  min-width: min(500px, 90vw);
+  animation: dialog-fade-in 0.2s ease-out;
+}
+
+dialog.closing {
+  animation: dialog-fade-out 0.2s ease-in forwards;
+}
+
+dialog::backdrop {
+  background-color: rgb(0 0 0 / 50%);
+  animation: backdrop-fade-in 0.2s ease-out;
+}
+
+dialog.closing::backdrop {
+  animation: backdrop-fade-out 0.2s ease-in forwards;
+}
+
+dialog .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+dialog .modal-body {
+  padding: 1rem;
+}
+
+dialog .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+
 /* For the honeypot field */
 input[name="email_address_confirmation"] {
   position: absolute;
