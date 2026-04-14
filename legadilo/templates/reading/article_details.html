@@ -50,102 +50,67 @@
                     <div
                         class="text-secondary">{% include 'reading/partials/article_metadata.html' %}</div>
                 </header>
-                <div id="article-edit-accordion" class="accordion">
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <button
-                                class="accordion-button collapsed p-2"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#article-summary"
-                                aria-expanded="false"
-                                aria-controls="article-summary">{% translate "Summary" %}</button>
+                <div>
+                    <details name="article-details">
+                        <summary class="p-2">{% translate "Summary" %}</summary>
+                        <div class="p-2">
+                            {{ article.summary|markdown }}
                         </div>
-                        <div id="article-summary"
-                             class="accordion-collapse collapse"
-                             data-bs-parent="#article-edit-accordion">
-                            <div class="accordion-body p-2 px-3">
-                                {{ article.summary|markdown }}
+                    </details>
+                    <details name="article-details" {% if edit_article_form.errors %}open{% endif %}>
+                        <summary class="p-2">{% translate "Update article" %}</summary>
+                        <div class="p-3">
+                            <div class="row">
+                                <form class="align-items-center p-0 p-md-0 col-md-9 col-12"
+                                      method="post"
+                                      hx-indicator=".{{ article|article_action_indicator }}"
+                                      hx-boost="true"
+                                      hx-push-url="false">
+                                    {% csrf_token %}
+                                    {{ edit_article_form|crispy }}
+                                    <button class="btn btn-outline-primary w-100 mt-1"
+                                            type="submit">
+                                        <span
+                                            class="icon-indicator {{ article|article_action_indicator }}">
+                                            {% include "core/partials/button_loading_indicator.html" %}
+                                        </span>
+                                        {% translate "Update article" %}
+                                    </button>
+                                </form>
+                                <form
+                                    class="col-12 col-md-3 p-0 mt-1 d-flex px-md-1 align-items-end"
+                                    aria-hidden="true"
+                                    method="post"
+                                    action="{% url 'reading:refetch_article' %}"
+                                    hx-boost="true"
+                                    hx-push-url="true"
+                                    hx-indicator=".{{ article|article_action_indicator }}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="url" value="{{ article.url }}"/>
+                                    <button
+                                        class="btn btn-outline-secondary text-start col-12 text-center">
+                                        <span
+                                            class="icon-indicator {{ article|article_action_indicator }}">
+                                            {% include "core/partials/button_loading_indicator.html" %}
+                                            {% include "core/partials/bs-icon.html" with name="arrow-clockwise" %}
+                                        </span>
+                                        {% translate 'Re-fetch content' %}
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    </div>
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <button
-                                class="accordion-button {% if not edit_article_form.errors %}collapsed{% endif %} p-2"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#article-edit"
-                                aria-expanded="{% if edit_article_form.errors %}true{% else %}false{% endif %}"
-                                aria-controls="article-edit">{% translate "Update article" %}</button>
-                        </div>
-                        <div id="article-edit"
-                             class="accordion-collapse collapse {% if edit_article_form.errors %}show{% endif %}"
-                             data-bs-parent="#article-edit-accordion">
-                            <div class="accordion-body p-2 px-3">
-                                <div class="row">
-                                    <form class="align-items-center p-0 p-md-0 col-md-9 col-12"
-                                          method="post"
-                                          hx-indicator=".{{ article|article_action_indicator }}"
-                                          hx-boost="true"
-                                          hx-push-url="false">
-                                        {% csrf_token %}
-                                        {{ edit_article_form|crispy }}
-                                        <button class="btn btn-outline-primary w-100 mt-1"
-                                                type="submit">
-                                            <span
-                                                class="icon-indicator {{ article|article_action_indicator }}">
-                                                {% include "core/partials/button_loading_indicator.html" %}
-                                            </span>
-                                            {% translate "Update article" %}
-                                        </button>
-                                    </form>
-                                    <form
-                                        class="col-12 col-md-3 p-0 mt-1 d-flex px-md-1 align-items-end"
-                                        aria-hidden="true"
-                                        method="post"
-                                        action="{% url 'reading:refetch_article' %}"
-                                        hx-boost="true"
-                                        hx-push-url="true"
-                                        hx-indicator=".{{ article|article_action_indicator }}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="url" value="{{ article.url }}"/>
-                                        <button
-                                            class="btn btn-outline-secondary text-start col-12 text-center">
-                                            <span
-                                                class="icon-indicator {{ article|article_action_indicator }}">
-                                                {% include "core/partials/button_loading_indicator.html" %}
-                                                {% include "core/partials/bs-icon.html" with name="arrow-clockwise" %}
-                                            </span>
-                                            {% translate 'Re-fetch content' %}
-                                        </button>
-                                    </form>
-                                </div>
+                    </details>
+                    <details name="article-details">
+                        <summary class="p-2">{% translate "Comments" %}</summary>
+                        <div class="p-2">
+                            {% include "reading/partials/comment.html#add-comment-form" with article_id=article.id %}
+                            <div id="all-comments" class="mt-3">
+                                {% for comment in article.comments.all %}
+                                    {% include "reading/partials/comment.html#comment-card" with comment=comment %}
+                                {% endfor %}
                             </div>
                         </div>
-                    </div>
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <button class="accordion-button collapsed p-2"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#article-comment"
-                                    aria-expanded="false"
-                                    aria-controls="article-comment">{% translate "Comments" %}</button>
-                        </div>
-                        <div id="article-comment"
-                             class="accordion-collapse collapse"
-                             data-bs-parent="#article-edit-accordion">
-                            <div class="accordion-body p-2 px-3">
-                                {% include "reading/partials/comment.html#add-comment-form" with article_id=article.id %}
-                                <div id="all-comments" class="mt-3">
-                                    {% for comment in article.comments.all %}
-                                        {% include "reading/partials/comment.html#comment-card" with comment=comment %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </details>
                 </div>
                 <div id="article-mobile-actions"
                      class="d-flex d-md-none justify-content-center mt-2 mb-4">

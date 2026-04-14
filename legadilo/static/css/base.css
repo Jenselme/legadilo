@@ -135,6 +135,83 @@ html {
   }
 }
 
+/* Style details/summary elements like Bootstrap accordions */
+details {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  margin-bottom: 0.25rem;
+}
+
+details[name] + details[name] {
+  margin-top: -1px;
+  margin-bottom: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+details[name]:has(+ details[name]) {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+details > summary {
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  background-color: var(--bs-tertiary-bg);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+}
+
+details[open] > summary {
+  border-bottom: 1px solid var(--bs-border-color);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background-color: var(--bs-primary-bg-subtle);
+}
+
+details > summary.p-2 {
+  padding: 0.5rem !important;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details > summary::after {
+  content: "";
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  transition: transform 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+details[open] > summary::after {
+  transform: rotate(-180deg);
+}
+
+details > summary:hover {
+  background-color: var(--bs-secondary-bg);
+}
+
+details > summary:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgb(var(--bs-primary-rgb), 0.25);
+  background-color: var(--bs-secondary-bg);
+  border-color: rgb(var(--bs-primary-rgb), 0.25);
+}
+
+[data-bs-theme="dark"] details > summary::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23dee2e6'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
 /* For the theme switcher */
 svg.bi {
   width: 1rem;
