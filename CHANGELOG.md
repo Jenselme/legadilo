@@ -8,6 +8,9 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## Unreleased
 
+Extension:
+- Restore the possibility to save articles from reading view.
+
 ## 26.04.1
 
 - Prevent saving links from the instance. It’s always a mistake.

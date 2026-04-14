@@ -49,8 +49,7 @@ const updateExtensionForTab = async (tabId) => {
 
   const { instanceUrl } = await loadOptions();
   const isInstanceUrl = url.startsWith(instanceUrl);
-  const isBrowserInternalUrl =
-    url.startsWith("chrome://") || url.startsWith("moz-extension://") || url.startsWith("about:");
+  const isBrowserInternalUrl = checkIsBrowserInternalUrl(url);
   const mustDisable = isInstanceUrl || isBrowserInternalUrl;
   if (mustDisable) {
     await chrome.action.disable(tabId);
@@ -102,6 +101,17 @@ if (isFirefox) {
     return true;
   });
 }
+
+/**
+ * @param {string} url
+ * @returns {boolean}
+ */
+const checkIsBrowserInternalUrl = (url) =>
+  url.startsWith("chrome://") ||
+  url.startsWith("moz-extension://") ||
+  (url.startsWith("about:") && !url.startsWith("about:reader?"));
+
+export const __test__ = { checkIsBrowserInternalUrl };
 
 /**
  * @param {RequestMessage} request
