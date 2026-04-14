@@ -6,6 +6,8 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Changelog
 
+Summary of main functional changes.
+
 ## Unreleased
 
 Extension:
