@@ -10,6 +10,8 @@ Summary of main functional changes.
 
 ## Unreleased
 
+## 26.04.2
+
 Extension:
 - Restore the possibility to save articles from reading view.
 
