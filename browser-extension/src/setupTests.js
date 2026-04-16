@@ -10,6 +10,25 @@ import { vi } from "vitest";
 /* eslint-disable-next-line no-undef */
 global.chrome = /** @type {typeof chrome} */ (
   /** @type {unknown} */ ({
+    runtime: {
+      onInstalled: { addListener: vi.fn() },
+      onMessage: { addListener: vi.fn() },
+      onConnect: { addListener: vi.fn() },
+    },
+    contextMenus: {
+      create: vi.fn(),
+      update: vi.fn(),
+      onClicked: { addListener: vi.fn() },
+    },
+    tabs: {
+      get: vi.fn(),
+      onActivated: { addListener: vi.fn() },
+      onUpdated: { addListener: vi.fn() },
+    },
+    action: {
+      enable: vi.fn(),
+      disable: vi.fn(),
+    },
     storage: {
       local: {
         get: vi.fn(),

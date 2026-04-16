@@ -19,15 +19,42 @@
       const modalTitle = elementForModal.dataset.modalTitle;
       const modalBody = elementForModal.dataset.modalBody;
       const dialogElt = document.getElementById(modalId);
-      dialogElt.setAttribute("aria-labelledby", modalTitle);
       dialogElt.querySelector(".modal-title").textContent = modalTitle;
       dialogElt.querySelector(".modal-body").textContent = modalBody;
 
-      const bsModal = new bootstrap.Modal(dialogElt);
-
       const proceedButton = dialogElt.querySelector("button.proceed");
+      const closeButton = dialogElt.querySelector("#danger-modal-close-btn");
+      const cancelButton = dialogElt.querySelector("#danger-modal-cancel-btn");
+
+      const handleClose = () => {
+        dialogElt.removeEventListener("close", closeWithAnimation);
+        dialogElt.removeEventListener("click", closeOnClickAway);
+        proceedButton.removeEventListener("click", handleProceed);
+        closeButton.removeEventListener("click", closeWithAnimation);
+        cancelButton.removeEventListener("click", closeWithAnimation);
+      };
+
+      const closeWithAnimation = () => {
+        handleClose();
+        dialogElt.classList.add("closing");
+        dialogElt.addEventListener(
+          "animationend",
+          () => {
+            dialogElt.classList.remove("closing");
+            dialogElt.open && dialogElt.close();
+          },
+          { once: true },
+        );
+      };
+
+      const closeOnClickAway = (event) => {
+        if (event.target === dialogElt) {
+          closeWithAnimation();
+        }
+      };
+
       const handleProceed = () => {
-        bsModal.hide();
+        closeWithAnimation();
         // When we use HTMX confirm, HTMX will lose the last button clicked and thus won't transmit
         // its name. It's a problem. In which case, we force it ourselves with the hx-vals attribute.
         // To avoid having multiple names in other cases (and thus interfering with form actions)
@@ -42,14 +69,16 @@
         htmxEvent.detail.issueRequest(true);
         htmxEvent.target.removeAttribute("hx-vals");
       };
-      const handleClose = () => {
-        dialogElt.removeEventListener("hide.bs.modal", handleClose);
-        proceedButton.removeEventListener("click", handleProceed);
-      };
 
-      dialogElt.addEventListener("hide.bs.modal", handleClose);
+      // In this case, the browser will close the dialog with a non-cancellable event. If the
+      // animation is set up, the dialog will close automatically due to our handler on the next
+      // open as part of the animation that didn't run previously.
+      dialogElt.addEventListener("close", handleClose);
+      dialogElt.addEventListener("click", closeOnClickAway);
       proceedButton.addEventListener("click", handleProceed);
-      bsModal.show();
+      closeButton.addEventListener("click", closeWithAnimation);
+      cancelButton.addEventListener("click", closeWithAnimation);
+      dialogElt.showModal();
     });
   };
 

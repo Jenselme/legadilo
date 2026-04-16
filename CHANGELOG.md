@@ -6,7 +6,12 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Changelog
 
+Summary of main functional changes.
+
 ## Unreleased
+
+Extension:
+- Restore the possibility to save articles from reading view.
 
 ## 26.04.1
 

@@ -34,71 +34,55 @@
                         type="submit">{% translate "Search" %}</button>
             </div>
         </div>
-        <div class="accordion mb-3" id="advanced-search-container">
-            <div class="accordion-item">
-                <div class="accordion-header">
-                    <button
-                        class="accordion-button {% if not search_form.errors %}collapsed{% endif %} p-2"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#advanced-search-fields"
-                        aria-expanded="{% if search_form.errors %}true{% else %}false{% endif %}"
-                        aria-controls="advanced-search-fields">
-                        {% translate "View advanced search fields" %}
-                    </button>
+        <details name="search-sections" class="mb-3" {% if search_form.errors %}open{% endif %}>
+            <summary class="p-2">{% translate "View advanced search fields" %}</summary>
+            <div class="p-2">
+                <div class="row">
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.order|as_crispy_field }}</div>
                 </div>
-                <div id="advanced-search-fields"
-                     class="accordion-collapse collapse {% if search_form.errors %}show{% endif %}"
-                     data-bs-parent="#advanced-search-container">
-                    <div class="accordion-body row">
-                        <div class="row">
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.order|as_crispy_field }}</div>
-                        </div>
-                        <div class="row">
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.read_status|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.favorite_status|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.for_later_status|as_crispy_field }}</div>
-                        </div>
-                        <div class="row">
-                            <div
-                                class="col col-md-3 col-12">{{ search_form.articles_max_age_value|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-3 col-12">{{ search_form.articles_max_age_unit|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-3 col-12">{{ search_form.articles_reading_time|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-3 col-12">{{ search_form.articles_reading_time_operator|as_crispy_field }}</div>
-                        </div>
-                        <div class="row">
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.include_tag_operator|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-8 col-12">{{ search_form.tags_to_include|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.exclude_tag_operator|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-8 col-12">{{ search_form.tags_to_exclude|as_crispy_field }}</div>
-                        </div>
-                        <div class="row">
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.external_tags_to_include|as_crispy_field }}</div>
-                            <div
-                                class="col col-md-4 col-12">{{ search_form.linked_with_feeds|as_crispy_field }}</div>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit"
-                                    class="btn btn-outline-primary">{% translate "Search" %}</button>
-                        </div>
-                    </div>
+                <div class="row">
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.read_status|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.favorite_status|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.for_later_status|as_crispy_field }}</div>
+                </div>
+                <div class="row">
+                    <div
+                        class="col col-md-3 col-12">{{ search_form.articles_max_age_value|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-3 col-12">{{ search_form.articles_max_age_unit|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-3 col-12">{{ search_form.articles_reading_time|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-3 col-12">{{ search_form.articles_reading_time_operator|as_crispy_field }}</div>
+                </div>
+                <div class="row">
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.include_tag_operator|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-8 col-12">{{ search_form.tags_to_include|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.exclude_tag_operator|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-8 col-12">{{ search_form.tags_to_exclude|as_crispy_field }}</div>
+                </div>
+                <div class="row">
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.external_tags_to_include|as_crispy_field }}</div>
+                    <div
+                        class="col col-md-4 col-12">{{ search_form.linked_with_feeds|as_crispy_field }}</div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit"
+                            class="btn btn-outline-primary">{% translate "Search" %}</button>
                 </div>
             </div>
-        </div>
+        </details>
     </form>
-    {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-12" %}
+    {% include "reading/partials/update_searched_articles.html" with update_articles_form=update_articles_form size="col-12" name="search-sections" %}
     <h2 class="fs-6 col-md-4 align-middle d-flex align-items-center px-0 mx-0">
         {% blocktranslate trimmed with formatted_nb_articles=total_results|intcomma count total_results=total_results %}
             {{ formatted_nb_articles }} article in total.
