@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2023-2025 Legadilo contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+services:
+  django:
+    build:
+      pull: true
+      context: .
+      dockerfile: ./devops/compose/local/django/Dockerfile
+    image: legadilo_ci_django
+    container_name: legadilo_ci_django
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./devops/envs/local/postgres
+      - ./devops/envs/local/django
+    entrypoint: ""
+    command: tail -f /dev/null
+
+  postgres:
+    build:
+      pull: true
+      context: .
+      dockerfile: ./devops/compose/production/postgres/Dockerfile
+    image: legadilo_ci_postgres
+    container_name: legadilo_ci_postgres
+    env_file:
+      - ./devops/envs/local/postgres

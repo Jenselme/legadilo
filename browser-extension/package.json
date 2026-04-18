@@ -1,6 +1,9 @@
 {
   "name": "legadilo-browser-extension",
   "version": "26.04.1",
+  "engines": {
+    "node": "lts/*"
+  },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
     "bootstrap": "^5.3.8",
@@ -9,7 +12,7 @@
   },
   "scripts": {
     "postinstall": "./copy-vendors.js",
-    "build": "web-ext build --overwrite-dest --source-dir src --ignore-files=*.test.js",
+    "build": "npm run typecheck && web-ext build --overwrite-dest --source-dir src --ignore-files=*.test.js",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "typecheck": "tsc",

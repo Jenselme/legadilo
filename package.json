@@ -1,6 +1,9 @@
 {
   "name": "legadilo",
   "version": "1.0.0",
+  "engines": {
+    "node": "lts/*"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.0.3",
