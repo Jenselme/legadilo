@@ -34,28 +34,7 @@ repos:
     rev: 1db0cbd209d6c4dc78191593942e6269fae99e8d # v1.30.0
     hooks:
       - id: django-upgrade
-        args: ["--target-version", "5.0"]
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: 75992aaa40730136014f34227e0135f63fc951b4 # v3.21.2
-    hooks:
-      - id: pyupgrade
-        args: [--py314-plus]
-
-  - repo: local
-    hooks:
-      - id: ruff-check
-        name: ruff check
-        entry: uv run ruff check --fix --force-exclude
-        types_or: [python, pyi, jupyter]
-        require_serial: true
-        language: system
-      - id: ruff-format
-        name: ruff format
-        entry: uv run ruff format --force-exclude
-        types_or: [python, pyi, jupyter]
-        require_serial: true
-        language: system
+        args: ["--target-version", "5.1"]
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: 9112cb64851c95a7802358af285d21ad8b7f6437 # v1.36.4
@@ -114,6 +93,20 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix --force-exclude
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+        language: system
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --force-exclude
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+        language: system
+
       - id: mypy
         name: mypy
         entry: env
@@ -163,18 +156,13 @@ repos:
         language: system
         pass_filenames: false
 
-      - id: pytest
-        name: pytest
-        entry: env
-        args:
-          - uv
-          - run
-          - pytest
+      - id: type-check-browser-extension
+        name: type-check-browser-extension
+        entry: npm --prefix browser-extension run typecheck
         language: system
-        types: [python]
         pass_filenames: false
-        stages:
-          - pre-push
+        types: [javascript]
+        files: "^browser-extension/.*\\.js$"
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:

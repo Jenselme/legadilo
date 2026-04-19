@@ -99,6 +99,7 @@ path = [
     ".pre-commit-config.yaml",
     ".prettierrc.json",
     ".stylelintrc.json",
+    ".nvmrc",
     "_typos.toml",
     "eslint.config.cjs",
     "package.json",
