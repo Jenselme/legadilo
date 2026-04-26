@@ -928,7 +928,7 @@ doc = [
 ]
 prod = [
     { name = "gunicorn", specifier = ">=23.0.0" },
-    { name = "sentry-sdk", extras = ["django"], specifier = ">=2.18.0" },
+    { name = "sentry-sdk", extras = ["django"], specifier = ">=2.58.0" },
 ]
 
 [[package]]
