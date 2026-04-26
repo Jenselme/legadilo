@@ -67,7 +67,7 @@ dev = [
     # Typing
     "types-python-dateutil >= 2.9.0.20240906",
     "mypy >= 1.13.0", # https://github.com/python/mypy
-    "django-stubs[compatible-mypy] >= 5.1.1", # https://github.com/typeddjango/django-stubs
+    "django-stubs[compatible-mypy]>=6.0.3", # https://github.com/typeddjango/django-stubs
     "types-beautifulsoup4 >= 4.12",
 ]
 prod = [
