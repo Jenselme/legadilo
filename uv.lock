@@ -900,7 +900,7 @@ dev = [
     { name = "django-browser-reload", specifier = ">=1.17.0" },
     { name = "django-debug-toolbar", specifier = ">=4.4.6" },
     { name = "django-extensions", specifier = ">=3.2.3" },
-    { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1.1" },
+    { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=6.0.3" },
     { name = "django-watchfiles", specifier = ">=1.0.0" },
     { name = "factory-boy", specifier = ">=3.3.1" },
     { name = "import-linter", specifier = ">=2.9" },
