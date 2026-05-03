@@ -55,7 +55,7 @@ dev = [
     # Code quality
     "pre-commit >= 4.0.1", # https://github.com/pre-commit/pre-commit
     "import-linter >= 2.9", # https://github.com/seddonym/import-linter/tree/main
-    "ruff>=0.12.0",
+    "ruff>=0.15.12",
     "reuse>=5.0.2", # To enforce license conformity: https://reuse.software/
     # Django
     "factory-boy >= 3.3.1", # https://github.com/FactoryBoy/factory_boy
