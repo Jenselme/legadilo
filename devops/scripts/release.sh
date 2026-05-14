@@ -17,7 +17,7 @@ fi
 
 docker login rg.fr-par.scw.cloud/legadilo -u nologin --password-stdin < ~/.private/scw-registry-password
 base_date_tag=$(date +%y.%m)
-last_tag=$(git tag  | sort -r | grep "${base_date_tag}"  | head -n 1)
+last_tag=$(git tag --list "${base_date_tag}.*" | sort -r | head -n 1)
 last_tag_revision=$(echo "${last_tag}" | cut -d . -f 3 -)
 new_tag_revision=$((last_tag_revision+1))
 new_tag="${base_date_tag}.${new_tag_revision}"
