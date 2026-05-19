@@ -10,6 +10,11 @@ Summary of main functional changes.
 
 ## Unreleased
 
+## 26.05.2
+
+- Update deps.
+- Revert HTMX update to prevent URL change on boosted actions.
+
 ## 26.05.1
 
 - Update deps.
