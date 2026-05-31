@@ -10,6 +10,10 @@ Summary of main functional changes.
 
 ## Unreleased
 
+## 26.05.3
+
+- Update deps.
+
 ## 26.05.2
 
 - Update deps.
