@@ -626,7 +626,7 @@ SENTRY_DSN = env.str(
     default="",
 )
 if not DEBUG and SENTRY_DSN:
-    try:
+    try:  # noqa: PLW0717
         import sentry_sdk
 
         def before_send_to_sentry(event, hint):

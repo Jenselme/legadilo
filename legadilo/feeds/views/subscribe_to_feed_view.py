@@ -185,7 +185,7 @@ def _handle_creation(
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
-    try:
+    try:  # noqa: PLW0717
         with get_rss_sync_client() as client:
             feed_medata = get_feed_data(form.feed_url, client=client)
         category = FeedCategory.objects.get_first_for_user(

@@ -100,7 +100,7 @@ def get_common_template_context(
     deleting_article: bool = False,
 ) -> dict[str, Any]:
     from_url = get_from_url_for_article_details(request, request.POST)
-    try:
+    try:  # noqa: PLW0717
         displayed_reading_list_id = int(request.POST.get("displayed_reading_list_id"))  # type: ignore[arg-type]
         displayed_reading_list = ReadingList.objects.select_related("user").get(
             id=displayed_reading_list_id
