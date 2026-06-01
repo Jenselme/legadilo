@@ -81,6 +81,7 @@ td {
 
 .article-aside {
   max-width: 300px;
+  z-index: 1;
 }
 
 .article-toc {
