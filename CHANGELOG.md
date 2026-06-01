@@ -12,6 +12,7 @@ Summary of main functional changes.
 
 - Prevent article aside to be above dropdown menu.
 - Skip invalid articles in feeds.
+- Use article URL as a fallback title if slugify fails.
 
 ## 26.05.3
 

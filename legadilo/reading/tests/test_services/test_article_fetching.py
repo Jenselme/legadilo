@@ -393,17 +393,6 @@ def test_fetch_article_data_process_fixture(process_fn: Callable[[str], str], ht
             },
             id="with-fragment-after-qs",
         ),
-    ],
-)
-def test_build_article_data(parameters: dict[str, Any], snapshot):
-    article_data = ArticleData(**parameters)
-
-    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")
-
-
-@pytest.mark.parametrize(
-    ("parameters", "error"),
-    [
         pytest.param(
             {
                 "external_article_id": "<p>external article id",
@@ -424,11 +413,11 @@ def test_build_article_data(parameters: dict[str, Any], snapshot):
                 "read_at": None,
                 "is_favorite": False,
             },
-            "'' cannot be slugified",
             id="unslugifiable-title",
         ),
     ],
 )
-def test_build_article_data_with_invalid_data(parameters: dict[str, Any], error: str):
-    with pytest.raises(ValueError, match=error):
-        ArticleData(**parameters)
+def test_build_article_data(parameters: dict[str, Any], snapshot):
+    article_data = ArticleData(**parameters)
+
+    snapshot.assert_match(serialize_for_snapshot(article_data), "article_data.json")

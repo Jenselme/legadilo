@@ -113,7 +113,7 @@ class ArticleData(BaseSchema):
         if not summary and content:
             summary = _get_fallback_summary_from_content(content)
 
-        if not title and url:
+        if not slugify(title) and url:
             title = urlparse(url).netloc
 
         if not source_title and url:
