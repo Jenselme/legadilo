@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
 from pydantic import BaseModel as BaseSchema
+from pydantic import ValidationError as PydanticValidationError
 from pydantic import model_validator
 
 from legadilo.core.utils.time_utils import dt_to_http_date
@@ -251,8 +252,9 @@ def _parse_articles_in_feed(
                     source_title=feed_title,
                 )
             )
-        except FailedToParseArticleError:
+        except FailedToParseArticleError, PydanticValidationError:
             logger.exception("Failed to parse an article")
+            continue
 
     return articles_data
 

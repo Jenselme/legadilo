@@ -10,7 +10,8 @@ Summary of main functional changes.
 
 ## Unreleased
 
-- Prevent article aside to be above dropdown menu
+- Prevent article aside to be above dropdown menu.
+- Skip invalid articles in feeds.
 
 ## 26.05.3
 
