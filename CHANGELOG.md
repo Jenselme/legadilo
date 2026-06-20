@@ -10,6 +10,10 @@ Summary of main functional changes.
 
 ## Unreleased
 
+## 26.06.2
+
+- Update deps.
+
 ## 26.06.1
 
 - Prevent article aside to be above dropdown menu.
