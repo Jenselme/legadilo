@@ -28,7 +28,7 @@ def reauthentication_bypass():
     return f
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True)  # noqa: RUF076 Avoid using autouse
 def _setup_settings(settings, tmpdir):
     settings.IS_PRODUCTION = True
     # https://docs.djangoproject.com/en/dev/ref/settings/#media-url

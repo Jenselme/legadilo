@@ -179,6 +179,7 @@ ignore = [
 "config/settings.py" = [
     "ERA001", # Found commented-out code
 ]
+"!**/conftest.py" = ["RUF076"]
 
 [tool.ruff.format]
 preview = true
