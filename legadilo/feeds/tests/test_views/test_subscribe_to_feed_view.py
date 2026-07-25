@@ -246,7 +246,7 @@ class TestSubscribeToFeedView:
     def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx_mock):
         sample_html_template = get_page_for_feed_subscription_content({
             "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
-                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">"""  # noqa: E501
+                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">"""  # ruff:ignore[line-too-long]
         })
         httpx_mock.add_response(
             text=sample_html_template,

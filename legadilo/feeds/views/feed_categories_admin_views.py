@@ -47,7 +47,7 @@ class FeedCategoryForm(forms.ModelForm):
         self._user = user
 
     @transaction.atomic()
-    def save(self, commit=True):  # noqa: FBT002 Boolean-typed positional argument in function definition
+    def save(self, commit=True):  # ruff:ignore[boolean-default-value-positional-argument]
         self.instance.user = self._user
         return super().save(commit=commit)
 

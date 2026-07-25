@@ -47,7 +47,7 @@ def truncate(max_size: int) -> AfterValidator:
     """Create a validator that truncates a string to the supplied size."""
     # We must use a lambda here: Pydantic cannot recognize the signature of
     # operator.itemgetter(slice(max_size)) if we pass it to its validator.
-    return AfterValidator(lambda value: value[:max_size])  # noqa: FURB118 don't use a lambda
+    return AfterValidator(lambda value: value[:max_size])  # ruff:ignore[reimplemented-operator]
 
 
 def remove_falsy_items(container_type: type):
@@ -90,11 +90,11 @@ def language_code_validator(value: Any):
         raise ValidationError("Value must be a string")
 
     # To catch 'fr', 'de', …
-    if len(value) == 2 and re.match(r"[a-z]{2}", value.lower()):  # noqa: PLR2004 Magic value used in comparison
+    if len(value) == 2 and re.match(r"[a-z]{2}", value.lower()):  # ruff:ignore[magic-value-comparison]
         return
 
     # To catch 'fr-FR', 'en_US', …
-    if len(value) == 5 and re.match(r"[a-z]{2}[_-][a-z]{2}", value.lower()):  # noqa: PLR2004 Magic value used in comparison
+    if len(value) == 5 and re.match(r"[a-z]{2}[_-][a-z]{2}", value.lower()):  # ruff:ignore[magic-value-comparison]
         return
 
     raise ValidationError("Language code is invalid")
@@ -194,7 +194,7 @@ def _is_not_potential_http_url(url: str) -> bool:
     return any(url.startswith(invalid_prefix) for invalid_prefix in invalid_prefixes)
 
 
-def _build_normalized_url_from_invalid_url(base_url: str, url_to_normalize: str) -> str:  # noqa: C901,PLR0912 toto complex
+def _build_normalized_url_from_invalid_url(base_url: str, url_to_normalize: str) -> str:  # ruff:ignore[complex-structure, too-many-branches]
     exception = ValueError(f"Failed to normalize URL: {url_to_normalize}")
     compiled_starts_with_scheme = re.compile(r"^https?://")
     if not url_to_normalize:

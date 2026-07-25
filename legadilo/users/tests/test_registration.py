@@ -18,7 +18,7 @@ from legadilo.users.models import UserSettings
 @pytest.mark.django_db(reset_sequences=True)
 class TestUserRegistration:
     user_email = "tester@legadilo.eu"
-    password = "tester-password"  # noqa: S105 possible hardcoded password.
+    password = "tester-password"  # ruff:ignore[hardcoded-password-string]
 
     def test_registration_success(self, client, utc_tz, mocker, snapshot, settings):
         settings.CONTACT_EMAIL = "contact@legadilo.eu"

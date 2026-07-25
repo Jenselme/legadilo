@@ -18,7 +18,7 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
-def utcdt(  # noqa: PLR0913,PLR0917 (too many arguments)
+def utcdt(  # ruff:ignore[too-many-arguments, too-many-positional-arguments]
     year: int,
     month: int,
     day: int,

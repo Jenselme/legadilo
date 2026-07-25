@@ -16,7 +16,7 @@ class CoreConfig(AppConfig):
     name = "legadilo.core"
 
     def ready(self) -> None:
-        from .checks import (  # noqa: PLC0415 `import` should be at the top-level of a file
+        from .checks import (  # ruff:ignore[import-outside-top-level]
             check_dev_mode,
             check_model_names,
         )
@@ -29,7 +29,7 @@ class CoreConfig(AppConfig):
         post_migrate.connect(self.fill_timezones, sender=self)
 
     def fill_timezones(self, **kwargs):
-        from .models import Timezone  # noqa: PLC0415 `import` should be at the top-level of a file
+        from .models import Timezone  # ruff:ignore[import-outside-top-level]
 
         timezones = [Timezone(name=tz) for tz in available_timezones()]
         Timezone.objects.bulk_create(timezones, ignore_conflicts=True, unique_fields=["name"])

@@ -20,7 +20,7 @@ def _correct_admin_url(path: str) -> str:
     return path
 
 
-urlpatterns = [  # noqa: RUF005 concatenation
+urlpatterns = [  # ruff:ignore[collection-literal-concatenation]
     path("", include("legadilo.website.urls", namespace="website")),
     # Django Admin, use {% url 'admin:index' %}
     # Make sure it's correct no matter how it's configured in the env.
@@ -61,7 +61,7 @@ if settings.DEBUG:
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
 
-        urlpatterns = [  # type: ignore[assignment] # noqa: RUF005 concatenation
+        urlpatterns = [  # type: ignore[assignment] # ruff:ignore[collection-literal-concatenation]
             path("__debug__/", include(debug_toolbar.urls))
         ] + urlpatterns  # type: ignore[operator]
     if "django_browser_reload" in settings.INSTALLED_APPS:

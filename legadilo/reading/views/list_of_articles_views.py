@@ -62,7 +62,7 @@ def reading_list_with_articles_view(
                     "articles_max_age_value": displayed_reading_list.articles_max_age_value,
                     "articles_max_age_unit": displayed_reading_list.articles_max_age_unit,
                     "articles_reading_time": displayed_reading_list.articles_reading_time,
-                    "articles_reading_time_operator": displayed_reading_list.articles_reading_time_operator,  # noqa: E501
+                    "articles_reading_time_operator": displayed_reading_list.articles_reading_time_operator,  # ruff:ignore[line-too-long]
                     "include_tag_operator": displayed_reading_list.include_tag_operator,
                     "tags_to_include": displayed_reading_list.reading_list_tags.get_selected_values(
                         constants.ReadingListTagFilterType.INCLUDE

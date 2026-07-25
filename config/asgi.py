@@ -32,7 +32,7 @@ django_application = get_asgi_application()
 # application = HelloWorldApplication(application)
 
 # Import websocket application here, so apps from django_application are loaded first
-from config.websocket import websocket_application  # noqa: E402 isort:skip
+from config.websocket import websocket_application  # ruff:ignore[module-import-not-at-top-of-file] isort:skip
 
 
 async def application(scope, receive, send):

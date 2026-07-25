@@ -10,4 +10,4 @@ class ReadingConfig(AppConfig):
     name = "legadilo.reading"
 
     def ready(self):
-        import legadilo.reading.signals  # noqa: F401,PLC0415
+        import legadilo.reading.signals  # ruff:ignore[unused-import, import-outside-top-level]

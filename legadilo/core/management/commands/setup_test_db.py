@@ -18,7 +18,7 @@ class Command(BaseCommand):
     help = "Setup a test database with an admin user, a feed and an article."
 
     email = "admin@example.com"
-    password = "password"  # noqa: S105 hardcoded password
+    password = "password"  # ruff:ignore[hardcoded-password-string]
     feeds = [
         "https://www.jujens.eu/feeds/all.atom.xml",
     ]

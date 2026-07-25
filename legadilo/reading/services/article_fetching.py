@@ -269,7 +269,7 @@ def _get_page_content(url: str) -> tuple[str, str, ContentType, str | None]:
 
 def _parse_http_equiv_refresh(value: str) -> str | None:
     raw_data = value.split(";")
-    if len(raw_data) != 2:  # noqa: PLR2004 Magic value used in comparison
+    if len(raw_data) != 2:  # ruff:ignore[magic-value-comparison]
         return None
 
     url = raw_data[1]

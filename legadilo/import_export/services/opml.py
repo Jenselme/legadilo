@@ -127,7 +127,7 @@ def _process_category(user, client, outline):
 
 def _process_feed(user, client, outline, category=None):
     nb_imported_feeds = 0
-    try:  # noqa: PLW0717
+    try:  # ruff:ignore[too-many-statements-in-try-clause]
         logger.debug("Importing feed %s", outline.feed_url)
         feed_data = get_feed_data(outline.feed_url, client=client)
         _feed, created = Feed.objects.create_from_metadata(

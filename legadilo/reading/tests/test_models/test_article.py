@@ -774,7 +774,7 @@ class TestArticleManager:
                         external_article_id="some-article-1",
                         title="Article 1",
                         summary="Summary 1",
-                        content="""<h2 id="section-title">My title</h2> <h3 id="sub-section">Sub-section</h3>Description 1"""  # noqa: E501
+                        content="""<h2 id="section-title">My title</h2> <h3 id="sub-section">Sub-section</h3>Description 1"""  # ruff:ignore[line-too-long]
                         + " word " * user.settings.default_reading_time * 3,
                         content_type="text/html",
                         table_of_content=(),

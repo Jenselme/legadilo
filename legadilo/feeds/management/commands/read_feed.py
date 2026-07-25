@@ -35,12 +35,12 @@ class Command(BaseCommand):
         parsed_feed = parse_feed(file_content, resolve_relative_uris=True, sanitize_html=False)
         feed_data = build_feed_data_from_parsed_feed(parsed_feed, options["feed_file"][0])
 
-        print(  # noqa: T201 print found
+        print(  # ruff:ignore[print]
             f"Feed {feed_data.title} ({feed_data.feed_type}) about {feed_data.description} "
             f"from {feed_data.site_url} has {len(feed_data.articles)} articles"
         )
         if options["print"]:
-            pprint(feed_data)  # noqa: T203 pprint found
+            pprint(feed_data)  # ruff:ignore[p-print]
 
     def _read_feed(self, feed_file):
         file_path = Path(feed_file)

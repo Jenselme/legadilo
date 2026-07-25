@@ -108,7 +108,7 @@ class EditFeedForm(forms.ModelForm):
 
         return FeedCategory.objects.get(user=self.instance.user, slug=self.cleaned_data["category"])
 
-    def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition
+    def save(self, commit: bool = True):  # ruff:ignore[boolean-type-hint-positional-argument, boolean-default-value-positional-argument]
         if self.cleaned_data["tags"] != self.initial["tags"]:
             FeedTag.objects.associate_feed_with_tag_slugs(
                 self.instance, self.cleaned_data["tags"], clear_existing=True

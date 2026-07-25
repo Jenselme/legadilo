@@ -10,6 +10,8 @@ Summary of main functional changes.
 
 ## Unreleased
 
+- Update deps.
+
 ## 26.06.2
 
 - Update deps.

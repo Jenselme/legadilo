@@ -36,7 +36,7 @@ class SessionStore(DBStore):
             self._user_id = s.user_id
         return s
 
-    # Used in DBStore.save()  # noqa: ERA001 Commented out code
+    # Used in DBStore.save()  # ruff:ignore[commented-out-code]
     def create_model_instance(self, data):
         return self.model(
             session_key=self._get_or_create_session_key(),  # type: ignore[attr-defined]

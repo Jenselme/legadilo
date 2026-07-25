@@ -144,7 +144,7 @@ class ReadingList(models.Model):
     articles_max_age_value = models.PositiveIntegerField(
         default=0,
         help_text=_(
-            "Articles published before today minus this number will be excluded from the reading list."  # noqa: E501
+            "Articles published before today minus this number will be excluded from the reading list."  # ruff:ignore[line-too-long]
         ),
     )
     articles_max_age_unit = models.CharField(
@@ -170,7 +170,7 @@ class ReadingList(models.Model):
         default=constants.ReadingListTagOperator.ALL,
         max_length=100,
         help_text=_(
-            "Defines whether the articles must have all or any of the tags to be included in the reading list."  # noqa: E501
+            "Defines whether the articles must have all or any of the tags to be included in the reading list."  # ruff:ignore[line-too-long]
         ),
     )
     exclude_tag_operator = models.CharField(
@@ -178,7 +178,7 @@ class ReadingList(models.Model):
         default=constants.ReadingListTagOperator.ALL,
         max_length=100,
         help_text=_(
-            "Defines whether the articles must have all or any of the tags to be excluded from the reading list."  # noqa: E501
+            "Defines whether the articles must have all or any of the tags to be excluded from the reading list."  # ruff:ignore[line-too-long]
         ),
     )
     order_direction = models.CharField(
@@ -186,7 +186,7 @@ class ReadingList(models.Model):
         default=constants.ReadingListOrderDirection.DESC,
         max_length=10,
         help_text=_(
-            "How to sort the article. ASC will put the most recent articles first. DECS will put the least recent articles first."  # noqa: E501
+            "How to sort the article. ASC will put the most recent articles first. DECS will put the least recent articles first."  # ruff:ignore[line-too-long]
         ),
     )
 

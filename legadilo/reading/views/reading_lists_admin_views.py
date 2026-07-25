@@ -122,7 +122,7 @@ class ReadingListForm(forms.ModelForm):
         }
 
     @transaction.atomic()
-    def save(self, commit: bool = True):  # noqa: FBT001,FBT002 Boolean-typed positional argument in function definition
+    def save(self, commit: bool = True):  # ruff:ignore[boolean-type-hint-positional-argument, boolean-default-value-positional-argument]
         if self.instance.id is None:
             return self._create()
 

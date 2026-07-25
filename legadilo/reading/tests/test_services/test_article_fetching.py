@@ -187,8 +187,8 @@ def test_fetch_article_data_process_fixture(process_fn: Callable[[str], str], ht
                 "external_article_id": "<p>external article id",
                 "source_title": "<p>source article title</p>",
                 "title": "<p>Title</p>",
-                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
-                "content": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a><img src="/relative.png" /><img src="https://example.com/image.png" /></p>""",  # noqa: E501
+                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # ruff:ignore[line-too-long]
+                "content": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a><img src="/relative.png" /><img src="https://example.com/image.png" /></p>""",  # ruff:ignore[line-too-long]
                 "content_type": "text/html",
                 "authors": ["<span>me</span>"],
                 "contributors": ["<span>me</span>"],
@@ -209,7 +209,7 @@ def test_fetch_article_data_process_fixture(process_fn: Callable[[str], str], ht
                 "external_article_id": "<p>external article id",
                 "source_title": "<p>source article title</p>",
                 "title": "<p>Title</p>",
-                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
+                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # ruff:ignore[line-too-long]
                 "content": """
                 <h1>Some header</h1>
                 <h2 id="test">This one has an id</h2>
@@ -237,7 +237,7 @@ def test_fetch_article_data_process_fixture(process_fn: Callable[[str], str], ht
                 "external_article_id": "<p>external article id",
                 "source_title": "<p>source article title</p>",
                 "title": "<p>Title</p>",
-                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
+                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # ruff:ignore[line-too-long]
                 "content": """
                 <img src="data:image/png;base64" />
                 """,
@@ -261,7 +261,7 @@ def test_fetch_article_data_process_fixture(process_fn: Callable[[str], str], ht
                 "external_article_id": "<p>external article id",
                 "source_title": "<p>source article title</p>",
                 "title": "<p>Title</p>",
-                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # noqa: E501
+                "summary": """<p><a href="/relative">Link 1</a><a href="https://example.com/abs">Link 1</a></p>""",  # ruff:ignore[line-too-long]
                 "content": """
                 <h1>1st h1</h1>
                 <h1>2nd h1</h1>

@@ -28,7 +28,7 @@ def reauthentication_bypass():
     return f
 
 
-@pytest.fixture(autouse=True)  # noqa: RUF076 Avoid using autouse
+@pytest.fixture(autouse=True)
 def _setup_settings(settings, tmpdir):
     settings.IS_PRODUCTION = True
     # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
@@ -81,5 +81,5 @@ def logged_in_other_user_sync_client(other_user, client):
 
 
 def assert_redirected_to_login_page(response):
-    assert response.status_code == HTTPStatus.FOUND  # noqa: S101 use of assert detected
-    assert reverse("account_login") in response["Location"]  # noqa: S101 use of assert detected
+    assert response.status_code == HTTPStatus.FOUND  # ruff:ignore[assert]
+    assert reverse("account_login") in response["Location"]  # ruff:ignore[assert]

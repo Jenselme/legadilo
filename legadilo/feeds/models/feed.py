@@ -60,9 +60,9 @@ def _build_refresh_filters(
         )
 
     scheduled_conditions: dict[feeds_constants.FeedRefreshDelays, bool] = {
-        feeds_constants.FeedRefreshDelays.EVERY_MORNING: 8 <= now.hour <= 10,  # noqa: PLR2004 Magic value used in comparison
-        feeds_constants.FeedRefreshDelays.DAILY_AT_NOON: 12 <= now.hour <= 14,  # noqa: PLR2004 Magic value used in comparison
-        feeds_constants.FeedRefreshDelays.EVERY_EVENING: 20 <= now.hour <= 22,  # noqa: PLR2004 Magic value used in comparison
+        feeds_constants.FeedRefreshDelays.EVERY_MORNING: 8 <= now.hour <= 10,  # ruff:ignore[magic-value-comparison]
+        feeds_constants.FeedRefreshDelays.DAILY_AT_NOON: 12 <= now.hour <= 14,  # ruff:ignore[magic-value-comparison]
+        feeds_constants.FeedRefreshDelays.EVERY_EVENING: 20 <= now.hour <= 22,  # ruff:ignore[magic-value-comparison]
         feeds_constants.FeedRefreshDelays.ON_MONDAYS: now.weekday() == calendar.MONDAY,
         feeds_constants.FeedRefreshDelays.ON_THURSDAYS: now.weekday() == calendar.THURSDAY,
         feeds_constants.FeedRefreshDelays.ON_SATURDAYS: now.weekday() == calendar.SATURDAY,
@@ -70,7 +70,7 @@ def _build_refresh_filters(
         feeds_constants.FeedRefreshDelays.TWICE_A_WEEK: now.weekday()
         in {calendar.MONDAY, calendar.THURSDAY},
         feeds_constants.FeedRefreshDelays.FIRST_DAY_OF_THE_MONTH: now.day == 1,
-        feeds_constants.FeedRefreshDelays.MIDDLE_OF_THE_MONTH: now.day == 15,  # noqa: PLR2004 Magic value used in comparison
+        feeds_constants.FeedRefreshDelays.MIDDLE_OF_THE_MONTH: now.day == 15,  # ruff:ignore[magic-value-comparison]
         feeds_constants.FeedRefreshDelays.END_OF_THE_MONTH: now.day == last_day_of_month,
         feeds_constants.FeedRefreshDelays.THRICE_A_MONTH: now.day in {5, 15, 25},
     }
@@ -181,7 +181,7 @@ class FeedManager(models.Manager["Feed"]):
         return cast(ArticleQuerySet, feed.articles.all()).for_feed()
 
     @transaction.atomic()
-    def create_from_metadata(  # noqa: PLR0913 too many arguments
+    def create_from_metadata(  # ruff:ignore[too-many-arguments]
         self,
         feed_data: FeedData,
         user: User,

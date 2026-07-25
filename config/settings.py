@@ -47,7 +47,7 @@ ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
     default=["www.legadilo.eu", "legadilo.eu"]
     if IS_PRODUCTION
-    else ["localhost", "0.0.0.0", "127.0.0.1"],  # noqa: S104 binding to all interfaces
+    else ["localhost", "0.0.0.0", "127.0.0.1"],  # ruff:ignore[hardcoded-bind-all-interfaces]
 )
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -583,7 +583,7 @@ AXES_LOCKOUT_PARAMETERS = ["username"]
 # Disable logging the IP-Address of failed login attempts by returning None for attempts to get the
 # IP.
 # Ignore assigning a lambda function to a variable for brevity
-AXES_CLIENT_IP_CALLABLE = lambda x: None  # noqa: E731
+AXES_CLIENT_IP_CALLABLE = lambda x: None  # ruff:ignore[lambda-assignment]
 
 
 # Set dev tooling
@@ -614,7 +614,7 @@ if DEBUG:
 
         try:
             hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())  # type: ignore[assignment]
-            INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]  # noqa: RUF005
+            INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]  # ruff:ignore[collection-literal-concatenation]
         except socket.gaierror:
             pass
 
@@ -626,7 +626,7 @@ SENTRY_DSN = env.str(
     default="",
 )
 if not DEBUG and SENTRY_DSN:
-    try:  # noqa: PLW0717
+    try:  # ruff:ignore[too-many-statements-in-try-clause]
         import sentry_sdk
 
         def before_send_to_sentry(event, hint):
@@ -653,7 +653,7 @@ if not DEBUG and SENTRY_DSN:
             send_default_pii=True,
         )
     except ImportError:
-        print("Failed to import sentry_sdk")  # noqa: T201 print found
+        print("Failed to import sentry_sdk")  # ruff:ignore[print]
 
 
 # django-ninja

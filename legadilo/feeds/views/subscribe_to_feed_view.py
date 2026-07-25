@@ -124,7 +124,7 @@ class SubscribeToFeedForm(forms.Form):
         if not isinstance(choices, list):
             return []
         for value in choices:
-            if len(value) != 2 or not isinstance(value[0], str) or not isinstance(value[1], str):  # noqa: PLR2004
+            if len(value) != 2 or not isinstance(value[0], str) or not isinstance(value[1], str):  # ruff:ignore[magic-value-comparison]
                 return []
 
         return choices
@@ -185,7 +185,7 @@ def _handle_creation(
     if not form.is_valid():
         return HTTPStatus.BAD_REQUEST, form, None
 
-    try:  # noqa: PLW0717
+    try:  # ruff:ignore[too-many-statements-in-try-clause]
         with get_rss_sync_client() as client:
             feed_medata = get_feed_data(form.feed_url, client=client)
         category = FeedCategory.objects.get_first_for_user(

@@ -47,8 +47,8 @@ class ArticlesGroupQuerySet(models.QuerySet["ArticlesGroup"]):
                 "articles", filter=models.Q(articles__is_read=False)
             ),
             annot_has_unread_articles=models.Case(
-                models.When(annot_unread_articles_count__gt=0, then=models.Value(True)),  # noqa: FBT003 boolean-positional-value
-                default=models.Value(False),  # noqa: FBT003 boolean-positional-value
+                models.When(annot_unread_articles_count__gt=0, then=models.Value(True)),  # ruff:ignore[boolean-positional-value-in-call]
+                default=models.Value(False),  # ruff:ignore[boolean-positional-value-in-call]
                 output_field=models.BooleanField(),
             ),
             annot_total_reading_time=models.Sum("articles__reading_time"),

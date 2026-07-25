@@ -78,9 +78,9 @@ class TestReadingListModel:
     def test_cannot_create_multiple_default_lists_for_one_user(self, user):
         ReadingListFactory(user=user, is_default=True)
         if connection.vendor == "postgresql":
-            message = 'duplicate key value violates unique constraint "reading_readinglist_enforce_one_default_reading_list"'  # noqa: E501
+            message = 'duplicate key value violates unique constraint "reading_readinglist_enforce_one_default_reading_list"'  # ruff:ignore[line-too-long]
         else:
-            message = "UNIQUE constraint failed: reading_readinglist.is_default, reading_readinglist.user_id"  # noqa: E501
+            message = "UNIQUE constraint failed: reading_readinglist.is_default, reading_readinglist.user_id"  # ruff:ignore[line-too-long]
 
         with pytest.raises(IntegrityError, match=message):
             ReadingListFactory(user=user, is_default=True)
@@ -94,7 +94,7 @@ class TestReadingListModel:
     def test_cannot_create_multiple_lists_with_same_slug_for_one_user(self, user):
         ReadingListFactory(user=user, title="Reading list")
         if connection.vendor == "postgresql":
-            message = 'duplicate key value violates unique constraint "reading_readinglist_enforce_slug_unicity"'  # noqa: E501
+            message = 'duplicate key value violates unique constraint "reading_readinglist_enforce_slug_unicity"'  # ruff:ignore[line-too-long]
         else:
             message = (
                 "UNIQUE constraint failed: reading_readinglist.slug, reading_readinglist.user_id"

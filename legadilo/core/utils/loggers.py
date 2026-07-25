@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def unlink_logger_from_sentry(logger_to_ignore: logging.Logger):
     try:
-        from sentry_sdk.integrations.logging import (  # noqa: PLC0415 `import` should be at the top-level of a file
+        from sentry_sdk.integrations.logging import (  # ruff:ignore[import-outside-top-level]
             ignore_logger,
         )
     except ImportError:

@@ -110,7 +110,7 @@ def markdown(value: str) -> str:
     rendered_value = md.render(value)
     cleaned_value = sanitize_keep_safe_tags(rendered_value)
     cleaned_value = cleaned_value.strip()
-    return mark_safe(cleaned_value)  # noqa: S308 suspicious-mark-safe-usage
+    return mark_safe(cleaned_value)  # ruff:ignore[suspicious-mark-safe-usage]
 
 
 @register.filter

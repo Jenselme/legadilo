@@ -111,7 +111,7 @@ class Command(BaseCommand):
         if options["feed_ids"]:
             feeds_qs = feeds_qs.only_with_ids(options["feed_ids"])
 
-        if options["force"]:  # noqa: SIM108 Use ternary operator
+        if options["force"]:  # ruff:ignore[if-else-block-instead-of-if-exp]
             feeds_qs = feeds_qs.only_enabled()
         else:
             feeds_qs = feeds_qs.for_update(user)

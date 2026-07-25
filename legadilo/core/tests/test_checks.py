@@ -45,7 +45,7 @@ class CheckDevModeTests:
 @isolate_apps("legadilo.core", attr_name="apps")
 class CheckModelNamesTests(SimpleTestCase):
     def test_success(self):
-        class Single(models.Model):  # noqa: DJ008
+        class Single(models.Model):  # ruff:ignore[django-model-without-dunder-str]
             pass
 
         result = check_model_names(
@@ -54,7 +54,7 @@ class CheckModelNamesTests(SimpleTestCase):
         assert result == []
 
     def test_fail(self):
-        class Plurals(models.Model):  # noqa: DJ008
+        class Plurals(models.Model):  # ruff:ignore[django-model-without-dunder-str]
             pass
 
         result = check_model_names(
@@ -70,7 +70,7 @@ class CheckModelNamesTests(SimpleTestCase):
         assert result[0].obj == Plurals
 
     def test_success_allowed_plural(self):
-        class Plurals(models.Model):  # noqa: DJ008
+        class Plurals(models.Model):  # ruff:ignore[django-model-without-dunder-str]
             pass
 
         mock_safe_names = mock.patch(

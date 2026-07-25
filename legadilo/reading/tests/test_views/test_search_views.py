@@ -82,7 +82,7 @@ class TestSearchForm:
             dict_to_query_dict({
                 "q": "Claudius",
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
-                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # ruff:ignore[line-too-long]
             }),
             tags_to_include_choices=[],
             tags_to_exclude_choices=[],
@@ -109,7 +109,7 @@ class TestSearchForm:
                 "articles_max_age_value": 12,
                 "articles_max_age_unit": constants.ArticlesMaxAgeUnit.WEEKS.value,
                 "articles_reading_time": 12,
-                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # noqa: E501
+                "articles_reading_time_operator": constants.ArticlesReadingTimeOperator.LESS_THAN.value,  # ruff:ignore[line-too-long]
                 "include_tag_operator": constants.ReadingListTagOperator.ALL.value,
                 "tags_to_include": ["some-tag"],
                 "exclude_tag_operator": constants.ReadingListTagOperator.ANY.value,

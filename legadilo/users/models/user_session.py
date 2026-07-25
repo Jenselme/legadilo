@@ -28,6 +28,8 @@ class UserSession(AbstractBaseSession):
     @classmethod
     def get_session_store_class(cls):
         # Prevent circular import
-        from legadilo.users.session_store import SessionStore  # noqa: PLC0415
+        from legadilo.users.session_store import (  # ruff:ignore[import-outside-top-level]
+            SessionStore,
+        )
 
         return SessionStore

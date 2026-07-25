@@ -34,14 +34,14 @@ class TestFindFeedUrl:
         [
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
+                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # ruff:ignore[line-too-long]
                 }),
                 "https://www.jujens.eu/feeds/all.rss.xml",
                 id="single-rss-link",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
+                    "feed_urls": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # ruff:ignore[line-too-long]
                 }),
                 "https://www.jujens.eu/feeds/all.atom.xml",
                 id="single-atom-link",
@@ -49,14 +49,14 @@ class TestFindFeedUrl:
             pytest.param(
                 get_page_for_feed_subscription_content({
                     "feed_urls": """<link href="https://www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">
-                    <link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
+                    <link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # ruff:ignore[line-too-long]
                 }),
                 "https://www.jujens.eu/feeds/all.atom.xml",
                 id="duplicate-link",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">>""",  # noqa: E501
+                    "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">>""",  # ruff:ignore[line-too-long]
                 }),
                 "https://www.jujens.eu/feeds/all.atom.xml",
                 id="link-no-scheme",
@@ -80,13 +80,13 @@ class TestFindFeedUrl:
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_urls": """<link type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
+                    "feed_urls": """<link type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # ruff:ignore[line-too-long]
                 }),
                 id="no-href",
             ),
             pytest.param(
                 get_page_for_feed_subscription_content({
-                    "feed_urls": """<link href="" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # noqa: E501
+                    "feed_urls": """<link href="" type="application/rss+xml" rel="alternate" title="Jujens' blog RSS">""",  # ruff:ignore[line-too-long]
                 }),
                 id="empty-href",
             ),
@@ -102,7 +102,7 @@ class TestFindFeedUrl:
             pytest.param(
                 get_page_for_feed_subscription_content({
                     "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
-                    <link href="//www.jujens.eu/feeds/cat1.rss.xml" type="application/rss+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
+                    <link href="//www.jujens.eu/feeds/cat1.rss.xml" type="application/rss+xml" rel="alternate" title="Cat 1 feed">""",  # ruff:ignore[line-too-long]
                 }),
                 [
                     ("https://www.jujens.eu/feeds/all.rss.xml", "Full feed"),
@@ -113,7 +113,7 @@ class TestFindFeedUrl:
             pytest.param(
                 get_page_for_feed_subscription_content({
                     "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Full feed">
-                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
+                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # ruff:ignore[line-too-long]
                 }),
                 [
                     ("https://www.jujens.eu/feeds/all.atom.xml", "Full feed"),
@@ -124,7 +124,7 @@ class TestFindFeedUrl:
             pytest.param(
                 get_page_for_feed_subscription_content({
                     "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
-                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # noqa: E501
+                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">""",  # ruff:ignore[line-too-long]
                 }),
                 [
                     ("https://www.jujens.eu/feeds/cat1.atom.xml", "Cat 1 feed"),
@@ -135,7 +135,7 @@ class TestFindFeedUrl:
             pytest.param(
                 get_page_for_feed_subscription_content({
                     "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate">
-                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="">""",  # noqa: E501
+                    <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="">""",  # ruff:ignore[line-too-long]
                 }),
                 [
                     (
@@ -225,7 +225,7 @@ class TestGetFeedData:
 
     def test_get_feed_data_from_page_url(self, httpx_mock, snapshot):
         page_content = get_page_for_feed_subscription_content({
-            "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # noqa: E501
+            "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # ruff:ignore[line-too-long]
         })
         page_url = "https://www.jujens.eu"
         feed_url = "https://www.jujens.eu/feeds/all.atom.xml"

@@ -124,7 +124,7 @@ class ArticleFullTextSearchQuery(ArticleSearchQuery):
     external_tags_to_include: frozenset[str] = frozenset()
 
     @property
-    def order_by(self) -> str:  # noqa: PLR0911 Too many return statements
+    def order_by(self) -> str:  # ruff:ignore[too-many-return-statements]
         match self.order:
             case constants.ArticleSearchOrderBy.RANK_DESC:
                 return "-rank"
@@ -146,7 +146,7 @@ class ArticleFullTextSearchQuery(ArticleSearchQuery):
                 assert_never(self.order)
 
 
-def _build_basic_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # noqa: C901, PLR0912 too complex
+def _build_basic_filters_from_reading_list(search_query: ArticleSearchQuery) -> models.Q:  # ruff:ignore[complex-structure, too-many-branches]
     filters = models.Q()
 
     match search_query.read_status:
@@ -337,7 +337,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
         return qs
 
-    def update_articles_from_action(self, action: constants.UpdateArticleActions):  # noqa: PLR0911 Too many return statements
+    def update_articles_from_action(self, action: constants.UpdateArticleActions):  # ruff:ignore[too-many-return-statements]
         # Remove order bys to allow UPDATE to work. Otherwise, Django will fail because it can't
         # resolve the alias_date_field_order field.
         update_qs = self.order_by()
@@ -364,7 +364,7 @@ class ArticleQuerySet(models.QuerySet["Article"]):
 
     def default_order_by(
         self,
-        order_direction: constants.ReadingListOrderDirection = constants.ReadingListOrderDirection.DESC,  # noqa: E501
+        order_direction: constants.ReadingListOrderDirection = constants.ReadingListOrderDirection.DESC,  # ruff:ignore[line-too-long]
     ) -> Self:
         order_expression = models.F("alias_date_field_order")
         match order_direction:

@@ -128,7 +128,7 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
         }
     except FeedFileTooBigError:
         return HTTPStatus.NOT_ACCEPTABLE, {"detail": "The feed is too big."}
-    except Exception:  # noqa: BLE001 Do not catch blind exception: `Exception`
+    except Exception:  # ruff:ignore[blind-except]
         # That's the catch of weird validation, parsing and network errors.
         return HTTPStatus.NOT_ACCEPTABLE, {
             "detail": "We failed to access or parse the feed you supplied. Please make sure it is "

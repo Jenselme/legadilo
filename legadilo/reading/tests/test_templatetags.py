@@ -92,7 +92,7 @@ def test_for_later_action_url(is_for_later, update_action):
         ),
         pytest.param(
             "https://example.com [Hello](https://example.com)",
-            """<p><a href="https://example.com" rel="noopener noreferrer">https://example.com</a> <a href="https://example.com" rel="noopener noreferrer">Hello</a></p>""",  # noqa: E501
+            """<p><a href="https://example.com" rel="noopener noreferrer">https://example.com</a> <a href="https://example.com" rel="noopener noreferrer">Hello</a></p>""",  # ruff:ignore[line-too-long]
             id="markdown-with-links",
         ),
         pytest.param(

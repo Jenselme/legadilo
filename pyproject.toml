@@ -82,6 +82,7 @@ doc = [
 
 [tool.uv]
 default-groups = ["dev"]
+exclude-newer = "7 days"
 
 [tool.uv.sources]
 feedparser = { git = "https://github.com/Jenselme/feedparser.git", rev = "jen-release" }
