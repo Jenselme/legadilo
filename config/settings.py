@@ -84,10 +84,10 @@ DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["CONN_MAX_AGE"] = 0
 if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     # https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
-    DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
+    DATABASES["default"]["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
 elif DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     # https://alldjango.com/articles/definitive-guide-to-using-django-sqlite-in-production
-    DATABASES["OPTIONS"] = {
+    DATABASES["default"]["OPTIONS"] = {
         "transaction_mode": "IMMEDIATE",
         "timeout": 30,  # seconds
         "init_command": """
