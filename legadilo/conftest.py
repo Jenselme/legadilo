@@ -40,7 +40,7 @@ def _setup_settings(settings, tmpdir):
     # https://docs.djangoproject.com/en/dev/ref/settings/#password-hashers
     settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    settings.MAILERS["default"]["BACKEND"] = "django.core.mail.backends.locmem.EmailBackend"
     settings.TEMPLATES[0]["OPTIONS"]["debug"] = True
 
 

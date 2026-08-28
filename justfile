@@ -87,7 +87,7 @@ compile-po:
 
 
 build-production-images:
-    docker compose -f production.yml build --pull django
+    docker compose -f production.yml build --pull newer django
 
 
 test-production-images: build-production-images
