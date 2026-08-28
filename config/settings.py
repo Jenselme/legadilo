@@ -486,7 +486,7 @@ LOGGING = {
             "handlers": ["rich"],
             "propagate": False,
         },
-        "httpx": {
+        "httpx2": {
             "handlers": ["rich"],
             "level": "WARNING",
         },

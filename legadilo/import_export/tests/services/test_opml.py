@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import httpx
+import httpx2
 import pytest
 from django.conf import settings
 
@@ -35,12 +35,12 @@ def test_import_empty_files(user, file_name: str):
     assert Article.objects.count() == 0
 
 
-def test_import_valid_files(user, httpx_mock):
-    httpx_mock.add_response(
+def test_import_valid_files(user, httpx2_mock):
+    httpx2_mock.add_response(
         url="https://www.example.com/feeds/all.rss.xml",
         content=get_feed_fixture_content("sample_rss.xml"),
     )
-    httpx_mock.add_response(
+    httpx2_mock.add_response(
         url="https://www.example.eu/feeds/all.atom.xml",
         content=get_feed_fixture_content("sample_atom.xml"),
     )
@@ -65,12 +65,12 @@ def test_import_valid_files(user, httpx_mock):
     assert FeedArticle.objects.count() == 3
 
 
-def test_import_valid_files_some_data_already_exist(user, httpx_mock):
-    httpx_mock.add_response(
+def test_import_valid_files_some_data_already_exist(user, httpx2_mock):
+    httpx2_mock.add_response(
         url="https://www.example.com/feeds/all.rss.xml",
         content=get_feed_fixture_content("sample_rss.xml"),
     )
-    httpx_mock.add_response(
+    httpx2_mock.add_response(
         url="https://www.example.eu/feeds/all.atom.xml",
         content=get_feed_fixture_content("sample_atom.xml"),
     )
@@ -97,12 +97,12 @@ def test_import_valid_files_some_data_already_exist(user, httpx_mock):
     assert FeedArticle.objects.count() == 2
 
 
-def test_import_valid_files_with_network_errors(user, httpx_mock):
-    httpx_mock.add_exception(
-        httpx.HTTPError("Failed to fetch"),
+def test_import_valid_files_with_network_errors(user, httpx2_mock):
+    httpx2_mock.add_exception(
+        httpx2.HTTPError("Failed to fetch"),
         url="https://www.example.com/feeds/all.rss.xml",
     )
-    httpx_mock.add_exception(
+    httpx2_mock.add_exception(
         FeedFileTooBigError,
         url="https://www.example.eu/feeds/all.atom.xml",
     )

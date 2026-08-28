@@ -5,7 +5,7 @@
 from http import HTTPStatus
 from typing import Any
 
-import httpx
+import httpx2
 import pytest
 from django.urls import reverse
 
@@ -407,7 +407,7 @@ class TestSubscribeToFeedView:
         )
 
     def test_subscribe_to_feed_but_error_occurred(self, user, logged_in_sync_client, mocker):
-        mocker.patch("legadilo.feeds.api.get_feed_data", side_effect=httpx.HTTPError("Kaboom!"))
+        mocker.patch("legadilo.feeds.api.get_feed_data", side_effect=httpx2.HTTPError("Kaboom!"))
 
         response = logged_in_sync_client.post(
             self.url, {"feed_url": "https://example.com/feed.rss"}, content_type="application/json"

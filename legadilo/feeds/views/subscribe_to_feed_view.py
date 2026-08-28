@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from http import HTTPMethod, HTTPStatus
 from typing import cast
 
-import httpx
+import httpx2
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -203,7 +203,7 @@ def _handle_creation(
                 open_original_url_by_default=form.cleaned_data["open_original_url_by_default"],
             )
     except (
-        httpx.HTTPError,
+        httpx2.HTTPError,
         FeedFileTooBigError,
         InvalidFeedFileError,
         PydanticValidationError,

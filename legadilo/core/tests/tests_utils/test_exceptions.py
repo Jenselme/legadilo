@@ -4,7 +4,7 @@
 
 from ssl import SSLCertVerificationError
 
-import httpx
+import httpx2
 import pytest
 
 from legadilo.core.utils.exceptions import extract_debug_information, format_exception
@@ -34,15 +34,15 @@ def test_format_exception(exception, expected_text):
             SSLCertVerificationError(), {"request": None, "response": None}, id="SSLException"
         ),
         pytest.param(
-            httpx.HTTPError("Oops"), {"request": None, "response": None}, id="HTTPError no request"
+            httpx2.HTTPError("Oops"), {"request": None, "response": None}, id="HTTPError no request"
         ),
         pytest.param(
-            httpx.HTTPStatusError(
+            httpx2.HTTPStatusError(
                 "Oops",
-                request=httpx.Request(
+                request=httpx2.Request(
                     method="GET", url="https://example.com/article", headers={"X-Debug": "True"}
                 ),
-                response=httpx.Response(status_code=200, headers={"Content-Type": "text"}),
+                response=httpx2.Response(status_code=200, headers={"Content-Type": "text"}),
             ),
             {
                 "request": {

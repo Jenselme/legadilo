@@ -7,10 +7,10 @@ import logging
 import re
 import sys
 from datetime import datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, cast
 from urllib.parse import urldefrag, urlparse
 
-import httpx
+import httpx2
 from bs4 import BeautifulSoup
 from django.template.defaultfilters import truncatewords_html
 from pydantic import BaseModel as BaseSchema
@@ -26,6 +26,7 @@ from legadilo.core.utils.security import (
 )
 from legadilo.core.utils.time_utils import safe_datetime_parse
 from legadilo.core.utils.validators import (
+    CONTENT_TYPES,
     HTML_CONTENT_TYPES,
     CleanedString,
     ContentType,
@@ -190,6 +191,10 @@ class ArticleTooBigError(Exception):
     pass
 
 
+class InvalidContentTypeError(Exception):
+    pass
+
+
 def fetch_article_data(url: str) -> FetchArticleResult:
     try:
         url, content, content_type, content_language = _get_page_content(url)
@@ -200,7 +205,7 @@ def fetch_article_data(url: str) -> FetchArticleResult:
             content_language=content_language,
         )
         return FetchArticleResult(article_data=article_data)
-    except (httpx.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
+    except (httpx2.HTTPError, ArticleTooBigError, PydanticValidationError) as e:
         article_domain = urlparse(url).netloc
         displayable_url = full_sanitize(re.sub(r"^https?://", "", url))
         return FetchArticleResult(
@@ -248,7 +253,12 @@ def _get_page_content(url: str) -> tuple[str, str, ContentType, str | None]:
                 raise ArticleTooBigError
 
             content = response.content.decode(response.encoding or "utf-8")
-            content_type = response.headers.get("Content-Type", "text/html").split(";")[0].strip()
+            content_type = cast(
+                ContentType, response.headers.get("Content-Type", "text/html").split(";")[0].strip()
+            )
+
+            if content_type not in CONTENT_TYPES:
+                raise InvalidContentTypeError
 
             if content_type not in HTML_CONTENT_TYPES:
                 break

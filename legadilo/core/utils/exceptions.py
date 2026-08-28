@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import httpx
+import httpx2
 
 
 def format_exception(exception: Exception) -> str:
@@ -14,7 +14,7 @@ def format_exception(exception: Exception) -> str:
 
 
 def extract_debug_information(exception: Exception) -> dict | None:
-    request: httpx.Request | None = None
+    request: httpx2.Request | None = None
     try:
         # Request may not be set or access may raise a RuntimeError. Prevent errors with a try/catch
         if hasattr(exception, "request"):
@@ -22,7 +22,7 @@ def extract_debug_information(exception: Exception) -> dict | None:
     except RuntimeError:
         pass
 
-    response: httpx.Response | None = None
+    response: httpx2.Response | None = None
     if hasattr(exception, "response"):
         response = exception.response
 

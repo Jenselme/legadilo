@@ -11,7 +11,7 @@ from pathlib import Path
 from ssl import SSLCertVerificationError
 from urllib.parse import urlparse
 
-import httpx
+import httpx2
 from django.db import IntegrityError, models
 from slugify import slugify
 
@@ -125,7 +125,7 @@ def _import_feed(user, category, row, feed_url_in_file_to_true_feed):
         feed_url_in_file_to_true_feed[row["feed_url"]] = feed
         return feed, created
     except (
-        httpx.HTTPError,
+        httpx2.HTTPError,
         NoFeedUrlFoundError,
         FeedFileTooBigError,
         InvalidFeedFileError,
