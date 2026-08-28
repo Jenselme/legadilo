@@ -66,6 +66,7 @@ All these commands must be run at the root of the project!
 - Create migrations files after updating models: `uv run python manage.py makemigrations`
 - Apply migrations: `uv run python manage.py migrate`
 - Create a _superuser_: `uv run python manage.py createsuperuser`
+- To fill the db with test data: `uv run python manage.py setup_test_db`
 
 ### Email Server
 
@@ -78,7 +79,8 @@ With Mailpit running, to view messages that are sent by your application, open y
 
 ### Setting Up Your Users
 
-- To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to Mailpit to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
+- To create a **normal user
+  account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to Mailpit to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
 - To create a **superuser account**, use this command:
 
       $ uv run python manage.py createsuperuser
@@ -104,6 +106,7 @@ We try to follow the same [rules as the angular project](https://github.com/angu
 The summary line is as follows: `<type>(<scope>): <short description>`. It must not end with a dot and must be written in present imperative. Don't capitalize the fist letter. The whole line shouldn't be longer than 80 characters and if possible be between 70 and 75 characters. This is intended to have better logs.
 
 The possible types are:
+
 - `chore` for changes in the build process or auxiliary tools.
 - `doc` for documentation
 - `feat` for new features
@@ -139,7 +142,6 @@ django-admin startapp --template .app-template $APP_NAME legadilo/$APP_NAME
 ```
 
 Don’t forget to add it to `INSTALLED_APPS`!
-
 
 ## Deployment
 
