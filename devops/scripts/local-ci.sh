@@ -25,7 +25,6 @@ echo -e "${BLUE}================================================================
 echo -e "${GREEN}                          Starting Local CI Process                            ${NC}"
 echo -e "${BLUE}================================================================================${NC}"
 echo -e "${BLUE}Environment:${NC} Containerized Production-like"
-echo -e "${BLUE}Step:       ${NC} Running 'just check'"
 echo -e "${BLUE}Timestamp:  ${NC} $(date)"
 echo -e "${BLUE}================================================================================${NC}"
 
@@ -33,6 +32,6 @@ env --ignore-environment "PATH=$PATH" just check
 # Remove support for sqlite
 sed --in-place '/^DATABASE_URL/d' ./devops/envs/local/django
 # Run test with PG
-env --ignore-environment "PATH=$PATH" "DATABASE_URL=postgres://django:django_passwd@postgres:5432/legadilo" just test-coverage
+env --ignore-environment "PATH=$PATH" "DATABASE_URL=postgres://django:django_passwd@postgres:5432/legadilo" just check
 
 echo -e "${GREEN} Local CI check passed successfully!${NC}"

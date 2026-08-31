@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import httpx
+import httpx2
 import pytest
 import time_machine
 
@@ -40,7 +40,7 @@ def test_import_empty_file(user):
 
 @pytest.mark.django_db
 @time_machine.travel("2024-05-17 13:00:00", tick=False)
-def test_import_custom_csv(user, httpx_mock, snapshot):
+def test_import_custom_csv(user, httpx2_mock, snapshot):
     feed_category = FeedCategoryFactory(
         user=user, title="Existing category", slug="existing-category"
     )
@@ -62,17 +62,17 @@ def test_import_custom_csv(user, httpx_mock, snapshot):
         user=user, title="Existing group", description="Existing group description"
     )
 
-    httpx_mock.add_response(url="https://example.com/existing.xml", content="")
-    httpx_mock.add_response(
+    httpx2_mock.add_response(url="https://example.com/existing.xml", content="")
+    httpx2_mock.add_response(
         url="https://example.com/rss2.xml",
         content=get_feed_fixture_content("sample_rss.xml"),
     )
-    httpx_mock.add_response(
+    httpx2_mock.add_response(
         url="https://example.com/rss4.xml",
         content=get_feed_fixture_content("sample_atom.xml"),
     )
-    httpx_mock.add_exception(
-        httpx.HTTPError("Failed to fetch"),
+    httpx2_mock.add_exception(
+        httpx2.HTTPError("Failed to fetch"),
         url="https://example.com/rss8.xml",
     )
 

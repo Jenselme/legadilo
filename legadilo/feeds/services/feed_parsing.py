@@ -12,7 +12,7 @@ from itertools import chain
 from typing import Annotated, Any
 from urllib.parse import parse_qs, urlparse
 
-import httpx
+import httpx2
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 from feedparser import parse as parse_feed
@@ -91,7 +91,7 @@ class FailedToParseArticleError(InvalidFeedFileError):
 def get_feed_data(
     url: str,
     *,
-    client: httpx.Client,
+    client: httpx2.Client,
     etag: str | None = None,
     last_modified: datetime | None = None,
 ) -> FeedData:
@@ -152,11 +152,11 @@ def build_feed_data_from_parsed_feed(parsed_feed: FeedParserDict, resolved_url: 
 
 
 def _fetch_feed_and_raw_data(
-    client: httpx.Client,
+    client: httpx2.Client,
     url: str,
     etag: str | None = None,
     last_modified: datetime | None = None,
-) -> tuple[FeedParserDict, str, httpx.URL]:
+) -> tuple[FeedParserDict, str, httpx2.URL]:
     headers = {}
     if etag:
         headers["If-None-Match"] = etag
@@ -177,8 +177,8 @@ def _fetch_feed_and_raw_data(
 
 
 def _fetch_feed(
-    client: httpx.Client, url: str, *, etag: str | None, last_modified: datetime | None
-) -> tuple[FeedParserDict, httpx.URL]:
+    client: httpx2.Client, url: str, *, etag: str | None, last_modified: datetime | None
+) -> tuple[FeedParserDict, httpx2.URL]:
     parsed_feed, _, resolved_url = _fetch_feed_and_raw_data(
         client, url, etag=etag, last_modified=last_modified
     )

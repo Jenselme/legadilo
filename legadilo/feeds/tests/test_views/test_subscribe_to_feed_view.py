@@ -4,7 +4,7 @@
 
 from http import HTTPStatus
 
-import httpx
+import httpx2
 import pytest
 from django.urls import reverse
 
@@ -60,9 +60,9 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.OK
 
     def test_subscribe_to_feed(
-        self, logged_in_sync_client, httpx_mock, django_assert_num_queries, sample_rss_feed
+        self, logged_in_sync_client, httpx2_mock, django_assert_num_queries, sample_rss_feed
     ):
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         with django_assert_num_queries(33):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -84,9 +84,9 @@ class TestSubscribeToFeedView:
         assert FeedUpdate.objects.count() == 1
 
     def test_subscribe_to_feed_with_tags(
-        self, logged_in_sync_client, httpx_mock, django_assert_num_queries, sample_rss_feed
+        self, logged_in_sync_client, httpx2_mock, django_assert_num_queries, sample_rss_feed
     ):
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         with django_assert_num_queries(39):
             response = logged_in_sync_client.post(self.url, self.sample_payload_with_tags)
@@ -109,7 +109,7 @@ class TestSubscribeToFeedView:
         assert FeedUpdate.objects.count() == 1
 
     def test_subscribe_to_feed_with_category(
-        self, logged_in_sync_client, httpx_mock, django_assert_num_queries, sample_rss_feed, user
+        self, logged_in_sync_client, httpx2_mock, django_assert_num_queries, sample_rss_feed, user
     ):
         category = FeedCategoryFactory(user=user)
         sample_payload_with_category = {
@@ -118,7 +118,7 @@ class TestSubscribeToFeedView:
             "article_retention_time": 7,
             "category": category.slug,
         }
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         with django_assert_num_queries(33):
             response = logged_in_sync_client.post(self.url, sample_payload_with_category)
@@ -139,9 +139,9 @@ class TestSubscribeToFeedView:
         assert FeedUpdate.objects.count() == 1
 
     def test_subscribe_to_feed_from_feed_choices(
-        self, logged_in_sync_client, httpx_mock, sample_rss_feed
+        self, logged_in_sync_client, httpx2_mock, sample_rss_feed
     ):
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(
             self.url,
@@ -169,8 +169,8 @@ class TestSubscribeToFeedView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.template_name == "feeds/subscribe_to_feed.html"
 
-    def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_exception(httpx.ReadTimeout("Unable to read within timeout"))
+    def test_fetch_failure(self, logged_in_sync_client, httpx2_mock):
+        httpx2_mock.add_exception(httpx2.ReadTimeout("Unable to read within timeout"))
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -184,11 +184,13 @@ class TestSubscribeToFeedView:
         )
         assert Feed.objects.count() == 0
 
-    def test_fetched_file_too_big(self, logged_in_sync_client, httpx_mock, mocker, sample_rss_feed):
+    def test_fetched_file_too_big(
+        self, logged_in_sync_client, httpx2_mock, mocker, sample_rss_feed
+    ):
         mocker.patch(
             "legadilo.feeds.services.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
         )
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -202,11 +204,11 @@ class TestSubscribeToFeedView:
         )
         assert Feed.objects.count() == 0
 
-    def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx_mock):
+    def test_fetched_file_invalid_feed(self, logged_in_sync_client, httpx2_mock):
         sample_rss_feed = get_feed_fixture_content(
             "sample_rss.xml", {"item_url": """<link>Just trash</link>"""}
         )
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             text=sample_rss_feed,
             url=self.feed_url,
         )
@@ -217,9 +219,9 @@ class TestSubscribeToFeedView:
         assert response.template_name == "feeds/subscribe_to_feed.html"
         assert Article.objects.count() == 0
 
-    def test_duplicated_feed(self, user, logged_in_sync_client, httpx_mock, sample_rss_feed):
+    def test_duplicated_feed(self, user, logged_in_sync_client, httpx2_mock, sample_rss_feed):
         feed = FeedFactory(feed_url=self.feed_url, user=user)
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -230,9 +232,9 @@ class TestSubscribeToFeedView:
         )
         assert Feed.objects.count() == 1
 
-    def test_cannot_find_feed_url(self, logged_in_sync_client, httpx_mock):
+    def test_cannot_find_feed_url(self, logged_in_sync_client, httpx2_mock):
         sample_html_template = get_page_for_feed_subscription_content({"feed_urls": ""})
-        httpx_mock.add_response(text=sample_html_template, url=self.page_url)
+        httpx2_mock.add_response(text=sample_html_template, url=self.page_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_page_payload)
 
@@ -243,12 +245,12 @@ class TestSubscribeToFeedView:
         )
         assert Feed.objects.count() == 0
 
-    def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx_mock):
+    def test_multiple_feed_urls_found(self, logged_in_sync_client, httpx2_mock):
         sample_html_template = get_page_for_feed_subscription_content({
             "feed_urls": """<link href="//www.jujens.eu/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Full feed">
                     <link href="//www.jujens.eu/feeds/cat1.atom.xml" type="application/atom+xml" rel="alternate" title="Cat 1 feed">"""  # ruff:ignore[line-too-long]
         })
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             text=sample_html_template,
             url=self.page_url,
         )
@@ -275,7 +277,7 @@ class TestSubscribeToFeedView:
         ]
 
     def test_other_user_subscribe_to_same_feed(
-        self, user, other_user, logged_in_other_user_sync_client, httpx_mock, sample_rss_feed
+        self, user, other_user, logged_in_other_user_sync_client, httpx2_mock, sample_rss_feed
     ):
         FeedFactory(feed_url=self.feed_url, user=user)
         wrong_category = FeedCategoryFactory(user=user)
@@ -287,7 +289,7 @@ class TestSubscribeToFeedView:
         )
         assert category.slug == wrong_category.slug
         assert existing_tag.slug == self.existing_tag.slug
-        httpx_mock.add_response(text=sample_rss_feed, url=self.feed_url)
+        httpx2_mock.add_response(text=sample_rss_feed, url=self.feed_url)
         payload = {
             "url": self.feed_url,
             "refresh_delay": feeds_constants.FeedRefreshDelays.DAILY_AT_NOON.name,

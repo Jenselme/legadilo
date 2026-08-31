@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 from typing import Any
 
-import httpx
+import httpx2
 import pytest
 
 from legadilo.core.utils.testing import serialize_for_snapshot
@@ -177,11 +177,11 @@ class TestGetFeedData:
         ],
     )
     def test_get_feed_data_from_feed_url(
-        self, feed_url: str, feed_content: str, feed_type: SupportedFeedType, httpx_mock, snapshot
+        self, feed_url: str, feed_content: str, feed_type: SupportedFeedType, httpx2_mock, snapshot
     ):
-        httpx_mock.add_response(text=feed_content, url=feed_url)
+        httpx2_mock.add_response(text=feed_content, url=feed_url)
 
-        with httpx.Client() as client:
+        with httpx2.Client() as client:
             feed_data = get_feed_data(feed_url, client=client)
 
         assert feed_data.feed_url == feed_url
@@ -223,38 +223,38 @@ class TestGetFeedData:
 
         assert youtube_feed_url == expected_url
 
-    def test_get_feed_data_from_page_url(self, httpx_mock, snapshot):
+    def test_get_feed_data_from_page_url(self, httpx2_mock, snapshot):
         page_content = get_page_for_feed_subscription_content({
             "feed_urls": """<link href="//www.jujens.eu/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Jujens' blog Atom">""",  # ruff:ignore[line-too-long]
         })
         page_url = "https://www.jujens.eu"
         feed_url = "https://www.jujens.eu/feeds/all.atom.xml"
-        httpx_mock.add_response(text=page_content, url=page_url)
-        httpx_mock.add_response(text=get_feed_fixture_content("sample_atom.xml"), url=feed_url)
+        httpx2_mock.add_response(text=page_content, url=page_url)
+        httpx2_mock.add_response(text=get_feed_fixture_content("sample_atom.xml"), url=feed_url)
 
-        with httpx.Client() as client:
+        with httpx2.Client() as client:
             feed_data = get_feed_data(page_url, client=client)
 
         assert feed_data.feed_type == SupportedFeedType.atom10
         snapshot.assert_match(serialize_for_snapshot(feed_data), "feed_data.json")
 
-    def test_feed_file_too_big(self, httpx_mock, mocker):
+    def test_feed_file_too_big(self, httpx2_mock, mocker):
         mocker.patch(
             "legadilo.feeds.services.feed_parsing.sys.getsizeof", return_value=11 * 1024 * 1024
         )
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             text=get_feed_fixture_content("sample_atom.xml"),
             url="https://www.jujens.eu/feed/rss.xml",
         )
 
-        with pytest.raises(FeedFileTooBigError), httpx.Client() as client:
+        with pytest.raises(FeedFileTooBigError), httpx2.Client() as client:
             get_feed_data("https://www.jujens.eu/feed/rss.xml", client=client)
 
-    def test_feed_file_is_an_attack(self, httpx_mock, snapshot):
+    def test_feed_file_is_an_attack(self, httpx2_mock, snapshot):
         feed_url = "https://example.com/feed.xml"
-        httpx_mock.add_response(text=get_feed_fixture_content("attack_feed.xml"), url=feed_url)
+        httpx2_mock.add_response(text=get_feed_fixture_content("attack_feed.xml"), url=feed_url)
 
-        with httpx.Client() as client:
+        with httpx2.Client() as client:
             feed_data = get_feed_data(feed_url, client=client)
 
         snapshot.assert_match(serialize_for_snapshot(feed_data), "feed_data.json")

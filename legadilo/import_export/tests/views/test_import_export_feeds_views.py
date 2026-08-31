@@ -144,12 +144,12 @@ class TestImportFeeds:
             )
         ]
 
-    def test_import_in_memory_file(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(
+    def test_import_in_memory_file(self, logged_in_sync_client, httpx2_mock):
+        httpx2_mock.add_response(
             url="https://www.example.com/feeds/all.rss.xml",
             content=get_feed_fixture_content("sample_rss.xml"),
         )
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             url="https://www.example.eu/feeds/all.atom.xml",
             content=get_feed_fixture_content("sample_atom.xml"),
         )
@@ -186,13 +186,13 @@ class TestImportFeeds:
             )
         ]
 
-    def test_import_temporary_file(self, logged_in_sync_client, httpx_mock, settings):
+    def test_import_temporary_file(self, logged_in_sync_client, httpx2_mock, settings):
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             url="https://www.example.com/feeds/all.rss.xml",
             content=get_feed_fixture_content("sample_rss.xml"),
         )
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             url="https://www.example.eu/feeds/all.atom.xml",
             content=get_feed_fixture_content("sample_atom.xml"),
         )

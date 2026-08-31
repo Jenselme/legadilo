@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import Field, ModelSchema, Query, Router, Schema
+from ninja import Field, ModelSchema, Query, Router, Schema, Status
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import field_validator, model_validator
@@ -145,9 +145,10 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     """Create an article either just with a link or with a link, a title and some content."""
     fetch_article_result = _get_article_data(payload)
     if not fetch_article_result.is_success:
-        return HTTPStatus.BAD_REQUEST, {
-            "detail": f"Failed to fetch article data: {fetch_article_result.error_message}"
-        }
+        return Status(
+            HTTPStatus.BAD_REQUEST,
+            {"detail": f"Failed to fetch article data: {fetch_article_result.error_message}"},
+        )
 
     with transaction.atomic():
         tags = Tag.objects.get_or_create_from_list(request.auth, payload.tags)
@@ -163,9 +164,9 @@ def create_article_view(request: AuthenticatedApiRequest, payload: ArticleCreati
     article = Article.objects.get_queryset().for_api().get(id=save_result.article.id)
 
     if save_result.was_created:
-        return HTTPStatus.CREATED, article
+        return Status(HTTPStatus.CREATED, article)
 
-    return HTTPStatus.OK, article
+    return Status(HTTPStatus.OK, article)
 
 
 def _get_group(user: User, group_id: int | str | None) -> ArticlesGroup | None:
@@ -283,7 +284,7 @@ def delete_article_view(request: AuthenticatedApiRequest, article_id: int):
 
     article.delete()
 
-    return HTTPStatus.NO_CONTENT, None
+    return Status(HTTPStatus.NO_CONTENT, None)
 
 
 class OutTagWithHierarchySchema(OutTagSchema):
@@ -327,4 +328,4 @@ def reorder_reading_lists_view(
 ):
     ReadingList.objects.reorder(request.auth, payload.order)
 
-    return HTTPStatus.NO_CONTENT, None
+    return Status(HTTPStatus.NO_CONTENT, None)

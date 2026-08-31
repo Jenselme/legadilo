@@ -10,7 +10,7 @@ from uuid import UUID
 import jwt
 from django.db import models
 from django.http import HttpRequest
-from ninja import ModelSchema, Router, Schema
+from ninja import ModelSchema, Router, Schema, Status
 from ninja.errors import AuthenticationError
 from ninja.security import HttpBearer
 from pydantic import BaseModel as BaseSchema
@@ -93,7 +93,7 @@ def create_tokens_view(request: HttpRequest, payload: CreateTokensPayload):
         payload.email, payload.application_token_uuid, payload.application_token_secret
     )
     if application_token is None:
-        return HTTPStatus.UNAUTHORIZED, {"detail": "Invalid credentials."}
+        return Status(HTTPStatus.UNAUTHORIZED, {"detail": "Invalid credentials."})
 
     access_token = _create_access_token(application_token)
 

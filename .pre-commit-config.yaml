@@ -31,13 +31,13 @@ repos:
       - id: reuse
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1db0cbd209d6c4dc78191593942e6269fae99e8d # v1.30.0
+    rev: 423ab5081e037d3c692113d654d49ea9e3ee0066 # v1.32.0
     hooks:
       - id: django-upgrade
-        args: ["--target-version", "5.1"]
+        args: ["--target-version", "6.1"]
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: 9112cb64851c95a7802358af285d21ad8b7f6437 # v1.36.4
+    rev: 76675b68608b5643655650bf461b7d2abb2e2a52 # v1.44.2
     hooks:
       - id: djlint-django
 
@@ -55,7 +55,7 @@ repos:
         args: [-e, SC1091]
 
   - repo: https://github.com/crate-ci/typos
-    rev: 631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
+    rev: a8168dc2984a9e2352f183ffe788f0f23a300389 # v1.49.1
     hooks:
       - id: typos
 

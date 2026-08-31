@@ -15,9 +15,9 @@ from legadilo.reading.tests.factories import ArticleFactory, ArticlesGroupFactor
 
 @pytest.mark.django_db
 class TestSaveArticlesGroup:
-    def test_save_articles_group_success(self, user, django_assert_num_queries, httpx_mock):
+    def test_save_articles_group_success(self, user, django_assert_num_queries, httpx2_mock):
         tag = TagFactory(title="existing-tag", user=user)
-        httpx_mock.add_response(text="Data", url="https://example.com/article-with-content/")
+        httpx2_mock.add_response(text="Data", url="https://example.com/article-with-content/")
 
         with django_assert_num_queries(24):
             result = save_articles_group(
@@ -49,14 +49,14 @@ class TestSaveArticlesGroup:
         )
 
     def test_save_articles_group_articles_with_error(
-        self, user, django_assert_num_queries, httpx_mock
+        self, user, django_assert_num_queries, httpx2_mock
     ):
         other_group = ArticlesGroupFactory(user=user)
         article_already_linked_to_other_group = ArticleFactory(user=user)
         other_group.articles.add(article_already_linked_to_other_group)
-        httpx_mock.add_response(text="", url=article_already_linked_to_other_group.url)
-        httpx_mock.add_response(text="Data", url="https://example.com/article-with-content/")
-        httpx_mock.add_response(text="", url="https://example.com/articles-without-content/")
+        httpx2_mock.add_response(text="", url=article_already_linked_to_other_group.url)
+        httpx2_mock.add_response(text="Data", url="https://example.com/article-with-content/")
+        httpx2_mock.add_response(text="", url="https://example.com/articles-without-content/")
 
         with django_assert_num_queries(25):
             result = save_articles_group(

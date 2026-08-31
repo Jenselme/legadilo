@@ -4,7 +4,7 @@
 
 from http import HTTPStatus
 
-import httpx
+import httpx2
 import pytest
 from django.urls import reverse
 
@@ -44,8 +44,8 @@ class TestAddArticle:
         assert response.status_code == HTTPStatus.OK
         assert response.template_name == "reading/add_article.html"
 
-    def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+    def test_add_article(self, django_assert_num_queries, logged_in_sync_client, httpx2_mock):
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
 
         with django_assert_num_queries(16):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -66,9 +66,9 @@ class TestAddArticle:
         assert article.group_id is None
 
     def test_add_article_with_tags(
-        self, django_assert_num_queries, logged_in_sync_client, httpx_mock
+        self, django_assert_num_queries, logged_in_sync_client, httpx2_mock
     ):
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
 
         with django_assert_num_queries(20):
             response = logged_in_sync_client.post(self.url, self.payload_with_tags)
@@ -91,11 +91,11 @@ class TestAddArticle:
         ]
 
     def test_add_article_with_tags_other_user(
-        self, user, other_user, logged_in_other_user_sync_client, httpx_mock
+        self, user, other_user, logged_in_other_user_sync_client, httpx2_mock
     ):
         ArticleFactory(user=user, url=self.article_url)
         TagFactory(user=other_user, title=self.existing_tag.title, slug=self.existing_tag.slug)
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
 
         response = logged_in_other_user_sync_client.post(self.url, self.payload_with_tags)
 
@@ -106,8 +106,8 @@ class TestAddArticle:
         assert article.tags.count() == 3
         assert set(article.tags.values_list("user_id", flat=True)) == {other_user.id}
 
-    def test_add_article_no_content(self, logged_in_sync_client, httpx_mock, mocker):
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+    def test_add_article_no_content(self, logged_in_sync_client, httpx2_mock, mocker):
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
         mocker.patch("legadilo.reading.services.article_fetching._get_content", return_value="")
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -143,8 +143,8 @@ class TestAddArticle:
             "url": ["The URL cannot be from the instance."]
         }
 
-    def test_fetch_failure(self, logged_in_sync_client, httpx_mock):
-        httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
+    def test_fetch_failure(self, logged_in_sync_client, httpx2_mock):
+        httpx2_mock.add_exception(httpx2.ReadTimeout("Took too long."))
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -159,7 +159,7 @@ class TestAddArticle:
             is_from_invalid_data=True,
         )
 
-    def test_add_already_saved(self, user, logged_in_sync_client, httpx_mock):
+    def test_add_already_saved(self, user, logged_in_sync_client, httpx2_mock):
         existing_article = ArticleFactory(
             user=user,
             url=self.article_url,
@@ -169,7 +169,7 @@ class TestAddArticle:
             content="Existing content",
             updated_at=utcdt(2024, 3, 1),
         )
-        httpx_mock.add_response(html=self.article_content, url=existing_article.url)
+        httpx2_mock.add_response(html=self.article_content, url=existing_article.url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -190,9 +190,9 @@ class TestAddArticle:
         # Only content must be updated.
         assert article.content != existing_article.content
 
-    def test_fetch_failure_url_already_saved(self, user, logged_in_sync_client, httpx_mock):
+    def test_fetch_failure_url_already_saved(self, user, logged_in_sync_client, httpx2_mock):
         article = ArticleFactory(user=user)
-        httpx_mock.add_exception(httpx.ReadTimeout("Took too long."))
+        httpx2_mock.add_exception(httpx2.ReadTimeout("Took too long."))
 
         response = logged_in_sync_client.post(self.url, {**self.sample_payload, "url": article.url})
 
@@ -207,12 +207,12 @@ class TestAddArticle:
             is_from_invalid_data=True,
         )
 
-    def test_content_too_big(self, logged_in_sync_client, httpx_mock, mocker):
+    def test_content_too_big(self, logged_in_sync_client, httpx2_mock, mocker):
         mocker.patch(
             "legadilo.reading.services.article_fetching.sys.getsizeof",
             return_value=10 * 2048 * 1024,
         )
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
 
         response = logged_in_sync_client.post(self.url, self.sample_payload)
 
@@ -228,10 +228,10 @@ class TestAddArticle:
         )
 
     def test_add_article_linked_to_group(
-        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+        self, user, logged_in_sync_client, httpx2_mock, django_assert_num_queries
     ):
         group = ArticlesGroupFactory(user=user)
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
         payload = {
             **self.sample_payload,
             "group": group.slug,
@@ -246,11 +246,11 @@ class TestAddArticle:
         assert article.group == group
 
     def test_add_article_linked_to_group_article_already_exists(
-        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+        self, user, logged_in_sync_client, httpx2_mock, django_assert_num_queries
     ):
         ArticleFactory(user=user, url=self.article_url)
         group = ArticlesGroupFactory(user=user)
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
         payload = {
             **self.sample_payload,
             "group": group.slug,
@@ -265,12 +265,12 @@ class TestAddArticle:
         assert article.group_id is None
 
     def test_add_article_linked_to_group_article_already_exists_and_linked_to_other_group(
-        self, user, logged_in_sync_client, httpx_mock, django_assert_num_queries
+        self, user, logged_in_sync_client, httpx2_mock, django_assert_num_queries
     ):
         some_group = ArticlesGroupFactory(user=user)
         ArticleFactory(user=user, url=self.article_url, group=some_group)
         group = ArticlesGroupFactory(user=user)
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
         payload = {
             **self.sample_payload,
             "group": group.slug,
@@ -285,13 +285,13 @@ class TestAddArticle:
         assert article.group == some_group
 
     def test_add_article_and_create_group(
-        self, user, other_user, logged_in_sync_client, httpx_mock
+        self, user, other_user, logged_in_sync_client, httpx2_mock
     ):
         payload = {
             **self.sample_payload,
             "group": "New group",
         }
-        httpx_mock.add_response(html=self.article_content, url=self.article_url)
+        httpx2_mock.add_response(html=self.article_content, url=self.article_url)
 
         response = logged_in_sync_client.post(self.url, payload)
 
@@ -306,7 +306,7 @@ class TestAddArticle:
         assert article.group.slug == "new-group"
 
     def test_add_article_and_create_group_invalid_title(
-        self, user, other_user, logged_in_sync_client, httpx_mock
+        self, user, other_user, logged_in_sync_client, httpx2_mock
     ):
         payload = {
             **self.sample_payload,
@@ -345,11 +345,13 @@ class TestAddArticlesGroup:
             "form-1-url": self.no_content_article_url,
         }
 
-    def test_add_articles_group(self, logged_in_sync_client, httpx_mock, django_assert_num_queries):
-        httpx_mock.add_response(
+    def test_add_articles_group(
+        self, logged_in_sync_client, httpx2_mock, django_assert_num_queries
+    ):
+        httpx2_mock.add_response(
             html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
         )
-        httpx_mock.add_response(html="", url=self.no_content_article_url)
+        httpx2_mock.add_response(html="", url=self.no_content_article_url)
 
         with django_assert_num_queries(30):
             response = logged_in_sync_client.post(self.url, self.sample_payload)
@@ -425,9 +427,9 @@ class TestRefetchArticleView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_refetch_article_with_tags(
-        self, django_assert_num_queries, logged_in_sync_client, httpx_mock
+        self, django_assert_num_queries, logged_in_sync_client, httpx2_mock
     ):
-        httpx_mock.add_response(
+        httpx2_mock.add_response(
             html=get_article_fixture_content("sample_blog_article.html"), url=self.article_url
         )
 
@@ -447,9 +449,9 @@ class TestRefetchArticleView:
         assert self.article.group_id is None
 
     def test_refetch_article_with_from_url(
-        self, django_assert_num_queries, logged_in_sync_client, httpx_mock
+        self, django_assert_num_queries, logged_in_sync_client, httpx2_mock
     ):
-        httpx_mock.add_response(html="", url=self.article_url)
+        httpx2_mock.add_response(html="", url=self.article_url)
 
         with django_assert_num_queries(17):
             response = logged_in_sync_client.post(
@@ -465,9 +467,9 @@ class TestRefetchArticleView:
         )
 
     def test_refetch_article_with_group(
-        self, user, logged_in_sync_client, django_assert_num_queries, httpx_mock
+        self, user, logged_in_sync_client, django_assert_num_queries, httpx2_mock
     ):
-        httpx_mock.add_response(html="", url=self.article_url)
+        httpx2_mock.add_response(html="", url=self.article_url)
         group = ArticlesGroupFactory(user=user)
         self.article.group = group
         self.article.save()

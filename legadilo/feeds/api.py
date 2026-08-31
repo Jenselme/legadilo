@@ -10,7 +10,7 @@ from typing import Annotated, Self
 from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from ninja import ModelSchema, Query, Router, Schema
+from ninja import ModelSchema, Query, Router, Schema, Status
 from ninja.errors import ValidationError as NinjaValidationError
 from ninja.pagination import paginate
 from pydantic import Field, model_validator
@@ -123,21 +123,24 @@ def subscribe_to_feed_view(request: AuthenticatedApiRequest, payload: FeedSubscr
                 open_original_url_by_default=payload.open_original_url_by_default,
             )
     except NoFeedUrlFoundError, MultipleFeedFoundError:
-        return HTTPStatus.NOT_ACCEPTABLE, {
-            "detail": "We failed to find a feed at the supplied URL."
-        }
+        return Status(
+            HTTPStatus.NOT_ACCEPTABLE, {"detail": "We failed to find a feed at the supplied URL."}
+        )
     except FeedFileTooBigError:
-        return HTTPStatus.NOT_ACCEPTABLE, {"detail": "The feed is too big."}
+        return Status(HTTPStatus.NOT_ACCEPTABLE, {"detail": "The feed is too big."})
     except Exception:  # ruff:ignore[blind-except]
         # That's the catch of weird validation, parsing and network errors.
-        return HTTPStatus.NOT_ACCEPTABLE, {
-            "detail": "We failed to access or parse the feed you supplied. Please make sure it is "
-            "accessible and valid."
-        }
+        return Status(
+            HTTPStatus.NOT_ACCEPTABLE,
+            {
+                "detail": "We failed to access or parse the feed you supplied. Please make sure it "
+                "is accessible and valid."
+            },
+        )
 
     status = HTTPStatus.CREATED if created else HTTPStatus.ALREADY_REPORTED
 
-    return status, Feed.objects.get_queryset().for_api().get(id=feed.id)
+    return Status(status, Feed.objects.get_queryset().for_api().get(id=feed.id))
 
 
 def _get_category(user: User, category_id: int | str | None) -> FeedCategory | None:
@@ -241,7 +244,7 @@ def delete_feed_view(request: AuthenticatedApiRequest, feed_id: int):
 
     feed.delete()
 
-    return HTTPStatus.NO_CONTENT, None
+    return Status(HTTPStatus.NO_CONTENT, None)
 
 
 @feeds_api_router.get(
@@ -276,9 +279,9 @@ def _create_feed_category(user: User, payload: FeedCategoryPayload):
     try:
         category = FeedCategory.objects.create(title=payload.title, user=user)
     except IntegrityError:
-        return HTTPStatus.CONFLICT, {"detail": "A category with this title already exists."}
+        return Status(HTTPStatus.CONFLICT, {"detail": "A category with this title already exists."})
 
-    return HTTPStatus.CREATED, category
+    return Status(HTTPStatus.CREATED, category)
 
 
 @feeds_api_router.get(
@@ -320,4 +323,4 @@ def delete_category_view(request: AuthenticatedApiRequest, category_id: int):
 
     category.delete()
 
-    return HTTPStatus.NO_CONTENT, None
+    return Status(HTTPStatus.NO_CONTENT, None)

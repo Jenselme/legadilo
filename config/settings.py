@@ -84,10 +84,10 @@ DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["CONN_MAX_AGE"] = 0
 if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     # https://blog.heroku.com/postgres-essentials#set-a-code-statement_timeout-code-for-web-dynos
-    DATABASES["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
+    DATABASES["default"]["OPTIONS"] = {"options": "-c statement_timeout=30000", "pool": True}
 elif DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     # https://alldjango.com/articles/definitive-guide-to-using-django-sqlite-in-production
-    DATABASES["OPTIONS"] = {
+    DATABASES["default"]["OPTIONS"] = {
         "transaction_mode": "IMMEDIATE",
         "timeout": 30,  # seconds
         "init_command": """
@@ -98,9 +98,6 @@ elif DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
                 PRAGMA cache_size=2000;
             """,
     }
-
-# https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # CACHES
@@ -391,7 +388,20 @@ CORS_ALLOW_CREDENTIALS = False
 
 # EMAIL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
+# https://docs.djangoproject.com/en/dev/ref/settings/#mailers
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": env("EMAIL_HOST", default="mailpit"),
+            "port": env.int("EMAIL_PORT", default=1025),
+            "use_tls": env.bool("EMAIL_USE_TLS", default=False),
+            "timeout": env.int("EMAIL_TIMEOUT", default=30),
+            "username": env.str("EMAIL_HOST_USER", default=""),
+            "password": env.str("EMAIL_HOST_PASSWORD", default=""),
+        },
+    },
+}
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
     default="Legadilo <noreply@legadilo.eu>",
@@ -403,20 +413,6 @@ EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
     default="[Legadilo] ",
 )
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-EMAIL_HOST = env("EMAIL_HOST", default="mailpit")
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host-user
-EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
-EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
-EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=30)
-# https://docs.djangoproject.com/en/5.1/ref/settings/#email-use-tls
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
 
 
 # ADMIN
@@ -490,7 +486,7 @@ LOGGING = {
             "handlers": ["rich"],
             "propagate": False,
         },
-        "httpx": {
+        "httpx2": {
             "handlers": ["rich"],
             "level": "WARNING",
         },

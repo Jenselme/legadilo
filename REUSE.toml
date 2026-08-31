@@ -100,6 +100,7 @@ path = [
     ".prettierrc.json",
     ".stylelintrc.json",
     ".nvmrc",
+    ".npmrc",
     "_typos.toml",
     "eslint.config.cjs",
     "package.json",

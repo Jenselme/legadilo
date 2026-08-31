@@ -334,6 +334,7 @@ legadilo/media/
 /legadilo.sqlite3-journal
 
 .pytest_cache/
+/mypy.db
 .ipython/
 .env
 devops/envs/*

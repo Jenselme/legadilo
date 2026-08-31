@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from urllib.parse import urlparse
 
-import httpx
+import httpx2
 from defusedxml.ElementTree import parse
 from django.db import IntegrityError
 from pydantic import ValidationError as PydanticValidationError
@@ -141,7 +141,7 @@ def _process_feed(user, client, outline, category=None):
         if created:
             nb_imported_feeds += 1
         logger.debug("Feed %s imported successfully with all its metadata", outline.feed_url)
-    except httpx.HTTPError:
+    except httpx2.HTTPError:
         logger.exception(
             "Failed to import feed %s. Created with basic data and disabled.", outline.feed_url
         )

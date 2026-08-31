@@ -9,9 +9,9 @@ from datetime import datetime
 from http import HTTPStatus
 from typing import Any
 
-import httpx
+import httpx2
 from django.core.management.base import BaseCommand, CommandParser
-from httpx import HTTPError, HTTPStatusError
+from httpx2 import HTTPError, HTTPStatusError
 
 from legadilo import constants
 from legadilo.core.utils.exceptions import extract_debug_information, format_exception
@@ -120,7 +120,7 @@ class Command(BaseCommand):
 
     def _fetch_feed_data(
         self,
-        client: httpx.Client,
+        client: httpx2.Client,
         feed_id: int,
         feed_url: str,
         feed_etag: str | None,
