@@ -45,7 +45,7 @@ test:
     uv run pytest
 
 test-coverage:
-    uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
+    uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=95
 
 lint:
     uv run pre-commit run -a
