@@ -14,81 +14,63 @@ update-deps:
     just check
     git commit -am "chore: update deps"
 
-
 dev:
     docker compose -f local.yml up
-
 
 dev-local-python:
     docker compose -f local.yml --profile mail up -d
     python manage.py runserver
 
-
 dev-local-python-pg:
     docker compose -f local.yml --profile postgres --profile mail up -d postgres mailpit
-    DATABASE_URL="{{postgres_url}}" python manage.py runserver
-
+    DATABASE_URL="{{ postgres_url }}" python manage.py runserver
 
 update-feeds:
     uv run python manage.py update_feeds
 
-
 setup-dev-database:
     uv run python manage.py migrate
     uv run python manage.py setup_test_db
-
 
 setup-python-ci:
     sudo apt-get update
     sudo apt-get install -y gettext
     uv sync --dev --locked
 
-
 setup-ci: setup-python-ci
     npm ci
     npm ci --prefix browser-extension
 
-
 test:
     uv run pytest
-
 
 test-coverage:
     uv run pytest --cov --cov-report term:skip-covered --cov-fail-under=90
 
-
 lint:
     uv run pre-commit run -a
 
-
 makemigrations:
     uv run python manage.py makemigrations
-
 
 migrate:
     uv run python manage.py createcachetable
     uv run python manage.py migrate
 
-
 migrate-pg:
-    DATABASE_URL="{{postgres_url}}" uv run python manage.py migrate
-
+    DATABASE_URL="{{ postgres_url }}" uv run python manage.py migrate
 
 clean-dev-container:
     docker compose -f local.yml down
 
-
 update-po:
     uv run python manage.py makemessages --all --no-location
-
 
 compile-po:
     uv run python manage.py compilemessages
 
-
 build-production-images:
     docker compose -f production.yml build --pull newer django
-
 
 test-production-images: build-production-images
     docker run --rm \
@@ -99,24 +81,19 @@ test-production-images: build-production-images
       legadilo_production_django:latest \
       python manage.py check
 
-
 [working-directory('browser-extension')]
 test-browser-extension:
     npm test
-
 
 [working-directory('browser-extension')]
 watch-test-browser-extension:
     npm run test:watch
 
-
 [working-directory('browser-extension')]
 build-browser-extension:
     npm run build
 
-
 check: lint test-coverage test-browser-extension
-
 
 ci:
     docker compose -f ci.yml up --build --detach --force-recreate
@@ -124,10 +101,11 @@ ci:
     docker compose -f ci.yml down
     just test-production-images
 
-
 ci-run:
     bash ./devops/scripts/local-ci.sh
 
+bump-version:
+    bash ./devops/scripts/bumb-version.sh
 
 release:
     bash ./devops/scripts/release.sh
